@@ -1,15 +1,31 @@
+/** general stylesheet */
+
 body
 	padding-top: 80px
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+	font-size: 12px
+	line-height: 1.42857143
+	color: #333
 
 html, body, #container, #container > .row, #sidebar, #content
 	height: 100%
+
+/** reusable stylesheet */
+
+.navbar-button
+	padding: 14px
+
+.bg-notif
+	padding: 8px 10px
+
+/** structured stylesheet */
 
 #nav
 	background-color: #3E69B6
 
 	.nav.navbar-nav
-		li 
-			a
+		> li 
+			> a
 				padding: 5px 10px
 				color: white
 				background-image: none
@@ -17,9 +33,16 @@ html, body, #container, #container > .row, #sidebar, #content
 				text-shadow: none
 				font-size: 12px
 
-			&.active
-				a
+			&.active, &.open
+				> a
 					background-color: #274C8E
 
 #sidebar
 	border-right: 1px solid #E8E8E8
+
+#content
+	> .col-md-12 > h1
+		border-bottom: 1px solid #E8E8E8
+		padding-bottom: 5px
+		font-size: 28px
+		margin-bottom: 25px
