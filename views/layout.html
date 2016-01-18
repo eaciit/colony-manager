@@ -1,71 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-{{ template "_head.html" }}
-</head>
-<body data-bind="with: viewModel">
-	<!-- Navbar Header -->
-	<div class="header">
-		<header id="page-header"></header>
-		<nav class="navbar">
-			<div id="navbar" class="collapse navbar-collapse"></div>
-		</nav>
-	</div>
-	<!-- End Header Nabar -->
+	<head>
+	{{template "_head.html"}}
+	</head>
+	<body data-bind="with: viewModel">
 
-	<!-- Content Menu Left -->
-	<div id="menu-left">
-		<div class="toogle-left">
-			<span class="glyphicon glyphicon-align-justify" id="toggle-left"></span>
-		</div>
-		<div class="list-group" id="listmenuleft">
-			
-		</div>
-	</div>
-	<!-- End Content Menu Left -->
+		<!-- Navbar Header -->
+		{{template "_header.html"}}
+		<!-- End Header Nabar -->
 
-	<!-- Content -->
-	<div class="wrap-fluid content-all" style="margin-left: 250px;">
+		<!-- Content -->
 		{{.Content}}
-	</div>
+		<!-- End Content -->
 
-	<!-- Content Menu Right -->
-	<div class="content-menu-right" id="menu-right" style="right:-250px;">
-		<div class="list-menu-right">
-			<div class="menu-right-nest">
-				<div class="menu-title">Server Statistic</div>
-				<div class="content-menu-right"></div>
-			</div>
-			<div class="menu-right-nest">
-				<div class="menu-title">Database Request</div>
-				<div class="content-menu-right"></div>
-			</div>
-			<div class="menu-right-nest">
-				<div class="menu-title">Server Response</div>
-				<div class="content-menu-right"></div>
-			</div>
-		</div>
-	</div>
-	<!-- End Content Menu Right -->
-
-	<!-- Content Chat -->
-	<div class="notif">
-		<div class="media-body">
-			<div class="header-notif">
-				<a class="btn btn-sm"><i class="fa fa-circle-o status" style="margin-right: 5px !important;"></i> Notification</a>
-			</div>
-			<div class="content-notif">
-			</div>
-		</div>
-	</div>
-	<!-- End Content Chat -->
-
-	<script type="text/javascript">
-	    ko.applyBindings(viewModel);
-	</script>
-
-	<script src="/static/assets/js/load.js"></script>
-	<script src="/static/assets/js/main.js"></script>
-	<script src="/static/assets/js/overlay.js"></script>
-</body>
+		<script type="text/javascript">
+		    ko.applyBindings(viewModel);
+		</script>
+	</body>
 </html>
