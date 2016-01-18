@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>yo</title>
+
+		<!-- jquery -->
+		<script src="/res/jquery/jquery-2.1.0.min.js"></script>
+		<script src="/res/jquery/jquery-ui.min.js"></script>
+
+		<!-- knockout -->
+		<script src="/res/knockout/knockout-3.4.0.js"></script>
+		<script src="/res/knockout/knockout.mapping.js"></script>
+
+		<!-- lazyjs -->
+		<script src="/res/lazyjs/lazy.min.js"></script>
+
+		<!-- core -->
+		<script src="/res/core/app.js"></script>
+	</head>
+	<body>
+		{{.Content}}
+		<script>ko.applyBindings(viewModel);</script>
+	</body>
+</html>
