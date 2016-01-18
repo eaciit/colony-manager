@@ -1,0 +1,97 @@
+/*Change header*/
+header#page-header {
+    /*background: url(/static/asset/img/backgroudheader.jpg);*/
+    /*background: #3B78E7;*/
+    background: #ffffff;
+    /*background-size:contain;*/
+    height: 48px;
+}
+
+/*Change Color Top Menu*/
+.navbar {
+    background: #CC3D3D;
+}
+/*Change Color Seleted Top Menu*/
+.navbar .navbar-nav li.open a{
+    background: #CC3D3D;
+}
+.navbar .navbar-nav li.selected a { 
+    color: #ffffff; 
+    background: #A60F0F;
+}
+/*Change Color hover top menu*/
+.navbar .navbar-nav li a:hover, .navbar .navbar-nav li.active a:hover { 
+    color: #ffffff; 
+    background: #A60F0F;
+}
+.navbar .open, .navbar .open > a, .navbar .open > a:focus, .navbar .open > a:hover { 
+    color: #ffffff; 
+    background: #A60F0F;
+}
+
+/*Change color dropdown menu top*/
+.navbar .dropdown .dropdown-menu { 
+    background: #CC3D3D; 
+    border-top-color: #A60F0F;
+}
+.navbar .dropdown .dropdown-menu li { 
+    background: #CC3D3D;
+}
+.navbar .dropdown .dropdown-menu li a { 
+    color: #ffffff;
+}
+.navbar .dropdown .dropdown-menu li a:hover { 
+    background: #A60F0F;
+}
+
+/*Change color left menu*/
+#menu-left {
+    /*background: rgba(103, 87, 42, 0.75);*/
+    background: #FAFAFA;
+    border-right-color: #E5E5E5;
+}
+/*Change color button menu*/
+#menu-left .toogle-left span {
+    background: #ADADAD;
+}
+#menu-left .toogle-left span:hover{
+    background: #737373;
+}
+ul.topnav li a:hover {
+    background-color: #F5BCBC;
+    color: #A62E2E!important;
+    border-left-color: #A62E2E;
+}   
+ul.topnav li a:hover:after {
+    border-bottom-color: #A62E2E;
+}
+ul.topnav li a.selected {
+    background-color: #F5BCBC;
+    color: #A62E2E!important;
+    border-left-color: #A62E2E;
+}
+ul.topnav li a.selected:after {
+    border-bottom-color: #A62E2E;
+}
+ul.topnav ul li a:hover {
+    color: #A62E2E!important;
+}
+
+/*Change color body notification*/
+.notif .content-notif {
+    background: #FAFAFA;
+}
+.notif {
+    background: #A60F0F;
+    border-color: #A60F0F;
+}
+    .notif .content-notif .media-body {
+        background: #F7B2B2;
+    }
+    .notif .content-notif i {
+        color:#E61C1C;
+    }
+
+.content-panel .grid-container .grid-item .panel .panel-config {
+    color: #CC3D3D;
+}
