@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>yo</title>
-
-		<!-- jquery -->
-		<script src="/res/jquery/jquery-2.1.0.min.js"></script>
-		<script src="/res/jquery/jquery-ui.min.js"></script>
-
-		<!-- knockout -->
-		<script src="/res/knockout/knockout-3.4.0.js"></script>
-		<script src="/res/knockout/knockout.mapping.js"></script>
-
-		<!-- lazyjs -->
-		<script src="/res/lazyjs/lazy.min.js"></script>
-
-		<!-- core -->
-		<script src="/res/core/app.js"></script>
+	{{template "_head.html"}}
 	</head>
-	<body>
+	<body data-bind="with: viewModel">
+
+		<!-- Navbar Header -->
+		{{template "_header.html"}}
+		<!-- End Header Nabar -->
+
+		<!-- Content -->
 		{{.Content}}
-		<script>ko.applyBindings(viewModel);</script>
+		<!-- End Content -->
+
+		<script type="text/javascript">
+		    ko.applyBindings(viewModel);
+		</script>
 	</body>
 </html>
