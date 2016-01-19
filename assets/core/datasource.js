@@ -13,14 +13,15 @@ ds.templateConfig = {
 };
 ds.templateDataSource = {
 	id: "",
-	dataSourceName: "",
-	connection : "",
-	query : {
-		select: "",
-		from: "",
-		where: "",
-	},
+	connectionId: "",
+	name: "",
+	query : "",
 	metadata: [],
+},
+ds.templateQuery = {
+	select: "",
+	from: "",
+	where: "",
 }
 ds.templateField = {
 	id: "",
@@ -38,6 +39,7 @@ ds.templateLookup = {
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
+ds.query = ko.mapping.fromJS(ds.templateQuery);
 ds.field = ko.mapping.fromJS(ds.templateField);
 ds.lookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
@@ -54,8 +56,8 @@ ds.connectionListColumns = ko.observableArray([
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
-	{field:"connection", title:"ID Connection"},
-	{field:"dataSourceName", title:"Name"},
+	{field:"connectionId", title:"ID Connection"},
+	{field:"name", title:"Name"},
 	{field:"query", title:"Query"},
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
 		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
@@ -125,16 +127,56 @@ ds.removeConnection = function (id) {
 	});
 };
 ds.removeDataSource = function(id){
-	alert("not yet implemented");
+	var yes = confirm("Are you sure want to delete connection " + id + " ?");
+	if (!yes) {
+		return;
+	}
+
+	app.ajaxPost("/datasource/removedatasource", { id: id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.backToFrontPage();
+	});
 }
 ds.editDataSource = function(id){
-	alert("not yet implemented");
+	app.ajaxPost("/datasource/selectdatasource", { id: id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.mode("editDataSource");
+		ko.mapping.fromJS(res.data, ds.confDataSource);
+		
+		setTimeout(function () {
+			$("select.data-connection").data("kendoDropDownList").value(ds.confDataSource.connectionId());
+		}, 1000);
+	});
 }
 ds.saveNewDataSource = function(){
-	alert("not yet implemented");
+	if (!app.isFormValid(".form-datasource")) {
+		return;
+	}
+	
+	var param = ko.mapping.toJS(ds.config);
+	app.ajaxPost("/datasource/saveconnection", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.backToFrontPage();
+	});
 }
 ds.populateGridDataSource = function () {
-	alert("not yet implemented");
+	var param = ko.mapping.toJS(ds.config);
+	app.ajaxPost("/datasource/getdatasources", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.dataSourcesData(res.data);
+	});
 };
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
@@ -145,4 +187,5 @@ ds.openDataSourceForm = function(){
 
 $(function () {
 	ds.populateGridConnections();
+	ds.populateGridDataSource();
 });
