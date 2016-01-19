@@ -1,9 +1,3 @@
-var dataSourceTemp = [
-	{ id: "ds001", connectionName: "Connection 1", driver: "MongoDB", host: "192.168.0.200:27123", username: "root", settings: "" },
-	{ id: "ds002", connectionName: "Connection 2", driver: "MongoDB", host: "cloud.eaciit.com", username: "root", settings: "" },
-	{ id: "ds003", connectionName: "Connection 3", driver: "MySQL", host: "127.0.0.1", username: "root", settings: "" },
-];
-
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray(["Weblink", "MongoDb", "SQLServer", "MySQL", "Oracle", "ERP"]);
 ds.section = ko.observable('connection-list');
@@ -17,15 +11,47 @@ ds.templateConfig = {
 	password: "",
 	settings: ""
 };
+ds.templateDataSource = {
+	id: "",
+	connection : "",
+	query : "",
+	metadata: [],
+}
+ds.templateField = {
+	id: "",
+	label: "",
+	type: "",
+	format: "",
+	lookup : {},
+}
+ds.templateLookup = {
+	dataSourceID : "",
+	idField: "",
+	displayField: "",
+	lookupFields: [],
+}
+
 ds.config = ko.mapping.fromJS(ds.templateConfig);
-ds.dataSourcesData = ko.observableArray(dataSourceTemp);
-ds.dataSourcesColumns = ko.observableArray([
+ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
+ds.field = ko.mapping.fromJS(ds.templateField);
+ds.lookup = ko.mapping.fromJS(ds.templateLookup);
+ds.connectionListData = ko.observableArray([]);
+ds.dataSourcesData = ko.observableArray([]);
+ds.connectionListColumns = ko.observableArray([
 	{ field: "id", title: "ID", width: 110 },
 	{ field: "connectionName", title: "Connection Name" },
 	{ field: "driver", title: "Driver", width: 90 },
 	{ field: "host", title: "Host" },
 	{ field: "username", title: "User Name" },
 	// { field: "settings", title: "Settings" },
+	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+	} },
+]);
+ds.dataSourceColumns = ko.observableArray([
+	{field:"connection", title:"ID Connection"},
+	{field:"query", title:"Query"},
+	// {field:"metadata.label", title:"Field"},
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
 		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },
@@ -37,7 +63,7 @@ ds.changeActiveSection = function (section) {
 		ds.mode('');
 	};
 };
-ds.openDataSourceForm = function () {
+ds.openConnectionForm = function () {
 	ds.mode('edit');
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 };
@@ -45,7 +71,17 @@ ds.backToFrontPage = function () {
 	ds.mode('');
 	ds.populateGridConnections();
 };
-ds.saveNewDataSource = function () {
+ds.populateGridConnections = function () {
+	var param = ko.mapping.toJS(ds.config);
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.connectionListData(res.data);
+	});
+};
+ds.saveNewConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		return;
 	}
@@ -59,17 +95,7 @@ ds.saveNewDataSource = function () {
 		ds.backToFrontPage();
 	});
 };
-ds.populateGridConnections = function () {
-	var param = ko.mapping.toJS(ds.config);
-	app.ajaxPost("/datasource/getconnections", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-
-		ds.dataSourcesData(res.data);
-	});
-};
-ds.editDataSource = function (id) {
+ds.editConnection = function (id) {
 	app.ajaxPost("/datasource/selectconnection", { id: id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -79,7 +105,7 @@ ds.editDataSource = function (id) {
 		ko.mapping.fromJS(res.data, ds.config);
 	});
 };
-ds.removeDataSource = function (id) {
+ds.removeConnection = function (id) {
 	var yes = confirm("Are you sure want to delete connection " + id + " ?");
 	if (!yes) {
 		return;
@@ -93,15 +119,22 @@ ds.removeDataSource = function (id) {
 		ds.backToFrontPage();
 	});
 };
+ds.removeDataSource = function(id){
+	alert("not yet implemented");
+}
+ds.editDataSource = function(id){
+	alert("not yet implemented");
+}
+ds.saveNewDataSource = function(){
+	alert("not yet implemented");
+}
+ds.openDataSourceForm = function(){
+	ds.mode('editDataSource');
+	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
+	ko.mapping.fromJS(ds.templateField, ds.field);
+	ko.mapping.fromJS(ds.templateLookup, ds.lookup);
+};
 
 $(function () {
 	ds.populateGridConnections();
 });
-
-
-// - Connection List
-//     - Driver (Weblink, MongoDb, SQLServer, MySQL, Oracle, ERP) 
-//     - Host
-//     - UserName
-//     - Password
-//     - Settings - map[string]interface{}

@@ -20,7 +20,7 @@
 	            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridConnections">
 		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 		    	</button>
-	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: openDataSourceForm">
+	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: openConnectionForm">
 		    		<span class="glyphicon glyphicon-plus"></span> Create New Connection List
 		    	</button>
 		    </div>
@@ -31,7 +31,7 @@
 		        <h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData, columns: dataSourcesColumns, filterfable: false, sortable: true, pageable: true }"></div>
+		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, sortable: true, pageable: true }"></div>
 		    </div>
 		</div>
 
@@ -40,7 +40,7 @@
 	            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 		    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 		    	</button>
-	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
+	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewConnection">
 		    		<span class="glyphicon glyphicon-save"></span> Save
 		    	</button>
 		    </div>
@@ -56,41 +56,41 @@
 		    <div class="panel-body">
 				<form class="form-horizontal" data-bind="with: config" id="form-add-connection">
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label">Connection Name</label>
+				        <label class="col-sm-4 control-label filter-label">Connection Name</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: connectionName">
 							<span class="k-invalid-msg" data-for="Name"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label">Driver</label>
+				        <label class="col-sm-4 control-label filter-label">Driver</label>
 				        <div class="col-sm-5">
 				        	<select required data-required-msg="Driver cannot be empty" name="driver" style="width: 100%" data-bind="kendoDropDownList: { data: ds.templateDrivers, value: driver, optionLabel: 'Select one' }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label">Host</label>
+				        <label class="col-sm-4 control-label filter-label">Host</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Host" placeholder="Example: 127.0.0.1:27108" data-bind="value: host">
 							<span class="k-invalid-msg" data-for="Host"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label">User Name</label>
+				        <label class="col-sm-4 control-label filter-label">User Name</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Username" placeholder="Example: root" data-bind="value: username">
 							<span class="k-invalid-msg" data-for="Username"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label">Password</label>
+				        <label class="col-sm-4 control-label filter-label">Password</label>
 				        <div class="col-sm-5">
 				            <input type="password" class="form-control input-sm" placeholder="Type password here" data-bind="value: password">
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label">Settings</label>
+				        <label class="col-sm-4 control-label filter-label">Settings</label>
 				        <div class="col-sm-5">
 				            <textarea class="form-control input-sm" name="settings" placeholder="Type settings here (optional)" data-bind="value: settings"></textarea>
 				        </div>
@@ -105,15 +105,63 @@
 
 		<nav class="navbar navbar-default" data-bind="visible: (mode() == '')">
 		    <div class="container-fluid">
+		    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: openDataSourceForm">
+		    		<span class="glyphicon glyphicon-plus"></span> Create New Data Source
+		    	</button>
+		    </div>
+		</nav>
+
+		<nav class="navbar navbar-default" data-bind="visible: (mode() == 'editDataSource')">
+		    <div class="container-fluid">
+	            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
+		    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+		    	</button>
+	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
+		    		<span class="glyphicon glyphicon-save"></span> Save
+		    	</button>
 		    </div>
 		</nav>
 
 		<div class="panel panel-default" data-bind="visible: (mode() == '')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">Panel</h1>
+		        <h1 class="panel-title">Data Source</h1>
 		    </div>
 		    <div class="panel-body">
+		    	<p class="bg-notif bg-info">
+		    		<span class="glyphicon glyphicon-info-sign"></span>
+					Using sample data
+				</p>
+
+		    	<div class="gridDataSource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true }"></div>
 		    </div>
 		</div>
+
+		<div class="panel panel-default col-md-6" data-bind="visible: (mode() == 'editDataSource')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (config.id() == '') ? 'Add New' : 'Edit'"></span>
+		        	Data Source
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+				<form class="form-horizontal" data-bind="with: confDataSource">
+				    <div class="form-group">
+				        <label class="col-sm-4 control-label filter-label">Connection</label>
+				        <div class="col-sm-5">
+				            <input required type="text" class="form-control input-sm" name="connection" placeholder="Type connection here" data-bind="value: connection">
+							<span class="k-invalid-msg" data-for="connection"></span>
+				        </div>
+				    </div>
+				    <div class="form-group">
+				        <label class="col-sm-4 control-label filter-label">Query</label>
+				        <div class="col-sm-5">
+				            <input required type="text" class="form-control input-sm" name="query" placeholder="Type query here" data-bind="value: query">
+							<span class="k-invalid-msg" data-for="query"></span>
+				        </div>
+				    </div>
+				</form>
+		    </div>
+		</div>
+		
 	</div>
 </div>

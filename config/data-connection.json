@@ -1,7 +1,7 @@
 [
   {
-    "connectionName": "asdfasdfasdfasdf",
-    "driver": "ERP",
+    "connectionName": "test",
+    "driver": "Weblink",
     "host": "asdfasdf",
     "id": "c1453177091446",
     "password": "",
@@ -16,5 +16,14 @@
     "password": "",
     "settings": "",
     "username": "dfasdfasdfasdf"
+  },
+  {
+    "connectionName": "asdfasdf",
+    "driver": "SQLServer",
+    "host": "sdfadf",
+    "id": "c1453181732861",
+    "password": "asdfasdf",
+    "settings": "asdfasasdfasdf",
+    "username": "asdfasdf"
   }
 ]
