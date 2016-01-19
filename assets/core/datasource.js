@@ -4,7 +4,7 @@ ds.section = ko.observable('connection-list');
 ds.mode = ko.observable('');
 ds.templateConfig = { 
 	id: "",
-	connectionName: "",
+	name: "",
 	driver: "",
 	host: "",
 	username: "",
@@ -39,7 +39,7 @@ ds.connectionListData = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
 ds.connectionListColumns = ko.observableArray([
 	{ field: "id", title: "ID", width: 110 },
-	{ field: "connectionName", title: "Connection Name" },
+	{ field: "name", title: "Connection Name" },
 	{ field: "driver", title: "Driver", width: 90 },
 	{ field: "host", title: "Host" },
 	{ field: "username", title: "User Name" },
@@ -129,7 +129,7 @@ ds.saveNewDataSource = function(){
 	alert("not yet implemented");
 }
 ds.populateGridDataSource = function () {
-
+	alert("not yet implemented");
 };
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');

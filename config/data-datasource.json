@@ -1,0 +1,14 @@
+[
+  {
+    "id": "c1453177091246",
+    "name": "Data Source 1",
+    "connectionId": "c1453177091446",
+    "query": "select * from batman"
+  },
+  {
+    "id": "c1453177011446",
+    "name": "Data Source 2",
+    "connectionId": "c1453177091446",
+    "query": "select * from batman where id = '123123'"
+  }
+]

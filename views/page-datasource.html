@@ -58,7 +58,7 @@
 				    <div class="form-group">
 				        <label class="col-sm-4 control-label filter-label">Connection Name</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: connectionName">
+				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: name">
 							<span class="k-invalid-msg" data-for="Name"></span>
 				        </div>
 				    </div>
@@ -127,14 +127,9 @@
 
 		<div class="panel panel-default" data-bind="visible: (mode() == '')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">Data Source</h1>
+		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<p class="bg-notif bg-info">
-		    		<span class="glyphicon glyphicon-info-sign"></span>
-					Using sample data
-				</p>
-
 		    	<div class="gridDataSource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true }"></div>
 		    </div>
 		</div>
