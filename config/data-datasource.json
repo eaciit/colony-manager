@@ -1,14 +1,20 @@
 [
   {
+    "connectionId": "c1453177091446",
     "id": "c1453177091246",
     "name": "Data Source 1",
-    "connectionId": "c1453177091446",
     "query": "select * from batman"
   },
   {
+    "connectionId": "c1453177091446",
     "id": "c1453177011446",
     "name": "Data Source 2",
-    "connectionId": "c1453177091446",
     "query": "select * from batman where id = '123123'"
+  },
+  {
+    "connectionId": "c1453177091446",
+    "id": "ds1453187973844",
+    "name": "Test 1",
+    "query": "select * from batman"
   }
 ]
