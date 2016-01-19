@@ -16,5 +16,14 @@
     "password": "asdfasdf",
     "settings": "asdfasasdfasdf",
     "username": "asdfasdf"
+  },
+  {
+    "driver": "MySQL",
+    "host": "sdfsdfsdf",
+    "id": "c1453189803890",
+    "name": "qweqweqweqwe",
+    "password": "sdfsdfs",
+    "settings": "dfsdfsdfsdf",
+    "username": "sdfsdf"
   }
 ]

@@ -1,20 +1,36 @@
 [
   {
-    "connectionId": "c1453178491112",
-    "id": "c1453177091247",
-    "name": "Data Source 1",
+    "connectionId": "c1453177091446",
+    "id": "c1453177091246",
+    "name": "BATMAN !",
     "query": "select * from batman"
   },
   {
-    "connectionId": "c1453178491112",
+    "connectionId": "c1453177091446",
     "id": "c1453177011446",
+    "metadata": [],
     "name": "Data Source 2",
     "query": "select * from batman where id = '123123'"
   },
   {
-    "connectionId": "c1453181732861",
-    "id": "ds1453187973848",
+    "connectionId": "c1453177091446",
+    "id": "ds1453187973844",
+    "metadata": [],
     "name": "Test 1",
+    "query": "select * from batman"
+  },
+  {
+    "connectionId": "c1453177091446",
+    "id": "ds1453196301416",
+    "metadata": [],
+    "name": "BATMAN !",
+    "query": "select * from batman"
+  },
+  {
+    "connectionId": "c1453177091446",
+    "id": "ds1453196309949",
+    "metadata": [],
+    "name": "BATMAN !",
     "query": "select * from batman"
   }
 ]
