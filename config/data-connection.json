@@ -1,0 +1,29 @@
+[
+  {
+    "connectionName": "test",
+    "driver": "Weblink",
+    "host": "asdfasdf",
+    "id": "c1453177091446",
+    "password": "",
+    "settings": "",
+    "username": "asdfasdfasdf"
+  },
+  {
+    "connectionName": "asdfasdfasdf",
+    "driver": "MongoDb",
+    "host": "asdfas",
+    "id": "c1453178491112",
+    "password": "",
+    "settings": "",
+    "username": "dfasdfasdfasdf"
+  },
+  {
+    "connectionName": "asdfasdf",
+    "driver": "SQLServer",
+    "host": "sdfadf",
+    "id": "c1453181732861",
+    "password": "asdfasdf",
+    "settings": "asdfasasdfasdf",
+    "username": "asdfasdf"
+  }
+]

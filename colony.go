@@ -16,6 +16,7 @@ func main() {
 	server.Address = "localhost:3000"
 	server.RouteStatic("res", path.Join(controller.AppViewPath, "assets"))
 	server.Register(controller.CreateWebController(server), "")
+	server.Register(controller.CreateDataSourceController(server), "")
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		http.Redirect(r.Writer, r.Request, "/web/index", 301)
 		return true
