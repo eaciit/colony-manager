@@ -6,6 +6,7 @@ var dataSourceTemp = [
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray(["Weblink", "MongoDb", "SQLServer", "MySQL", "Oracle", "ERP"]);
+ds.section = ko.observable('connection-list');
 ds.mode = ko.observable('');
 ds.templateConfig = { 
 	id: "",
@@ -29,6 +30,13 @@ ds.dataSourcesColumns = ko.observableArray([
 		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },
 ]);
+ds.changeActiveSection = function (section) {
+	return function (self, e) {
+		$(e.currentTarget).parent().siblings().removeClass("active");
+		ds.section(section);
+		ds.mode('');
+	};
+};
 ds.openDataSourceForm = function () {
 	ds.mode('edit');
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
