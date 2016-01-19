@@ -13,8 +13,13 @@ ds.templateConfig = {
 };
 ds.templateDataSource = {
 	id: "",
+	dataSourceName: "",
 	connection : "",
-	query : "",
+	query : {
+		select: "",
+		from: "",
+		where: "",
+	},
 	metadata: [],
 }
 ds.templateField = {
@@ -50,8 +55,8 @@ ds.connectionListColumns = ko.observableArray([
 ]);
 ds.dataSourceColumns = ko.observableArray([
 	{field:"connection", title:"ID Connection"},
+	{field:"dataSourceName", title:"Name"},
 	{field:"query", title:"Query"},
-	// {field:"metadata.label", title:"Field"},
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
 		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },

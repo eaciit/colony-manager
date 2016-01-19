@@ -139,7 +139,7 @@
 		    </div>
 		</div>
 
-		<div class="panel panel-default col-md-6" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (config.id() == '') ? 'Add New' : 'Edit'"></span>
@@ -147,22 +147,55 @@
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<form class="form-horizontal" data-bind="with: confDataSource">
-				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Connection</label>
-				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="connection" placeholder="Type connection here" data-bind="value: connection">
-							<span class="k-invalid-msg" data-for="connection"></span>
-				        </div>
-				    </div>
-				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Query</label>
-				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="query" placeholder="Type query here" data-bind="value: query">
+				<div class="row" data-bind="with: confDataSource">
+					<div class="col-md-6">
+			        	<label class="col-md-3 filter-label">Name</label>
+			        	<div class="col-md-8">
+			        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: dataSourceName">
 							<span class="k-invalid-msg" data-for="query"></span>
-				        </div>
-				    </div>
-				</form>
+			        	</div>
+			        </div>
+				    <div class="col-md-6">
+			            <label class="col-md-3 filter-label">Title</label>
+			            <div class="col-md-8">
+			                <select class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'connectionName', dataValueField: 'id', optionLabel: 'Select one', value: connection }" style="width: 200px;" name="connection"></select>
+							<span class="k-invalid-msg" data-for="connection"></span>
+			            </div>
+			        </div>
+				</div>
+		    </div>
+		</div>
+
+		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Query
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+				<div class="row" data-bind="with: confDataSource">
+			        <div class="col-md-4">
+			        	<label class="col-md-3 filter-label">Select</label>
+			        	<div class="col-md-8">
+			        		<input required type="text" class="form-control input-sm" name="queryselect" placeholder="Type query select here" data-bind="value: query.select">
+							<span class="k-invalid-msg" data-for="queryselect"></span>
+			        	</div>
+			        </div>
+			        <div class="col-md-4">
+			        	<label class="col-md-3 filter-label">From</label>
+			        	<div class="col-md-8">
+			        		<input required type="text" class="form-control input-sm" name="queryfrom" placeholder="Type query from here" data-bind="value: query.from">
+							<span class="k-invalid-msg" data-for="queryfrom"></span>
+			        	</div>
+			        </div>
+			        <div class="col-md-4">
+			        	<label class="col-md-3 filter-label">Where</label>
+			        	<div class="col-md-8">
+			        		<input required type="text" class="form-control input-sm" name="querywhere" placeholder="Type query where here" data-bind="value: query.where">
+							<span class="k-invalid-msg" data-for="querywhere"></span>
+			        	</div>
+			        </div>
+				</div>
 		    </div>
 		</div>
 		
