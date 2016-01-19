@@ -13,8 +13,13 @@ ds.templateConfig = {
 };
 ds.templateDataSource = {
 	id: "",
+	dataSourceName: "",
 	connection : "",
-	query : "",
+	query : {
+		select: "",
+		from: "",
+		where: "",
+	},
 	metadata: [],
 }
 ds.templateField = {
