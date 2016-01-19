@@ -43,6 +43,7 @@ ds.openDataSourceForm = function () {
 };
 ds.backToFrontPage = function () {
 	ds.mode('');
+	ds.populateGridConnections();
 };
 ds.saveNewDataSource = function () {
 	if (!app.isFormValid("#form-add-connection")) {
@@ -55,8 +56,7 @@ ds.saveNewDataSource = function () {
 			return;
 		}
 
-		ds.mode('');
-		ds.populateGridConnections();
+		ds.backToFrontPage();
 	});
 };
 ds.populateGridConnections = function () {
@@ -70,10 +70,28 @@ ds.populateGridConnections = function () {
 	});
 };
 ds.editDataSource = function (id) {
-	alert("not yet implemented");
+	app.ajaxPost("/datasource/selectconnection", { id: id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.mode("edit");
+		ko.mapping.fromJS(res.data, ds.config);
+	});
 };
 ds.removeDataSource = function (id) {
-	alert("not yet implemented");
+	var yes = confirm("Are you sure want to delete connection " + id + " ?");
+	if (!yes) {
+		return;
+	}
+
+	app.ajaxPost("/datasource/removeconnection", { id: id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.backToFrontPage();
+	});
 };
 
 $(function () {

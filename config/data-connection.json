@@ -1,7 +1,7 @@
 [
   {
     "connectionName": "asdfasdfasdfasdf",
-    "driver": "MySQL",
+    "driver": "ERP",
     "host": "asdfasdf",
     "id": "c1453177091446",
     "password": "",
@@ -10,7 +10,7 @@
   },
   {
     "connectionName": "asdfasdfasdf",
-    "driver": "MySQL",
+    "driver": "MongoDb",
     "host": "asdfas",
     "id": "c1453178491112",
     "password": "",
