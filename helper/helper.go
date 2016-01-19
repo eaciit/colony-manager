@@ -152,7 +152,7 @@ func FetchThenSaveFile(r *http.Request, sourceFileName string, destinationFileNa
 	return file, handler, nil
 }
 
-func Result(success bool, data interface{}, message string) map[string]interface{} {
+func CreateResult(success bool, data interface{}, message string) map[string]interface{} {
 	return map[string]interface{}{
 		"data":    data,
 		"success": success,
