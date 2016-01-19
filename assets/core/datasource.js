@@ -128,6 +128,9 @@ ds.editDataSource = function(id){
 ds.saveNewDataSource = function(){
 	alert("not yet implemented");
 }
+ds.populateGridDataSource = function () {
+
+};
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
