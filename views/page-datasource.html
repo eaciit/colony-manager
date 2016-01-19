@@ -142,18 +142,18 @@
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<div class="row" data-bind="with: confDataSource">
+				<div class="row form-datasource" data-bind="with: confDataSource">
 					<div class="col-md-6">
 			        	<label class="col-md-3 filter-label">Name</label>
 			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: dataSourceName">
+			        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: name">
 							<span class="k-invalid-msg" data-for="query"></span>
 			        	</div>
 			        </div>
 				    <div class="col-md-6">
-			            <label class="col-md-3 filter-label">Title</label>
+			            <label class="col-md-3 filter-label">Connection</label>
 			            <div class="col-md-8">
-			                <select class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'connectionName', dataValueField: 'id', optionLabel: 'Select one', value: connection }" style="width: 200px;" name="connection"></select>
+			                <select class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'name', dataValueField: 'id', optionLabel: 'Select one', value: connectionId }" style="width: 200px;" name="connection"></select>
 							<span class="k-invalid-msg" data-for="connection"></span>
 			            </div>
 			        </div>
@@ -168,25 +168,25 @@
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<div class="row" data-bind="with: confDataSource">
+				<div class="row form-datasource" data-bind="with: query">
 			        <div class="col-md-4">
 			        	<label class="col-md-3 filter-label">Select</label>
 			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="queryselect" placeholder="Type query select here" data-bind="value: query.select">
+			        		<input required type="text" class="form-control input-sm" name="queryselect" placeholder="Type query select here" data-bind="value: select">
 							<span class="k-invalid-msg" data-for="queryselect"></span>
 			        	</div>
 			        </div>
 			        <div class="col-md-4">
 			        	<label class="col-md-3 filter-label">From</label>
 			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="queryfrom" placeholder="Type query from here" data-bind="value: query.from">
+			        		<input required type="text" class="form-control input-sm" name="queryfrom" placeholder="Type query from here" data-bind="value: from">
 							<span class="k-invalid-msg" data-for="queryfrom"></span>
 			        	</div>
 			        </div>
 			        <div class="col-md-4">
 			        	<label class="col-md-3 filter-label">Where</label>
 			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="querywhere" placeholder="Type query where here" data-bind="value: query.where">
+			        		<input required type="text" class="form-control input-sm" name="querywhere" placeholder="Type query where here" data-bind="value: where">
 							<span class="k-invalid-msg" data-for="querywhere"></span>
 			        	</div>
 			        </div>
