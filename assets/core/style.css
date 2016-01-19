@@ -41,4 +41,11 @@ html, body, #container, #container > .row, #sidebar, #content {
   font-size: 28px;
   margin-bottom: 25px; }
 
+.filter-label {
+  line-height: 25px; }
+  .filter-label:after {
+    content: ":";
+    position: absolute;
+    right: 5px; }
+
 /*# sourceMappingURL=style.css.map */
