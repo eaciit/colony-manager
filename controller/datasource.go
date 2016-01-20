@@ -40,10 +40,10 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mssql mysql oracle"
+	supportedDrivers := "mongo mysql"
 
 	if !strings.Contains(supportedDrivers, driver) {
-		return errors.New("this driver is not yet supported")
+		return errors.New("Currently tested driver is only mongo & mysql")
 	}
 
 	return nil

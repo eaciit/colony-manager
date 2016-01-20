@@ -5,6 +5,10 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
+	// _ "github.com/eaciit/dbox/dbc/mssql"
+	_ "github.com/eaciit/dbox/dbc/mysql"
+	// _ "github.com/eaciit/dbox/dbc/oracle"
+	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"github.com/eaciit/toolkit"
 )
 
@@ -32,7 +36,11 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	}
 
 	wrapper.connection, wrapper.err = dbox.NewConnection(driver, wrapper.ci)
-	wrapper.connection.Connect()
+	if wrapper.err != nil {
+		return &wrapper
+	}
+
+	wrapper.err = wrapper.connection.Connect()
 	return &wrapper
 }
 
