@@ -2,7 +2,29 @@
   {
     "connectionId": "c1453256356255",
     "id": "ds1453256584529",
-    "metadata": [],
+    "metadata": [
+      {
+        "format": "",
+        "id": "id",
+        "label": "ID",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "username",
+        "label": "User Name",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "age",
+        "label": "Age",
+        "lookup": null,
+        "type": "numeric"
+      }
+    ],
     "name": "test",
     "query": ""
   },
@@ -69,6 +91,97 @@
       }
     ],
     "name": "adfasdf",
+    "query": ""
+  },
+  {
+    "connectionId": "c1453256356255",
+    "id": "ds1453258657131",
+    "metadata": [
+      {
+        "format": "",
+        "id": "id",
+        "label": "ID",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "username",
+        "label": "User Name",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "age",
+        "label": "Age",
+        "lookup": null,
+        "type": "numeric"
+      }
+    ],
+    "name": "m",
+    "query": ""
+  },
+  {
+    "connectionId": "c1453256356255",
+    "id": "ds1453258798935",
+    "metadata": [
+      {
+        "format": "",
+        "id": "id",
+        "label": "ID",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "username",
+        "label": "User Name",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "age",
+        "label": "Age",
+        "lookup": null,
+        "type": "numeric"
+      }
+    ],
+    "name": "m",
+    "query[from]": "test",
+    "query[limit]": 1,
+    "query[offset]": 0,
+    "query[select]": "*",
+    "query[where]": "asdf"
+  },
+  {
+    "connectionId": "c1453256372135",
+    "id": "ds1453260980987",
+    "metadata": [
+      {
+        "format": "",
+        "id": "id",
+        "label": "ID",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "username",
+        "label": "User Name",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "age",
+        "label": "Age",
+        "lookup": null,
+        "type": "numeric"
+      }
+    ],
+    "name": "ds0001",
     "query": ""
   }
 ]

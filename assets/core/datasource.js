@@ -1,7 +1,18 @@
 viewModel.datasource = {}; var ds = viewModel.datasource;
-ds.templateDrivers = ko.observableArray(["Weblink", "MongoDb", "SQLServer", "MySQL", "Oracle", "ERP"]);
+ds.templateDrivers = ko.observableArray([
+	{ value: "weblink", text: "Weblink" },
+	{ value: "mongo", text: "MongoDb" },
+	{ value: "mssql", text: "SQLServer" },
+	{ value: "mysql", text: "MySQL" },
+	{ value: "oracle", text: "Oracle" },
+	{ value: "erp", text: "ERP" }
+]);
 ds.section = ko.observable('connection-list');
 ds.mode = ko.observable('');
+ds.templateConfigSetting = {
+	key: "",
+	value: ""
+};
 ds.templateConfig = { 
 	id: "",
 	name: "",
@@ -9,7 +20,7 @@ ds.templateConfig = {
 	host: "",
 	username: "",
 	password: "",
-	settings: ""
+	settings: []
 };
 ds.templateDataSource = {
 	id: "",
@@ -64,6 +75,14 @@ ds.dataSourceColumns = ko.observableArray([
 		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },
 ]);
+ds.settingsColumns = ko.observableArray([
+	{ field: "key", title: "Key", template: function (d) {
+		return "<input style='width: 100%;'>";
+	} },
+	{ field: "valuue", title: "Value", template: function (d) {
+		return "<input style='width: 100%;'>";
+	} }
+]);
 ds.changeActiveSection = function (section) {
 	return function (self, e) {
 		$(e.currentTarget).parent().siblings().removeClass("active");
@@ -74,6 +93,16 @@ ds.changeActiveSection = function (section) {
 ds.openConnectionForm = function () {
 	ds.mode('edit');
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
+	ds.addSettings();
+};
+ds.addSettings = function () {
+	ds.config.settings.push($.extend(true, {}, ds.templateConfigSetting));
+};
+ds.removeSetting = function (each) {
+	return function () {
+		console.log(each);
+		ds.config.settings.remove(each);
+	};
 };
 ds.backToFrontPage = function () {
 	ds.mode('');
@@ -96,6 +125,7 @@ ds.saveNewConnection = function () {
 	}
 	
 	var param = ko.mapping.toJS(ds.config);
+	param.settings = JSON.stringify(param.settings);
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;

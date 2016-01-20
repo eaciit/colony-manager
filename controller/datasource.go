@@ -1,10 +1,14 @@
 package controller
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
+	"strings"
 )
 
 type DataSourceController struct {
@@ -29,6 +33,16 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	}
 	if payload["settings"] == nil {
 		payload["settings"] = map[string]interface{}{}
+	} else {
+		settingsRaw := []map[string]interface{}{}
+		json.Unmarshal([]byte(payload["settings"].(string)), &settingsRaw)
+
+		settings := map[string]interface{}{}
+		for _, each := range settingsRaw {
+			settings[each["key"].(string)] = each["value"].(string)
+		}
+		fmt.Printf("--- %#v", settings)
+		payload["settings"] = settings
 	}
 	id := payload["id"].(string)
 
@@ -86,6 +100,16 @@ func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	settings := []map[string]interface{}{}
+	settingsRaw := data.Get("settings", map[string]interface{}{}).(map[string]interface{})
+	for key, value := range settingsRaw {
+		settings = append(settings, map[string]interface{}{
+			"key":   key,
+			"value": value.(string),
+		})
+	}
+	data["settings"] = settings
+
 	return helper.CreateResult(true, data, "")
 }
 
@@ -109,17 +133,50 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 
 /** DATA SOURCE */
 
-// func (d *DataSourceController) fetchMetaData(id) ([]toolkit.M, error) {
-// 	// data, err := helper..SelectOne("config/data-connection.json", dbox.Eq("id", id))
-// 	// if err != nil {
-// 	// 	return nil, err
-// 	// }
+func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
+	dataConn, err := helper.Query("json", "config/data-datasource.json").SelectOne(dbox.Eq("id", id))
+	if err != nil {
+		return nil, err
+	}
 
-// 	// driver := data.Get("driver", "").(string)
-// 	// if driver == ""
+	supportedDrivers := "mongo mssql mysql oracle"
+	driver := dataConn.Get("driver", "").(string)
+	host := dataConn.Get("host", "").(string)
+	username := dataConn.Get("username", "").(string)
+	password := dataConn.Get("password", "").(string)
 
-// 	// return nil, nil
-// }
+	if !strings.Contains(supportedDrivers, driver) {
+		return nil, errors.New("this driver is not yet supported")
+	}
+
+	data, err := helper.Query(driver, host, "", username, password).SelectAll()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, errors.New("empty data !")
+	}
+
+	// metadata := []map[string]interface{}{}
+	// firs := data[0].(toolkit.M)
+	// for key, val := range firstRow {
+	// 	label := key
+	// 	eachType := "string"
+
+	// 	eachMeta := map[string]interface{}{}
+	// 	eachMeta["id"] = key
+	// 	eachMeta["label"] = label
+	// 	eachMeta["type"] = eachType
+	// 	eachMeta["format"] = ""
+	// 	eachMeta["lookup"] = nil
+
+	// 	metadata = append(metadata, eachMeta)
+	// }
+
+	return nil, nil
+	// return metadata, nil
+}
 
 func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
