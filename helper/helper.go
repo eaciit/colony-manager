@@ -12,6 +12,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -216,4 +217,21 @@ func FetchQuerySelector(data []map[string]interface{}, payload map[string]interf
 		dataNew = data
 	}
 	return dataNew, nil
+}
+
+func ToUpper(src string) string {
+	regex, err := regexp.Compile("/([A-Z])/g")
+	if err != nil {
+		fmt.Println(err.Error())
+		return src
+	}
+
+	return regex.ReplaceAllStringFunc(src, func(w string) string {
+		return strings.ToUpper(w)
+	})
+
+	// var re = regexp.MustCompile(`\b(` + strings.Join(keywords, "|") + `)\b`)
+	// return re.ReplaceAllStringFunc(src, func(w string) string {
+	// 	return strings.ToUpper(w)
+	// })
 }
