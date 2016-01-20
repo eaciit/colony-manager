@@ -56,9 +56,10 @@ ds.connectionListColumns = ko.observableArray([
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
-	{field:"connectionId", title:"ID Connection"},
-	{field:"name", title:"Name"},
-	{field:"query", title:"Query"},
+	{ field:"id", title:"ID" },
+	{ field:"name", title:"Data Source Name" },
+	{ field:"connectionText", title:"Connection" },
+	{ field:"query", title:"Query" },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
 		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },
@@ -77,6 +78,7 @@ ds.openConnectionForm = function () {
 ds.backToFrontPage = function () {
 	ds.mode('');
 	ds.populateGridConnections();
+	ds.populateGridDataSource();
 };
 ds.populateGridConnections = function () {
 	var param = ko.mapping.toJS(ds.config);
@@ -159,8 +161,8 @@ ds.saveNewDataSource = function(){
 		return;
 	}
 	
-	var param = ko.mapping.toJS(ds.config);
-	app.ajaxPost("/datasource/saveconnection", param, function (res) {
+	var param = ko.mapping.toJS(ds.confDataSource);
+	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -169,8 +171,7 @@ ds.saveNewDataSource = function(){
 	});
 }
 ds.populateGridDataSource = function () {
-	var param = ko.mapping.toJS(ds.config);
-	app.ajaxPost("/datasource/getdatasources", param, function (res) {
+	app.ajaxPost("/datasource/getdatasources", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
