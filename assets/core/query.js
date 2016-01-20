@@ -17,19 +17,23 @@ qr.changeActiveCommand = function(data){
 		$textarea.highlightTextarea("highlight")
 	};
 }
-
-$(function () {
+function selectKeyCommand(){
 	var groupdbox = _.groupBy(tempDataCommand, function(value){
         return value.key;
     }), arrdbox = new Array();
     $.each(groupdbox, function( key, value ) {
 		arrdbox.push(key);
 	});
+	return arrdbox;
+}
+
+$(function () {
+	var arrWord = selectKeyCommand();
 	$('#textquery').highlightTextarea({
 			words: {
 			color: '#ADF0FF',
 			caseSensitive: false,
-			words: arrdbox
+			words: arrWord
 		},
 	});
 });
