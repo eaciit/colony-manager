@@ -10,6 +10,7 @@ ds.templateDrivers = ko.observableArray([
 ds.section = ko.observable('connection-list');
 ds.mode = ko.observable('');
 ds.templateConfigSetting = {
+	id: "",
 	key: "",
 	value: ""
 };
@@ -98,7 +99,9 @@ ds.openConnectionForm = function () {
 	ds.addSettings();
 };
 ds.addSettings = function () {
-	ds.config.settings.push($.extend(true, {}, ds.templateConfigSetting));
+	var setting = $.extend(true, {}, ds.templateConfigSetting);
+	setting.id = "s" + moment.now();
+	ds.config.settings.push(setting);
 };
 ds.removeSetting = function (each) {
 	return function () {

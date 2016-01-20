@@ -126,7 +126,7 @@
 			        						<input class="form-control input-sm" type="text" style="width: 100%;" data-bind="value: value" />
 			        					</td>
 			        					<td>
-			        						<button class="btn btn-sm btn-danger">
+			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
 			        							<span class="glyphicon glyphicon-remove" data-bind="click: ds.removeSetting($data)"></span>
 			        						</button>
 			        					</td>
