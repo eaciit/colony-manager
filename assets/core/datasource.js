@@ -18,6 +18,7 @@ ds.templateConfig = {
 	name: "",
 	driver: "",
 	host: "",
+	database: "",
 	username: "",
 	password: "",
 	settings: []
@@ -60,6 +61,7 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "name", title: "Connection Name" },
 	{ field: "driver", title: "Driver", width: 90 },
 	{ field: "host", title: "Host" },
+	{ field: "database", title: "Database" },
 	{ field: "username", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
