@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
@@ -130,10 +131,16 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	}
 	id := payload["id"].(string)
 
+	metadataSample := []map[string]interface{}{
+		{"id": "id", "label": "ID", "type": "string", "format": "", "lookup": nil},
+		{"id": "username", "label": "User Name", "type": "string", "format": "", "lookup": nil},
+		{"id": "age", "label": "Age", "type": "numeric", "format": "", "lookup": nil},
+	}
+
 	if id == "" {
 		// insert new datasource
 		payload["id"] = helper.RandomIDWithPrefix("ds")
-		payload["metadata"] = []interface{}{}
+		payload["metadata"] = metadataSample
 		err = helper.Query("json", "config/data-datasource.json").Save(payload)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
@@ -142,7 +149,7 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, payload["metadata"], "")
 	} else {
 		// update datasource
-		payload["metadata"] = []interface{}{}
+		payload["metadata"] = metadataSample
 		err = helper.Query("json", "config/data-datasource.json").Save(payload, dbox.Eq("id", id))
 		if !helper.HandleError(err) {
 			return helper.CreateResult(false, nil, err.Error())
@@ -178,7 +185,8 @@ func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
 
 		data[i].Set("connectionText", "")
 		if detail != nil {
-			data[i].Set("connectionText", detail.Get("name", "").(string))
+			text := fmt.Sprintf("%s (%s)", detail.Get("name", "").(string), connectionId)
+			data[i].Set("connectionText", text)
 		}
 	}
 

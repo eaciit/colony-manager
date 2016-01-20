@@ -12,5 +12,63 @@
     "metadata": [],
     "name": "sdfasdfasd",
     "query": ""
+  },
+  {
+    "connectionId": "c1453256356255",
+    "id": "ds1453258146409",
+    "metadata": [
+      {
+        "format": "",
+        "id": "id",
+        "label": "ID",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "username",
+        "label": "User Name",
+        "lookup": null,
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "age",
+        "label": "Age",
+        "lookup": null,
+        "type": "numeric"
+      }
+    ],
+    "name": "asdfasdf",
+    "query": ""
+  },
+  {
+    "connectionId": "c1453256372135",
+    "id": "ds1453258191057",
+    "metadata": [
+      {
+        "format": "",
+        "id": "id",
+        "label": "ID",
+        "lookup": {},
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "username",
+        "label": "User Name",
+        "lookup": {},
+        "type": "string"
+      },
+      {
+        "format": "",
+        "id": "age",
+        "label": "Age",
+        "lookup": {},
+        "type": "numeric"
+      }
+    ],
+    "name": "adfasdf",
+    "query": ""
   }
 ]
