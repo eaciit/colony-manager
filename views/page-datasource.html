@@ -4,8 +4,8 @@
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
 		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (section() == 'connection-list') }, click: changeActiveSection('connection-list')">Connection List</a></li>
-			<li><a href="#" data-bind="css: { 'active': (section() == 'data-source') }, click: changeActiveSection('data-source')">Data Source</a></li>
+			<li><a href="#" data-bind="css: { 'active': (section() == 'connection-list') }, click: changeActiveSection('connection-list')">Connection List<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (section() == 'data-source') }, click: changeActiveSection('data-source')">Data Source<span class="fa-pull-right"><i class="fa fa-random"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -54,7 +54,7 @@
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<form class="form-horizontal" data-bind="with: config" id="form-add-connection">
+				<form class="form-horizontal" data-bind="with: config" id="form-add-connection" novalidate>
 				    <div class="form-group">
 				        <label class="col-sm-4 control-label filter-label">Connection Name</label>
 				        <div class="col-sm-5">
@@ -65,7 +65,7 @@
 				    <div class="form-group">
 				        <label class="col-sm-4 control-label filter-label">Driver</label>
 				        <div class="col-sm-5">
-				        	<select required data-required-msg="Driver cannot be empty" name="driver" style="width: 100%" data-bind="kendoDropDownList: { data: ds.templateDrivers, value: driver, optionLabel: 'Select one' }"></select>
+				        	<select required data-required-msg="Driver cannot be empty" name="driver" style="width: 100%" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: driver, optionLabel: 'Select one' }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
 				    </div>
@@ -74,6 +74,13 @@
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Host" placeholder="Example: 127.0.0.1:27108" data-bind="value: host">
 							<span class="k-invalid-msg" data-for="Host"></span>
+				        </div>
+				    </div>
+				    <div class="form-group">
+				        <label class="col-sm-4 control-label filter-label">Database</label>
+				        <div class="col-sm-5">
+				            <input required type="text" class="form-control input-sm" name="Database" placeholder="Example: mydatabase" data-bind="value: database">
+							<span class="k-invalid-msg" data-for="Database"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
@@ -91,8 +98,35 @@
 				    </div>
 				    <div class="form-group">
 				        <label class="col-sm-4 control-label filter-label">Settings</label>
-				        <div class="col-sm-5">
-				            <textarea class="form-control input-sm" name="settings" placeholder="Type settings here (optional)" data-bind="value: settings"></textarea>
+				        <div class="col-sm-8">
+				        	<div class="nav">
+				        		<button class="btn btn-primary btn-sm" data-bind="click: ds.addSettings">
+				        			<span class="glyphicon glyphicon-plus"></span> Add
+				        		</button>
+				        	</div>
+				        	<table id="datasource-settings">
+			        			<thead>
+			        				<tr>
+			        					<th>Key</th>
+			        					<th>Value</th>
+			        				</tr>
+			        			</thead>
+			        			<tbody data-bind="foreach: settings">
+			        				<tr>
+			        					<td>
+			        						<input type="text" style="width: 100%;" data-bind="value: key" />
+			        					</td>
+			        					<td>
+			        						<input type="text" style="width: 100%;" data-bind="value: value" />
+			        					</td>
+			        					<td>
+			        						<button class="btn btn-xs btn-danger">
+			        							<span class="glyphicon glyphicon-remove" data-bind="click: ds.removeSetting($data)"></span>
+			        						</button>
+			        					</td>
+			        				</tr>
+			        			</tbody>
+				        	</table>
 				        </div>
 				    </div>
 				</form>
