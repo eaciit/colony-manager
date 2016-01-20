@@ -48,6 +48,12 @@ html, body, #container, #container > .row, #sidebar, #content {
     position: absolute;
     right: 5px; }
 
+#datasource-settings thead tr th {
+  padding-top: 15px; }
+#datasource-settings tbody tr td {
+  padding-top: 8px;
+  padding-right: 5px; }
+
 .title-command {
   border-bottom: 1px solid black;
   width: 100%;
