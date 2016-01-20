@@ -1,14 +1,14 @@
 [
   {
+    "database": "test",
     "driver": "mongo",
-    "host": "asdfasd",
-    "id": "c1453266355754",
-    "name": "asdf asdf ",
-    "password": "asdf asdf sd",
+    "host": "localhost",
+    "id": "c1453271246170",
+    "name": "asdfasdfasdf",
+    "password": "",
     "settings": {
-      "f sdf sd": "f sdf ",
-      "ssss dd": "sdfsdf"
+      "": ""
     },
-    "username": "f asdf asdf "
+    "username": "root"
   }
 ]

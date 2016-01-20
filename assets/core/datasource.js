@@ -136,6 +136,23 @@ ds.saveNewConnection = function () {
 		ds.backToFrontPage();
 	});
 };
+ds.testConnection = function () {
+	var param = ko.mapping.toJS(ds.config);
+	param.settings = JSON.stringify(param.settings);
+	
+	app.ajaxPost("/datasource/testconnection", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		alert("Connected !");
+	}, function (a, b, c) {
+		alert("ERROR: " + a.statusText);
+		console.log(a, b, c);
+	}, {
+		timeout: 5000
+	});
+};
 ds.editConnection = function (id) {
 	app.ajaxPost("/datasource/selectconnection", { id: id }, function (res) {
 		if (!app.isFine(res)) {

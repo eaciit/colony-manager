@@ -14,7 +14,7 @@ app.applyNavigationActive = function () {
 app.prepare = function () {
 	app.applyNavigationActive();
 };
-app.ajaxPost = function (url, data, callbackSuccess, callbackError) {
+app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var config = {
         url: url,
         type: 'post',
@@ -23,7 +23,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError) {
         success: callbackSuccess,
         error: function (a, b, c) {
             if (callbackError !== undefined) {
-                callbackError();
+                callbackError(a, b, c);
             }
         }
     };
@@ -33,6 +33,10 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError) {
         config.cache = false;
         config.contentType = false;
         config.processData = false;
+    }
+
+    if (otherConfig != undefined) {
+        config = $.extend(true, config, otherConfig);
     }
     
     $.ajax(config);

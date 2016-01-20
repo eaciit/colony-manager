@@ -23,6 +23,32 @@ func CreateDataSourceController(s *knot.Server) *DataSourceController {
 
 /** CONNECTION LIST */
 
+func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaultValue interface{}) interface{} {
+	if payloadSettings == nil {
+		return defaultValue
+	}
+
+	settingsRaw := []map[string]interface{}{}
+	json.Unmarshal([]byte(payloadSettings.(string)), &settingsRaw)
+
+	settings := map[string]interface{}{}
+	for _, each := range settingsRaw {
+		settings[each["key"].(string)] = each["value"].(string)
+	}
+
+	return settings
+}
+
+func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
+	supportedDrivers := "mongo mssql mysql oracle"
+
+	if !strings.Contains(supportedDrivers, driver) {
+		return errors.New("this driver is not yet supported")
+	}
+
+	return nil
+}
+
 func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -31,19 +57,8 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if payload["settings"] == nil {
-		payload["settings"] = map[string]interface{}{}
-	} else {
-		settingsRaw := []map[string]interface{}{}
-		json.Unmarshal([]byte(payload["settings"].(string)), &settingsRaw)
 
-		settings := map[string]interface{}{}
-		for _, each := range settingsRaw {
-			settings[each["key"].(string)] = each["value"].(string)
-		}
-		fmt.Printf("--- %#v", settings)
-		payload["settings"] = settings
-	}
+	payload["settings"] = d.parseSettings(payload["settings"], map[string]interface{}{})
 	id := payload["id"].(string)
 
 	if id == "" {
@@ -131,6 +146,41 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 	return helper.CreateResult(true, nil, "")
 }
 
+func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	driver := payload["driver"].(string)
+	host := payload["host"].(string)
+	database := payload["database"].(string)
+	username := payload["username"].(string)
+	password := payload["password"].(string)
+	var settings toolkit.M = nil
+
+	if settingsRaw := d.parseSettings(payload["settings"], nil); settingsRaw != nil {
+		settings, err = toolkit.ToM(settingsRaw)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	if err := d.checkIfDriverIsSupported(driver); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = helper.Query(driver, host, database, username, password, settings).CheckIfConnected()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
 /** DATA SOURCE */
 
 func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
@@ -139,14 +189,13 @@ func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
 		return nil, err
 	}
 
-	supportedDrivers := "mongo mssql mysql oracle"
 	driver := dataConn.Get("driver", "").(string)
 	host := dataConn.Get("host", "").(string)
 	username := dataConn.Get("username", "").(string)
 	password := dataConn.Get("password", "").(string)
 
-	if !strings.Contains(supportedDrivers, driver) {
-		return nil, errors.New("this driver is not yet supported")
+	if err := d.checkIfDriverIsSupported(driver); err != nil {
+		return nil, err
 	}
 
 	data, err := helper.Query(driver, host, "", username, password).SelectAll()
