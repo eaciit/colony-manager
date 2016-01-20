@@ -1,7 +1,7 @@
 [
   {
-    "connectionId": "c1453256356255",
-    "id": "ds1453256584529",
+    "connectionId": "c1453277050828",
+    "id": "ds1453278583262",
     "metadata": [
       {
         "format": "",
@@ -25,163 +25,22 @@
         "type": "numeric"
       }
     ],
+    "metadata[0][format]": "",
+    "metadata[0][id]": "id",
+    "metadata[0][label]": "ID",
+    "metadata[0][lookup]": "",
+    "metadata[0][type]": "string",
+    "metadata[1][format]": "",
+    "metadata[1][id]": "username",
+    "metadata[1][label]": "User Name",
+    "metadata[1][lookup]": "",
+    "metadata[1][type]": "string",
+    "metadata[2][format]": "",
+    "metadata[2][id]": "age",
+    "metadata[2][label]": "Age",
+    "metadata[2][lookup]": "",
+    "metadata[2][type]": "numeric",
     "name": "test",
-    "query": ""
-  },
-  {
-    "connectionId": "c1453256372135",
-    "id": "ds1453256642702",
-    "metadata": [],
-    "name": "sdfasdfasd",
-    "query": ""
-  },
-  {
-    "connectionId": "c1453256356255",
-    "id": "ds1453258146409",
-    "metadata": [
-      {
-        "format": "",
-        "id": "id",
-        "label": "ID",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "username",
-        "label": "User Name",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "age",
-        "label": "Age",
-        "lookup": null,
-        "type": "numeric"
-      }
-    ],
-    "name": "asdfasdf",
-    "query": ""
-  },
-  {
-    "connectionId": "c1453256372135",
-    "id": "ds1453258191057",
-    "metadata": [
-      {
-        "format": "",
-        "id": "id",
-        "label": "ID",
-        "lookup": {},
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "username",
-        "label": "User Name",
-        "lookup": {},
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "age",
-        "label": "Age",
-        "lookup": {},
-        "type": "numeric"
-      }
-    ],
-    "name": "adfasdf",
-    "query": ""
-  },
-  {
-    "connectionId": "c1453256356255",
-    "id": "ds1453258657131",
-    "metadata": [
-      {
-        "format": "",
-        "id": "id",
-        "label": "ID",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "username",
-        "label": "User Name",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "age",
-        "label": "Age",
-        "lookup": null,
-        "type": "numeric"
-      }
-    ],
-    "name": "m",
-    "query": ""
-  },
-  {
-    "connectionId": "c1453256356255",
-    "id": "ds1453258798935",
-    "metadata": [
-      {
-        "format": "",
-        "id": "id",
-        "label": "ID",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "username",
-        "label": "User Name",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "age",
-        "label": "Age",
-        "lookup": null,
-        "type": "numeric"
-      }
-    ],
-    "name": "m",
-    "query[from]": "test",
-    "query[limit]": 1,
-    "query[offset]": 0,
-    "query[select]": "*",
-    "query[where]": "asdf"
-  },
-  {
-    "connectionId": "c1453256372135",
-    "id": "ds1453260980987",
-    "metadata": [
-      {
-        "format": "",
-        "id": "id",
-        "label": "ID",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "username",
-        "label": "User Name",
-        "lookup": null,
-        "type": "string"
-      },
-      {
-        "format": "",
-        "id": "age",
-        "label": "Age",
-        "lookup": null,
-        "type": "numeric"
-      }
-    ],
-    "name": "ds0001",
     "query": ""
   }
 ]

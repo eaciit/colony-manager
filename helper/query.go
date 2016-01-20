@@ -5,6 +5,10 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
+	// _ "github.com/eaciit/dbox/dbc/mssql"
+	_ "github.com/eaciit/dbox/dbc/mysql"
+	// _ "github.com/eaciit/dbox/dbc/oracle"
+	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"github.com/eaciit/toolkit"
 )
 
@@ -32,7 +36,11 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	}
 
 	wrapper.connection, wrapper.err = dbox.NewConnection(driver, wrapper.ci)
-	wrapper.connection.Connect()
+	if wrapper.err != nil {
+		return &wrapper
+	}
+
+	wrapper.err = wrapper.connection.Connect()
 	return &wrapper
 }
 
@@ -40,7 +48,7 @@ func (c *queryWrapper) CheckIfConnected() error {
 	return c.err
 }
 
-func (c *queryWrapper) SelectOne(clause *dbox.Filter) (toolkit.M, error) {
+func (c *queryWrapper) SelectOne(tableName string, clause ...*dbox.Filter) (toolkit.M, error) {
 	if c.err != nil {
 		return nil, c.err
 	}
@@ -48,7 +56,15 @@ func (c *queryWrapper) SelectOne(clause *dbox.Filter) (toolkit.M, error) {
 	connection := c.connection
 	defer connection.Close()
 
-	cursor, err := connection.NewQuery().Select().Where(clause).Cursor(nil)
+	query := connection.NewQuery().Select().Take(1)
+	if tableName != "" {
+		query = query.From(tableName)
+	}
+	if len(clause) > 0 {
+		query = query.Where(clause[0])
+	}
+
+	cursor, err := query.Cursor(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +83,7 @@ func (c *queryWrapper) SelectOne(clause *dbox.Filter) (toolkit.M, error) {
 	return data[0], nil
 }
 
-func (c *queryWrapper) Delete(clause *dbox.Filter) error {
+func (c *queryWrapper) Delete(tableName string, clause *dbox.Filter) error {
 	if c.err != nil {
 		return c.err
 	}
@@ -75,7 +91,12 @@ func (c *queryWrapper) Delete(clause *dbox.Filter) error {
 	connection := c.connection
 	defer connection.Close()
 
-	err := connection.NewQuery().Delete().Where(clause).Exec(nil)
+	query := connection.NewQuery().Delete()
+	if tableName != "" {
+		query = query.From(tableName)
+	}
+
+	err := query.Where(clause).Exec(nil)
 	if err != nil {
 		return err
 	}
@@ -83,7 +104,7 @@ func (c *queryWrapper) Delete(clause *dbox.Filter) error {
 	return nil
 }
 
-func (c *queryWrapper) SelectAll(clause ...*dbox.Filter) ([]toolkit.M, error) {
+func (c *queryWrapper) SelectAll(tableName string, clause ...*dbox.Filter) ([]toolkit.M, error) {
 	if c.err != nil {
 		return nil, c.err
 	}
@@ -92,6 +113,9 @@ func (c *queryWrapper) SelectAll(clause ...*dbox.Filter) ([]toolkit.M, error) {
 	defer connection.Close()
 
 	query := connection.NewQuery().Select()
+	if tableName != "" {
+		query = query.From(tableName)
+	}
 	if len(clause) > 0 {
 		query = query.Where(clause[0])
 	}
@@ -111,7 +135,7 @@ func (c *queryWrapper) SelectAll(clause ...*dbox.Filter) ([]toolkit.M, error) {
 	return data, nil
 }
 
-func (c *queryWrapper) Save(payload map[string]interface{}, clause ...*dbox.Filter) error {
+func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, clause ...*dbox.Filter) error {
 	if c.err != nil {
 		return c.err
 	}
@@ -119,15 +143,20 @@ func (c *queryWrapper) Save(payload map[string]interface{}, clause ...*dbox.Filt
 	connection := c.connection
 	defer connection.Close()
 
+	query := connection.NewQuery()
+	if tableName != "" {
+		query = query.From(tableName)
+	}
+
 	if len(clause) == 0 {
-		err := connection.NewQuery().Insert().Exec(toolkit.M{"data": payload})
+		err := query.Insert().Exec(toolkit.M{"data": payload})
 		if err != nil {
 			return err
 		}
 
 		return nil
 	} else {
-		err := connection.NewQuery().Update().Where(clause[0]).Exec(toolkit.M{"data": payload})
+		err := query.Update().Where(clause[0]).Exec(toolkit.M{"data": payload})
 		if err != nil {
 			return err
 		}

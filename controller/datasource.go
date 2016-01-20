@@ -40,10 +40,10 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mssql mysql oracle"
+	supportedDrivers := "mongo mysql"
 
 	if !strings.Contains(supportedDrivers, driver) {
-		return errors.New("this driver is not yet supported")
+		return errors.New("Currently tested driver is only mongo & mysql")
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	if id == "" {
 		// insert new connection
 		payload["id"] = helper.RandomIDWithPrefix("c")
-		err = helper.Query("json", "config/data-connection.json").Save(payload)
+		err = helper.Query("json", "config/data-connection.json").Save("", payload)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -72,7 +72,7 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, nil, "")
 	} else {
 		// update connection
-		err = helper.Query("json", "config/data-connection.json").Save(payload, dbox.Eq("id", id))
+		err = helper.Query("json", "config/data-connection.json").Save("", payload, dbox.Eq("id", id))
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -92,7 +92,7 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data, err := helper.Query("json", "config/data-connection.json").SelectAll()
+	data, err := helper.Query("json", "config/data-connection.json").SelectAll("")
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -110,7 +110,7 @@ func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} 
 	}
 	id := payload["id"].(string)
 
-	data, err := helper.Query("json", "config/data-connection.json").SelectOne(dbox.Eq("id", id))
+	data, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", id))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -138,7 +138,7 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 	}
 	id := payload["id"].(string)
 
-	err = helper.Query("json", "config/data-connection.json").Delete(dbox.Eq("id", id))
+	err = helper.Query("json", "config/data-connection.json").Delete("", dbox.Eq("id", id))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -184,13 +184,20 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 /** DATA SOURCE */
 
 func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
-	dataConn, err := helper.Query("json", "config/data-datasource.json").SelectOne(dbox.Eq("id", id))
+	dataDS, err := helper.Query("json", "config/data-datasource.json").SelectOne("", dbox.Eq("id", id))
+	if err != nil {
+		return nil, err
+	}
+
+	connectionId := dataDS.Get("connectionId", "").(string)
+	dataConn, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", connectionId))
 	if err != nil {
 		return nil, err
 	}
 
 	driver := dataConn.Get("driver", "").(string)
 	host := dataConn.Get("host", "").(string)
+	database := dataConn.Get("database", "").(string)
 	username := dataConn.Get("username", "").(string)
 	password := dataConn.Get("password", "").(string)
 
@@ -198,7 +205,8 @@ func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
 		return nil, err
 	}
 
-	data, err := helper.Query(driver, host, "", username, password).SelectAll()
+	table := "test"
+	data, err := helper.Query(driver, host, database, username, password).SelectOne(table)
 	if err != nil {
 		return nil, err
 	}
@@ -207,24 +215,22 @@ func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
 		return nil, errors.New("empty data !")
 	}
 
-	// metadata := []map[string]interface{}{}
-	// firs := data[0].(toolkit.M)
-	// for key, val := range firstRow {
-	// 	label := key
-	// 	eachType := "string"
+	metadata := []toolkit.M{}
+	for key, _ := range data {
+		label := key
+		eachType := "string"
 
-	// 	eachMeta := map[string]interface{}{}
-	// 	eachMeta["id"] = key
-	// 	eachMeta["label"] = label
-	// 	eachMeta["type"] = eachType
-	// 	eachMeta["format"] = ""
-	// 	eachMeta["lookup"] = nil
+		eachMeta := toolkit.M{}
+		eachMeta["id"] = key
+		eachMeta["label"] = label
+		eachMeta["type"] = eachType
+		eachMeta["format"] = ""
+		eachMeta["lookup"] = nil
 
-	// 	metadata = append(metadata, eachMeta)
-	// }
+		metadata = append(metadata, eachMeta)
+	}
 
-	return nil, nil
-	// return metadata, nil
+	return metadata, nil
 }
 
 func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
@@ -243,11 +249,17 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		{"id": "age", "label": "Age", "type": "numeric", "format": "", "lookup": nil},
 	}
 
+	metadata, err := d.fetchMetaData(id)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	_ = metadata
+
 	if id == "" {
 		// insert new datasource
 		payload["id"] = helper.RandomIDWithPrefix("ds")
 		payload["metadata"] = metadataSample
-		err = helper.Query("json", "config/data-datasource.json").Save(payload)
+		err = helper.Query("json", "config/data-datasource.json").Save("", payload)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -256,7 +268,7 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	} else {
 		// update datasource
 		payload["metadata"] = metadataSample
-		err = helper.Query("json", "config/data-datasource.json").Save(payload, dbox.Eq("id", id))
+		err = helper.Query("json", "config/data-datasource.json").Save("", payload, dbox.Eq("id", id))
 		if !helper.HandleError(err) {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -276,14 +288,14 @@ func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data, err := helper.Query("json", "config/data-datasource.json").SelectAll()
+	data, err := helper.Query("json", "config/data-datasource.json").SelectAll("")
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	for i, each := range data {
 		connectionId := each.Get("connectionId", "").(string)
-		detail, err := helper.Query("json", "config/data-connection.json").SelectOne(dbox.Eq("id", connectionId))
+		detail, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", connectionId))
 		if err != nil {
 			// just print it, not wrecking the entire function
 			helper.CreateResult(false, nil, err.Error())
@@ -309,7 +321,7 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	}
 	id := payload["id"].(string)
 
-	data, err := helper.Query("json", "config/data-datasource.json").SelectOne(dbox.Eq("id", id))
+	data, err := helper.Query("json", "config/data-datasource.json").SelectOne("", dbox.Eq("id", id))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -327,7 +339,7 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 	}
 	id := payload["id"].(string)
 
-	err = helper.Query("json", "config/data-datasource.json").Delete(dbox.Eq("id", id))
+	err = helper.Query("json", "config/data-datasource.json").Delete("", dbox.Eq("id", id))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
