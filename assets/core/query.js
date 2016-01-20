@@ -13,5 +13,23 @@ qr.changeActiveCommand = function(data){
 			$textarea.val($textarea.val() + "." + data.key() + "(" + data.value() + ")");
 		else
 			$textarea.val(data.key() + "(" + data.value() + ")");
+
+		$textarea.highlightTextarea("highlight")
 	};
 }
+
+$(function () {
+	var groupdbox = _.groupBy(tempDataCommand, function(value){
+        return value.key;
+    }), arrdbox = new Array();
+    $.each(groupdbox, function( key, value ) {
+		arrdbox.push(key);
+	});
+	$('#textquery').highlightTextarea({
+			words: {
+			color: '#ADF0FF',
+			caseSensitive: false,
+			words: arrdbox
+		},
+	});
+});
