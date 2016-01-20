@@ -137,6 +137,10 @@ ds.saveNewConnection = function () {
 	});
 };
 ds.testConnection = function () {
+	if (!app.isFormValid("#form-add-connection")) {
+		return;
+	}
+	
 	var param = ko.mapping.toJS(ds.config);
 	param.settings = JSON.stringify(param.settings);
 	
@@ -215,8 +219,6 @@ ds.saveNewDataSource = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
-
-		ds.backToFrontPage();
 	});
 }
 ds.populateGridDataSource = function () {

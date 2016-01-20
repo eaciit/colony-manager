@@ -2,18 +2,6 @@
   {
     "database": "test",
     "driver": "mongo",
-    "host": "localhost",
-    "id": "c1453271246170",
-    "name": "mongo local",
-    "password": "",
-    "settings": {
-      "": ""
-    },
-    "username": "root"
-  },
-  {
-    "database": "test",
-    "driver": "mongo",
     "host": "192.168.0.200",
     "id": "c1453274964263",
     "name": "mongo 200",
@@ -21,7 +9,7 @@
     "settings": {
       "": ""
     },
-    "username": "root"
+    "username": ""
   },
   {
     "database": "test",
@@ -34,5 +22,17 @@
       "": ""
     },
     "username": "root"
+  },
+  {
+    "database": "test",
+    "driver": "mongo",
+    "host": "localhost",
+    "id": "c1453277050828",
+    "name": "mongo local",
+    "password": "",
+    "settings": {
+      "": ""
+    },
+    "username": ""
   }
 ]

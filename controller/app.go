@@ -12,7 +12,7 @@ type App struct {
 
 var (
 	LayoutFile   string   = "views/layout.html"
-	IncludeFiles []string = []string{"views/_head.html", "views/_nav.html", "views/_header.html"}
+	IncludeFiles []string = []string{"views/_head.html", "views/_nav.html", "views/_header.html", "views/_loader.html"}
 	AppViewPath  string   = "/"
 )
 
