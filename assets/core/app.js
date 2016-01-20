@@ -79,6 +79,7 @@ app.isFormValid = function (selector) {
     var $validator = $(selector).data("kendoValidator");
     return ($validator.validate());
 };
+app.isLoading = ko.observable(false);
 
 $(function () {
 	app.prepare();
