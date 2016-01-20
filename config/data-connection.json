@@ -1,29 +1,20 @@
 [
   {
     "driver": "MongoDb",
-    "host": "asdfas",
-    "id": "c1453178491112",
-    "name": "asdfasdfasdf",
+    "host": "localhost",
+    "id": "c1453256356255",
+    "name": "Conn 1",
     "password": "",
     "settings": "",
-    "username": "dfasdfasdfasdf"
-  },
-  {
-    "driver": "SQLServer",
-    "host": "sdfadf",
-    "id": "c1453181732861",
-    "name": "asdfasdf",
-    "password": "asdfasdf",
-    "settings": "asdfasasdfasdf",
-    "username": "asdfasdf"
+    "username": "root"
   },
   {
     "driver": "MySQL",
-    "host": "sdfsdfsdf",
-    "id": "c1453189803890",
-    "name": "qweqweqweqwe",
-    "password": "sdfsdfs",
-    "settings": "dfsdfsdfsdf",
-    "username": "sdfsdf"
+    "host": "192.168.0.200",
+    "id": "c1453256372135",
+    "name": "Conn 200",
+    "password": "Password.1",
+    "settings": "",
+    "username": "root"
   }
 ]

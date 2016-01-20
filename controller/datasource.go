@@ -18,7 +18,6 @@ func CreateDataSourceController(s *knot.Server) *DataSourceController {
 
 /** CONNECTION LIST */
 
-// not yet using helper.Save
 func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -164,7 +163,7 @@ func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data, err := helper.Query("json", "config/data-connection.json").SelectAll()
+	data, err := helper.Query("json", "config/data-datasource.json").SelectAll()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -196,7 +195,7 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	}
 	id := payload["id"].(string)
 
-	data, err := helper.Query("json", "config/data-connection.json").SelectOne(dbox.Eq("id", id))
+	data, err := helper.Query("json", "config/data-datasource.json").SelectOne(dbox.Eq("id", id))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -214,7 +213,7 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 	}
 	id := payload["id"].(string)
 
-	err = helper.Query("json", "config/data-connection.json").Delete(dbox.Eq("id", id))
+	err = helper.Query("json", "config/data-datasource.json").Delete(dbox.Eq("id", id))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
