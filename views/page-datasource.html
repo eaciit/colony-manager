@@ -1,5 +1,5 @@
 <script src="/res/core/datasource.js"></script>
-
+<script src="/res/core/query.js"></script>
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
@@ -205,27 +205,15 @@
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<div class="row form-datasource" data-bind="with: query">
-			        <div class="col-md-4">
-			        	<label class="col-md-3 filter-label">Select</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="queryselect" placeholder="Type query select here" data-bind="value: select">
-							<span class="k-invalid-msg" data-for="queryselect"></span>
-			        	</div>
+				<div class="row form-datasource" data-bind="with: viewModel.query">
+			        <div class="col-md-2 nav-command">
+			        	<label class="title-command">Commands</label>
+			        	<ul class="nav" data-bind="foreach: datacommands">
+							<li><a href="#" data-bind="css: { 'active': (viewModel.query.command() == $data.key) }, click: viewModel.query.changeActiveCommand($data)"><span class="fa fa-caret-right"></span>&nbsp;&nbsp;<span data-bind="text: $data.key"></span></a></li>
+						</ul>
 			        </div>
-			        <div class="col-md-4">
-			        	<label class="col-md-3 filter-label">From</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="queryfrom" placeholder="Type query from here" data-bind="value: from">
-							<span class="k-invalid-msg" data-for="queryfrom"></span>
-			        	</div>
-			        </div>
-			        <div class="col-md-4">
-			        	<label class="col-md-3 filter-label">Where</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="querywhere" placeholder="Type query where here" data-bind="value: where">
-							<span class="k-invalid-msg" data-for="querywhere"></span>
-			        	</div>
+			        <div class="col-md-10 area-command">
+			        	<textarea placeholder="Input query commands" id="textquery"></textarea>
 			        </div>
 				</div>
 		    </div>
