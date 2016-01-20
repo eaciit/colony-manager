@@ -36,6 +36,10 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	return &wrapper
 }
 
+func (c *queryWrapper) CheckIfConnected() error {
+	return c.err
+}
+
 func (c *queryWrapper) SelectOne(clause *dbox.Filter) (toolkit.M, error) {
 	if c.err != nil {
 		return nil, c.err
