@@ -199,6 +199,11 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	// oldMetadata := dataDS.Get("metadata", []toolkit.M{}).([]toolkit.M)
+	// if len(oldMetadata) > 0 {
+	// 	return helper.CreateResult(true, dataDS, nil)
+	// }
+
 	connectionId := dataDS.Get("connectionId", "").(string)
 	dataConn, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", connectionId))
 	if err != nil {
@@ -230,10 +235,21 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		eachMeta["label"] = label
 		eachMeta["type"], _ = helper.GetBetterType(val)
 		eachMeta["format"] = ""
-		eachMeta["lookup"] = nil
+		eachMeta["lookup"] = map[string]interface{}{
+			"dataSourceId": "",
+			"lookupFields": []interface{}{},
+		}
 
 		metadata = append(metadata, eachMeta)
 	}
+	// ds.templateLookup = {
+	// 	dataSourceOriginId: "",
+	// 	idField: "",
+
+	// 	dataSourceId: "",
+	// 	displayField: "",
+	// 	lookupFields: [],
+	// };
 
 	dataDS["metadata"] = metadata
 	err = helper.Query("json", "config/data-datasource.json").Save("", dataDS, dbox.Eq("id", id))
@@ -259,6 +275,18 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		"name":         payload["name"].(string),
 		"query":        payload["query"].(string),
 		"metadata":     []interface{}{},
+	}
+
+	if payload["metadata"] != nil {
+		metadataString := payload["metadata"].(string)
+
+		if metadataString != "" {
+			metadata := []map[string]interface{}{}
+			json.Unmarshal([]byte(metadataString), &metadata)
+			fmt.Println("-----", metadata)
+
+			item["metadata"] = metadata
+		}
 	}
 
 	if id == "" {

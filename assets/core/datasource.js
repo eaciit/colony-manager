@@ -35,28 +35,31 @@ ds.templateQuery = {
 	select: "",
 	from: "",
 	where: "",
-}
+};
 ds.templateField = {
 	id: "",
 	label: "",
 	type: "",
 	format: "",
 	lookup : {},
-}
+};
 ds.templateLookup = {
-	dataSourceID : "",
 	idField: "",
+
+	dataSourceId: "",
 	displayField: "",
 	lookupFields: [],
-}
+};
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
+ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
 ds.query = ko.mapping.fromJS(ds.templateQuery);
 ds.field = ko.mapping.fromJS(ds.templateField);
 ds.lookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
+ds.lookupFields = ko.observableArray([]);
 ds.connectionListColumns = ko.observableArray([
 	{ field: "id", title: "ID", width: 110 },
 	{ field: "name", title: "Connection Name" },
@@ -96,8 +99,51 @@ ds.metadataColumns = ko.observableArray([
 	}, width: 150, attributes: { style: "text-align: center;" } },
 ]);
 ds.showMetadataLookup = function (id) {
-	console.log(id);
-	alert("not yet implemented");
+	$("#modal-lookup").modal("show");
+
+	var row = ko.mapping.toJS(Lazy(ds.confDataSource.metadata()).find(function (e) {
+		return e.id() == id;
+	}));
+
+	var item = $.extend(true, ds.templateLookup, {
+		idField: row.id,
+
+		dataSourceId: row.lookup.dataSourceId,
+		displayField: row.label,
+		lookupFields: row.lookup.lookupFields
+	});
+
+	console.log("selected lookup", item, row);
+	ko.mapping.fromJS(item, ds.confLookup);
+
+	// $("[name='lookup-datasource']").data("kendoDropDownList").trigger("change");
+	// setTimeout(function () {
+	// 	$("[name='lookup-fields']").data("kendoMultiSelect").value(row.lookup.lookupFields);
+	// }, 2000);
+};
+ds.changeLookupDataSource = function () {
+	ds.lookupFields([]);
+
+	var dataSourceId = this.value();
+	app.ajaxPost("/datasource/selectdatasource", { id: dataSourceId }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.lookupFields(res.data.metadata);
+	});
+};
+ds.saveLookup = function () {
+	var metadata = ko.mapping.toJS(ds.confDataSource.metadata());
+	var lookup = ko.mapping.toJS(ds.confLookup);
+
+	var row = Lazy(metadata).find({ id: lookup.idField });
+	var index = metadata.indexOf(row);
+
+	ds.confDataSource.metadata()[index].lookup.dataSourceId(lookup.dataSourceId);
+	ds.confDataSource.metadata()[index].lookup.lookupFields(lookup.lookupFields);
+
+	$("#modal-lookup").modal("hide");
 };
 ds.changeActiveSection = function (section) {
 	return function (self, e) {
@@ -231,12 +277,15 @@ ds.saveNewDataSource = function(){
 	}
 	
 	var param = ko.mapping.toJS(ds.confDataSource);
+	param.metadata = JSON.stringify(param.metadata);
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
-		ds.fetchDataSourceMetaData();
+		if (param.id == "") {
+			ds.fetchDataSourceMetaData();
+		}
 	});
 }
 ds.populateGridDataSource = function () {
