@@ -15,42 +15,46 @@ ds.templateConfigSetting = {
 	value: ""
 };
 ds.templateConfig = { 
-	id: "",
-	name: "",
-	driver: "",
-	host: "",
-	database: "",
-	username: "",
-	password: "",
-	settings: []
+	_id: "",
+	ConnectionName: "",
+	Driver: "",
+	Host: "",
+	Database: "",
+	UserName: "",
+	Password: "",
+	Settings: []
 };
 ds.templateDataSource = {
-	id: "",
-	connectionId: "",
-	name: "",
-	query : [],
-	metadata: [],
-},
+	_id: "",
+	DataSourceName: "",
+	ConnectionID: "",
+	QueryInfo : [],
+	MetaData: [],
+};
 ds.templateQuery = {
 	select: "",
 	from: "",
 	where: "",
 };
 ds.templateField = {
-	id: "",
-	label: "",
-	type: "",
-	format: "",
-	lookup : {},
+	_id: "",
+	Label: "",
+	Type: "",
+	Format: "",
+	Lookup : {},
 };
+// ID     string
+// 	Label  string
+// 	Type   string
+// 	Format string
+// 	Lookup *Lookup
 ds.templateLookup = {
-	idField: "",
-
-	dataSourceId: "",
-	displayField: "",
-	lookupFields: [],
+	_id: "",
+	DataSourceID: "",
+	IDField: "",
+	DisplayField: "",
+	LookupFields: [],
 };
-
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
@@ -61,24 +65,26 @@ ds.connectionListData = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
 ds.lookupFields = ko.observableArray([]);
 ds.connectionListColumns = ko.observableArray([
-	{ field: "id", title: "ID", width: 110 },
-	{ field: "name", title: "Connection Name" },
-	{ field: "driver", title: "Driver", width: 90 },
-	{ field: "host", title: "Host" },
-	{ field: "database", title: "Database" },
-	{ field: "username", title: "User Name" },
+	{ field: "_id", title: "ID", width: 110 },
+	{ field: "ConnectionName", title: "Connection Name" },
+	{ field: "Driver", title: "Driver", width: 90 },
+	{ field: "Host", title: "Host" },
+	{ field: "Database", title: "Database" },
+	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
-	{ field:"id", title:"ID" },
-	{ field:"name", title:"Data Source Name" },
-	{ field:"connectionText", title:"Connection" },
-	{ field:"query", title:"Query" },
+	{ field: "_id", title: "ID" },
+	{ field: "DataSourceName", title: "Data Source Name" },
+	{ field: "ConnectionID", title: "Connection" },
+	{ field: "QueryInfo", title: "Query", template: function (d) {
+		return "test"
+	} },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d.id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -90,10 +96,10 @@ ds.settingsColumns = ko.observableArray([
 	} }
 ]);
 ds.metadataColumns = ko.observableArray([
-	{ field: "id", title: "ID" },
-	{ field: "label", title: "Label" },
-	{ field: "type", title: "Type" },
-	{ field: "format", title: "Format" },
+	{ field: "_id", title: "ID" },
+	{ field: "Label", title: "Label" },
+	{ field: "Type", title: "Type" },
+	{ field: "Format", title: "Format" },
 	{ title: "", template: function (d) {
 		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d.id + "\")'><span class='glyphicon glyphicon-detail'></span> Lookup</button>";
 	}, width: 150, attributes: { style: "text-align: center;" } },
@@ -101,7 +107,7 @@ ds.metadataColumns = ko.observableArray([
 ds.showMetadataLookup = function (id) {
 	$("#modal-lookup").modal("show");
 
-	var row = ko.mapping.toJS(Lazy(ds.confDataSource.metadata()).find(function (e) {
+	var row = ko.mapping.toJS(Lazy(ds.confDataSource.MetaData()).find(function (e) {
 		return e.id() == id;
 	}));
 
@@ -125,7 +131,7 @@ ds.changeLookupDataSource = function () {
 	ds.lookupFields([]);
 
 	var dataSourceId = this.value();
-	app.ajaxPost("/datasource/selectdatasource", { id: dataSourceId }, function (res) {
+	app.ajaxPost("/datasource/selectdatasource", { _id: dataSourceId }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -134,14 +140,14 @@ ds.changeLookupDataSource = function () {
 	});
 };
 ds.saveLookup = function () {
-	var metadata = ko.mapping.toJS(ds.confDataSource.metadata());
+	var metadata = ko.mapping.toJS(ds.confDataSource.MetaData());
 	var lookup = ko.mapping.toJS(ds.confLookup);
 
 	var row = Lazy(metadata).find({ id: lookup.idField });
 	var index = metadata.indexOf(row);
 
-	ds.confDataSource.metadata()[index].lookup.dataSourceId(lookup.dataSourceId);
-	ds.confDataSource.metadata()[index].lookup.lookupFields(lookup.lookupFields);
+	ds.confDataSource.MetaData()[index].Lookup.DataSourceID(lookup.DataSourceID);
+	ds.confDataSource.MetaData()[index].Lookup.LookupFields(lookup.LookupFields);
 
 	$("#modal-lookup").modal("hide");
 };
@@ -160,12 +166,12 @@ ds.openConnectionForm = function () {
 ds.addSettings = function () {
 	var setting = $.extend(true, {}, ds.templateConfigSetting);
 	setting.id = "s" + moment.now();
-	ds.config.settings.push(setting);
+	ds.config.Settings.push(setting);
 };
 ds.removeSetting = function (each) {
 	return function () {
 		console.log(each);
-		ds.config.settings.remove(each);
+		ds.config.Settings.remove(each);
 	};
 };
 ds.backToFrontPage = function () {
@@ -189,7 +195,7 @@ ds.saveNewConnection = function () {
 	}
 	
 	var param = ko.mapping.toJS(ds.config);
-	param.settings = JSON.stringify(param.settings);
+	param.Settings = JSON.stringify(param.Settings);
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -204,7 +210,7 @@ ds.testConnection = function () {
 	}
 	
 	var param = ko.mapping.toJS(ds.config);
-	param.settings = JSON.stringify(param.settings);
+	param.Settings = JSON.stringify(param.Settings);
 	
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
@@ -219,8 +225,8 @@ ds.testConnection = function () {
 		timeout: 5000
 	});
 };
-ds.editConnection = function (id) {
-	app.ajaxPost("/datasource/selectconnection", { id: id }, function (res) {
+ds.editConnection = function (_id) {
+	app.ajaxPost("/datasource/selectconnection", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -229,13 +235,13 @@ ds.editConnection = function (id) {
 		ko.mapping.fromJS(res.data, ds.config);
 	});
 };
-ds.removeConnection = function (id) {
-	var yes = confirm("Are you sure want to delete connection " + id + " ?");
+ds.removeConnection = function (_id) {
+	var yes = confirm("Are you sure want to delete connection " + _id + " ?");
 	if (!yes) {
 		return;
 	}
 
-	app.ajaxPost("/datasource/removeconnection", { id: id }, function (res) {
+	app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -243,13 +249,13 @@ ds.removeConnection = function (id) {
 		ds.backToFrontPage();
 	});
 };
-ds.removeDataSource = function(id){
+ds.removeDataSource = function (_id) {
 	var yes = confirm("Are you sure want to delete connection " + id + " ?");
 	if (!yes) {
 		return;
 	}
 
-	app.ajaxPost("/datasource/removedatasource", { id: id }, function (res) {
+	app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -257,8 +263,8 @@ ds.removeDataSource = function(id){
 		ds.backToFrontPage();
 	});
 }
-ds.editDataSource = function(id){
-	app.ajaxPost("/datasource/selectdatasource", { id: id }, function (res) {
+ds.editDataSource = function (_id) {
+	app.ajaxPost("/datasource/selectdatasource", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -267,7 +273,7 @@ ds.editDataSource = function(id){
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		
 		setTimeout(function () {
-			$("select.data-connection").data("kendoDropDownList").value(ds.confDataSource.connectionId());
+			$("select.data-connection").data("kendoDropDownList").value(ds.confDataSource.ConnectionID());
 		}, 1000);
 	});
 }
@@ -304,7 +310,7 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateLookup, ds.lookup);
 };
 ds.fetchDataSourceMetaData = function () {
-	var param = { id: ds.confDataSource.id() };
+	var param = { _id: ds.confDataSource._id() };
 	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
 		if (!app.isFine(res)) {
 			return;

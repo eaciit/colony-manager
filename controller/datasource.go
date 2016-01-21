@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/dbox"
+	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"strings"
@@ -33,6 +33,20 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 
 	settings := map[string]interface{}{}
 	for _, each := range settingsRaw {
+		if each["key"] == nil {
+			continue
+		}
+		if each["key"].(string) == "" {
+			continue
+		}
+
+		if each["value"] == nil {
+			continue
+		}
+		if each["value"].(string) == "" {
+			continue
+		}
+
 		settings[each["key"].(string)] = each["value"].(string)
 	}
 
@@ -59,29 +73,27 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	payload["settings"] = d.parseSettings(payload["settings"], map[string]interface{}{})
-	id := payload["id"].(string)
+	o := new(colonycore.Connection)
+	o.ID = payload["_id"].(string)
+	o.ConnectionName = payload["ConnectionName"].(string)
+	o.Driver = payload["Driver"].(string)
+	o.Host = payload["Host"].(string)
+	o.Database = payload["Database"].(string)
+	o.UserName = payload["UserName"].(string)
+	o.Password = payload["Password"].(string)
+	o.Settings = d.parseSettings(payload["Settings"], map[string]interface{}{}).(map[string]interface{})
 
-	if id == "" {
-		// insert new connection
-		payload["id"] = helper.RandomIDWithPrefix("c")
-		err = helper.Query("json", "config/data-connection.json").Save("", payload)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, nil, "")
-	} else {
-		// update connection
-		err = helper.Query("json", "config/data-connection.json").Save("", payload, dbox.Eq("id", id))
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, nil, "")
+	if o.ID == "" {
+		// set new ID while inserting fresh new data
+		o.ID = helper.RandomIDWithPrefix("c")
 	}
 
-	return helper.CreateResult(false, nil, "nothing changes")
+	err = colonycore.Save(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
 }
 
 func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
@@ -93,10 +105,17 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data, err := helper.Query("json", "config/data-connection.json").SelectAll("")
+	data := []colonycore.Connection{}
+	cursor, err := colonycore.Find(new(colonycore.Connection), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
 }
@@ -109,22 +128,10 @@ func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
+	id := payload["_id"].(string)
 
-	data, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", id))
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	settings := []map[string]interface{}{}
-	settingsRaw := data.Get("settings", map[string]interface{}{}).(map[string]interface{})
-	for key, value := range settingsRaw {
-		settings = append(settings, map[string]interface{}{
-			"key":   key,
-			"value": value.(string),
-		})
-	}
-	data["settings"] = settings
+	data := new(colonycore.Connection)
+	err = colonycore.Get(data, id)
 
 	return helper.CreateResult(true, data, "")
 }
@@ -137,9 +144,11 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
+	id := payload["_id"].(string)
 
-	err = helper.Query("json", "config/data-connection.json").Delete("", dbox.Eq("id", id))
+	o := new(colonycore.Connection)
+	o.ID = id
+	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -156,14 +165,14 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	driver := payload["driver"].(string)
-	host := payload["host"].(string)
-	database := payload["database"].(string)
-	username := payload["username"].(string)
-	password := payload["password"].(string)
+	driver := payload["Driver"].(string)
+	host := payload["Host"].(string)
+	database := payload["Database"].(string)
+	username := payload["UserName"].(string)
+	password := payload["Password"].(string)
 	var settings toolkit.M = nil
 
-	if settingsRaw := d.parseSettings(payload["settings"], nil); settingsRaw != nil {
+	if settingsRaw := d.parseSettings(payload["Settings"], nil); settingsRaw != nil {
 		settings, err = toolkit.ToM(settingsRaw)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
@@ -192,67 +201,47 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
+	id := payload["_id"].(string)
 
-	dataDS, err := helper.Query("json", "config/data-datasource.json").SelectOne("", dbox.Eq("id", id))
+	dataDS := new(colonycore.DataSource)
+	err = colonycore.Get(dataDS, id)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// oldMetadata := dataDS.Get("metadata", []toolkit.M{}).([]toolkit.M)
-	// if len(oldMetadata) > 0 {
-	// 	return helper.CreateResult(true, dataDS, nil)
-	// }
-
-	connectionId := dataDS.Get("connectionId", "").(string)
-	dataConn, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", connectionId))
+	dataConn := new(colonycore.Connection)
+	err = colonycore.Get(dataConn, dataDS.ConnectionID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	driver := dataConn.Get("driver", "").(string)
-	host := dataConn.Get("host", "").(string)
-	database := dataConn.Get("database", "").(string)
-	username := dataConn.Get("username", "").(string)
-	password := dataConn.Get("password", "").(string)
-
-	if err := d.checkIfDriverIsSupported(driver); err != nil {
+	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	_ = database
-	conn := helper.Query(driver, host, "msig", username, password)
-	data, err := conn.SelectOne("Financial")
+
+	conn := helper.Query(dataConn.Driver, dataConn.Host, "test", dataConn.UserName, dataConn.Password)
+	data, err := conn.SelectOne("test")
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	metadata := []toolkit.M{}
+	metadata := []*colonycore.FieldInfo{}
 	for key, val := range data {
 		label := key
 
-		eachMeta := toolkit.M{}
-		eachMeta["id"] = key
-		eachMeta["label"] = label
-		eachMeta["type"], _ = helper.GetBetterType(val)
-		eachMeta["format"] = ""
-		eachMeta["lookup"] = map[string]interface{}{
-			"dataSourceId": "",
-			"lookupFields": []interface{}{},
-		}
+		meta := new(colonycore.FieldInfo)
+		meta.ID = key
+		meta.Label = label
+		meta.Type, _ = helper.GetBetterType(val)
+		meta.Format = ""
+		meta.Lookup = new(colonycore.Lookup)
 
-		metadata = append(metadata, eachMeta)
+		metadata = append(metadata, meta)
 	}
-	// ds.templateLookup = {
-	// 	dataSourceOriginId: "",
-	// 	idField: "",
 
-	// 	dataSourceId: "",
-	// 	displayField: "",
-	// 	lookupFields: [],
-	// };
+	dataDS.MetaData = metadata
 
-	dataDS["metadata"] = metadata
-	err = helper.Query("json", "config/data-datasource.json").Save("", dataDS, dbox.Eq("id", id))
+	err = colonycore.Save(dataDS)
 	if !helper.HandleError(err) {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -268,47 +257,36 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
-	item := map[string]interface{}{
-		"id":           payload["id"].(string),
-		"connectionId": payload["connectionId"].(string),
-		"name":         payload["name"].(string),
-		"query":        payload["query"].(string),
-		"metadata":     []interface{}{},
-	}
 
-	if payload["metadata"] != nil {
-		metadataString := payload["metadata"].(string)
+	o := new(colonycore.DataSource)
+	o.ID = payload["_id"].(string)
+	o.DataSourceName = payload["DataSourceName"].(string)
+	o.ConnectionID = payload["ConnectionID"].(string)
+	o.QueryInfo = toolkit.M{} //payload["DataSourceName"].(string)
+	o.MetaData = []*colonycore.FieldInfo{}
+
+	if payload["Metadata"] != nil {
+		metadataString := payload["Metadata"].(string)
 
 		if metadataString != "" {
-			metadata := []map[string]interface{}{}
+			metadata := []*colonycore.FieldInfo{}
 			json.Unmarshal([]byte(metadataString), &metadata)
-			fmt.Println("-----", metadata)
 
-			item["metadata"] = metadata
+			o.MetaData = metadata
 		}
 	}
 
-	if id == "" {
-		// insert new datasource
-		item["id"] = helper.RandomIDWithPrefix("ds")
-		err = helper.Query("json", "config/data-datasource.json").Save("", item)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, item["metadata"], "")
-	} else {
-		// update datasource
-		err = helper.Query("json", "config/data-datasource.json").Save("", item, dbox.Eq("id", id))
-		if !helper.HandleError(err) {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, nil, "")
+	if o.ID == "" {
+		// set new ID while inserting fresh new data
+		o.ID = helper.RandomIDWithPrefix("ds")
 	}
 
-	return helper.CreateResult(false, nil, "")
+	err = colonycore.Save(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, o.MetaData, "")
 }
 
 func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
@@ -320,25 +298,17 @@ func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data, err := helper.Query("json", "config/data-datasource.json").SelectAll("")
+	cursor, err := colonycore.Find(new(colonycore.DataSource), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	for i, each := range data {
-		connectionId := each.Get("connectionId", "").(string)
-		detail, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", connectionId))
-		if err != nil {
-			// just print it, not wrecking the entire function
-			helper.CreateResult(false, nil, err.Error())
-		}
-
-		data[i].Set("connectionText", "")
-		if detail != nil {
-			text := fmt.Sprintf("%s (%s)", detail.Get("name", "").(string), connectionId)
-			data[i].Set("connectionText", text)
-		}
+	data := []colonycore.DataSource{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
+	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
 }
@@ -351,9 +321,10 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
+	id := payload["_id"].(string)
 
-	data, err := helper.Query("json", "config/data-datasource.json").SelectOne("", dbox.Eq("id", id))
+	data := new(colonycore.DataSource)
+	err = colonycore.Get(data, id)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -369,9 +340,11 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
+	id := payload["_id"].(string)
 
-	err = helper.Query("json", "config/data-datasource.json").Delete("", dbox.Eq("id", id))
+	o := new(colonycore.DataSource)
+	o.ID = id
+	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
