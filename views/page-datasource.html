@@ -1,10 +1,8 @@
 <link href="/res/js/tokeninput/token-input.css" rel="stylesheet">
 <link href="/res/js/tokeninput/token-input-facebook.css" rel="stylesheet">
-<link href="/res/js/modaljs/jquery.modal.css" type="text/css" rel="stylesheet" />
 <script src="/res/js/tokeninput/jquery.tokeninput.js"></script>
 <script src="/res/core/datasource.js"></script>
 <script src="/res/core/query.js"></script>
-<script type="text/javascript" src="/res/js/modaljs/jquery.modal.js"></script>
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
@@ -282,4 +280,42 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal Query -->
+<div class="modal fade modal-query" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content" data-bind="with:viewModel.query">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Query</h4>
+			</div>
+			<div class="modal-body">
+				<input type="text" class="form-control input-sm" placeholder="Input type here !!" data-bind="value:paramQuery"/>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>
+				<button type="button" class="btn btn-primary" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Where -->
+<div class="modal fade modal-query-where" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Query Where</h4>
+			</div>
+			<div class="modal-body">
+				<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: viewModel.query.datawhere, dataValueField: 'key', dataTextField: 'type', value: ds.confLookup.dataSourceId, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
+				<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> Save</button>
+			</div>
+		</div>
+	</div>
 </div>
