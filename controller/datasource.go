@@ -258,15 +258,21 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	queryInfo := toolkit.M{}
+	err = json.Unmarshal([]byte(payload["QueryInfo"].(string)), &queryInfo)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	o := new(colonycore.DataSource)
 	o.ID = payload["_id"].(string)
 	o.DataSourceName = payload["DataSourceName"].(string)
 	o.ConnectionID = payload["ConnectionID"].(string)
-	o.QueryInfo = toolkit.M{} //payload["DataSourceName"].(string)
+	o.QueryInfo = queryInfo
 	o.MetaData = []*colonycore.FieldInfo{}
 
-	if payload["Metadata"] != nil {
-		metadataString := payload["Metadata"].(string)
+	if payload["MetaData"] != nil {
+		metadataString := payload["MetaData"].(string)
 
 		if metadataString != "" {
 			metadata := []*colonycore.FieldInfo{}
