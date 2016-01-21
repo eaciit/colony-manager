@@ -36,18 +36,6 @@ ds.templateQuery = {
 	from: "",
 	where: "",
 };
-ds.templateField = {
-	_id: "",
-	Label: "",
-	Type: "",
-	Format: "",
-	Lookup : {},
-};
-// ID     string
-// 	Label  string
-// 	Type   string
-// 	Format string
-// 	Lookup *Lookup
 ds.templateLookup = {
 	_id: "",
 	DataSourceID: "",
@@ -59,7 +47,6 @@ ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
 ds.query = ko.mapping.fromJS(ds.templateQuery);
-ds.field = ko.mapping.fromJS(ds.templateField);
 ds.lookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
@@ -217,11 +204,9 @@ ds.testConnection = function () {
 			return;
 		}
 
-		//alert("Connected !");
-		toastr["success"]("", "Connected")
+		toastr["success"]("", "Connected");
 	}, function (a, b, c) {
-		//alert("ERROR: " + a.statusText);
-		toastr["error"]("", "ERROR: " + a.statusText)
+		toastr["error"]("", "ERROR: " + a.statusText);
 		console.log(a, b, c);
 	}, {
 		timeout: 5000
@@ -252,7 +237,7 @@ ds.removeConnection = function (_id) {
 	});
 };
 ds.removeDataSource = function (_id) {
-	var yes = confirm("Are you sure want to delete connection " + id + " ?");
+	var yes = confirm("Are you sure want to delete connection " + _id + " ?");
 	if (!yes) {
 		return;
 	}
@@ -308,7 +293,6 @@ ds.populateGridDataSource = function () {
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
-	ko.mapping.fromJS(ds.templateField, ds.field);
 	ko.mapping.fromJS(ds.templateLookup, ds.lookup);
 };
 ds.fetchDataSourceMetaData = function () {
@@ -320,10 +304,10 @@ ds.fetchDataSourceMetaData = function () {
 
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 	}, function (a) {
-		alert(a.responseText);
+		toastr["error"]("", "ERROR: " + a.statusText);
 	}, { 
 		timout: 3000 
-	})
+	});
 };
 
 $(function () {
