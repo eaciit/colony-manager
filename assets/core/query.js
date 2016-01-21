@@ -43,7 +43,6 @@ qr.changeActiveCommand = function(data){
 		$(e.currentTarget).parent().siblings().removeClass("active"), $textarea = $("#textquery");
 		qr.command(data.id());
 		qr.paramQuery("");
-		console.log(data.key());
 		if (data.type() != "" && data.key() != "where"){
 			$(".modal-query").modal("show");
 			qr.chooseQuery("Show");
@@ -67,13 +66,18 @@ qr.changeActiveCommand = function(data){
 		} else {
 			var dataselect = ko.mapping.toJS(data);
 			dataselect.id = qr.seqCommand();
-			$('#textquery').tokenInput("add", dataselect);
 			qr.chooseQuery("Hide");
+			$('#textquery').tokenInput("add", dataselect);
 		}
 	};
 }
 qr.queryAdd = function(item){
 	qr.paramQuery("");
+	var dataquery = {
+		id: item.id,
+		key: item.key,
+		value: item.value,
+	}
 	if (item.type != "" && item.key != "where" && qr.chooseQuery() == ""){
 		$('#textquery').tokenInput("remove", {id: 0});
 		$(".modal-query").modal("show");
@@ -83,14 +87,10 @@ qr.queryAdd = function(item){
 		$(".modal-query-where").modal("show");
 		qr.chooseQuery("Show");
 	} else if (item.type == ""){
-		item.id = qr.seqCommand();
+		dataquery.id = qr.seqCommand();
+		qr.valueCommand.push(dataquery);
+		qr.seqCommand(qr.seqCommand()+1);
 	} else {
-		var dataquery = {
-			id: item.id,
-			key: item.key,
-			value: item.value,
-		}
-		console.log("asdasdsa")
 		qr.valueCommand.push(dataquery);
 		qr.seqCommand(qr.seqCommand()+1);
 	}
@@ -102,7 +102,6 @@ qr.querySave = function(){
 	var dataselect = qr.activeQuery();
 	dataselect.value = qr.paramQuery();
 	dataselect.id = qr.seqCommand();
-	console.log(dataselect);
 	$('#textquery').tokenInput("add", dataselect);
 	$(".modal-query").modal("hide");
 }
