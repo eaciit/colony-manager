@@ -28,31 +28,25 @@ ds.templateDataSource = {
 	id: "",
 	connectionId: "",
 	name: "",
-	query : "",
+	query : [],
 	metadata: [],
-},
-ds.templateQuery = {
-	select: "",
-	from: "",
-	where: "",
-}
+};
 ds.templateField = {
 	id: "",
 	label: "",
 	type: "",
 	format: "",
 	lookup : {},
-}
+};
 ds.templateLookup = {
 	dataSourceID : "",
 	idField: "",
 	displayField: "",
 	lookupFields: [],
-}
+};
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
-ds.query = ko.mapping.fromJS(ds.templateQuery);
 ds.field = ko.mapping.fromJS(ds.templateField);
 ds.lookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
@@ -216,8 +210,9 @@ ds.saveNewDataSource = function(){
 	if (!app.isFormValid(".form-datasource")) {
 		return;
 	}
-	
 	var param = ko.mapping.toJS(ds.confDataSource);
+	param.query = ko.mapping.toJS(viewModel.query.valueCommand());
+	// var param = ko.mapping.toJS(ds.confDataSource);
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
