@@ -86,6 +86,19 @@ ds.settingsColumns = ko.observableArray([
 		return "<input style='width: 100%;'>";
 	} }
 ]);
+ds.metadataColumns = ko.observableArray([
+	{ field: "id", title: "ID" },
+	{ field: "label", title: "Label" },
+	{ field: "type", title: "Type" },
+	{ field: "format", title: "Format" },
+	{ title: "", template: function (d) {
+		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d.id + "\")'><span class='glyphicon glyphicon-detail'></span> Lookup</button>";
+	}, width: 150, attributes: { style: "text-align: center;" } },
+]);
+ds.showMetadataLookup = function (id) {
+	console.log(id);
+	alert("not yet implemented");
+};
 ds.changeActiveSection = function (section) {
 	return function (self, e) {
 		$(e.currentTarget).parent().siblings().removeClass("active");
@@ -222,6 +235,8 @@ ds.saveNewDataSource = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
+
+		ds.fetchDataSourceMetaData();
 	});
 }
 ds.populateGridDataSource = function () {
@@ -238,6 +253,20 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateField, ds.field);
 	ko.mapping.fromJS(ds.templateLookup, ds.lookup);
+};
+ds.fetchDataSourceMetaData = function () {
+	var param = { id: ds.confDataSource.id() };
+	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ko.mapping.fromJS(res.data, ds.confDataSource);
+	}, function (a) {
+		alert(a.responseText);
+	}, { 
+		timout: 3000 
+	})
 };
 
 $(function () {

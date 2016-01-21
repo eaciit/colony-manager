@@ -203,9 +203,7 @@
 
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">
-		        	Query
-	        	</h1>
+		        <h1 class="panel-title">Query</h1>
 		    </div>
 		    <div class="panel-body">
 				<div class="row form-datasource" data-bind="with: viewModel.query">
@@ -219,6 +217,15 @@
 			        	<textarea placeholder="Input query commands" id="textquery"></textarea>
 			        </div>
 				</div>
+		    </div>
+		</div>
+
+		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource' && confDataSource.metadata().length > 0)">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">Meta Data</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div id="grid-metadata" data-bind="kendoGrid: { data: confDataSource.metadata, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false }"></div>
 		    </div>
 		</div>
 		
