@@ -71,13 +71,12 @@ function createTextQuery(){
 			qr.queryDelete(item);
 		},
 		resultsFormatter: function(item){
-			return "<li>"+item.key +"(" + item.parm +")</li>";
+			return "<li>"+item.key +"(" + item.type +")</li>";
 		},
 		tokenFormatter: function(item){
 			return "<li>"+item.key +"(" + item.value +")</li>";
 		}
 	});
-	$(".area-command").find('ul.token-input-list-facebook').css('width', '100%');
 }
 
 $(function () {
