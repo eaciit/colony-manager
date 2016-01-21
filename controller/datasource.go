@@ -220,8 +220,6 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// {"from":"test","select":"*"}
-
 	conn := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
 
 	connection, err := conn.Connect()
