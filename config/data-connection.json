@@ -13,18 +13,6 @@
   },
   {
     "database": "test",
-    "driver": "mysql",
-    "host": "127.0.0.1",
-    "id": "c1453275113666",
-    "name": "mysql local",
-    "password": "",
-    "settings": {
-      "": ""
-    },
-    "username": "root"
-  },
-  {
-    "database": "test",
     "driver": "mongo",
     "host": "localhost",
     "id": "c1453277050828",
@@ -34,5 +22,17 @@
       "": ""
     },
     "username": ""
+  },
+  {
+    "database": "mydata",
+    "driver": "oracle",
+    "host": "128.190.230.0",
+    "id": "c1453358770201",
+    "name": "local",
+    "password": "",
+    "settings": {
+      "013fhj4567": "dfhgrtyey46745rt"
+    },
+    "username": "root"
   }
 ]

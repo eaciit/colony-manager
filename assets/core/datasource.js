@@ -211,9 +211,11 @@ ds.testConnection = function () {
 			return;
 		}
 
-		alert("Connected !");
+		//alert("Connected !");
+		toastr["success"]("", "Connected")
 	}, function (a, b, c) {
-		alert("ERROR: " + a.statusText);
+		//alert("ERROR: " + a.statusText);
+		toastr["error"]("", "ERROR: " + a.statusText)
 		console.log(a, b, c);
 	}, {
 		timeout: 5000
