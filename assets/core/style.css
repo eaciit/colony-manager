@@ -59,6 +59,9 @@ html, body, #container, #container > .row, #sidebar, #content {
   width: 100%;
   height: 150px; }
 
+.area-command .token-input-input-token-facebook {
+  height: 120px; }
+
 /** reusable stylesheet */
 .navbar-button {
   padding: 14px; }
