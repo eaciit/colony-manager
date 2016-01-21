@@ -68,7 +68,8 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
 };
 app.isFine = function (res) {
     if (!res.success) {
-        alert(res.message);
+        toastr["error"]("", "ERROR: " + res.message);
+
         return false;
     }
 
