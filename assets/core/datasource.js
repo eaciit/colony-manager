@@ -28,7 +28,7 @@ ds.templateDataSource = {
 	id: "",
 	connectionId: "",
 	name: "",
-	query : "",
+	query : [],
 	metadata: [],
 },
 ds.templateQuery = {
@@ -275,9 +275,9 @@ ds.saveNewDataSource = function(){
 	if (!app.isFormValid(".form-datasource")) {
 		return;
 	}
-	
 	var param = ko.mapping.toJS(ds.confDataSource);
 	param.metadata = JSON.stringify(param.metadata);
+	param.query = JSON.stringify(ko.mapping.toJS(viewModel.query.valueCommand()));
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
 			return;

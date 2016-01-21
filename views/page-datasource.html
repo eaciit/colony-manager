@@ -1,7 +1,10 @@
-<link href="/res/js/textarea/jquery.highlighttextarea.css" rel="stylesheet">
-<script src="/res/js/textarea/jquery.highlighttextarea.js"></script>
+<link href="/res/js/tokeninput/token-input.css" rel="stylesheet">
+<link href="/res/js/tokeninput/token-input-facebook.css" rel="stylesheet">
+<link href="/res/js/modaljs/jquery.modal.css" type="text/css" rel="stylesheet" />
+<script src="/res/js/tokeninput/jquery.tokeninput.js"></script>
 <script src="/res/core/datasource.js"></script>
 <script src="/res/core/query.js"></script>
+<script type="text/javascript" src="/res/js/modaljs/jquery.modal.js"></script>
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
@@ -162,6 +165,9 @@
 	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
 		    		<span class="glyphicon glyphicon-save"></span> Save
 		    	</button>
+		    	<button class="btn btn-sm btn-primary navbar-btn">
+		    		<span class="glyphicon glyphicon-play"></span> Test Query
+		    	</button>
 		    </div>
 		</nav>
 
@@ -214,7 +220,8 @@
 						</ul>
 			        </div>
 			        <div class="col-md-10 area-command">
-			        	<textarea placeholder="Input query commands" id="textquery"></textarea>
+			        	<!-- <textarea placeholder="Input query commands" id="textquery"></textarea> -->
+			        	<input type='text' id='textquery' name='textquery' />
 			        </div>
 				</div>
 		    </div>
