@@ -30,6 +30,11 @@ ds.templateDataSource = {
 	name: "",
 	query : [],
 	metadata: [],
+},
+ds.templateQuery = {
+	select: "",
+	from: "",
+	where: "",
 };
 ds.templateField = {
 	id: "",
@@ -39,18 +44,22 @@ ds.templateField = {
 	lookup : {},
 };
 ds.templateLookup = {
-	dataSourceID : "",
 	idField: "",
+
+	dataSourceId: "",
 	displayField: "",
 	lookupFields: [],
 };
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
+ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
+ds.query = ko.mapping.fromJS(ds.templateQuery);
 ds.field = ko.mapping.fromJS(ds.templateField);
 ds.lookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
+ds.lookupFields = ko.observableArray([]);
 ds.connectionListColumns = ko.observableArray([
 	{ field: "id", title: "ID", width: 110 },
 	{ field: "name", title: "Connection Name" },
@@ -80,6 +89,62 @@ ds.settingsColumns = ko.observableArray([
 		return "<input style='width: 100%;'>";
 	} }
 ]);
+ds.metadataColumns = ko.observableArray([
+	{ field: "id", title: "ID" },
+	{ field: "label", title: "Label" },
+	{ field: "type", title: "Type" },
+	{ field: "format", title: "Format" },
+	{ title: "", template: function (d) {
+		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d.id + "\")'><span class='glyphicon glyphicon-detail'></span> Lookup</button>";
+	}, width: 150, attributes: { style: "text-align: center;" } },
+]);
+ds.showMetadataLookup = function (id) {
+	$("#modal-lookup").modal("show");
+
+	var row = ko.mapping.toJS(Lazy(ds.confDataSource.metadata()).find(function (e) {
+		return e.id() == id;
+	}));
+
+	var item = $.extend(true, ds.templateLookup, {
+		idField: row.id,
+
+		dataSourceId: row.lookup.dataSourceId,
+		displayField: row.label,
+		lookupFields: row.lookup.lookupFields
+	});
+
+	console.log("selected lookup", item, row);
+	ko.mapping.fromJS(item, ds.confLookup);
+
+	// $("[name='lookup-datasource']").data("kendoDropDownList").trigger("change");
+	// setTimeout(function () {
+	// 	$("[name='lookup-fields']").data("kendoMultiSelect").value(row.lookup.lookupFields);
+	// }, 2000);
+};
+ds.changeLookupDataSource = function () {
+	ds.lookupFields([]);
+
+	var dataSourceId = this.value();
+	app.ajaxPost("/datasource/selectdatasource", { id: dataSourceId }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.lookupFields(res.data.metadata);
+	});
+};
+ds.saveLookup = function () {
+	var metadata = ko.mapping.toJS(ds.confDataSource.metadata());
+	var lookup = ko.mapping.toJS(ds.confLookup);
+
+	var row = Lazy(metadata).find({ id: lookup.idField });
+	var index = metadata.indexOf(row);
+
+	ds.confDataSource.metadata()[index].lookup.dataSourceId(lookup.dataSourceId);
+	ds.confDataSource.metadata()[index].lookup.lookupFields(lookup.lookupFields);
+
+	$("#modal-lookup").modal("hide");
+};
 ds.changeActiveSection = function (section) {
 	return function (self, e) {
 		$(e.currentTarget).parent().siblings().removeClass("active");
@@ -211,11 +276,15 @@ ds.saveNewDataSource = function(){
 		return;
 	}
 	var param = ko.mapping.toJS(ds.confDataSource);
-	param.query = ko.mapping.toJS(viewModel.query.valueCommand());
-	// var param = ko.mapping.toJS(ds.confDataSource);
+	param.metadata = JSON.stringify(param.metadata);
+	param.query = JSON.stringify(ko.mapping.toJS(viewModel.query.valueCommand()));
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
+		}
+
+		if (param.id == "") {
+			ds.fetchDataSourceMetaData();
 		}
 	});
 }
@@ -233,6 +302,20 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateField, ds.field);
 	ko.mapping.fromJS(ds.templateLookup, ds.lookup);
+};
+ds.fetchDataSourceMetaData = function () {
+	var param = { id: ds.confDataSource.id() };
+	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ko.mapping.fromJS(res.data, ds.confDataSource);
+	}, function (a) {
+		alert(a.responseText);
+	}, { 
+		timout: 3000 
+	})
 };
 
 $(function () {
