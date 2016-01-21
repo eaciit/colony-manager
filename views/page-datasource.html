@@ -37,7 +37,7 @@
 		        <h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, sortable: true, pageable: true }"></div>
+		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, pageable: true }"></div>
 		    </div>
 		</div>
 
@@ -209,9 +209,7 @@
 
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">
-		        	Query
-	        	</h1>
+		        <h1 class="panel-title">Query</h1>
 		    </div>
 		    <div class="panel-body">
 				<div class="row form-datasource" data-bind="with: viewModel.query">
@@ -228,6 +226,60 @@
 				</div>
 		    </div>
 		</div>
+
+		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource' && confDataSource.metadata().length > 0)">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">Meta Data</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div id="grid-metadata" data-bind="kendoGrid: { data: confDataSource.metadata, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false }"></div>
+		    </div>
+		</div>
 		
 	</div>
+</div>
+
+<!-- modal preview -->
+<div class="modal fade modal-lookup" tabindex="-1" role="dialog" id="modal-lookup">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" data-bind="text: 'Lookup for field ' + ds.confLookup.displayField()"></h4>
+            </div>
+            <div class="modal-body">
+            	<form class="form-horizontal" id="form-lookup" novalidate>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Data Source</label>
+				        <div class="col-sm-5">
+				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" style="width: 100%" data-bind="kendoDropDownList: { data: ds.dataSourcesData, dataValueField: 'id', dataTextField: 'name', value: ds.confLookup.dataSourceId, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
+							<span class="k-invalid-msg" data-for="lookup-datasource"></span>
+				        </div>
+				    </div>
+				    <!-- <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Display</label>
+				        <div class="col-sm-5">
+				            <input required type="text" class="form-control input-sm" name="lookup-displayfield" placeholder="Type display field here" data-bind="value: ds.confLookup.displayField">
+							<span class="k-invalid-msg" data-for="lookup-displayfield"></span>
+				        </div>
+				    </div> -->
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Fields</label>
+				        <div class="col-sm-5">
+				            <select required data-required-msg="Fields cannot be empty" name="lookup-fields" style="width: 100%" data-bind="kendoMultiSelect: { data: ds.lookupFields, dataValueField: 'id', dataTextField: 'label', value: ds.confLookup.lookupFields, optionLabel: 'Select one' }"></select>
+							<span class="k-invalid-msg" data-for="lookup-fields"></span>
+				        </div>
+				    </div>
+				</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
+                	<span class="glyphicon glyphicon-remove"></span> Close
+                </button>
+                <button type="button" class="btn btn-sm btn-success" data-bind="click: ds.saveLookup">
+                	<span class="glyphicon glyphicon-save"></span> Save
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

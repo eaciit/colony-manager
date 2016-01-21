@@ -43,7 +43,8 @@ func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
 	supportedDrivers := "mongo mysql"
 
 	if !strings.Contains(supportedDrivers, driver) {
-		return errors.New("Currently tested driver is only mongo & mysql")
+		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
+		return errors.New("Currently tested driver is only " + drivers)
 	}
 
 	return nil
@@ -183,16 +184,30 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 
 /** DATA SOURCE */
 
-func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
+func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	id := payload["id"].(string)
+
 	dataDS, err := helper.Query("json", "config/data-datasource.json").SelectOne("", dbox.Eq("id", id))
 	if err != nil {
-		return nil, err
+		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	// oldMetadata := dataDS.Get("metadata", []toolkit.M{}).([]toolkit.M)
+	// if len(oldMetadata) > 0 {
+	// 	return helper.CreateResult(true, dataDS, nil)
+	// }
 
 	connectionId := dataDS.Get("connectionId", "").(string)
 	dataConn, err := helper.Query("json", "config/data-connection.json").SelectOne("", dbox.Eq("id", connectionId))
 	if err != nil {
-		return nil, err
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	driver := dataConn.Get("driver", "").(string)
@@ -202,35 +217,47 @@ func (d *DataSourceController) fetchMetaData(id string) ([]toolkit.M, error) {
 	password := dataConn.Get("password", "").(string)
 
 	if err := d.checkIfDriverIsSupported(driver); err != nil {
-		return nil, err
+		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	table := "test"
-	data, err := helper.Query(driver, host, database, username, password).SelectOne(table)
+	_ = database
+	conn := helper.Query(driver, host, "msig", username, password)
+	data, err := conn.SelectOne("Financial")
 	if err != nil {
-		return nil, err
-	}
-
-	if len(data) == 0 {
-		return nil, errors.New("empty data !")
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	metadata := []toolkit.M{}
-	for key, _ := range data {
+	for key, val := range data {
 		label := key
-		eachType := "string"
 
 		eachMeta := toolkit.M{}
 		eachMeta["id"] = key
 		eachMeta["label"] = label
-		eachMeta["type"] = eachType
+		eachMeta["type"], _ = helper.GetBetterType(val)
 		eachMeta["format"] = ""
-		eachMeta["lookup"] = nil
+		eachMeta["lookup"] = map[string]interface{}{
+			"dataSourceId": "",
+			"lookupFields": []interface{}{},
+		}
 
 		metadata = append(metadata, eachMeta)
 	}
+	// ds.templateLookup = {
+	// 	dataSourceOriginId: "",
+	// 	idField: "",
 
-	return metadata, nil
+	// 	dataSourceId: "",
+	// 	displayField: "",
+	// 	lookupFields: [],
+	// };
+
+	dataDS["metadata"] = metadata
+	err = helper.Query("json", "config/data-datasource.json").Save("", dataDS, dbox.Eq("id", id))
+	if !helper.HandleError(err) {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, dataDS, "")
 }
 
 func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
@@ -242,33 +269,38 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	id := payload["id"].(string)
-
-	metadataSample := []map[string]interface{}{
-		{"id": "id", "label": "ID", "type": "string", "format": "", "lookup": nil},
-		{"id": "username", "label": "User Name", "type": "string", "format": "", "lookup": nil},
-		{"id": "age", "label": "Age", "type": "numeric", "format": "", "lookup": nil},
+	item := map[string]interface{}{
+		"id":           payload["id"].(string),
+		"connectionId": payload["connectionId"].(string),
+		"name":         payload["name"].(string),
+		"query":        payload["query"].(string),
+		"metadata":     []interface{}{},
 	}
 
-	metadata, err := d.fetchMetaData(id)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	if payload["metadata"] != nil {
+		metadataString := payload["metadata"].(string)
+
+		if metadataString != "" {
+			metadata := []map[string]interface{}{}
+			json.Unmarshal([]byte(metadataString), &metadata)
+			fmt.Println("-----", metadata)
+
+			item["metadata"] = metadata
+		}
 	}
-	_ = metadata
 
 	if id == "" {
 		// insert new datasource
-		payload["id"] = helper.RandomIDWithPrefix("ds")
-		payload["metadata"] = metadataSample
-		err = helper.Query("json", "config/data-datasource.json").Save("", payload)
+		item["id"] = helper.RandomIDWithPrefix("ds")
+		err = helper.Query("json", "config/data-datasource.json").Save("", item)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		return helper.CreateResult(true, payload["metadata"], "")
+		return helper.CreateResult(true, item["metadata"], "")
 	} else {
 		// update datasource
-		payload["metadata"] = metadataSample
-		err = helper.Query("json", "config/data-datasource.json").Save("", payload, dbox.Eq("id", id))
+		err = helper.Query("json", "config/data-datasource.json").Save("", item, dbox.Eq("id", id))
 		if !helper.HandleError(err) {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -276,7 +308,7 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, nil, "")
 	}
 
-	return helper.CreateResult(false, payload["metadata"], "")
+	return helper.CreateResult(false, nil, "")
 }
 
 func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
