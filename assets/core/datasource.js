@@ -258,19 +258,40 @@ ds.editDataSource = function (_id) {
 
 		ds.mode("editDataSource");
 		ko.mapping.fromJS(res.data, ds.confDataSource);
+		qr.valueCommand(ds.parseQuery(res.data.QueryInfo));
 		
 		setTimeout(function () {
 			$("select.data-connection").data("kendoDropDownList").value(ds.confDataSource.ConnectionID());
 		}, 1000);
 	});
 }
+ds.parseQuery = function (commands) {
+	var o = [];
+
+	var i = 0;
+	for (key in commands) {
+		if (commands.hasOwnProperty(key)) {
+			i++;
+			o.push({ id: i, key: key, value: commands[key] });
+		}
+	}
+
+	return o;
+};
+ds.unparseQuery = function (commands) {
+	var o = {};
+	ko.mapping.toJS(commands).forEach(function (e) {
+		o[e.key] = e.value;
+	});
+	return o;
+};
 ds.saveNewDataSource = function(){
 	if (!app.isFormValid(".form-datasource")) {
 		return;
 	}
 	var param = ko.mapping.toJS(ds.confDataSource);
-	param.metadata = JSON.stringify(param.metadata);
-	param.query = JSON.stringify(ko.mapping.toJS(viewModel.query.valueCommand()));
+	param.MetaData = JSON.stringify(param.MetaData);
+	param.QueryInfo = JSON.stringify(ds.unparseQuery(viewModel.query.valueCommand()));
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -302,6 +323,7 @@ ds.fetchDataSourceMetaData = function () {
 			return;
 		}
 
+		res.data.QueryInfo = ds.parseQuery(res.data);
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 	}, function (a) {
 		toastr["error"]("", "ERROR: " + a.statusText);

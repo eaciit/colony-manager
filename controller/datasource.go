@@ -8,6 +8,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"strconv"
 	"strings"
 )
 
@@ -219,8 +220,52 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	conn := helper.Query(dataConn.Driver, dataConn.Host, "test", dataConn.UserName, dataConn.Password)
-	data, err := conn.SelectOne("test")
+	// {"from":"test","select":"*"}
+
+	conn := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
+
+	connection, err := conn.Connect()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer connection.Close()
+	query := connection.NewQuery()
+
+	if qFrom := dataDS.QueryInfo.Get("from", "").(string); qFrom != "" {
+		query = query.From(qFrom)
+	}
+	if qSelect := dataDS.QueryInfo.Get("select", "").(string); qSelect != "" {
+		if qSelect == "*" {
+			query = query.Select()
+		} else {
+			query = query.Select(strings.Split(qSelect, ",")...)
+		}
+	}
+	if _, qTakeOK := dataDS.QueryInfo["take"]; qTakeOK {
+		qTake, _ := strconv.Atoi(dataDS.QueryInfo.Get("take").(string))
+		query = query.Take(qTake)
+	}
+	if _, qSkipOK := dataDS.QueryInfo["skip"]; qSkipOK {
+		qSkip, _ := strconv.Atoi(dataDS.QueryInfo.Get("skip").(string))
+		query = query.Skip(qSkip)
+	}
+	if qOrder := dataDS.QueryInfo.Get("order", "").(string); qOrder != "" {
+		qOrderPart := strings.Split(qOrder, ",")
+		if len(qOrderPart) == 1 {
+			query = query.Order(qOrderPart[0])
+		} else if len(qOrderPart) == 2 {
+			query = query.Order(qOrderPart[0], qOrderPart[1])
+		}
+	}
+
+	cursor, err := query.Cursor(nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	data := toolkit.M{}
+	err = cursor.Fetch(&data, 1, false)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -258,15 +303,21 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	queryInfo := toolkit.M{}
+	err = json.Unmarshal([]byte(payload["QueryInfo"].(string)), &queryInfo)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	o := new(colonycore.DataSource)
 	o.ID = payload["_id"].(string)
 	o.DataSourceName = payload["DataSourceName"].(string)
 	o.ConnectionID = payload["ConnectionID"].(string)
-	o.QueryInfo = toolkit.M{} //payload["DataSourceName"].(string)
+	o.QueryInfo = queryInfo
 	o.MetaData = []*colonycore.FieldInfo{}
 
-	if payload["Metadata"] != nil {
-		metadataString := payload["Metadata"].(string)
+	if payload["MetaData"] != nil {
+		metadataString := payload["MetaData"].(string)
 
 		if metadataString != "" {
 			metadata := []*colonycore.FieldInfo{}

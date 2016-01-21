@@ -48,6 +48,14 @@ func (c *queryWrapper) CheckIfConnected() error {
 	return c.err
 }
 
+func (c *queryWrapper) Connect() (dbox.IConnection, error) {
+	if c.err != nil {
+		return nil, c.err
+	}
+
+	return c.connection, nil
+}
+
 func (c *queryWrapper) SelectOne(tableName string, clause ...*dbox.Filter) (toolkit.M, error) {
 	if c.err != nil {
 		return nil, c.err
