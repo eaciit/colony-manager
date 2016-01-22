@@ -66,6 +66,9 @@ html, body, #container, #container > .row, #sidebar, #content {
   height: 120px; }
 
 /** reusable stylesheet */
+.nav.nav-tabs li:hover {
+  cursor: pointer; }
+
 .navbar-button {
   padding: 14px; }
 

@@ -375,6 +375,7 @@ ds.testQuery = function () {
 			return;
 		}
 
+		$('a[data-target="#ds-tab-3"]').tab('show');
 		ds.idThereAnyDataSourceResult(true);
 
 		var columns = [{
