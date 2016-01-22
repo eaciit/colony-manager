@@ -188,22 +188,32 @@
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<div class="row form-datasource" data-bind="with: confDataSource">
-					<div class="col-md-6">
-			        	<label class="col-md-3 filter-label">Name</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: DataSourceName">
-							<span class="k-invalid-msg" data-for="query"></span>
-			        	</div>
-			        </div>
-				    <div class="col-md-6">
-			            <label class="col-md-3 filter-label">Connection</label>
-			            <div class="col-md-8">
-			                <select required class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', optionLabel: 'Select one', value: ConnectionID }" style="width: 200px;" name="connection"></select>
-							<span class="k-invalid-msg" data-for="connection"></span>
-			            </div>
-			        </div>
-				</div>
+				<form class="form-horizontal form-datasource" data-bind="with: confDataSource" novalidate>
+					<div class="form-group">
+						<div class="col-md-6">
+				        	<label class="col-md-3 filter-label" style="text-align: right;">Name</label>
+				        	<div class="col-md-8">
+				        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: DataSourceName">
+								<span class="k-invalid-msg" data-for="query"></span>
+				        	</div>
+				        </div>
+					    <div class="col-md-6">
+				            <label class="col-md-3 filter-label" style="text-align: right;">Connection</label>
+				            <div class="col-md-8">
+				                <select required class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', optionLabel: 'Select one', value: ConnectionID, change: ds.changeDataSourceConnection }" style="width: 200px;" name="connection"></select>
+								<span class="k-invalid-msg" data-for="connection"></span>
+				            </div>
+				        </div>
+				    </div>
+					<div class="form-group">
+					    <div class="col-md-6 col-md-offset-6">
+				            <label class="col-md-3 filter-label" style="text-align: right;">Database</label>
+				            <div class="col-md-8">
+					            <input readonly disabled type="text" class="form-control input-sm" data-bind="value: ds.confDataSourceConnectionInfo.Database" />
+				            </div>
+				        </div>
+				    </div>
+				</form>
 		    </div>
 		</div>
 
@@ -232,6 +242,13 @@
 		        <h1 class="panel-title">Meta Data</h1>
 		    </div>
 		    <div class="panel-body">
+		    	<p class="bg-notif bg-info">
+			    	Need to run 
+			    	<button class="btn btn-xs btn-primary" disabled>
+			    		<span class="glyphicon glyphicon-play"></span> Test Query
+			    	</button> 
+			    	to refresh the meta data.
+		    	</p>
 		    	<div id="grid-metadata" data-bind="kendoGrid: { data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false }"></div>
 		    </div>
 		</div>

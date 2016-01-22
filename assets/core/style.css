@@ -72,8 +72,8 @@ html, body, #container, #container > .row, #sidebar, #content {
 .bg-notif {
   padding: 8px 10px;
   width: 100%;
-  height: 100vh;
-  margin: 0; }
+  margin: 0;
+  margin-bottom: 15px; }
 
 .loader-container {
   position: fixed;
