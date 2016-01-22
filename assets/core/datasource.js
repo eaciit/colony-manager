@@ -292,7 +292,7 @@ ds.populateGridDataSource = function () {
 };
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
-	
+
 	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
@@ -390,6 +390,20 @@ ds.showMetadataLookup = function (_id, o) {
 	ds.confLookup.DisplayFieldOrigin(row.Label);
 
 	$("#modal-lookup").modal("show");
+
+	if (ds.confLookup.DataSourceID() != '') {
+		// trigger datasource, and fill the value for edit
+		ds.changeLookupDataSourceCallback = function () {
+			setTimeout(function () {
+				$('[name="lookup-idfield"]').data("kendoDropDownList").value(ds.confLookup.IDField());
+				$('[name="lookup-displayfield"]').data("kendoDropDownList").value(ds.confLookup.DisplayField());
+				$('[name="lookup-fields"]').data("kendoMultiSelect").value(ds.confLookup.LookupFields());
+			}, 200);
+		};
+		setTimeout(function () {
+			$('[name="lookup-datasource"]').data("kendoDropDownList").trigger("change");
+		}, 200);
+	}
 };
 ds.changeDataSourceConnection = function () {
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
@@ -403,6 +417,7 @@ ds.changeDataSourceConnection = function () {
 		ko.mapping.fromJS(res.data, ds.confDataSourceConnectionInfo);
 	});
 };
+ds.changeLookupDataSourceCallback = function () {};
 ds.changeLookupDataSource = function () {
 	ds.lookupFields([]);
 
@@ -413,6 +428,8 @@ ds.changeLookupDataSource = function () {
 		}
 
 		ds.lookupFields(res.data.MetaData);
+		ds.changeLookupDataSourceCallback();
+		ds.changeLookupDataSourceCallback = function () {};
 	});
 };
 ds.saveLookup = function () {
