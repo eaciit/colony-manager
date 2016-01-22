@@ -116,6 +116,7 @@ qr.enterSave = function(e){
 qr.updateQuery = function(){
 	var maxid = 0;
 	for (var key in qr.valueCommand()){
+		qr.selectQuery("List");
 		var dataselect = ko.mapping.toJS(qr.valueCommand()[key]);
 		var searchElem = ko.utils.arrayFilter(qr.tempDataCommand,function (item) {
             return item.key === dataselect.key;
