@@ -65,6 +65,12 @@ html, body, #container, #container > .row, #sidebar, #content {
 .area-command .token-input-input-token-facebook {
   height: 120px; }
 
+div.list-where {
+  margin-bottom: 8px; }
+
+.btn-addwhere {
+  margin-bottom: 5px; }
+
 /** reusable stylesheet */
 .nav.nav-tabs li:hover {
   cursor: pointer; }
