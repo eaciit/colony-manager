@@ -12,20 +12,24 @@ qr.tempDataCommand = [
 	{id:0,key:"insert", type:"", value:""}
 ];
 qr.tempWhereQuery = [
-	{key:"And", type:"Array Query"},
-	{key:"Or", type:"Array Query"},
-	{key:"Eq", type:"field,value"},
-	{key:"Ne", type:"field,value"},
-	{key:"Lt", type:"field,value"},
-	{key:"Gt", type:"field,value"},
-	{key:"Lte", type:"field,value"},
-	{key:"Gte", type:"field,value"},
+	{key:"And", type:"Array Query", parm: "arrayQuery"},
+	{key:"Or", type:"Array Query", parm: "arrayQuery"},
+	{key:"Eq", type:"field,value", parm: "string"},
+	{key:"Ne", type:"field,value", parm: "string"},
+	{key:"Lt", type:"field,value", parm: "string"},
+	{key:"Gt", type:"field,value", parm: "string"},
+	{key:"Lte", type:"field,value", parm: "string"},
+	{key:"Gte", type:"field,value", parm: "string"},
+	{key:"In", type:"field, array string", parm: "arrayString"},
+	{key:"Nin", type:"field, array string", parm: "arrayString"},
+	{key:"Contains", type:"field, array string", parm: "arrayString"}
 ];
 qr.templateWhere = {
 	key: "",
+	parm: "",
 	value: "",
 	subquery: [],
-}
+};
 qr.command = ko.observable('');
 qr.paramQuery = ko.observable('');
 qr.chooseQuery = ko.observable('');
@@ -51,6 +55,8 @@ qr.changeActiveCommand = function(data){
 				qr.chooseQuery("Show");
 				qr.activeQuery(ko.mapping.toJS(data));
 			} else if (data.key() == "where"){
+				qr.valueWhere([]);
+				qr.addQueryWhere();
 				$(".modal-query-where").modal("show");
 				qr.chooseQuery("Show");
 			} else {
@@ -125,7 +131,7 @@ qr.updateQuery = function(){
 		qr.chooseQuery("Hide");
 		$('#textquery').tokenInput("add", dataselect);
 		if (qr.valueCommand().id > maxid)
-			maxid = qr.valueCommand().id
+			maxid = qr.valueCommand().id;
 	}
 	qr.seqCommand(maxid+1);
 }
@@ -138,6 +144,18 @@ qr.checkValidationQuery = function(key){
     	return false;
     else
     	return true;
+}
+qr.clearQuery = function(){
+	qr.valueCommand([]);
+	$('#textquery').tokenInput("clear");
+}
+qr.addQueryWhere = function(){
+	var cloned = $.extend(true, {}, qr.templateWhere);
+	qr.valueWhere.push(ko.mapping.fromJS(cloned));
+}
+qr.changeQueryWhere = function(e){
+	var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
+	qr.valueWhere()[indexlist].parm(dataItem.parm);
 }
 
 function createTextQuery(){

@@ -215,9 +215,18 @@
 		    </div>
 		</div>
 
+		<ul class="nav nav-tabs" data-bind="visible: (mode() == 'editDataSource')">
+		    <li class="active"><a data-target="#ds-tab-1" data-toggle="tab">Query Builder</a></li>
+		    <li><a data-target="#ds-tab-2" data-toggle="tab">Meta Data</a></li>
+		    <li><a data-target="#ds-tab-3" data-toggle="tab">Query Test Result</a></li>
+		</ul>
+
+		<div class="tab-content" data-bind="visible: (mode() == 'editDataSource')" style="padding-top: 10px;">
+		
+		<div class="tab-pane active" id="ds-tab-1">
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">Query</h1>
+		        <h1 class="panel-title">Query Builder</h1>
 		    </div>
 		    <div class="panel-body">
 				<div class="row form-datasource" data-bind="with: viewModel.query">
@@ -234,7 +243,9 @@
 				</div>
 		    </div>
 		</div>
+		</div>
 
+		<div class="tab-pane" id="ds-tab-2">
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Meta Data</h1>
@@ -246,10 +257,12 @@
 				<br />
 		    </div>
 		</div>
+		</div>
 
+		<div class="tab-pane" id="ds-tab-3">
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">Result</h1>
+		        <h1 class="panel-title">Query Test Result</h1>
 		    </div>
 		    <div class="panel-body" data-bind="visible: idThereAnyDataSourceResult()">
 		    	<div id="grid-ds-result"></div>
@@ -264,38 +277,47 @@
 		    	</p>
 		    </div>
 		</div>
-		
+		</div>
+
+		</div>
 	</div>
 </div>
 
 <!-- modal preview -->
-<!-- <div class="modal fade modal-lookup" tabindex="-1" role="dialog" id="modal-lookup">
+<div class="modal fade modal-lookup" tabindex="-1" role="dialog" id="modal-lookup">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" data-bind="text: 'Lookup for field ' + ds.confLookup.DisplayField()"></h4>
+                <h4 class="modal-title" data-bind="text: 'Lookup for field ' + ds.confLookup.DisplayFieldOrigin()"></h4>
             </div>
             <div class="modal-body">
             	<form class="form-horizontal" id="form-lookup" novalidate>
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label" style="text-align: right">Data Source</label>
 				        <div class="col-sm-5">
-				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" style="width: 100%" data-bind="kendoDropDownList: { data: ds.dataSourcesData, dataValueField: 'id', dataTextField: 'name', value: ds.confLookup.dataSourceId, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
+				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" style="width: 100%" data-bind="kendoDropDownList: { data: ds.dataSourceDataForLookup, dataValueField: '_id', dataTextField: 'DataSourceName', value: ds.confLookup.DataSourceID, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
 							<span class="k-invalid-msg" data-for="lookup-datasource"></span>
 				        </div>
-				    </div> -->
-				    <!-- <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Display</label>
+				    </div>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">ID Field</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="lookup-displayfield" placeholder="Type display field here" data-bind="value: ds.confLookup.displayField">
+				            <select required data-required-msg="ID Field cannot be empty" name="lookup-idfield" style="width: 100%" data-bind="kendoDropDownList: { data: ds.lookupFields, value: ds.confLookup.IDField, optionLabel: 'Select one', dataValueField: '_id', dataTextField: '_id' }"></select>
+							<span class="k-invalid-msg" data-for="lookup-idfield"></span>
+				        </div>
+				    </div>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Display Field</label>
+				        <div class="col-sm-5">
+				            <select required data-required-msg="Display Field cannot be empty" name="lookup-displayfield" style="width: 100%" data-bind="kendoDropDownList: { data: ds.lookupFields, value: ds.confLookup.DisplayField, optionLabel: 'Select one', dataValueField: 'Label', dataTextField: 'Label' }"></select>
 							<span class="k-invalid-msg" data-for="lookup-displayfield"></span>
 				        </div>
-				    </div> -->
-				    <!-- <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Fields</label>
+				    </div>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Lookup Fields</label>
 				        <div class="col-sm-5">
-				            <select required data-required-msg="Fields cannot be empty" name="lookup-fields" style="width: 100%" data-bind="kendoMultiSelect: { data: ds.lookupFields, dataValueField: 'id', dataTextField: 'label', value: ds.confLookup.lookupFields, optionLabel: 'Select one' }"></select>
+				            <select name="lookup-fields" style="width: 100%" data-bind="kendoMultiSelect: { data: ds.lookupFields, dataValueField: '_id', dataTextField: '_id', value: ds.confLookup.lookupFields, optionLabel: 'Select one' }"></select>
 							<span class="k-invalid-msg" data-for="lookup-fields"></span>
 				        </div>
 				    </div>
@@ -311,7 +333,7 @@
             </div>
         </div>
     </div>
-</div> -->
+</div>
 
 <!-- Modal Query -->
 <div class="modal fade modal-query" tabindex="-1" role="dialog">
@@ -340,8 +362,14 @@
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				<h4 class="modal-title" id="myModalLabel">Query Where</h4>
 			</div>
-			<div class="modal-body">
-				<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: viewModel.query.datawhere, dataValueField: 'key', dataTextField: 'type', optionLabel: 'Select one' }"></select><!-- , value: ds.confLookup.dataSourceId -->
+			<div class="modal-body" data-bind="with:viewModel.query">
+				<div class="row">
+					<div class="col-md-12">
+						<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click:addQueryWhere"><span class="glyphicon glyphicon-plus"></span> Add</button>
+					</div>
+				</div>
+				<div class="row" data-bind="template:{name:'queryWhere', foreach:valueWhere}">
+				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
@@ -350,3 +378,22 @@
 		</div>
 	</div>
 </div>
+
+<script id="queryWhere" type="text/html">
+	<div class="list-where col-md-12">
+		<div class="col-md-3">
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: qr.datawhere, dataValueField: 'key', dataTextField: 'key', value: key, optionLabel: 'Select one', select: qr.changeQueryWhere }"></select>
+		</div>
+		<div class="col-md-8">
+			<input type="text" class="form-control input-sm" data-bind="visible:parm() == 'string'"/>
+		</div>
+		<div class="col-md-1">
+			<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
+				<span class="glyphicon glyphicon-remove"></span>
+			</button>
+		</div>
+	</div>
+</script>
+
+<script id="querySubWhere" type="text/html">
+</script>

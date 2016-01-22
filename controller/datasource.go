@@ -417,6 +417,10 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		if oldDS.ConnectionID != o.ConnectionID || string(oldQuery) != string(newQuery) {
 			needToFetchMetaData = true
 		}
+
+		if len(oldDS.MetaData) == 0 {
+			needToFetchMetaData = true
+		}
 	}
 
 	err = colonycore.Save(o)
