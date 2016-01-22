@@ -98,6 +98,12 @@ qr.queryAdd = function(item){
 qr.queryDelete = function(item){
 	qr.valueCommand.remove( function (res) { return res.id === item.id; } )
 }
+qr.queryPressEnterSave = function(){
+	if(event.keyCode==13){
+		  $(".btn.btn-primary.save").trigger("click");
+		}
+	
+}
 qr.querySave = function(){
 	var dataselect = qr.activeQuery();
 	dataselect.value = qr.paramQuery();

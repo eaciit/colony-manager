@@ -308,11 +308,11 @@
 				<h4 class="modal-title" id="myModalLabel">Query</h4>
 			</div>
 			<div class="modal-body">
-				<input type="text" class="form-control input-sm" placeholder="Input type here !!" data-bind="value:paramQuery"/>
+				<input type="text" class="form-control input-sm" placeholder="Input type here !!" data-bind="value:paramQuery" onkeypress="qr.queryPressEnterSave();" />
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>
-				<button type="button" class="btn btn-primary" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
+				<button type="button" class="btn btn-primary save" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
 			</div>
 		</div>
 	</div>
