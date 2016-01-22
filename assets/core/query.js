@@ -47,19 +47,6 @@ qr.changeActiveCommand = function(data){
 			$(".modal-query").modal("show");
 			qr.chooseQuery("Show");
 			qr.activeQuery(ko.mapping.toJS(data));
-			// modal({
-			// 	type: 'prompt',
-			// 	title: 'Query',
-			// 	text: 'Type your query:',
-			// 	callback: function(result) {
-			// 		if (result){
-			// 			var dataselect = ko.mapping.toJS(data);
-			// 			dataselect.value = result;
-			// 			dataselect.id = qr.seqCommand();
-			// 			$('#textquery').tokenInput("add", dataselect);
-			// 		}
-			// 	}
-			// });
 		} else if (data.key() == "where"){
 			$(".modal-query-where").modal("show");
 			qr.chooseQuery("Show");
@@ -107,6 +94,28 @@ qr.querySave = function(){
 }
 qr.queryCancel = function(){
 	$('#textquery').tokenInput("remove", {id: 0});
+}
+qr.enterSave = function(e){
+	if (e.keyCode == 13) {
+		qr.paramQuery($("input.query-text").val());
+        qr.querySave();
+    }
+    return true;
+}
+qr.updateQuery = function(){
+	var maxid = 0;
+	for (var key in qr.valueCommand()){
+		var dataselect = ko.mapping.toJS(qr.valueCommand()[key]);
+		var searchElem = ko.utils.arrayFilter(qr.tempDataCommand,function (item) {
+            return item.key === dataselect.key;
+        });
+		dataselect["type"] = searchElem[0].type;
+		qr.chooseQuery("Hide");
+		$('#textquery').tokenInput("add", dataselect);
+		if (qr.valueCommand().id > maxid)
+			maxid = qr.valueCommand().id
+	}
+	qr.seqCommand(maxid+1);
 }
 
 function createTextQuery(){
