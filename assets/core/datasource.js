@@ -283,6 +283,7 @@ ds.editDataSource = function (_id) {
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 		qr.valueCommand(ds.parseQuery(res.data.QueryInfo));
+		qr.updateQuery();
 		
 		setTimeout(function () {
 			$("select.data-connection").data("kendoDropDownList").trigger("change");
