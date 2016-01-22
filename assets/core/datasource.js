@@ -173,7 +173,7 @@ ds.testConnection = function () {
 		toastr["error"]("", "ERROR: " + a.statusText);
 		console.log(a, b, c);
 	}, {
-		timeout: 5000
+		timeout: 10000
 	});
 };
 ds.editConnection = function (_id) {
@@ -355,31 +355,13 @@ ds.testQuery = function () {
 
 		$("#grid-ds-result").replaceWith("<div id='grid-ds-result'></div>");
 		$("#grid-ds-result").kendoGrid(gridConfig);
+	}, function (a, b, c) {
+		toastr["error"]("", "ERROR: " + a.statusText);
+		console.log(a);
+	}, {
+		timeout: 10000
 	});
 };
-// ds.showMetadataLookup = function (id) {
-// 	$("#modal-lookup").modal("show");
-
-// 	var row = ko.mapping.toJS(Lazy(ds.confDataSource.MetaData()).find(function (e) {
-// 		return e.id() == id;
-// 	}));
-
-// 	var item = $.extend(true, ds.templateLookup, {
-// 		idField: row.id,
-
-// 		dataSourceId: row.lookup.dataSourceId,
-// 		displayField: row.label,
-// 		lookupFields: row.lookup.lookupFields
-// 	});
-
-// 	console.log("selected lookup", item, row);
-// 	ko.mapping.fromJS(item, ds.confLookup);
-
-// 	// $("[name='lookup-datasource']").data("kendoDropDownList").trigger("change");
-// 	// setTimeout(function () {
-// 	// 	$("[name='lookup-fields']").data("kendoMultiSelect").value(row.lookup.lookupFields);
-// 	// }, 2000);
-// };
 ds.showMetadataLookup = function (_id, o) {
 	var $grid = $(o).closest(".k-grid").data("kendoGrid");
 	var uid = $(o).closest("[data-uid]").attr("data-uid");
