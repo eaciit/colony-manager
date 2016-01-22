@@ -10,14 +10,6 @@ body
 html, body, #container, #container > .row, #sidebar, #content
 	height: 100%
 
-/** reusable stylesheet */
-
-.navbar-button
-	padding: 14px
-
-.bg-notif
-	padding: 8px 10px
-
 /** structured stylesheet */
 
 #nav
@@ -60,3 +52,106 @@ html, body, #container, #container > .row, #sidebar, #content
 		content: ":"
 		position: absolute
 		right: 5px
+
+#datasource-settings
+	thead tr th
+		padding-top: 15px
+	tbody tr td 
+		padding-top: 8px
+		padding-right: 5px 
+
+.title-command
+	border-bottom: 1px solid black
+	width: 100%
+	text-align: center
+
+.nav-command
+	border-right: 1px solid black
+
+.area-command textarea
+	width: 100%
+	height: 150px
+
+.area-command ul.token-input-list-facebook
+	width: 100%
+
+.area-command .token-input-input-token-facebook
+	height : 120px
+
+div.list-where
+	margin-bottom: 8px
+
+.btn-addwhere
+	margin-bottom: 5px
+
+/** reusable stylesheet */
+
+.navbar-button
+	padding: 14px
+
+.bg-notif
+	padding: 8px 10px
+	width: 100%
+	margin: 0
+	margin-bottom: 15px
+
+.loader-container
+	position: fixed
+	top: 0
+	left: 0
+	right: 0
+	bottom: 0
+	background-color: rgba(255, 255, 255, 0.6)
+	
+	.loader
+		position: absolute
+		margin-left: -25px
+		margin-top: -25px
+		top: 50%
+		left: 50%
+		-webkit-transform: translate(-50%, -50%)
+		transform: translate(-50%, -50%)
+		width: 50px
+		height: 50px
+		background-color: #03a9f4
+		border-radius: 50%
+		&:after
+			content: ''
+			position: absolute
+			border-radius: 50%
+			top: 50%
+			left: 50%
+			border: 0px solid white
+			-webkit-transform: translate(-50%, -50%)
+			transform: translate(-50%, -50%)
+			-webkit-animation: loading 1000ms ease-out forwards infinite
+			animation: loading 1000ms ease-out forwards infinite
+
+@-webkit-keyframes loading
+	0%
+		border: 0px solid white
+
+	20%
+		border: 8px solid white
+		width: 0%
+		height: 0%
+
+	100%
+		border: 8px solid white
+		width: 100%
+		height: 100%
+
+
+@keyframes loading
+	0%
+		border: 0px solid white
+
+	20%
+		border: 8px solid white
+		width: 0%
+		height: 0%
+
+	100%
+		border: 8px solid white
+		width: 100%
+		height: 100%

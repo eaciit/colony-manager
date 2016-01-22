@@ -1,11 +1,15 @@
+<link href="/res/js/tokeninput/token-input.css" rel="stylesheet">
+<link href="/res/js/tokeninput/token-input-facebook.css" rel="stylesheet">
+<script src="/res/js/tokeninput/jquery.tokeninput.js"></script>
 <script src="/res/core/datasource.js"></script>
+<script src="/res/core/query.js"></script>
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
 		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (section() == 'connection-list') }, click: changeActiveSection('connection-list')">Connection List</a></li>
-			<li><a href="#" data-bind="css: { 'active': (section() == 'data-source') }, click: changeActiveSection('data-source')">Data Source</a></li>
+			<li><a href="#" data-bind="css: { 'active': (section() == 'connection-list') }, click: changeActiveSection('connection-list')">Connection List<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (section() == 'data-source') }, click: changeActiveSection('data-source')">Data Source<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -31,7 +35,7 @@
 		        <h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, sortable: true, pageable: true }"></div>
+		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, pageable: true }"></div>
 		    </div>
 		</div>
 
@@ -43,56 +47,93 @@
 	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewConnection">
 		    		<span class="glyphicon glyphicon-save"></span> Save
 		    	</button>
+	            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testConnection">
+		    		<span class="glyphicon glyphicon-save"></span> Test Connection
+		    	</button>
 		    </div>
 		</nav>
 
 		<div class="panel panel-default" data-bind="visible: (mode() == 'edit')" style="width: 600px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (config.id() == '') ? 'Add New' : 'Edit'"></span>
+		        	<span data-bind="text: (config._id() == '') ? 'Add New' : 'Edit'"></span>
 		        	Connection
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<form class="form-horizontal" data-bind="with: config" id="form-add-connection">
+				<form class="form-horizontal" data-bind="with: config" id="form-add-connection" novalidate>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Connection Name</label>
+				        <label class="col-sm-4 filter-label" style="text-align: right">Connection Name</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: name">
+				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: ConnectionName">
 							<span class="k-invalid-msg" data-for="Name"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Driver</label>
+				        <label class="col-sm-4 filter-label" style="text-align: right">Driver</label>
 				        <div class="col-sm-5">
-				        	<select required data-required-msg="Driver cannot be empty" name="driver" style="width: 100%" data-bind="kendoDropDownList: { data: ds.templateDrivers, value: driver, optionLabel: 'Select one' }"></select>
+				        	<select required data-required-msg="Driver cannot be empty" name="driver" style="width: 100%" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one' }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Host</label>
+				        <label class="col-sm-4 filter-label" style="text-align: right">Host</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="Host" placeholder="Example: 127.0.0.1:27108" data-bind="value: host">
+				            <input required type="text" class="form-control input-sm" name="Host" placeholder="Example: 127.0.0.1:27108" data-bind="value: Host">
 							<span class="k-invalid-msg" data-for="Host"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">User Name</label>
+				        <label class="col-sm-4 filter-label" style="text-align: right">Database</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="Username" placeholder="Example: root" data-bind="value: username">
+				            <input required type="text" class="form-control input-sm" name="Database" placeholder="Example: mydatabase" data-bind="value: Database">
+							<span class="k-invalid-msg" data-for="Database"></span>
+				        </div>
+				    </div>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">User Name</label>
+				        <div class="col-sm-5">
+				            <input type="text" class="form-control input-sm" name="Username" placeholder="Example: root" data-bind="value: UserName">
 							<span class="k-invalid-msg" data-for="Username"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Password</label>
+				        <label class="col-sm-4 filter-label" style="text-align: right">Password</label>
 				        <div class="col-sm-5">
-				            <input type="password" class="form-control input-sm" placeholder="Type password here" data-bind="value: password">
+				            <input type="password" class="form-control input-sm" placeholder="Type password here" data-bind="value: Password">
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 control-label filter-label">Settings</label>
-				        <div class="col-sm-5">
-				            <textarea class="form-control input-sm" name="settings" placeholder="Type settings here (optional)" data-bind="value: settings"></textarea>
+				        <label class="col-sm-4 filter-label" style="text-align: right">Settings</label>
+				        <div class="col-sm-8">
+				        	<div class="nav">
+				        		<button class="btn btn-primary btn-sm" data-bind="click: ds.addSettings">
+				        			<span class="glyphicon glyphicon-plus"></span> Add
+				        		</button>
+				        	</div>
+				        	<table id="datasource-settings">
+			        			<thead>
+			        				<tr>
+			        					<th>Key</th>
+			        					<th>Value</th>
+			        				</tr>
+			        			</thead>
+			        			<tbody data-bind="foreach: Settings">
+			        				<tr>
+			        					<td>
+			        						<input class="form-control input-sm" type="text" style="width: 100%;" data-bind="value: key" />
+			        					</td>
+			        					<td>
+			        						<input class="form-control input-sm" type="text" style="width: 100%;" data-bind="value: value" />
+			        					</td>
+			        					<td>
+			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
+			        							<span class="glyphicon glyphicon-remove" data-bind="click: ds.removeSetting($data)"></span>
+			        						</button>
+			        					</td>
+			        				</tr>
+			        			</tbody>
+				        	</table>
 				        </div>
 				    </div>
 				</form>
@@ -122,6 +163,9 @@
 	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
 		    		<span class="glyphicon glyphicon-save"></span> Save
 		    	</button>
+		    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: fetchDataSourceMetaData">
+		    		<span class="glyphicon glyphicon-play"></span> Test Query
+		    	</button>
 		    </div>
 		</nav>
 
@@ -137,62 +181,183 @@
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (config.id() == '') ? 'Add New' : 'Edit'"></span>
+		        	<span data-bind="text: (config._id() == '') ? 'Add New' : 'Edit'"></span>
 		        	Data Source
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-				<div class="row form-datasource" data-bind="with: confDataSource">
-					<div class="col-md-6">
-			        	<label class="col-md-3 filter-label">Name</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: name">
-							<span class="k-invalid-msg" data-for="query"></span>
-			        	</div>
-			        </div>
-				    <div class="col-md-6">
-			            <label class="col-md-3 filter-label">Connection</label>
-			            <div class="col-md-8">
-			                <select required class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'name', dataValueField: 'id', optionLabel: 'Select one', value: connectionId }" style="width: 200px;" name="connection"></select>
-							<span class="k-invalid-msg" data-for="connection"></span>
-			            </div>
-			        </div>
-				</div>
+				<form class="form-horizontal form-datasource" data-bind="with: confDataSource" novalidate>
+					<div class="form-group">
+						<div class="col-md-6">
+				        	<label class="col-md-3 filter-label" style="text-align: right;">Name</label>
+				        	<div class="col-md-8">
+				        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: DataSourceName">
+								<span class="k-invalid-msg" data-for="query"></span>
+				        	</div>
+				        </div>
+					    <div class="col-md-6">
+				            <label class="col-md-3 filter-label" style="text-align: right;">Connection</label>
+				            <div class="col-md-8">
+				                <select required class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', optionLabel: 'Select one', value: ConnectionID, change: ds.changeDataSourceConnection }" style="width: 200px;" name="connection"></select>
+								<span class="k-invalid-msg" data-for="connection"></span>
+				            </div>
+				        </div>
+				    </div>
+					<div class="form-group">
+					    <div class="col-md-6 col-md-offset-6">
+				            <label class="col-md-3 filter-label" style="text-align: right;">Database</label>
+				            <div class="col-md-8">
+					            <input readonly disabled type="text" class="form-control input-sm" data-bind="value: ds.confDataSourceConnectionInfo.Database" />
+				            </div>
+				        </div>
+				    </div>
+				</form>
 		    </div>
 		</div>
 
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">
-		        	Query
-	        	</h1>
+		        <h1 class="panel-title">Query</h1>
 		    </div>
 		    <div class="panel-body">
-				<div class="row form-datasource" data-bind="with: query">
-			        <div class="col-md-4">
-			        	<label class="col-md-3 filter-label">Select</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="queryselect" placeholder="Type query select here" data-bind="value: select">
-							<span class="k-invalid-msg" data-for="queryselect"></span>
-			        	</div>
+				<div class="row form-datasource" data-bind="with: viewModel.query">
+			        <div class="col-md-2 nav-command">
+			        	<label class="title-command">Commands</label>
+			        	<ul class="nav" data-bind="foreach: datacommands">
+							<li><a href="#" data-bind="css: { 'active': (viewModel.query.command() == $data.key) }, click: viewModel.query.changeActiveCommand($data)"><span class="fa fa-caret-right"></span>&nbsp;&nbsp;<span data-bind="text: $data.key"></span></a></li>
+						</ul>
 			        </div>
-			        <div class="col-md-4">
-			        	<label class="col-md-3 filter-label">From</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="queryfrom" placeholder="Type query from here" data-bind="value: from">
-							<span class="k-invalid-msg" data-for="queryfrom"></span>
-			        	</div>
-			        </div>
-			        <div class="col-md-4">
-			        	<label class="col-md-3 filter-label">Where</label>
-			        	<div class="col-md-8">
-			        		<input required type="text" class="form-control input-sm" name="querywhere" placeholder="Type query where here" data-bind="value: where">
-							<span class="k-invalid-msg" data-for="querywhere"></span>
-			        	</div>
+			        <div class="col-md-10 area-command">
+			        	<!-- <textarea placeholder="Input query commands" id="textquery"></textarea> -->
+			        	<input type='text' id='textquery' name='textquery' />
 			        </div>
 				</div>
+		    </div>
+		</div>
+
+		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource' && confDataSource.MetaData().length > 0)">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">Meta Data</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<p class="bg-notif bg-info">
+			    	Need to run 
+			    	<button class="btn btn-xs btn-primary" disabled>
+			    		<span class="glyphicon glyphicon-play"></span> Test Query
+			    	</button> 
+			    	to refresh the meta data.
+		    	</p>
+		    	<div id="grid-metadata" data-bind="kendoGrid: { data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false }"></div>
 		    </div>
 		</div>
 		
 	</div>
 </div>
+
+<!-- modal preview -->
+<div class="modal fade modal-lookup" tabindex="-1" role="dialog" id="modal-lookup">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" data-bind="text: 'Lookup for field ' + ds.confLookup.DisplayField()"></h4>
+            </div>
+            <div class="modal-body">
+            	<form class="form-horizontal" id="form-lookup" novalidate>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Data Source</label>
+				        <div class="col-sm-5">
+				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" style="width: 100%" data-bind="kendoDropDownList: { data: ds.dataSourcesData, dataValueField: 'id', dataTextField: 'name', value: ds.confLookup.dataSourceId, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
+							<span class="k-invalid-msg" data-for="lookup-datasource"></span>
+				        </div>
+				    </div>
+				    <!-- <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Display</label>
+				        <div class="col-sm-5">
+				            <input required type="text" class="form-control input-sm" name="lookup-displayfield" placeholder="Type display field here" data-bind="value: ds.confLookup.displayField">
+							<span class="k-invalid-msg" data-for="lookup-displayfield"></span>
+				        </div>
+				    </div> -->
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Fields</label>
+				        <div class="col-sm-5">
+				            <select required data-required-msg="Fields cannot be empty" name="lookup-fields" style="width: 100%" data-bind="kendoMultiSelect: { data: ds.lookupFields, dataValueField: 'id', dataTextField: 'label', value: ds.confLookup.lookupFields, optionLabel: 'Select one' }"></select>
+							<span class="k-invalid-msg" data-for="lookup-fields"></span>
+				        </div>
+				    </div>
+				</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
+                	<span class="glyphicon glyphicon-remove"></span> Close
+                </button>
+                <button type="button" class="btn btn-sm btn-success" data-bind="click: ds.saveLookup">
+                	<span class="glyphicon glyphicon-save"></span> Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Query -->
+<div class="modal fade modal-query" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content" data-bind="with:viewModel.query">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Query</h4>
+			</div>
+			<div class="modal-body">
+				<input type="text" class="form-control input-sm query-text" placeholder="Input type here !!" data-bind="value:paramQuery" onkeypress="return viewModel.query.enterSave(event)"/>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>
+				<button type="button" class="btn btn-primary" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Where -->
+<div class="modal fade modal-query-where" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Query Where</h4>
+			</div>
+			<div class="modal-body" data-bind="with:viewModel.query">
+				<div class="row">
+					<div class="col-md-12">
+						<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click:addQueryWhere"><span class="glyphicon glyphicon-plus"></span> Add</button>
+					</div>
+				</div>
+				<div class="row" data-bind="template:{name:'queryWhere', foreach:valueWhere}">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
+				<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script id="queryWhere" type="text/html">
+	<div class="list-where col-md-12">
+		<div class="col-md-3">
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: qr.datawhere, dataValueField: 'key', dataTextField: 'key', value: key, optionLabel: 'Select one', select: qr.changeQueryWhere }"></select>
+		</div>
+		<div class="col-md-8">
+			<input type="text" class="form-control input-sm" data-bind="visible:parm() == 'string'"/>
+		</div>
+		<div class="col-md-1">
+			<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
+				<span class="glyphicon glyphicon-remove"></span>
+			</button>
+		</div>
+	</div>
+</script>
+
+<script id="querySubWhere" type="text/html">
+</script>

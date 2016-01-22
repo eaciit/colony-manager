@@ -12,6 +12,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -216,4 +217,53 @@ func FetchQuerySelector(data []map[string]interface{}, payload map[string]interf
 		dataNew = data
 	}
 	return dataNew, nil
+}
+
+func ToUpper(src string) string {
+	regex, err := regexp.Compile("/([A-Z])/g")
+	if err != nil {
+		fmt.Println(err.Error())
+		return src
+	}
+
+	return regex.ReplaceAllStringFunc(src, func(w string) string {
+		return strings.ToUpper(w)
+	})
+
+	// var re = regexp.MustCompile(`\b(` + strings.Join(keywords, "|") + `)\b`)
+	// return re.ReplaceAllStringFunc(src, func(w string) string {
+	// 	return strings.ToUpper(w)
+	// })
+}
+
+func GetBetterType(src interface{}) (string, interface{}) {
+	if str, ok := src.(float64); ok {
+		return "double", str
+	} else if str, ok := src.(int64); ok {
+		return "int", str
+	} else if str, ok := src.(string); ok {
+		var value interface{} = nil
+		var err error
+
+		value, err = strconv.ParseFloat(str, 64)
+		if err == nil {
+			if strings.Contains(str, ".") {
+				return "double", value
+			}
+
+			value, err = strconv.Atoi(str)
+			if err == nil {
+				return "int", value
+			}
+		}
+
+		if strings.Contains(str, "ObjectId") {
+			value = strings.Replace(strings.Replace(strings.Replace(str, "\"", "", -1), ")", "", -1), "ObjectId(", "", -1)
+			return "ObjectId", value
+		}
+
+		return "string", str
+	} else {
+		return "string", src
+	}
 }
