@@ -270,6 +270,7 @@ ds.editDataSource = function (_id) {
 		}
 
 		ds.mode("editDataSource");
+		qr.clearQuery();
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 		qr.valueCommand(ds.parseQuery(res.data.QueryInfo));
@@ -328,6 +329,7 @@ ds.populateGridDataSource = function () {
 };
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
+	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.lookup);
