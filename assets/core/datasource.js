@@ -56,6 +56,7 @@ ds.query = ko.mapping.fromJS(ds.templateQuery);
 ds.connectionListData = ko.observableArray([]);
 ds.lookupFields = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
+ds.lokupModalLabel = ko.observable("");
 ds.dataSourceDataForLookup = ko.computed(function () {
 	return Lazy(ds.dataSourcesData()).where(function (e) {
 		return e._id != ds.confDataSource._id();
@@ -276,6 +277,7 @@ ds.saveNewDataSource = function(){
 			return;
 		}
 
+		ko.mapping.fromJS(res.data.data, ds.confDataSource);
 		if (res.data.needTofetchMetaData) {
 			ds.fetchDataSourceMetaData();
 		}
@@ -338,7 +340,15 @@ ds.testQuery = function () {
 			width: 20,
 			locked: true
 		}].concat(res.data.metadata.map(function (e) {
-			return { field: e._id, title: e.Label, width: 150 };
+			var columnConfig = { field: e._id, title: e.Label, width: 150 };
+
+			if (e.Lookup._id != "") {
+				columnConfig.template = function (f) {
+					return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
+				}
+			}
+
+			return columnConfig;
 		}));
 
 		var gridConfig = {
@@ -367,11 +377,12 @@ ds.showMetadataLookup = function (_id, o) {
 	var uid = $(o).closest("[data-uid]").attr("data-uid");
 	var row = JSON.parse(kendo.stringify($grid.dataSource.getByUid(uid)));
 
+	$("#modal-lookup").modal("show");
+	ds.lookupFields([]);
+
 	ko.mapping.fromJS(row.Lookup, ds.confLookup);
 	ds.confLookup.IDFieldOrigin(row._id);
 	ds.confLookup.DisplayFieldOrigin(row.Label);
-
-	$("#modal-lookup").modal("show");
 
 	if (ds.confLookup.DataSourceID() != '') {
 		// trigger datasource, and fill the value for edit
@@ -409,7 +420,9 @@ ds.changeLookupDataSource = function () {
 			return;
 		}
 
-		ds.lookupFields(res.data.MetaData);
+		ds.lookupFields(Lazy(res.data.MetaData).sort(function (e) { 
+			return e.Label;
+		}).toArray());
 		ds.changeLookupDataSourceCallback();
 		ds.changeLookupDataSourceCallback = function () {};
 	});
@@ -428,6 +441,9 @@ ds.saveLookup = function () {
 	rowLookup.DisplayField(lookup.DisplayField);
 	rowLookup.LookupFields(lookup.LookupFields);
 
+	var lookupID = "l" + moment(new Date()).format("YYYMMDDHHmmssSSS");
+	rowLookup._id(lookupID);
+
 	var param = ds.getParamForSavingDataSource();
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {
@@ -435,6 +451,44 @@ ds.saveLookup = function () {
 		}
 
 		$("#modal-lookup").modal("hide");
+	});
+};
+ds.showLookupData = function (lookupID, lookupData) {
+	ds.lokupModalLabel("");
+	$(".modal-lookup-data").modal("show");
+	$("#grid-lookup-data").replaceWith("<div id='grid-lookup-data'></div>");
+
+	var param = {
+		_id: ds.confDataSource._id(),
+		lookupID: lookupID,
+		lookupData: lookupData
+	};
+	app.ajaxPost("/datasource/fetchdatasourcelookupdata", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		var columns = [{
+			title: "&nbsp;",
+			width: 20,
+			locked: true
+		}].concat(res.data.columns.map(function (e) {
+			return { field: e, title: e, width: 150 };
+		}));
+
+		var gridConfig = {
+			columns: columns,
+			dataSource: { 
+				data: res.data.data,
+				pageSize: 10
+			},
+			sortable: true,
+			pageable: true,
+			filterfable: false,
+			resizable: false
+		};
+
+		$("#grid-lookup-data").kendoGrid(gridConfig);
 	});
 };
 

@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -347,24 +348,83 @@ func (d *DataSourceController) FetchDataSourceSampleData(r *knot.WebContext) int
 		return helper.CreateResult(false, nil, "No data found")
 	}
 
-	metadata := []*colonycore.FieldInfo{}
-	for key, val := range data[0] {
-		label := key
+	result := toolkit.M{"metadata": dataDS.MetaData, "data": data}
+	return helper.CreateResult(true, result, "")
+}
 
-		lookup := new(colonycore.Lookup)
-		lookup.LookupFields = []string{}
+func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
 
-		meta := new(colonycore.FieldInfo)
-		meta.ID = key
-		meta.Label = label
-		meta.Type, _ = helper.GetBetterType(val)
-		meta.Format = ""
-		meta.Lookup = lookup
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	_id := payload["_id"].(string)
+	lookupID := payload["lookupID"].(string)
+	lookupData := payload["lookupData"].(string)
 
-		metadata = append(metadata, meta)
+	dataDS := new(colonycore.DataSource)
+	err = colonycore.Get(dataDS, _id)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	result := toolkit.M{"metadata": metadata, "data": data}
+	for _, meta := range dataDS.MetaData {
+		if meta.ID == lookupID {
+			dataLookupDS, _, lookupConn, lookupQuery, err := d.connectToDataSource(meta.Lookup.DataSourceID)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer lookupConn.Close()
+
+			_ = dataLookupDS
+			// if _, isTakeOK := dataLookupDS.QueryInfo["take"]; !isTakeOK {
+			// 	lookupQuery = lookupQuery.Take(15)
+			// }
+
+			lookupCursor, err := lookupQuery.Cursor(nil)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer lookupCursor.Close()
+
+			lookupResultDataRaw := []toolkit.M{}
+			err = lookupCursor.Fetch(&lookupResultDataRaw, 0, false)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			lookupResultData := []toolkit.M{}
+			for _, each := range lookupResultDataRaw {
+				if fmt.Sprintf("%v", each[meta.Lookup.IDField]) == lookupData {
+					eachResult := toolkit.M{}
+
+					if len(meta.Lookup.LookupFields) == 0 {
+						valueDisplayField := helper.ForceAsString(each, meta.Lookup.DisplayField)
+						eachResult.Set(meta.Lookup.DisplayField, valueDisplayField)
+					} else {
+						for _, lookupField := range meta.Lookup.LookupFields {
+							valueDisplayField := helper.ForceAsString(each, lookupField)
+							eachResult.Set(lookupField, valueDisplayField)
+						}
+					}
+
+					lookupResultData = append(lookupResultData, eachResult)
+				}
+			}
+
+			lookupResultColumns := []string{meta.Lookup.DisplayField}
+			if len(meta.Lookup.LookupFields) > 0 {
+				lookupResultColumns = meta.Lookup.LookupFields
+			}
+
+			result := toolkit.M{"data": lookupResultData, "columns": lookupResultColumns}
+			return helper.CreateResult(true, result, "")
+		}
+	}
+
+	result := toolkit.M{"data": []toolkit.M{}, "columns": []toolkit.M{}}
 	return helper.CreateResult(true, result, "")
 }
 
