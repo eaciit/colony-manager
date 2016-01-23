@@ -9,6 +9,9 @@ body {
 html, body, #container, #container > .row, #sidebar, #content {
   height: 100%; }
 
+a {
+  cursor: pointer; }
+
 /** structured stylesheet */
 #nav {
   background-color: #3E69B6; }

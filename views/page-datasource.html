@@ -347,8 +347,8 @@
 				<input type="text" class="form-control input-sm query-text" placeholder="Input type here !!" data-bind="value:paramQuery" onkeypress="return viewModel.query.enterSave(event)"/>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>
-				<button type="button" class="btn btn-primary" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
+				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>
+				<button type="button" class="btn btn-sm btn-primary" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
 			</div>
 		</div>
 	</div>
@@ -372,8 +372,33 @@
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
-				<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> Save</button>
+				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
+				<button type="button" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-save"></span> Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Lookup Data -->
+<div class="modal fade modal-lookup-data" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					Lookup Data
+					<span data-bind="text: ds.lokupModalLabel"></span>
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div id="grid-lookup-data"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span> Close
+				</button>
 			</div>
 		</div>
 	</div>

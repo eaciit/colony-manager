@@ -7,6 +7,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -266,4 +267,8 @@ func GetBetterType(src interface{}) (string, interface{}) {
 	} else {
 		return "string", src
 	}
+}
+
+func ForceAsString(data toolkit.M, which string) string {
+	return strings.Replace(fmt.Sprintf("%v", data[which]), "<nil>", "", -1)
 }
