@@ -45,6 +45,17 @@ qr.wherequery = ko.mapping.fromJS(qr.templateWhere);
 
 qr.changeActiveCommand = function(data){
 	return function (self, e) {
+		if (["select", "insert", "update", "delete"].indexOf(data.key()) > -1) {
+			var keywords = Lazy(qr.valueCommand()).where(function (e) {
+				return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
+			}).toArray();
+
+			if (keywords.length > 0) {
+				toastr["error"]("", "ERROR: " + 'Cannot add both "' + keywords[0].key + '" and "' + data.key() + '"');
+				return;
+			}
+		}
+
 		if (qr.checkValidationQuery(data.key())){
 			$(e.currentTarget).parent().siblings().removeClass("active"), $textarea = $("#textquery");
 			qr.command(data.id());
@@ -60,13 +71,19 @@ qr.changeActiveCommand = function(data){
 				$(".modal-query-where").modal("show");
 				qr.chooseQuery("Show");
 			} else {
-				var dataselect = ko.mapping.toJS(data);
-				dataselect.id = qr.seqCommand();
-				qr.chooseQuery("Hide");
-				$('#textquery').tokenInput("add", dataselect);
+				if (["update", "insert"].indexOf(data.key()) > -1) {
+					$(".modal-query").modal("show");
+					qr.chooseQuery("Show");
+					qr.activeQuery(ko.mapping.toJS(data));
+				} else {
+					var dataselect = ko.mapping.toJS(data);
+					dataselect.id = qr.seqCommand();
+					qr.chooseQuery("Hide");
+					$('#textquery').tokenInput("add", dataselect);
+				}
 			}
 		} else {
-			toastr["error"]("", "ERROR: " + "Query already create !!");
+			toastr["error"]("", "ERROR: " + 'Query "' + data.key() + '" already added. Cannot add same query!');
 		}
 	};
 }
@@ -96,16 +113,57 @@ qr.queryAdd = function(item){
 		}
 	} else {
 		$('#textquery').tokenInput("remove", {id: 0});
-		toastr["error"]("", "ERROR: " + "Query already create !!");
+		toastr["error"]("", "ERROR: " + "Query already added. Cannot add multiple same query!");
 	}
 }
 qr.queryDelete = function(item){
 	qr.valueCommand.remove( function (res) { return res.id === item.id; } )
 }
+qr.parseQuery = function (commands) {
+	var o = [];
+
+	var i = 0;
+	for (key in commands) {
+		if (commands.hasOwnProperty(key)) {
+			i++;
+			o.push({ id: i, key: key, value: commands[key] });
+		}
+	}
+
+	return o;
+};
+qr.unparseQuery = function (commands) {
+	var o = {};
+	ko.mapping.toJS(commands).forEach(function (e) {
+		o[e.key] = e.value;
+	});
+	return o;
+};
+qr.validateQuery = function () {
+	if (qr.valueCommand().length == 0) {
+		return true;
+	}
+
+	var isKeywordExists = Lazy(qr.valueCommand()).where(function (e) {
+		return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
+	}).toArray().length > 0;
+
+	if (!isKeywordExists) {
+		toastr["error"]("", "ERROR: " + 'Query must contains "select" / "insert" / "update" / "delete" !');
+		return false;
+	}
+
+	return true;
+};
 qr.querySave = function(){
 	var dataselect = qr.activeQuery();
 	dataselect.value = qr.paramQuery();
 	dataselect.id = qr.seqCommand();
+
+	if (dataselect.key == "select" && $.trim(dataselect.value) == "") {
+		dataselect.value = "*";
+	}
+
 	$('#textquery').tokenInput("add", dataselect);
 	$(".modal-query").modal("hide");
 }
