@@ -224,6 +224,8 @@ ds.editDataSource = function (_id) {
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
 
+	$('a[data-target="#ds-tab-1"]').tab('show');
+
 	app.ajaxPost("/datasource/selectdatasource", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -233,7 +235,7 @@ ds.editDataSource = function (_id) {
 		qr.clearQuery();
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
-		qr.valueCommand(ds.parseQuery(res.data.QueryInfo));
+		qr.valueCommand(qr.parseQuery(res.data.QueryInfo));
 		qr.updateQuery();
 		
 		setTimeout(function () {
@@ -241,42 +243,22 @@ ds.editDataSource = function (_id) {
 		}, 200);
 	});
 }
-ds.parseQuery = function (commands) {
-	var o = [];
-
-	var i = 0;
-	for (key in commands) {
-		if (commands.hasOwnProperty(key)) {
-			i++;
-			o.push({ id: i, key: key, value: commands[key] });
-		}
-	}
-
-	return o;
-};
-ds.unparseQuery = function (commands) {
-	var o = {};
-	ko.mapping.toJS(commands).forEach(function (e) {
-		o[e.key] = e.value;
-	});
-	return o;
-};
 ds.getParamForSavingDataSource = function () {
 	var param = ko.mapping.toJS(ds.confDataSource);
 	param.MetaData = JSON.stringify(param.MetaData);
-	param.QueryInfo = JSON.stringify(ds.unparseQuery(viewModel.query.valueCommand()));
+	param.QueryInfo = JSON.stringify(qr.unparseQuery(viewModel.query.valueCommand()));
 	return param;
 };
 ds.saveNewDataSource = function(){
 	if (!app.isFormValid(".form-datasource")) {
 		return;
 	}
-	var param = ds.getParamForSavingDataSource();
-	app.ajaxPost("/datasource/savedatasource", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
 
+	if (!qr.validateQuery()) {
+		return;
+	}
+
+	ds.saveDataSource(function (res) {
 		ko.mapping.fromJS(res.data.data, ds.confDataSource);
 		if (res.data.needTofetchMetaData) {
 			ds.fetchDataSourceMetaData();
@@ -309,7 +291,7 @@ ds.fetchDataSourceMetaData = function () {
 			return;
 		}
 
-		res.data.QueryInfo = ds.parseQuery(res.data);
+		res.data.QueryInfo = qr.parseQuery(res.data);
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 	}, function (a) {
 		toastr["error"]("", "ERROR: " + a.statusText);
@@ -317,59 +299,93 @@ ds.fetchDataSourceMetaData = function () {
 		timout: 3000 
 	});
 };
+ds.saveDataSource = function (c) {
+	var param = ds.getParamForSavingDataSource();
+	app.ajaxPost("/datasource/savedatasource", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (typeof c !== "undefined") c(res);
+	});
+};
 ds.testQuery = function () {
 	if (!app.isFormValid(".form-datasource")) {
 		return;
 	}
 
-	ds.idThereAnyDataSourceResult(false);
+	if (ds.confDataSource._id() == '') {
+		toastr["info"]("", "Please save the datasource first");
+		return;
+	}
 
-	var param = ko.mapping.toJS(ds.confDataSource);
-	param.MetaData = JSON.stringify(param.MetaData);
-	param.QueryInfo = JSON.stringify(ds.unparseQuery(viewModel.query.valueCommand()));
-	app.ajaxPost("/datasource/fetchdatasourcesampledata", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+	$("#grid-ds-result").replaceWith("<div id='grid-ds-result'></div>");
 
-		$('a[data-target="#ds-tab-3"]').tab('show');
-		ds.idThereAnyDataSourceResult(true);
+	ds.saveDataSource(function (res) {
+		ko.mapping.fromJS(res.data.data, ds.confDataSource);
+		ds.idThereAnyDataSourceResult(false);
 
-		var columns = [{
-			title: "&nbsp;",
-			width: 20,
-			locked: true
-		}].concat(res.data.metadata.map(function (e) {
-			var columnConfig = { field: e._id, title: e.Label, width: 150 };
+		var param = ko.mapping.toJS(ds.confDataSource);
+		param.MetaData = JSON.stringify(param.MetaData);
+		param.QueryInfo = JSON.stringify(param.QueryInfo);
+		app.ajaxPost("/datasource/fetchdatasourcesampledata", param, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
 
-			if (e.Lookup._id != "") {
-				columnConfig.template = function (f) {
-					return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
+			$('a[data-target="#ds-tab-3"]').tab('show');
+			ds.idThereAnyDataSourceResult(true);
+
+			var columns = [{
+				title: "&nbsp;",
+				width: 20,
+				locked: true
+			}];
+
+			var metadata = (res.data.metadata == undefined || res.data.metadata == null) ? [] : res.data.metadata;
+			if (metadata.length > 0) {
+				columns = columns.concat(metadata.map(function (e) {
+					var columnConfig = { field: e._id, title: e.Label, width: 150 };
+
+					if (e.Lookup._id != "") {
+						columnConfig.template = function (f) {
+							return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
+						}
+					}
+
+					return columnConfig;
+				}));
+			} else if (res.data.data.length > 0) {
+				var sampleData = res.data.data[0];
+				for (var key in sampleData) {
+					if (sampleData.hasOwnProperty(key)) {
+						columns.push({ field: key, title: key, width: 150 });
+					}
 				}
 			}
 
-			return columnConfig;
-		}));
+			if (columns.length == 1) {
+				columns[0].locked = false;
+			}
 
-		var gridConfig = {
-			columns: columns,
-			dataSource: { 
-				data: res.data.data,
-				pageSize: 15
-			},
-			resizable: false,
-			sortable: true,
-			filterfable: false,
-			pageable: true
-		};
+			var gridConfig = {
+				columns: columns,
+				dataSource: { 
+					data: res.data.data,
+					pageSize: 15
+				},
+				sortable: true,
+				filterfable: false,
+				pageable: true
+			};
 
-		$("#grid-ds-result").replaceWith("<div id='grid-ds-result'></div>");
-		$("#grid-ds-result").kendoGrid(gridConfig);
-	}, function (a, b, c) {
-		toastr["error"]("", "ERROR: " + a.statusText);
-		console.log(a);
-	}, {
-		timeout: 10000
+			$("#grid-ds-result").kendoGrid(gridConfig);
+		}, function (a, b, c) {
+			toastr["error"]("", "ERROR: " + a.statusText);
+			console.log(a);
+		}, {
+			timeout: 10000
+		});
 	});
 };
 ds.showMetadataLookup = function (_id, o) {
@@ -444,12 +460,7 @@ ds.saveLookup = function () {
 	var lookupID = "l" + moment(new Date()).format("YYYMMDDHHmmssSSS");
 	rowLookup._id(lookupID);
 
-	var param = ds.getParamForSavingDataSource();
-	app.ajaxPost("/datasource/savedatasource", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-
+	ds.saveDataSource(function (res) {
 		$("#modal-lookup").modal("hide");
 	});
 };
@@ -476,6 +487,10 @@ ds.showLookupData = function (lookupID, lookupData) {
 			return { field: e, title: e, width: 150 };
 		}));
 
+		if (columns.length == 1) {
+			columns[0].locked = false;
+		}
+
 		var gridConfig = {
 			columns: columns,
 			dataSource: { 
@@ -484,8 +499,7 @@ ds.showLookupData = function (lookupID, lookupData) {
 			},
 			sortable: true,
 			pageable: true,
-			filterfable: false,
-			resizable: false
+			filterfable: false
 		};
 
 		$("#grid-lookup-data").kendoGrid(gridConfig);
