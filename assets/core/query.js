@@ -1,264 +1,263 @@
 viewModel.query = {}; var qr = viewModel.query;
-qr.tempDataCommand = [
-	{id:0,key:"select", type:"field, field", value: ""},
-	{id:0,key:"update", type:"", value:""},
-	{id:0,key:"delete", type:"", value:""},
-	// {id:0,key:"save", type:"", value:""},
-	{id:0,key:"insert", type:"", value:""},
-	{id:0,key:"from", type:"table", value:""},
-	{id:0,key:"where", type:"string", value:""},
-	{id:0,key:"order", type:"string", value:""},
-	{id:0,key:"take", type:"number", value:""},
-	{id:0,key:"skip", type:"number", value:""},
+
+qr.dataCommand = ko.observableArray([
+	{ id: 0, key: "select", type: "field, field", value: ""},
+	{ id: 0, key: "insert", type: "", value: ""},
+	{ id: 0, key: "update", type: "", value: ""},
+	{ id: 0, key: "delete", type: "", value: ""},
+	// { id: 0, key: "save", type: "", value: ""},
+	{ id: 0, key: "from", type: "table", value: ""},
+	{ id: 0, key: "where", type: "string", value: ""},
+	{ id: 0, key: "order", type: "string", value: ""},
+	{ id: 0, key: "take", type: "number", value: ""},
+	{ id: 0, key: "skip", type: "number", value: ""},
+]);
+qr.dataQueryOfOrder = ko.observableArray([
+	{ value: "asc", title: "Ascending" },
+	{ value: "desc", title: "Descending" },
+]);
+qr.dataQueryOfWhere = [
+	// { key: "And", title: "And", type: "Array Query" },
+	// { key: "Or", title: "Or", type: "Array Query" },
+	{ key: "Eq", title: "Equal", type: "field,value" },
+	{ key: "Ne", title: "Not Equal", type: "field,value" },
+	{ key: "Lt", title: "Lower Than", type: "field,value" },
+	{ key: "Lte", title: "Lower Than / Equal", type: "field,value" },
+	{ key: "Gt", title: "Greater Than", type: "field,value" },
+	{ key: "Gte", title: "Greater Than / Equal", type: "field,value" },
+	{ key: "In", title: "In", type: "field, array string" },
+	{ key: "Nin", title: "Not In", type: "field, array string" },
+	{ key: "Contains", title: "Contains", type: "field, array string" },
 ];
-qr.tempWhereQuery = [
-	{key:"And", type:"Array Query", parm: "arrayQuery"},
-	{key:"Or", type:"Array Query", parm: "arrayQuery"},
-	{key:"Eq", type:"field,value", parm: "string"},
-	{key:"Ne", type:"field,value", parm: "string"},
-	{key:"Lt", type:"field,value", parm: "string"},
-	{key:"Gt", type:"field,value", parm: "string"},
-	{key:"Lte", type:"field,value", parm: "string"},
-	{key:"Gte", type:"field,value", parm: "string"},
-	{key:"In", type:"field, array string", parm: "arrayString"},
-	{key:"Nin", type:"field, array string", parm: "arrayString"},
-	{key:"Contains", type:"field, array string", parm: "arrayString"}
-];
-qr.templateWhere = {
+
+qr.templateQueryOfInsert = { 
+	field: "", 
+	value: ""
+};
+qr.templateQueryOfOrder = { 
+	field: "", 
+	direction: ""
+};
+qr.templateWhereOfOrder = {
 	key: "",
 	parm: "",
 	field: "",
 	value: "",
 	subquery: [],
 };
-qr.command = ko.observable('');
-qr.paramQuery = ko.observable('');
-qr.chooseQuery = ko.observable('');
-qr.selectQuery = ko.observable('');
-qr.valueCommand = ko.observableArray([]);
-qr.valueWhere = ko.observableArray([]);
-qr.seqCommand = ko.observable(1);
-qr.activeQuery = ko.observable();
 
-qr.datacommands = ko.mapping.fromJS(qr.tempDataCommand);
-qr.datawhere = ko.mapping.fromJS(qr.tempWhereQuery);
-qr.wherequery = ko.mapping.fromJS(qr.templateWhere);
+qr.queryBuilderMode = ko.observable('');
+qr.valueCommands = ko.observableArray([]);
+qr.queryOfSelect = ko.observableArray([]);
+qr.queryOfInsert = ko.observableArray([]);
+qr.queryOfFrom = ko.observable("");
+qr.queryOfOrder = ko.mapping.fromJS(qr.templateQueryOfOrder);
+qr.queryOfTake = ko.observable(0);
+qr.queryOfWhere = ko.observableArray([]);
 
-qr.changeActiveCommand = function(data){
-	return function (self, e) {
-		var each = ko.mapping.toJS(data)
-		$(".modal-query .modal-title span").html(each.key);
+qr.addQueryOfInsert = function () {
+	var o = $.extend(true, {}, qr.templateQueryOfInsert);
+	qr.queryOfInsert.push(o);
+};
+qr.removeQueryOfInsert = function (index) {
+	return function () {
+		var o = qr.queryOfInsert()[index];
+		qr.queryOfInsert.remove(o);
+	};
+};
+qr.addFilter = function (filter) {
+	return function () {
+		qr.queryBuilderMode(filter.key);
 
-		if (["select", "insert", "update", "delete"].indexOf(data.key()) > -1) {
-			var keywords = Lazy(qr.valueCommand()).where(function (e) {
+		if (["select", "insert", "update", "delete"].indexOf(filter.key) > -1) {
+			var keywords = Lazy($('#textquery').tokenInput("get")).where(function (e) {
 				return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
 			}).toArray();
 
 			if (keywords.length > 0) {
-				toastr["error"]("", "ERROR: " + 'Cannot add both "' + keywords[0].key + '" and "' + data.key() + '"');
+				if (keywords[0].key != filter.key) {
+					toastr["error"]("", "ERROR: " + 'Cannot use both "' + keywords[0].key + '" and "' + filter.key + '" together');
+					return;
+				}
+			}
+		}
+
+		if (["select", "order", "where"].indexOf(filter.key) > -1) {
+			var keywords = Lazy($('#textquery').tokenInput("get")).where({ key: "from" }).toArray();
+
+			if (keywords.length == 0) {
+				toastr["error"]("", "ERROR: " + 'Cannot use "select" / "order" / "where" without using "from" first');
 				return;
 			}
 		}
 
-		if (qr.checkValidationQuery(data.key())){
-			$(e.currentTarget).parent().siblings().removeClass("active"), $textarea = $("#textquery");
-			qr.command(data.id());
-			qr.paramQuery("");
-			qr.selectQuery("List");
-			if (data.type() != "" && data.key() != "where"){
-				if (data.key() == "select") {
-					qr.paramQuery("*");
-				}
+		if (filter.key == "select") {
+			qr.queryOfSelect([]);
+			$(".modal-query").modal("show");
+		}
 
-				$(".modal-query").modal("show");
-				setTimeout(function () { $('.modal-query input:eq(0)').focus(); }, 500);
-				qr.chooseQuery("Show");
-				qr.activeQuery(ko.mapping.toJS(data));
-			} else if (data.key() == "where"){
-				var where = Lazy(qr.valueCommand()).find({ key: "where" });
-				if (where == undefined) {
-					qr.valueWhere([]);
-					qr.addQueryWhere();
-				} else {
-					qr.valueWhere(where.value);
-				}
+		if (filter.key == "insert" || filter.key == "update") {
+			qr.queryOfInsert([]);
+			var row = $.extend(true, { }, qr.templateQueryOfInsert);
+			row.field = "_id";
+			qr.queryOfInsert.push(row);
+			$(".modal-query").modal("show");
+		}
 
-				$(".modal-query-where").modal("show");
-				qr.chooseQuery("Show");
-			} else {
-				if (["update", "insert"].indexOf(data.key()) > -1) {
-					$(".modal-query").modal("show");
-					setTimeout(function () { $('.modal-query input:eq(0)').focus(); }, 500);
-					qr.chooseQuery("Show");
-					qr.activeQuery(ko.mapping.toJS(data));
-				} else {
-					var dataselect = ko.mapping.toJS(data);
-					dataselect.id = qr.seqCommand();
-					qr.chooseQuery("Hide");
-					$('#textquery').tokenInput("add", dataselect);
-				}
-			}
-		} else {
-			toastr["error"]("", "ERROR: " + 'Query "' + data.key() + '" already added. Cannot add same query!');
+		if (filter.key == "delete") {
+			$('#textquery').tokenInput("remove", { key: filter.key });
+			$('#textquery').tokenInput("add", { 
+				id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
+				key: filter.key,
+				value: ""
+			});
+		}
+
+		if (filter.key == "from") {
+			qr.queryOfFrom('');
+			$(".modal-query").modal("show");
+		}
+
+		if (filter.key == "order") {
+			ko.mapping.fromJS(qr.templateQueryOfOrder, qr.queryOfOrder);
+			$(".modal-query").modal("show");
+		}
+
+		if (filter.key == "take" || filter.key == "skip") {
+			qr.queryOfTake(0);
+			$(".modal-query").modal("show");
+		}
+
+		if (filter.key == "where") {
+			qr.queryOfWhere([]);
+			qr.addQueryOfWhere();
+			$(".modal-query-where").modal("show");
 		}
 	};
-}
-qr.queryAdd = function(item){
-	qr.paramQuery("");
-	var dataquery = {
-		id: item.id,
-		key: item.key,
-		value: item.value,
-	}
-	if (qr.checkValidationQuery(item.key) == true || qr.selectQuery() != ""){
-		if (item.type != "" && item.key != "where" && qr.chooseQuery() == ""){
-			$('#textquery').tokenInput("remove", {id: 0});
-			$(".modal-query").modal("show");
-			qr.chooseQuery("Show");
-			qr.activeQuery(item);
-		} else if (item.key == "where" && qr.chooseQuery() == ""){
-			$(".modal-query-where").modal("show");
-			qr.chooseQuery("Show");
-		} else if (item.type == ""){
-			dataquery.id = qr.seqCommand();
-			qr.valueCommand.push(dataquery);
-			qr.seqCommand(qr.seqCommand()+1);
-		} else {
-			qr.valueCommand.push(dataquery);
-			qr.seqCommand(qr.seqCommand()+1);
-		}
-	} else {
-		$('#textquery').tokenInput("remove", {id: 0});
-		toastr["error"]("", "ERROR: " + "Query already added. Cannot add multiple same query!");
-	}
-}
-qr.queryDelete = function(item){
-	qr.valueCommand.remove( function (res) { return res.id === item.id; } )
-}
-qr.parseQuery = function (commands) {
-	var o = [];
-
-	var i = 0;
-	for (key in commands) {
-		if (commands.hasOwnProperty(key)) {
-			i++;
-			o.push({ id: i, key: key, value: commands[key] });
-		}
-	}
-
-	return o;
 };
-qr.unparseQuery = function (commands) {
+qr.querySave = function () {
+	var o = { 
+		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
+		key: qr.queryBuilderMode(),
+		value: ""
+	};
+
+	if (qr.queryBuilderMode() == "select") {
+		o.value = qr.queryOfSelect().length > 0 ? qr.queryOfSelect().join(",") : "*";
+	}
+
+	if (qr.queryBuilderMode() == "insert" || qr.queryBuilderMode() == "update" ) {
+		var data = {};
+		Lazy(qr.queryOfInsert()).where(function (e) {
+			return $.trim(e.field) != "" && $.trim(e.value) != "";
+		}).each(function (e) {
+			data[e.field] = e.value;
+		});
+		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
+
+		if (!data.hasOwnProperty("_id")) {
+			toastr["error"]("", 'There must be field called "_id"');
+			return;
+		}
+	}
+
+	if (qr.queryBuilderMode() == "from") {
+		o.value = qr.queryOfFrom();
+		ds.fetchDataSourceMetaData(o.value);
+	}
+
+	if (qr.queryBuilderMode() == "order") {
+		if ($.trim(qr.queryOfOrder.field()) == '') {
+			toastr["error"]("", 'Order field cannot be empty');
+			return
+		}
+
+		if ($.trim(qr.queryOfOrder.direction()) == '') {
+			toastr["error"]("", 'Order direction cannot be empty');
+			return
+		}
+
+		o.value = [qr.queryOfOrder.field(), qr.queryOfOrder.direction()].join(",");
+	}
+
+	if (qr.queryBuilderMode() == "take" || qr.queryBuilderMode() == "skip") {
+		o.value = parseInt(qr.queryOfTake(), 10);
+	}
+
+	$('#textquery').tokenInput("remove", { key: qr.queryBuilderMode() });
+	$('#textquery').tokenInput("add", o);
+	$(".modal-query").modal("hide");
+};
+qr.getQuery = function () {
 	var o = {};
-	ko.mapping.toJS(commands).forEach(function (e) {
+	ko.mapping.toJS($('#textquery').tokenInput("get")).forEach(function (e) {
 		o[e.key] = e.value;
 	});
 	return o;
 };
-qr.validateQuery = function () {
-	if (qr.valueCommand().length == 0) {
-		return true;
+qr.setQuery = function (queries) {
+	for (var key in queries) {
+		if (queries.hasOwnProperty(key)) {
+			var o = { 
+				id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
+				key: key,
+				value: queries[key]
+			};
+			$('#textquery').tokenInput("add", o);
+		}
 	}
-
-	var isKeywordExists = Lazy(qr.valueCommand()).where(function (e) {
+};
+qr.validateQuery = function () {
+	var isKeywordExists = Lazy($('#textquery').tokenInput("get")).where(function (e) {
 		return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
 	}).toArray().length > 0;
-
 	if (!isKeywordExists) {
 		toastr["error"]("", "ERROR: " + 'Query must contains "select" / "insert" / "update" / "delete" !');
 		return false;
 	}
 
+	var isFromExists = Lazy($('#textquery').tokenInput("get")).where({ key: "from" }).toArray().length > 0;
+	if (!isFromExists) {
+		toastr["error"]("", "ERROR: " + 'Query must contains "from" !');
+		return false;
+	}
+
 	return true;
 };
-qr.querySave = function(){
-	var dataselect = qr.activeQuery();
-	dataselect.value = qr.paramQuery().replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
-	dataselect.id = qr.seqCommand();
+qr.clearQuery = function () { 
+	$('#textquery').tokenInput("remove", { });
+};
+qr.addQueryOfWhere = function () {
+	var o = $.extend(true, {}, qr.templateWhereOfOrder);
+	var m = ko.mapping.fromJS(o);
+	qr.queryOfWhere.push(m);
+};
+qr.removeQueryOfWhere = function (index) {
+	return function () {
+		var o = qr.queryOfWhere()[index];
+		qr.queryOfWhere.remove(o);
+	};
+};
+qr.saveQueryOfWhere = function () {
+	var o = { 
+		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
+		key: "where",
+		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).where(function (e) {
+			return e.field != "" && e.key != "";
+		}).toArray()
+	};
 
-	if (dataselect.value == "") {
-		toastr["error"]("", "Value cannot be empty");
-		return;
-	}
-
-	if (dataselect.key == "select" && $.trim(dataselect.value) == "") {
-		dataselect.value = "*";
-	}
-
-	$('#textquery').tokenInput("add", dataselect);
-	$(".modal-query").modal("hide");
-}
-qr.queryCancel = function(){
-	$('#textquery').tokenInput("remove", {id: 0});
-}
-qr.enterSave = function(e){
-	if (e.keyCode == 13) {
-		qr.paramQuery($("input.query-text").val());
-        qr.querySave();
-    }
-    return true;
-}
-qr.updateQuery = function(){
-	var maxid = 0;
-	for (var key in qr.valueCommand()){
-		qr.selectQuery("List");
-		var dataselect = ko.mapping.toJS(qr.valueCommand()[key]);
-		var searchElem = ko.utils.arrayFilter(qr.tempDataCommand,function (item) {
-            return item.key === dataselect.key;
-        });
-		dataselect["type"] = searchElem[0].type;
-		qr.chooseQuery("Hide");
-
-		if (dataselect.key != "where") {
-			$('#textquery').tokenInput("add", dataselect);
-		} else {
-			var cloned = $.extend(true, {}, dataselect);
-			$('#textquery').tokenInput("add", cloned);
-		}
-
-		if (qr.valueCommand().id > maxid)
-			maxid = qr.valueCommand().id;
-	}
-	qr.seqCommand(maxid+1);
-}
-qr.checkValidationQuery = function(key){
-	var dataQuery = $('#textquery').tokenInput("get");
-	var searchElem = ko.utils.arrayFilter(dataQuery,function (item) {
-        return item.key === key;
-    });
-    if (searchElem.length > 0)
-    	return false;
-    else
-    	return true;
-}
-qr.clearQuery = function(){
-	qr.valueCommand([]);
-	$('#textquery').tokenInput("clear");
-}
-qr.addQueryWhere = function(){
-	var cloned = $.extend(true, {}, qr.templateWhere);
-	qr.valueWhere.push(ko.mapping.fromJS(cloned));
-}
-qr.changeQueryWhere = function(e){
-	var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
-	qr.valueWhere()[indexlist].parm(dataItem.parm);
-}
-qr.saveWhere = function () {
-	qr.valueCommand(Lazy(qr.valueCommand()).where(function (e) {
-		return e.key != "where";
-	}).toArray());
-
-	var cloned = $.extend(true, {}, qr.templateWhere);
-	cloned.id = 99;
-	cloned.key = "where";
-	cloned.value = ko.mapping.toJS(qr.valueWhere());
-
-	$('#textquery').tokenInput("add", cloned);
+	$('#textquery').tokenInput("remove", { key: "where" });
+	$('#textquery').tokenInput("add", o);
 	$(".modal-query-where").modal("hide");
-}
+};
+qr.changeQueryOfWhere = function(e){
+	// var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
+	// qr.valueWhere()[indexlist].parm(dataItem.parm);
+};
 
-function createTextQuery(){
-	$("#textquery").tokenInput(qr.tempDataCommand, { 
+qr.createTextQuery = function () {
+	$("#textquery").tokenInput(qr.dataCommand(), { 
 		zindex: 700,
 		noResultsText: "Add New Query",
 		allowFreeTagging: true,
@@ -267,22 +266,40 @@ function createTextQuery(){
 		propertyToSearch: 'key',
 		theme: "facebook",
 		onAdd: function (item) {
-			qr.queryAdd(item);
-			qr.chooseQuery("");
-			qr.selectQuery("");
+			qr.valueCommands.push(item);
+			// console.log("=====", item);
+			 // Object {id: "q1620160125200018702", key: "select", value: "_id,name,age", label: "_id,name,age"}
+			// qr.queryAdd(item);
+			// qr.chooseQuery("");
+			// qr.selectQuery("");
 		},
-		onDelete: function(item){
-			qr.queryDelete(item);
+		onDelete: function (item) {
+			var target = Lazy(qr.valueCommands()).find({ key: item.key });
+			if (target != undefined) {
+				qr.valueCommands.remove(target);
+			}
 		},
-		resultsFormatter: function(item){
-			return "<li>"+item.key +"(" + item.type +")</li>";
-		},
-		tokenFormatter: function(item){
-			return "<li>"+item.key +"(" + item.value +")</li>";
+		// resultsFormatter: function(item){
+		// 	return "<li>"+item.key +"(" + item.type +")</li>";
+		// },
+		tokenFormatter: function (item) {
+			var text = item.value;
+			if (item.key == "where") {
+				text = item.value.map(function (e) {
+				    var o = {};
+				    var v = {};
+				    v[e.field] = e.value;
+				    o[e.key] = v;
+
+				    return JSON.stringify(o);
+				});
+			}
+
+			return "<li>" + item.key + "(" + text + ")</li>";
 		}
 	});
-}
+};
 
 $(function () {
-	createTextQuery();
+	qr.createTextQuery();
 });

@@ -92,6 +92,10 @@ div.list-where {
   color: #337AB7; }
 
 /** reusable stylesheet */
+.no-padding {
+  padding: 0px;
+  margin: 0px; }
+
 .nav.nav-tabs li:hover {
   cursor: pointer; }
 
