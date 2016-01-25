@@ -52,6 +52,9 @@ qr.changeActiveCommand = function(data){
 			qr.selectQuery("List");
 			if (data.type() != "" && data.key() != "where"){
 				$(".modal-query").modal("show");
+				setTimeout(function () {
+				    $(".query-text").focus();
+				}, 1000);
 				qr.chooseQuery("Show");
 				qr.activeQuery(ko.mapping.toJS(data));
 			} else if (data.key() == "where"){
@@ -82,7 +85,7 @@ qr.queryAdd = function(item){
 			$('#textquery').tokenInput("remove", {id: 0});
 			$(".modal-query").modal("show");
 			qr.chooseQuery("Show");
-			qr.activeQuery(item);
+			qr.activeQuery(item);			
 		} else if (item.key == "where" && qr.chooseQuery() == ""){
 			$(".modal-query-where").modal("show");
 			qr.chooseQuery("Show");
@@ -103,11 +106,16 @@ qr.queryDelete = function(item){
 	qr.valueCommand.remove( function (res) { return res.id === item.id; } )
 }
 qr.querySave = function(){
-	var dataselect = qr.activeQuery();
-	dataselect.value = qr.paramQuery();
-	dataselect.id = qr.seqCommand();
-	$('#textquery').tokenInput("add", dataselect);
-	$(".modal-query").modal("hide");
+	if(qr.paramQuery()!=""){
+		var dataselect = qr.activeQuery();
+		dataselect.value = qr.paramQuery();
+		dataselect.id = qr.seqCommand();
+		$('#textquery').tokenInput("add", dataselect);
+		$(".modal-query").modal("hide");
+	}else{
+		toastr["error"]("","ERROR: " + "Query empty please input !!")
+		$(".modal-query").modal("show");
+	}
 }
 qr.queryCancel = function(){
 	$('#textquery').tokenInput("remove", {id: 0});
