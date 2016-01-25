@@ -55,22 +55,6 @@ qr.queryOfOrder = ko.mapping.fromJS(qr.templateQueryOfOrder);
 qr.queryOfTake = ko.observable(0);
 qr.queryOfWhere = ko.observableArray([]);
 
-/*** TEMP !!!!! */
-qr.valueCommand = ko.observableArray([]);
-qr.command = ko.observable('');
-qr.paramQuery = ko.observable('');
-qr.chooseQuery = ko.observable('');
-qr.selectQuery = ko.observable('');
-qr.valueWhere = ko.observableArray([]);
-qr.seqCommand = ko.observable(1);
-qr.activeQuery = ko.observable();
-qr.queryCancel = function () { };
-qr.querySave = function () { };
-qr.addQueryWhere = function () { };
-/*** temp */
-
-
-
 qr.addQueryOfInsert = function () {
 	var o = $.extend(true, {}, qr.templateQueryOfInsert);
 	qr.queryOfInsert.push(o);
