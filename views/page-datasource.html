@@ -258,7 +258,7 @@
 		        <h1 class="panel-title">Meta Data</h1>
 		    </div>
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length > 0)">
-		    	<div id="grid-metadata" data-bind="kendoGrid: { data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true }"></div>
+		    	<div id="grid-metadata" data-bind="kendoGrid: { dataSource: ds.gridMetaDataSchema, data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true, editable: true, }"></div>
 		    </div>
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length == 0)">
 				<br />
@@ -359,7 +359,7 @@
 			    <div class="form-group">
 		    		<label class="col-md-4 filter-label" style="text-align: right;">Fields</label>
 		        	<div class="col-md-6">
-		        		<select data-bind="kendoMultiSelect: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: '_id', value: qr.queryOfSelect, placeholder: 'Choose the fields' }"></select>
+		        		<select data-bind="kendoMultiSelect: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: qr.queryOfSelect, placeholder: 'Choose the fields' }"></select>
 		        	</div>
 		        	<div class="clearfix"></div>
 	        	</div>
@@ -408,7 +408,7 @@
 				<div class="form-group">
 			        <label class="col-sm-4 filter-label" style="text-align: right; padding-left: 0px;">Order Field</label>
         			<div class="col-md-3" style="padding-left: 0px;">
-		        		<select data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: '_id', value: qr.queryOfOrder.field, optionLabel: 'Select one' }"></select>
+		        		<select data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: qr.queryOfOrder.field, optionLabel: 'Select one' }"></select>
         			</div>
     				<div class="clearfix"></div>
 				</div>
@@ -513,10 +513,10 @@
 <script id="queryWhere" type="text/html">
 	<tr>
 		<td>
-			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
 		</td>
 		<td>
-			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
 		</td>
 		<td>
 			<input type="text" class="form-control input-sm" data-bind="value: value" placeholder="Value" />

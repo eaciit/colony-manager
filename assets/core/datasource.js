@@ -94,13 +94,41 @@ ds.settingsColumns = ko.observableArray([
 ]);
 ds.metadataColumns = ko.observableArray([
 	{ field: "_id", title: "ID" },
-	{ field: "Label", title: "Label" },
+	{ field: "Label", title: "Label", editor: function (container, options) {
+		$('<input required data-text-field="Label" data-value-field="Label" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
+	} },
 	{ field: "Type", title: "Type" },
-	{ field: "Format", title: "Format" },
-	{ title: "", template: function (d) {
+	{ field: "Format", title: "Format", editor: function (container, options) {
+		$('<input data-text-field="Format" data-value-field="Format" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
+	} },
+	{ title: "_id", template: function (d) {
 		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='glyphicon glyphicon-detail'></span> Lookup</button>";
 	}, width: 90, attributes: { style: "text-align: center;" } },
 ]);
+ds.gridMetaDataSchema = {
+	pageSize: 15,
+	schema: {
+		model: {
+			id: "_id",
+			fields: {
+				_id: { type: "string", editable: false },
+				Label: { type: "string" },
+				Type: { type: "string", editable: false },
+				Format: { type: "string" },
+			}
+		}
+	}
+};
+ds.gridMetaDataChangeTimer = undefined;
+ds.gridMetaDataChange = function (o) {
+	if (ds.gridMetaDataChangeTimer != undefined) {
+		clearTimeout(ds.gridMetaDataChangeTimer);
+	}
+	ds.gridMetaDataChangeTimer = setTimeout(function () {
+		var data = JSON.parse(kendo.stringify($("#grid-metadata").data("kendoGrid").dataSource.data()));
+		ds.confDataSource.MetaData(data);
+	}, 800);
+};
 ds.fetchDataSourceMetaData = function (from) {
 	var param = {
 		connectionID: ds.confDataSource.ConnectionID(),
