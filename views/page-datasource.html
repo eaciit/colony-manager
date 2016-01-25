@@ -237,6 +237,7 @@
 						</ul>
 			        </div>
 			        <div class="col-md-10 area-command">
+			        	<label class="title-command">Query Editor</label>
 			        	<!-- <textarea placeholder="Input query commands" id="textquery"></textarea> -->
 			        	<input type='text' id='textquery' name='textquery' />
 			        </div>
@@ -340,11 +341,15 @@
 	<div class="modal-dialog">
 		<div class="modal-content" data-bind="with:viewModel.query">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Query</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">
+					Parameter for <span></span>
+				</h4>
 			</div>
 			<div class="modal-body">
-				<input type="text" class="form-control input-sm query-text" placeholder="Input type here !!" data-bind="value:paramQuery" onkeypress="return viewModel.query.enterSave(event)"/>
+				<input type="text" class="form-control input-sm query-text" placeholder="Type parameter here !" data-bind="value:paramQuery" onkeypress="return viewModel.query.enterSave(event)"/>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>

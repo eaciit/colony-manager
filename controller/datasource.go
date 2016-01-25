@@ -369,6 +369,12 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	defer conn.Close()
 
 	if metaSave.keyword != "" {
+		dataDS.MetaData = []*colonycore.FieldInfo{}
+		err = colonycore.Save(dataDS)
+		if !helper.HandleError(err) {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
 		return helper.CreateResult(true, dataDS, "")
 	}
 

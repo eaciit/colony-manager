@@ -1,15 +1,15 @@
 viewModel.query = {}; var qr = viewModel.query;
 qr.tempDataCommand = [
 	{id:0,key:"select", type:"field, field", value: ""},
-	{id:0,key:"from", type:"table", value:""},
-	{id:0,key:"take", type:"number", value:""},
-	{id:0,key:"skip", type:"number", value:""},
-	{id:0,key:"where", type:"string", value:""},
-	{id:0,key:"order", type:"string", value:""},
 	{id:0,key:"update", type:"", value:""},
 	{id:0,key:"delete", type:"", value:""},
 	// {id:0,key:"save", type:"", value:""},
-	{id:0,key:"insert", type:"", value:""}
+	{id:0,key:"insert", type:"", value:""},
+	{id:0,key:"from", type:"table", value:""},
+	{id:0,key:"where", type:"string", value:""},
+	{id:0,key:"order", type:"string", value:""},
+	{id:0,key:"take", type:"number", value:""},
+	{id:0,key:"skip", type:"number", value:""},
 ];
 qr.tempWhereQuery = [
 	{key:"And", type:"Array Query", parm: "arrayQuery"},
@@ -46,6 +46,9 @@ qr.wherequery = ko.mapping.fromJS(qr.templateWhere);
 
 qr.changeActiveCommand = function(data){
 	return function (self, e) {
+		var each = ko.mapping.toJS(data)
+		$(".modal-query .modal-title span").html(each.key);
+
 		if (["select", "insert", "update", "delete"].indexOf(data.key()) > -1) {
 			var keywords = Lazy(qr.valueCommand()).where(function (e) {
 				return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
@@ -63,7 +66,12 @@ qr.changeActiveCommand = function(data){
 			qr.paramQuery("");
 			qr.selectQuery("List");
 			if (data.type() != "" && data.key() != "where"){
+				if (data.key() == "select") {
+					qr.paramQuery("*");
+				}
+
 				$(".modal-query").modal("show");
+				setTimeout(function () { $('.modal-query input:eq(0)').focus(); }, 500);
 				qr.chooseQuery("Show");
 				qr.activeQuery(ko.mapping.toJS(data));
 			} else if (data.key() == "where"){
@@ -80,6 +88,7 @@ qr.changeActiveCommand = function(data){
 			} else {
 				if (["update", "insert"].indexOf(data.key()) > -1) {
 					$(".modal-query").modal("show");
+					setTimeout(function () { $('.modal-query input:eq(0)').focus(); }, 500);
 					qr.chooseQuery("Show");
 					qr.activeQuery(ko.mapping.toJS(data));
 				} else {
@@ -164,8 +173,13 @@ qr.validateQuery = function () {
 };
 qr.querySave = function(){
 	var dataselect = qr.activeQuery();
-	dataselect.value = qr.paramQuery();
+	dataselect.value = qr.paramQuery().replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 	dataselect.id = qr.seqCommand();
+
+	if (dataselect.value == "") {
+		toastr["error"]("", "Value cannot be empty");
+		return;
+	}
 
 	if (dataselect.key == "select" && $.trim(dataselect.value) == "") {
 		dataselect.value = "*";
