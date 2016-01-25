@@ -18,6 +18,11 @@ type DataSourceController struct {
 	App
 }
 
+type MetaSave struct {
+	keyword string
+	data    string
+}
+
 func CreateDataSourceController(s *knot.Server) *DataSourceController {
 	var controller = new(DataSourceController)
 	controller.Server = s
@@ -67,35 +72,37 @@ func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
 	return nil
 }
 
-func (d *DataSourceController) connectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connection, dbox.IConnection, dbox.IQuery, error) {
+func (d *DataSourceController) connectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connection, dbox.IConnection, dbox.IQuery, MetaSave, error) {
 	dataDS := new(colonycore.DataSource)
 	err := colonycore.Get(dataDS, _id)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, MetaSave{}, err
 	}
 
 	dataConn := new(colonycore.Connection)
 	err = colonycore.Get(dataConn, dataDS.ConnectionID)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, MetaSave{}, err
 	}
 
 	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, MetaSave{}, err
 	}
 
 	conn := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
 
 	connection, err := conn.Connect()
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, MetaSave{}, err
 	}
 
-	query := d.parseQuery(connection.NewQuery(), dataDS.QueryInfo)
-	return dataDS, dataConn, connection, query, nil
+	query, metaSave := d.parseQuery(connection.NewQuery(), dataDS.QueryInfo)
+	return dataDS, dataConn, connection, query, metaSave, nil
 }
 
-func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M) dbox.IQuery {
+func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M) (dbox.IQuery, MetaSave) {
+	metaSave := MetaSave{}
+
 	if qFrom := queryInfo.Get("from", "").(string); qFrom != "" {
 		query = query.From(qFrom)
 	}
@@ -117,13 +124,97 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 	if qOrder := queryInfo.Get("order", "").(string); qOrder != "" {
 		qOrderPart := strings.Split(qOrder, ",")
 		if len(qOrderPart) == 1 {
-			query = query.Order(qOrderPart[0])
+			query = query.Order(strings.Trim(qOrderPart[0], ""))
 		} else if len(qOrderPart) == 2 {
-			query = query.Order(qOrderPart[0], qOrderPart[1])
+			query = query.Order(strings.Trim(qOrderPart[0], ""), strings.Trim(qOrderPart[1], ""))
 		}
 	}
 
-	return query
+	if qInsert := queryInfo.Get("insert", "").(string); qInsert != "" {
+		if qInsert != "" {
+			metaSave.keyword = "insert"
+			metaSave.data = qInsert
+			query = query.Insert()
+		}
+	}
+	if qUpdate := queryInfo.Get("update", "").(string); qUpdate != "" {
+		if qUpdate != "" {
+			metaSave.keyword = "update"
+			metaSave.data = qUpdate
+			query = query.Update()
+		}
+	}
+	if _, qDeleteOK := queryInfo["delete"]; qDeleteOK {
+		metaSave.keyword = "delete"
+		query = query.Delete()
+	}
+
+	if qWhere := queryInfo.Get("where", []interface{}{}).([]interface{}); len(qWhere) > 0 {
+		allFilter := []*dbox.Filter{}
+
+		for _, each := range qWhere {
+			where, _ := toolkit.ToM(each.(map[string]interface{}))
+			var filter *dbox.Filter = nil
+
+			field := where.Get("field", "").(string)
+			value := fmt.Sprintf("%v", where["value"])
+
+			if key := where.Get("key", "").(string); key == "Eq" {
+				filter = dbox.Eq(field, value)
+			} else if key == "Ne" {
+				filter = dbox.Ne(field, value)
+			} else if key == "Lt" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Lt(field, valueInt)
+				} else {
+					filter = dbox.Lt(field, value)
+				}
+			} else if key == "Lte" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Lte(field, valueInt)
+				} else {
+					filter = dbox.Lte(field, value)
+				}
+			} else if key == "Gt" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Gt(field, valueInt)
+				} else {
+					filter = dbox.Gt(field, value)
+				}
+			} else if key == "Gte" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Gte(field, valueInt)
+				} else {
+					filter = dbox.Gte(field, value)
+				}
+			} else if key == "In" {
+				valueArray := where.Get("field", []interface{}{}).([]interface{})
+				filter = dbox.In(field, valueArray...)
+			} else if key == "Nin" {
+				valueArray := where.Get("field", []interface{}{}).([]interface{})
+				filter = dbox.Nin(field, valueArray...)
+			} else if key == "Contains" {
+				valueArrayIntfc := where.Get("field", []interface{}{}).([]interface{})
+				valueArrayStr := []string{}
+				for _, e := range valueArrayIntfc {
+					valueArrayStr = append(valueArrayStr, fmt.Sprintf("%v", e))
+				}
+				filter = dbox.Contains(field, valueArrayStr...)
+			}
+
+			if filter != nil {
+				allFilter = append(allFilter, filter)
+			}
+		}
+
+		query = query.Where(allFilter...)
+	}
+
+	return query, metaSave
 }
 
 /** CONNECTION LIST */
@@ -267,11 +358,25 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	}
 	_id := payload["_id"].(string)
 
-	dataDS, _, conn, query, err := d.connectToDataSource(_id)
+	dataDS, _, conn, query, metaSave, err := d.connectToDataSource(_id)
+	if len(dataDS.QueryInfo) == 0 {
+		return helper.CreateResult(true, dataDS, "")
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer conn.Close()
+
+	if metaSave.keyword != "" {
+		dataDS.MetaData = []*colonycore.FieldInfo{}
+		err = colonycore.Save(dataDS)
+		if !helper.HandleError(err) {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		return helper.CreateResult(true, dataDS, "")
+	}
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
@@ -322,11 +427,35 @@ func (d *DataSourceController) FetchDataSourceSampleData(r *knot.WebContext) int
 	}
 	_id := payload["_id"].(string)
 
-	dataDS, _, conn, query, err := d.connectToDataSource(_id)
+	dataDS, _, conn, query, metaSave, err := d.connectToDataSource(_id)
+	if len(dataDS.QueryInfo) == 0 {
+		return helper.CreateResult(true, []toolkit.M{}, "")
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer conn.Close()
+
+	if metaSave.keyword != "" {
+		if metaSave.data != "" {
+			dataToSave := map[string]interface{}{}
+			err = json.Unmarshal([]byte(metaSave.data), &dataToSave)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			err = query.Exec(toolkit.M{"data": dataToSave})
+		} else {
+			err = query.Exec(nil)
+		}
+
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		return helper.CreateResult(true, dataDS, "")
+	}
 
 	if _, isTakeOK := dataDS.QueryInfo["take"]; !isTakeOK {
 		query = query.Take(15)
@@ -342,10 +471,6 @@ func (d *DataSourceController) FetchDataSourceSampleData(r *knot.WebContext) int
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	if len(data) == 0 {
-		return helper.CreateResult(false, nil, "No data found")
 	}
 
 	result := toolkit.M{"metadata": dataDS.MetaData, "data": data}
@@ -372,13 +497,14 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 
 	for _, meta := range dataDS.MetaData {
 		if meta.ID == lookupID {
-			dataLookupDS, _, lookupConn, lookupQuery, err := d.connectToDataSource(meta.Lookup.DataSourceID)
+			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.connectToDataSource(meta.Lookup.DataSourceID)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 			defer lookupConn.Close()
 
 			_ = dataLookupDS
+			_ = metaSave
 			// if _, isTakeOK := dataLookupDS.QueryInfo["take"]; !isTakeOK {
 			// 	lookupQuery = lookupQuery.Take(15)
 			// }
