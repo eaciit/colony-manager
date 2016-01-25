@@ -391,8 +391,9 @@ ds.testQuery = function () {
 
 			$("#grid-ds-result").kendoGrid(gridConfig);
 
+			// ======= this line of code make lookup data overrided everytime trying to edit datasourcce
 			var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
-			if (queryInfo.hasOwnProperty("from")) {
+			if (queryInfo.hasOwnProperty("from") && ds.confDataSource.MetaData().length == 0) {
 				ds.fetchDataSourceMetaData(queryInfo.from);
 			}
 		}, function (a, b, c) {

@@ -12,12 +12,40 @@ qr.dataCommand = ko.observableArray([
 	{ id: 0, key: "take", type: "number", value: ""},
 	{ id: 0, key: "skip", type: "number", value: ""},
 ]);
-qr.dataWhereOfOrder = ko.observableArray([
+qr.dataQueryOfOrder = ko.observableArray([
 	{ value: "asc", title: "Ascending" },
 	{ value: "desc", title: "Descending" },
 ]);
-qr.templateQueryOfInsert = { field: "", value: "" };
-qr.templateQueryOfOrder = { field: "", direction: "" };
+qr.dataQueryOfWhere = [
+	// { key: "And", title: "And", type: "Array Query" },
+	// { key: "Or", title: "Or", type: "Array Query" },
+	{ key: "Eq", title: "Equal", type: "field,value" },
+	{ key: "Ne", title: "Not Equal", type: "field,value" },
+	{ key: "Lt", title: "Lower Than", type: "field,value" },
+	{ key: "Lte", title: "Lower Than / Equal", type: "field,value" },
+	{ key: "Gt", title: "Greater Than", type: "field,value" },
+	{ key: "Gte", title: "Greater Than / Equal", type: "field,value" },
+	{ key: "In", title: "In", type: "field, array string" },
+	{ key: "Nin", title: "Not In", type: "field, array string" },
+	{ key: "Contains", title: "Contains", type: "field, array string" },
+];
+
+qr.templateQueryOfInsert = { 
+	field: "", 
+	value: ""
+};
+qr.templateQueryOfOrder = { 
+	field: "", 
+	direction: ""
+};
+qr.templateWhereOfOrder = {
+	key: "",
+	parm: "",
+	field: "",
+	value: "",
+	subquery: [],
+};
+
 qr.queryBuilderMode = ko.observable('');
 qr.valueCommands = ko.observableArray([]);
 qr.queryOfSelect = ko.observableArray([]);
@@ -25,6 +53,7 @@ qr.queryOfInsert = ko.observableArray([]);
 qr.queryOfFrom = ko.observable("");
 qr.queryOfOrder = ko.mapping.fromJS(qr.templateQueryOfOrder);
 qr.queryOfTake = ko.observable(0);
+qr.queryOfWhere = ko.observableArray([]);
 
 /*** TEMP !!!!! */
 qr.valueCommand = ko.observableArray([]);
@@ -38,19 +67,6 @@ qr.activeQuery = ko.observable();
 qr.queryCancel = function () { };
 qr.querySave = function () { };
 qr.addQueryWhere = function () { };
-qr.tempWhereQuery = [
-	{key:"And", type:"Array Query", parm: "arrayQuery"},
-	{key:"Or", type:"Array Query", parm: "arrayQuery"},
-	{key:"Eq", type:"field,value", parm: "string"},
-	{key:"Ne", type:"field,value", parm: "string"},
-	{key:"Lt", type:"field,value", parm: "string"},
-	{key:"Gt", type:"field,value", parm: "string"},
-	{key:"Lte", type:"field,value", parm: "string"},
-	{key:"Gte", type:"field,value", parm: "string"},
-	{key:"In", type:"field, array string", parm: "arrayString"},
-	{key:"Nin", type:"field, array string", parm: "arrayString"},
-	{key:"Contains", type:"field, array string", parm: "arrayString"}
-];
 /*** temp */
 
 
@@ -126,6 +142,12 @@ qr.addFilter = function (filter) {
 		if (filter.key == "take" || filter.key == "skip") {
 			qr.queryOfTake(0);
 			$(".modal-query").modal("show");
+		}
+
+		if (filter.key == "where") {
+			qr.queryOfWhere([]);
+			qr.addQueryOfWhere();
+			$(".modal-query-where").modal("show");
 		}
 	};
 };
@@ -221,6 +243,34 @@ qr.validateQuery = function () {
 qr.clearQuery = function () { 
 	$('#textquery').tokenInput("remove", { });
 };
+qr.addQueryOfWhere = function () {
+	var o = $.extend(true, {}, qr.templateWhereOfOrder);
+	var m = ko.mapping.fromJS(o);
+	qr.queryOfWhere.push(m);
+};
+qr.removeQueryOfWhere = function (index) {
+	return function () {
+		var o = qr.queryOfWhere()[index];
+		qr.queryOfWhere.remove(o);
+	};
+};
+qr.saveQueryOfWhere = function () {
+	var o = { 
+		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
+		key: "where",
+		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).where(function (e) {
+			return e.field != "" && e.key != "";
+		}).toArray()
+	};
+
+	$('#textquery').tokenInput("remove", { key: "where" });
+	$('#textquery').tokenInput("add", o);
+	$(".modal-query-where").modal("hide");
+};
+qr.changeQueryOfWhere = function(e){
+	// var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
+	// qr.valueWhere()[indexlist].parm(dataItem.parm);
+};
 
 qr.createTextQuery = function () {
 	$("#textquery").tokenInput(qr.dataCommand(), { 
@@ -249,7 +299,19 @@ qr.createTextQuery = function () {
 		// 	return "<li>"+item.key +"(" + item.type +")</li>";
 		// },
 		tokenFormatter: function (item) {
-			return "<li>" + item.key + "(" + item.value + ")</li>";
+			var text = item.value;
+			if (item.key == "where") {
+				text = item.value.map(function (e) {
+				    var o = {};
+				    var v = {};
+				    v[e.field] = e.value;
+				    o[e.key] = v;
+
+				    return JSON.stringify(o);
+				});
+			}
+
+			return "<li>" + item.key + "(" + text + ")</li>";
 		}
 	});
 };

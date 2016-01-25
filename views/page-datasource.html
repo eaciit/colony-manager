@@ -415,7 +415,7 @@
 				<div class="form-group">
 			        <label class="col-sm-4 filter-label" style="text-align: right; padding-left: 0px;">Order Direction</label>
         			<div class="col-md-3" style="padding-left: 0px;">
-		        		<select data-bind="kendoDropDownList: { data: qr.dataWhereOfOrder, dataValueField: 'value', dataTextField: 'title', value: qr.queryOfOrder.direction, optionLabel: 'Select one' }"></select>
+		        		<select data-bind="kendoDropDownList: { data: qr.dataQueryOfOrder, dataValueField: 'value', dataTextField: 'title', value: qr.queryOfOrder.direction, optionLabel: 'Select one' }"></select>
         			</div>
     				<div class="clearfix"></div>
 			    </div>
@@ -448,23 +448,36 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Query Where</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					Where Query Builder
+				</h4>
 			</div>
-			<div class="modal-body" data-bind="with:viewModel.query">
-				<div class="row">
-					<div class="col-md-12">
-						<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click:addQueryWhere"><span class="glyphicon glyphicon-plus"></span> Add</button>
-					</div>
+			<div class="modal-body" data-bind="with: qr">
+				<div class="col-md-12">
+					<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click: addQueryOfWhere">
+						<span class="glyphicon glyphicon-plus"></span> Add more
+					</button>
 				</div>
-				<div class="row" data-bind="template:{name:'queryWhere', foreach:valueWhere}">
-				</div>
+				<table class="table">
+					<thead>
+						<tr>
+							<th style="width: 150px;">Operator</th>
+							<th>Field</th>
+							<th>Value</th>
+							<th>&nbsp;</th>
+						</tr>
+					</thead>
+					<tbody data-bind="template: { name: 'queryWhere', foreach: queryOfWhere }"></tbody>
+				</table>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
 					<span class="glyphicon glyphicon-remove"></span> Close
 				</button>
-				<button type="button" class="btn btn-sm btn-primary" data-bind="click: qr.saveWhere">
+				<button type="button" class="btn btn-sm btn-primary" data-bind="click: qr.saveQueryOfWhere">
 					<span class="glyphicon glyphicon-save"></span> Save
 				</button>
 			</div>
@@ -498,23 +511,20 @@
 </div>
 
 <script id="queryWhere" type="text/html">
-	<div class="list-where col-md-12">
-		<div class="col-md-3">
-			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: qr.datawhere, dataValueField: 'key', dataTextField: 'key', value: key, optionLabel: 'Select one', select: qr.changeQueryWhere }"></select>
-		</div>
-		<div class="col-md-4">
-			<input type="text" class="form-control input-sm" data-bind="value: field" placeholder="Type field name here" />
-		</div>
-		<div class="col-md-4">
-			<input type="text" class="form-control input-sm" data-bind="value: value" placeholder="Type value here" />
-		</div>
-		<div class="col-md-1">
-			<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
+	<tr>
+		<td>
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
+		</td>
+		<td>
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 100%" data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
+		</td>
+		<td>
+			<input type="text" class="form-control input-sm" data-bind="value: value" placeholder="Value" />
+		</td>
+		<td style="text-align: center;">
+			<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: qr.removeQueryOfWhere($index())">
 				<span class="glyphicon glyphicon-remove"></span>
 			</button>
-		</div>
-	</div>
-</script>
-
-<script id="querySubWhere" type="text/html">
+		</td>
+	</tr>
 </script>
