@@ -8,7 +8,7 @@ qr.tempDataCommand = [
 	{id:0,key:"order", type:"string", value:""},
 	{id:0,key:"update", type:"", value:""},
 	{id:0,key:"delete", type:"", value:""},
-	{id:0,key:"save", type:"", value:""},
+	// {id:0,key:"save", type:"", value:""},
 	{id:0,key:"insert", type:"", value:""}
 ];
 qr.tempWhereQuery = [
@@ -27,6 +27,7 @@ qr.tempWhereQuery = [
 qr.templateWhere = {
 	key: "",
 	parm: "",
+	field: "",
 	value: "",
 	subquery: [],
 };
@@ -66,8 +67,14 @@ qr.changeActiveCommand = function(data){
 				qr.chooseQuery("Show");
 				qr.activeQuery(ko.mapping.toJS(data));
 			} else if (data.key() == "where"){
-				qr.valueWhere([]);
-				qr.addQueryWhere();
+				var where = Lazy(qr.valueCommand()).find({ key: "where" });
+				if (where == undefined) {
+					qr.valueWhere([]);
+					qr.addQueryWhere();
+				} else {
+					qr.valueWhere(where.value);
+				}
+
 				$(".modal-query-where").modal("show");
 				qr.chooseQuery("Show");
 			} else {
@@ -187,7 +194,15 @@ qr.updateQuery = function(){
         });
 		dataselect["type"] = searchElem[0].type;
 		qr.chooseQuery("Hide");
-		$('#textquery').tokenInput("add", dataselect);
+
+		if (dataselect.key != "where") {
+			$('#textquery').tokenInput("add", dataselect);
+		} else {
+			var cloned = $.extend(true, {}, dataselect);
+			cloned.value = "...";
+			$('#textquery').tokenInput("add", cloned);
+		}
+
 		if (qr.valueCommand().id > maxid)
 			maxid = qr.valueCommand().id;
 	}
@@ -214,6 +229,18 @@ qr.addQueryWhere = function(){
 qr.changeQueryWhere = function(e){
 	var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
 	qr.valueWhere()[indexlist].parm(dataItem.parm);
+}
+qr.saveWhere = function () {
+	qr.valueCommand(Lazy(qr.valueCommand()).where(function (e) {
+		return e.key != "where";
+	}).toArray());
+	qr.valueCommand.push({
+		id: 99,
+		key: "where",
+		value: ko.mapping.toJS(qr.valueWhere())
+	});
+
+	$(".modal-query-where").modal("hide");
 }
 
 function createTextQuery(){

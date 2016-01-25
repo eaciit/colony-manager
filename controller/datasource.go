@@ -149,6 +149,30 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 		query = query.Delete()
 	}
 
+	if qWhere := queryInfo.Get("where", []interface{}{}).([]interface{}); len(qWhere) > 0 {
+		allFilter := []*dbox.Filter{}
+
+		for _, each := range qWhere {
+			where, _ := toolkit.ToM(each.(map[string]interface{}))
+			var filter *dbox.Filter = nil
+
+			field := where.Get("field", "").(string)
+			value := fmt.Sprintf("%v", where["value"])
+
+			if key := where.Get("key", "").(string); key == "Eq" {
+				filter = dbox.Eq(field, value)
+			} else if key == "Ne" {
+				filter = dbox.Ne(field, value)
+			}
+
+			if filter != nil {
+				allFilter = append(allFilter, filter)
+			}
+		}
+
+		query = query.Where(allFilter...)
+	}
+
 	return query, metaSave
 }
 
