@@ -28,7 +28,7 @@ ds.templateDataSource = {
 	_id: "",
 	DataSourceName: "",
 	ConnectionID: "",
-	QueryInfo : [],
+	QueryInfo : {},
 	MetaData: [],
 };
 ds.templateQuery = {
@@ -51,8 +51,6 @@ ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confDataSourceConnectionInfo = ko.mapping.fromJS(ds.templateConfig);
 ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
-ds.query = ko.mapping.fromJS(ds.templateQuery);
-// ds.lookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
 ds.lookupFields = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
@@ -103,6 +101,31 @@ ds.metadataColumns = ko.observableArray([
 		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='glyphicon glyphicon-detail'></span> Lookup</button>";
 	}, width: 90, attributes: { style: "text-align: center;" } },
 ]);
+ds.fetchDataSourceMetaData = function (from) {
+	var param = {
+		connectionID: ds.confDataSource.ConnectionID(),
+		from: from
+	};
+
+	ds.confDataSource.MetaData([]);
+	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) {
+		if (!res.success && res.message == "[eaciit.dbox.dbc.mongo.Cursor.Fetch] Not found") {
+			ds.confDataSource.MetaData([]);
+			// toastr["error"]("", 'ERROR: Table "' + from + '" not found');
+			return;
+		}
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ds.confDataSource.MetaData(res.data);
+		ds.saveDataSource();
+	}, function (a) {
+		toastr["error"]("", "ERROR: " + a.statusText);
+	}, { 
+		timout: 3000 
+	});
+};
 ds.changeActiveSection = function (section) {
 	return function (self, e) {
 		$(e.currentTarget).parent().siblings().removeClass("active");
@@ -220,9 +243,9 @@ ds.removeDataSource = function (_id) {
 ds.editDataSource = function (_id) {
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
-	ko.mapping.fromJS(ds.templateQuery, ds.query);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
+	qr.clearQuery();
 
 	$('a[data-target="#ds-tab-1"]').tab('show');
 
@@ -232,11 +255,9 @@ ds.editDataSource = function (_id) {
 		}
 
 		ds.mode("editDataSource");
-		qr.clearQuery();
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
-		qr.valueCommand(qr.parseQuery(res.data.QueryInfo));
-		qr.updateQuery();
+		qr.setQuery(res.data.QueryInfo);
 		
 		setTimeout(function () {
 			$("select.data-connection").data("kendoDropDownList").trigger("change");
@@ -246,7 +267,7 @@ ds.editDataSource = function (_id) {
 ds.getParamForSavingDataSource = function () {
 	var param = ko.mapping.toJS(ds.confDataSource);
 	param.MetaData = JSON.stringify(param.MetaData);
-	param.QueryInfo = JSON.stringify(qr.unparseQuery(viewModel.query.valueCommand()));
+	param.QueryInfo = JSON.stringify(qr.getQuery());
 	return param;
 };
 ds.saveNewDataSource = function(){
@@ -258,10 +279,15 @@ ds.saveNewDataSource = function(){
 		return;
 	}
 
+	var _id = ds.confDataSource._id();
 	ds.saveDataSource(function (res) {
 		ko.mapping.fromJS(res.data.data, ds.confDataSource);
-		if (res.data.needTofetchMetaData) {
-			ds.fetchDataSourceMetaData();
+
+		if (_id == "") {
+			var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
+			if (queryInfo.hasOwnProperty("from")) {
+				ds.fetchDataSourceMetaData(queryInfo.from);
+			}
 		}
 	});
 };
@@ -280,24 +306,8 @@ ds.openDataSourceForm = function(){
 	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
-	ko.mapping.fromJS(ds.templateQuery, ds.query);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
-};
-ds.fetchDataSourceMetaData = function () {
-	var param = { _id: ds.confDataSource._id() };
-	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
-		if (!app.isFine(res)) {
-			return;
-		}
-
-		res.data.QueryInfo = qr.parseQuery(res.data);
-		ko.mapping.fromJS(res.data, ds.confDataSource);
-	}, function (a) {
-		toastr["error"]("", "ERROR: " + a.statusText);
-	}, { 
-		timout: 3000 
-	});
 };
 ds.saveDataSource = function (c) {
 	var param = ds.getParamForSavingDataSource();
@@ -306,6 +316,7 @@ ds.saveDataSource = function (c) {
 			return;
 		}
 
+		ko.mapping.fromJS(res.data.data, ds.confDataSource);
 		if (typeof c !== "undefined") c(res);
 	});
 };
@@ -322,13 +333,12 @@ ds.testQuery = function () {
 	$("#grid-ds-result").replaceWith("<div id='grid-ds-result'></div>");
 
 	ds.saveDataSource(function (res) {
-		ko.mapping.fromJS(res.data.data, ds.confDataSource);
 		ds.idThereAnyDataSourceResult(false);
 
 		var param = ko.mapping.toJS(ds.confDataSource);
 		param.MetaData = JSON.stringify(param.MetaData);
 		param.QueryInfo = JSON.stringify(param.QueryInfo);
-		app.ajaxPost("/datasource/fetchdatasourcesampledata", param, function (res) {
+		app.ajaxPost("/datasource/rundatasourcequery", param, function (res) {
 			if (!app.isFine(res)) {
 				return;
 			}
@@ -380,6 +390,11 @@ ds.testQuery = function () {
 			};
 
 			$("#grid-ds-result").kendoGrid(gridConfig);
+
+			var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
+			if (queryInfo.hasOwnProperty("from")) {
+				ds.fetchDataSourceMetaData(queryInfo.from);
+			}
 		}, function (a, b, c) {
 			toastr["error"]("", "ERROR: " + a.statusText);
 			console.log(a);

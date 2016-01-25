@@ -218,7 +218,7 @@
 		<ul class="nav nav-tabs" data-bind="visible: (mode() == 'editDataSource')">
 		    <li class="active"><a data-target="#ds-tab-1" data-toggle="tab">Query Builder</a></li>
 		    <li><a data-target="#ds-tab-2" data-toggle="tab">Meta Data</a></li>
-		    <li><a data-target="#ds-tab-3" data-toggle="tab">Query Test Result</a></li>
+		    <li><a data-target="#ds-tab-3" data-toggle="tab">Query Result</a></li>
 		</ul>
 
 		<div class="tab-content" data-bind="visible: (mode() == 'editDataSource')" style="padding-top: 10px;">
@@ -232,8 +232,14 @@
 				<div class="row form-datasource" data-bind="with: viewModel.query">
 			        <div class="col-md-2 nav-command">
 			        	<label class="title-command">Commands</label>
-			        	<ul class="nav" data-bind="foreach: datacommands">
-							<li><a href="#" data-bind="css: { 'active': (viewModel.query.command() == $data.key) }, click: viewModel.query.changeActiveCommand($data)"><span class="fa fa-caret-right"></span>&nbsp;&nbsp;<span data-bind="text: $data.key"></span></a></li>
+			        	<ul class="nav" data-bind="foreach: dataCommand">
+							<li>
+								<a href="#" data-bind="click: viewModel.query.addFilter($data)">
+									<span class="fa fa-caret-right"></span>
+									&nbsp;&nbsp;
+									<span data-bind="text: $data.key"></span>
+								</a>
+							</li>
 						</ul>
 			        </div>
 			        <div class="col-md-10 area-command">
@@ -344,16 +350,94 @@
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
-				<h4 class="modal-title" id="myModalLabel">
-					Parameter for <span></span>
+				<h4 class="modal-title">
+					Data for <span data-bind="text: qr.queryBuilderMode"></span>
 				</h4>
 			</div>
-			<div class="modal-body">
-				<input type="text" class="form-control input-sm query-text" placeholder="Type parameter here !" data-bind="value:paramQuery" onkeypress="return viewModel.query.enterSave(event)"/>
-			</div>
+
+			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'select'">
+			    <div class="form-group">
+		    		<label class="col-md-4 filter-label" style="text-align: right;">Fields</label>
+		        	<div class="col-md-6">
+		        		<select data-bind="kendoMultiSelect: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: '_id', value: qr.queryOfSelect, placeholder: 'Choose the fields' }"></select>
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+
+			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'update' || qr.queryBuilderMode() == 'insert'">
+				<div class="col-md-12" style="margin-bottom: 10px;">
+					<button class="btn btn-sm btn-primary" data-bind="click: addQueryOfInsert">
+						<span class="glyphicon glyphicon-plus"></span>
+						Add more
+					</button>
+				</div>
+	        	<div class="col-md-12" data-bind="foreach: queryOfInsert">
+				    <div class="form-group">
+				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Field</label>
+	        			<div class="col-md-3" style="padding-left: 0px;">
+	        				<input type="text" class="form-control input-sm" placeholder="Type field here" style="width: 100%;" data-bind="value: $data.field, enable: ($index() > 0)" />
+	        			</div>
+
+				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Value</label>
+	        			<div class="col-md-3" style="padding-left: 0px;">
+	        				<input type="text" class="form-control input-sm" placeholder="Type value here" style="width: 100%;" data-bind="value: $data.value" />
+	        			</div>
+	        			<div class="col-md-1">
+							<button class="btn btn-sm btn-danger" data-bind="click: qr.removeQueryOfInsert($index()), visible: ($index() > 0)">
+								<span class="glyphicon glyphicon-remove"></span>
+							</button>
+	        			</div>
+        				<div class="clearfix"></div>
+				    </div>
+	        	</div>
+	        	<div class="clearfix"></div>
+        	</div>
+
+			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'from'">
+			    <div class="form-group">
+		    		<label class="col-md-4 filter-label" style="text-align: right;">Table Name</label>
+		        	<div class="col-md-6">
+		        		<input type="text" class="form-control input-sm" style="width: 100%;"  placeholder="Example: 'table_test'" data-bind="value: qr.queryOfFrom" />
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+
+			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'order'">
+				<div class="form-group">
+			        <label class="col-sm-4 filter-label" style="text-align: right; padding-left: 0px;">Order Field</label>
+        			<div class="col-md-3" style="padding-left: 0px;">
+		        		<select data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: '_id', value: qr.queryOfOrder.field, optionLabel: 'Select one' }"></select>
+        			</div>
+    				<div class="clearfix"></div>
+				</div>
+				<div class="form-group">
+			        <label class="col-sm-4 filter-label" style="text-align: right; padding-left: 0px;">Order Direction</label>
+        			<div class="col-md-3" style="padding-left: 0px;">
+		        		<select data-bind="kendoDropDownList: { data: qr.dataWhereOfOrder, dataValueField: 'value', dataTextField: 'title', value: qr.queryOfOrder.direction, optionLabel: 'Select one' }"></select>
+        			</div>
+    				<div class="clearfix"></div>
+			    </div>
+        	</div>
+
+			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'take' || qr.queryBuilderMode() == 'skip'">
+			    <div class="form-group">
+		    		<label class="col-md-5 filter-label" style="text-align: right; text-transform: capitalize" data-bind="text: 'Total ' + qr.queryBuilderMode() + ' records'"></label>
+		        	<div class="col-md-4">
+		        		<input type="text" style="width: 100%;" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: qr.queryOfTake, placeholder: 'Example: 2' }" />
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+
 			<div class="modal-footer">
-				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal" data-bind="click:queryCancel"><span class="glyphicon glyphicon-remove"></span> Close</button>
-				<button type="button" class="btn btn-sm btn-primary" data-bind="click:querySave"><span class="glyphicon glyphicon-save"></span> Save</button>
+				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span> Close
+				</button>
+				<button type="button" class="btn btn-sm btn-primary" data-bind="click: querySave">
+					<span class="glyphicon glyphicon-save"></span> Save
+				</button>
 			</div>
 		</div>
 	</div>

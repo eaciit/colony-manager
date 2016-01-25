@@ -113,13 +113,21 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 			query = query.Select(strings.Split(qSelect, ",")...)
 		}
 	}
-	if _, qTakeOK := queryInfo["take"]; qTakeOK {
-		qTake, _ := strconv.Atoi(queryInfo.Get("take").(string))
-		query = query.Take(qTake)
+	if qTakeRaw, qTakeOK := queryInfo["take"]; qTakeOK {
+		if qTake, ok := qTakeRaw.(float64); ok {
+			query = query.Take(int(qTake))
+		}
+		if qTake, ok := qTakeRaw.(int); ok {
+			query = query.Take(qTake)
+		}
 	}
-	if _, qSkipOK := queryInfo["skip"]; qSkipOK {
-		qSkip, _ := strconv.Atoi(queryInfo.Get("skip").(string))
-		query = query.Skip(qSkip)
+	if qSkipRaw, qSkipOK := queryInfo["skip"]; qSkipOK {
+		if qSkip, ok := qSkipRaw.(float64); ok {
+			query = query.Take(int(qSkip))
+		}
+		if qSkip, ok := qSkipRaw.(int); ok {
+			query = query.Take(qSkip)
+		}
 	}
 	if qOrder := queryInfo.Get("order", "").(string); qOrder != "" {
 		qOrderPart := strings.Split(qOrder, ",")
@@ -356,29 +364,32 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	_id := payload["_id"].(string)
+	connectionID := payload["connectionID"].(string)
+	from := payload["from"].(string)
 
-	dataDS, _, conn, query, metaSave, err := d.connectToDataSource(_id)
-	if len(dataDS.QueryInfo) == 0 {
-		return helper.CreateResult(true, dataDS, "")
+	if connectionID == "" {
+		return helper.CreateResult(true, []toolkit.M{}, "")
 	}
 
+	dataConn := new(colonycore.Connection)
+	err = colonycore.Get(dataConn, connectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	connWrapper := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
+	var conn dbox.IConnection
+	conn, err = connWrapper.Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer conn.Close()
 
-	if metaSave.keyword != "" {
-		dataDS.MetaData = []*colonycore.FieldInfo{}
-		err = colonycore.Save(dataDS)
-		if !helper.HandleError(err) {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, dataDS, "")
-	}
-
-	cursor, err := query.Cursor(nil)
+	cursor, err := conn.NewQuery().From(from).Select().Take(1).Cursor(nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -407,17 +418,10 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		metadata = append(metadata, meta)
 	}
 
-	dataDS.MetaData = metadata
-
-	err = colonycore.Save(dataDS)
-	if !helper.HandleError(err) {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, dataDS, "")
+	return helper.CreateResult(true, metadata, "")
 }
 
-func (d *DataSourceController) FetchDataSourceSampleData(r *knot.WebContext) interface{} {
+func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
@@ -429,7 +433,8 @@ func (d *DataSourceController) FetchDataSourceSampleData(r *knot.WebContext) int
 
 	dataDS, _, conn, query, metaSave, err := d.connectToDataSource(_id)
 	if len(dataDS.QueryInfo) == 0 {
-		return helper.CreateResult(true, []toolkit.M{}, "")
+		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
+		return helper.CreateResult(true, result, "")
 	}
 
 	if err != nil {
@@ -454,7 +459,8 @@ func (d *DataSourceController) FetchDataSourceSampleData(r *knot.WebContext) int
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		return helper.CreateResult(true, dataDS, "")
+		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
+		return helper.CreateResult(true, result, "")
 	}
 
 	if _, isTakeOK := dataDS.QueryInfo["take"]; !isTakeOK {
