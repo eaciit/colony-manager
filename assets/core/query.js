@@ -199,7 +199,6 @@ qr.updateQuery = function(){
 			$('#textquery').tokenInput("add", dataselect);
 		} else {
 			var cloned = $.extend(true, {}, dataselect);
-			cloned.value = "...";
 			$('#textquery').tokenInput("add", cloned);
 		}
 
@@ -234,12 +233,13 @@ qr.saveWhere = function () {
 	qr.valueCommand(Lazy(qr.valueCommand()).where(function (e) {
 		return e.key != "where";
 	}).toArray());
-	qr.valueCommand.push({
-		id: 99,
-		key: "where",
-		value: ko.mapping.toJS(qr.valueWhere())
-	});
 
+	var cloned = $.extend(true, {}, qr.templateWhere);
+	cloned.id = 99;
+	cloned.key = "where";
+	cloned.value = ko.mapping.toJS(qr.valueWhere());
+
+	$('#textquery').tokenInput("add", cloned);
 	$(".modal-query-where").modal("hide");
 }
 

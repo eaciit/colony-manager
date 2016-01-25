@@ -163,6 +163,47 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 				filter = dbox.Eq(field, value)
 			} else if key == "Ne" {
 				filter = dbox.Ne(field, value)
+			} else if key == "Lt" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Lt(field, valueInt)
+				} else {
+					filter = dbox.Lt(field, value)
+				}
+			} else if key == "Lte" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Lte(field, valueInt)
+				} else {
+					filter = dbox.Lte(field, value)
+				}
+			} else if key == "Gt" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Gt(field, valueInt)
+				} else {
+					filter = dbox.Gt(field, value)
+				}
+			} else if key == "Gte" {
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Gte(field, valueInt)
+				} else {
+					filter = dbox.Gte(field, value)
+				}
+			} else if key == "In" {
+				valueArray := where.Get("field", []interface{}{}).([]interface{})
+				filter = dbox.In(field, valueArray...)
+			} else if key == "Nin" {
+				valueArray := where.Get("field", []interface{}{}).([]interface{})
+				filter = dbox.Nin(field, valueArray...)
+			} else if key == "Contains" {
+				valueArrayIntfc := where.Get("field", []interface{}{}).([]interface{})
+				valueArrayStr := []string{}
+				for _, e := range valueArrayIntfc {
+					valueArrayStr = append(valueArrayStr, fmt.Sprintf("%v", e))
+				}
+				filter = dbox.Contains(field, valueArrayStr...)
 			}
 
 			if filter != nil {
