@@ -1,6 +1,6 @@
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "weblink", text: "Weblink" },
+	{ value: "json", text: "Weblink" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mssql", text: "SQLServer" },
 	{ value: "mysql", text: "MySQL" },
@@ -14,7 +14,7 @@ ds.templateConfigSetting = {
 	key: "",
 	value: ""
 };
-ds.templateConfig = { 
+ds.templateConfig = {
 	_id: "",
 	ConnectionName: "",
 	Driver: "",
@@ -48,6 +48,8 @@ ds.templateLookup = {
 };
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
+ds.connectionListMode = ko.observable('');
+ds.dataSourceMode = ko.observable('');
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confDataSourceConnectionInfo = ko.mapping.fromJS(ds.templateConfig);
 ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
@@ -69,8 +71,8 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Database", title: "Database" },
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
-	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
+		return "<button class='btn btn-sm btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
@@ -80,8 +82,8 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "QueryInfo", title: "Query", template: function (d) {
 		return "test"
 	} },
-	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
+		return "<button class='btn btn-sm btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -96,14 +98,14 @@ ds.metadataColumns = ko.observableArray([
 	{ field: "_id", title: "ID" },
 	{ field: "Label", title: "Label", editor: function (container, options) {
 		$('<input required data-text-field="Label" data-value-field="Label" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
-	} },
+	}, headerTemplate: "Label <span style='color: red;'>*</span>" },
 	{ field: "Type", title: "Type" },
 	{ field: "Format", title: "Format", editor: function (container, options) {
 		$('<input data-text-field="Format" data-value-field="Format" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
 	} },
 	{ title: "_id", template: function (d) {
-		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='glyphicon glyphicon-detail'></span> Lookup</button>";
-	}, width: 90, attributes: { style: "text-align: center;" } },
+		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='fa fa-eye'></span> Lookup</button>";
+	}, width: 100, attributes: { style: "text-align: center;" } },
 ]);
 ds.gridMetaDataSchema = {
 	pageSize: 15,
@@ -114,7 +116,7 @@ ds.gridMetaDataSchema = {
 				_id: { type: "string", editable: false },
 				Label: { type: "string" },
 				Type: { type: "string", editable: false },
-				Format: { type: "string" },
+				Format: { type: "string", editable: false },
 			}
 		}
 	}
@@ -150,8 +152,8 @@ ds.fetchDataSourceMetaData = function (from) {
 		ds.saveDataSource();
 	}, function (a) {
 		toastr["error"]("", "ERROR: " + a.statusText);
-	}, { 
-		timout: 3000 
+	}, {
+		timout: 3000
 	});
 };
 ds.changeActiveSection = function (section) {
@@ -161,8 +163,16 @@ ds.changeActiveSection = function (section) {
 		ds.mode('');
 	};
 };
+ds.resetValidation = function (selectorID) {
+	var $form = $(selectorID).data("kendoValidator");
+	if ($form != undefined) {
+		$form.hideMessages();
+	}
+};
 ds.openConnectionForm = function () {
 	ds.mode('edit');
+	ds.connectionListMode('');
+	ds.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
 };
@@ -194,9 +204,18 @@ ds.populateGridConnections = function () {
 };
 ds.saveNewConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		return;
+		if (ds.config.Driver() == "json") {
+			var err = $("#form-add-connection").data("kendoValidator").errors();
+			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
+				// no problem
+			} else {
+				return;
+			}
+		} else {
+			return;
+		}
 	}
-	
+
 	var param = ko.mapping.toJS(ds.config);
 	param.Settings = JSON.stringify(param.Settings);
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
@@ -211,10 +230,10 @@ ds.testConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		return;
 	}
-	
+
 	var param = ko.mapping.toJS(ds.config);
 	param.Settings = JSON.stringify(param.Settings);
-	
+
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -237,6 +256,8 @@ ds.editConnection = function (_id) {
 		}
 
 		ds.mode("edit");
+		ds.connectionListMode('edit');
+		ds.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
 	});
 };
@@ -269,6 +290,9 @@ ds.removeDataSource = function (_id) {
 	});
 }
 ds.editDataSource = function (_id) {
+	ds.dataSourceMode('edit');
+	ds.resetValidation(".form-datasource");
+
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
@@ -286,9 +310,9 @@ ds.editDataSource = function (_id) {
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 		qr.setQuery(res.data.QueryInfo);
-		
+
 		setTimeout(function () {
-			$("select.data-connection").data("kendoDropDownList").trigger("change");
+			$("select.data-connection").data("kendoComboBox").trigger("change");
 		}, 200);
 	});
 }
@@ -330,12 +354,25 @@ ds.populateGridDataSource = function () {
 };
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
+	ds.dataSourceMode('');
+	ds.resetValidation(".form-datasource");
 
 	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
+};
+ds.forceFetchDataSourceMetaData = function () {
+	ds.saveDataSource(function (res) {
+		var queries = qr.getQuery();
+		if (!queries.hasOwnProperty("from")) {
+			toastr["error"]("", 'ERROR: Cannot fetch meta data without using "from" command on Query Builder');
+			return;
+		}
+
+		ds.fetchDataSourceMetaData(queries.from);
+	});
 };
 ds.saveDataSource = function (c) {
 	var param = ds.getParamForSavingDataSource();
@@ -344,7 +381,7 @@ ds.saveDataSource = function (c) {
 			return;
 		}
 
-		ko.mapping.fromJS(res.data.data, ds.confDataSource);
+		ko.mapping.fromJS(res.data, ds.confDataSource);
 		if (typeof c !== "undefined") c(res);
 	});
 };
@@ -408,7 +445,7 @@ ds.testQuery = function () {
 
 			var gridConfig = {
 				columns: columns,
-				dataSource: { 
+				dataSource: {
 					data: res.data.data,
 					pageSize: 15
 				},
@@ -480,7 +517,7 @@ ds.changeLookupDataSource = function () {
 			return;
 		}
 
-		ds.lookupFields(Lazy(res.data.MetaData).sort(function (e) { 
+		ds.lookupFields(Lazy(res.data.MetaData).sort(function (e) {
 			return e.Label;
 		}).toArray());
 		ds.changeLookupDataSourceCallback();
@@ -537,7 +574,7 @@ ds.showLookupData = function (lookupID, lookupData) {
 
 		var gridConfig = {
 			columns: columns,
-			dataSource: { 
+			dataSource: {
 				data: res.data.data,
 				pageSize: 10
 			},

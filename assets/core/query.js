@@ -154,7 +154,7 @@ qr.querySave = function () {
 		Lazy(qr.queryOfInsert()).where(function (e) {
 			return $.trim(e.field) != "" && $.trim(e.value) != "";
 		}).each(function (e) {
-			data[e.field] = e.value;
+			data[e.field] = qr.couldBeNumber(e.value);
 		});
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 
@@ -211,7 +211,12 @@ qr.setQuery = function (queries) {
 	}
 };
 qr.validateQuery = function () {
-	var isKeywordExists = Lazy($('#textquery').tokenInput("get")).where(function (e) {
+	var queries = $('#textquery').tokenInput("get");
+	if (queries.length == 0) {
+		return true;
+	}
+
+	var isKeywordExists = Lazy(queries).where(function (e) {
 		return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
 	}).toArray().length > 0;
 	if (!isKeywordExists) {
@@ -248,6 +253,10 @@ qr.saveQueryOfWhere = function () {
 		key: "where",
 		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).where(function (e) {
 			return e.field != "" && e.key != "";
+		}).map(function (e) {
+			e.value = qr.couldBeNumber(e.value);
+
+			return e;
 		}).toArray()
 	};
 
@@ -255,9 +264,9 @@ qr.saveQueryOfWhere = function () {
 	$('#textquery').tokenInput("add", o);
 	$(".modal-query-where").modal("hide");
 };
-qr.changeQueryOfWhere = function(datakey, idparent, indexval){
+qr.changeQueryOfWhere = function(dataItem, idparent, indexval){
 	// var dataItem = this.dataItem(e.item);
-	if (datakey == "And" || datakey == "Or"){
+	if (dataItem.key == "And" || dataItem.key == "Or"){
 		var o = $.extend(true, {}, qr.templateWhereOfOrder);
 		var m = ko.mapping.fromJS(o);
 		m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
@@ -273,6 +282,18 @@ qr.changeQueryOfWhere = function(datakey, idparent, indexval){
 	}
 	// var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
 	// qr.valueWhere()[indexlist].parm(dataItem.parm);
+	return true;
+};
+qr.couldBeNumber = function (value) {
+	if (!isNaN(value)) {
+		if (String(value).indexOf(".") > -1) {
+			return parseFloat(value);
+		} else {
+			return parseInt(value, 10);
+		}
+	}
+
+	return value;
 };
 qr.AddSubQuery = function(idparent,i,obj, parentsum){
 	var o = $.extend(true, {}, qr.templateWhereOfOrder);
@@ -287,10 +308,7 @@ qr.AddSubQuery = function(idparent,i,obj, parentsum){
 			qr.AddSubQuery(idparent,key, obj.subquery()[key]);
 		}
 	}
-}
-qr.addSubQueryOfWhere = function(dataItem){
-	console.log(dataItem);
-}
+};
 qr.createTextQuery = function () {
 	$("#textquery").tokenInput(qr.dataCommand(), { 
 		zindex: 700,
