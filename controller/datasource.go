@@ -168,9 +168,19 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 			value := fmt.Sprintf("%v", where["value"])
 
 			if key := where.Get("key", "").(string); key == "Eq" {
-				filter = dbox.Eq(field, value)
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Eq(field, valueInt)
+				} else {
+					filter = dbox.Eq(field, value)
+				}
 			} else if key == "Ne" {
-				filter = dbox.Ne(field, value)
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Ne(field, valueInt)
+				} else {
+					filter = dbox.Ne(field, value)
+				}
 			} else if key == "Lt" {
 				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
 				if errv == nil {
@@ -245,11 +255,6 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	o.UserName = payload["UserName"].(string)
 	o.Password = payload["Password"].(string)
 	o.Settings = d.parseSettings(payload["Settings"], map[string]interface{}{}).(map[string]interface{})
-
-	if o.ID == "" {
-		// set new ID while inserting fresh new data
-		o.ID = helper.RandomIDWithPrefix("c")
-	}
 
 	err = colonycore.Save(o)
 	if err != nil {
@@ -593,35 +598,12 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		}
 	}
 
-	needToFetchMetaData := false
-
-	if o.ID == "" {
-		// set new ID while inserting fresh new data
-		o.ID = helper.RandomIDWithPrefix("ds")
-		needToFetchMetaData = true
-	} else {
-		oldDS := new(colonycore.DataSource)
-		colonycore.Get(oldDS, o.ID)
-
-		oldQuery, _ := json.Marshal(oldDS.QueryInfo)
-		newQuery, _ := json.Marshal(o.QueryInfo)
-
-		if oldDS.ConnectionID != o.ConnectionID || string(oldQuery) != string(newQuery) {
-			needToFetchMetaData = true
-		}
-
-		if len(oldDS.MetaData) == 0 {
-			needToFetchMetaData = true
-		}
-	}
-
 	err = colonycore.Save(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	result := toolkit.M{"data": o, "needTofetchMetaData": needToFetchMetaData}
-	return helper.CreateResult(true, result, "")
+	return helper.CreateResult(true, o, "")
 }
 
 func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
