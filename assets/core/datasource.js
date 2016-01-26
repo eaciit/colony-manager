@@ -56,6 +56,7 @@ ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
 ds.connectionListData = ko.observableArray([]);
 ds.lookupFields = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
+ds.collectionNames = ko.observableArray([]);
 ds.lokupModalLabel = ko.observable("");
 ds.dataSourceDataForLookup = ko.computed(function () {
 	return Lazy(ds.dataSourcesData()).where(function (e) {
@@ -153,7 +154,7 @@ ds.fetchDataSourceMetaData = function (from) {
 	}, function (a) {
 		toastr["error"]("", "ERROR: " + a.statusText);
 	}, {
-		timout: 3000
+		timeout: 10000
 	});
 };
 ds.changeActiveSection = function (section) {
@@ -495,6 +496,18 @@ ds.showMetadataLookup = function (_id, o) {
 		}, 200);
 	}
 };
+ds.fetchAllCollections = function () {
+	ds.collectionNames([]);
+
+	var param = { connectionID: ds.confDataSource.ConnectionID() };
+	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
+		ds.collectionNames(res.data);
+	}, function (a) {
+		toastr["error"]("", "ERROR: " + a.statusText);
+	}, {
+		timeout: 10000
+	});
+};
 ds.changeDataSourceConnection = function () {
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 
@@ -505,6 +518,7 @@ ds.changeDataSourceConnection = function () {
 		}
 
 		ko.mapping.fromJS(res.data, ds.confDataSourceConnectionInfo);
+		ds.fetchAllCollections();
 	});
 };
 ds.changeLookupDataSourceCallback = function () {};

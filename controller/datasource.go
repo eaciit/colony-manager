@@ -668,3 +668,38 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 
 	return helper.CreateResult(true, nil, "")
 }
+
+func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	connectionID := payload["connectionID"].(string)
+	if connectionID == "" {
+		return helper.CreateResult(true, []string{}, "")
+	}
+
+	dataConn := new(colonycore.Connection)
+	err = colonycore.Get(dataConn, connectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	connWrapper := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
+	var conn dbox.IConnection
+	conn, err = connWrapper.Connect()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer conn.Close()
+
+	collections := conn.ObjectNames(dbox.ObjTypeAll)
+	return helper.CreateResult(true, collections, "")
+}

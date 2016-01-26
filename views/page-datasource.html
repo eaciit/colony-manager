@@ -420,7 +420,7 @@
 			    <div class="form-group">
 		    		<label class="col-md-4 filter-label" style="text-align: right;">Table Name</label>
 		        	<div class="col-md-6">
-		        		<input type="text" class="form-control input-sm" style="width: 100%;"  placeholder="Example: 'table_test'" data-bind="value: qr.queryOfFrom" />
+		        		<select data-bind="kendoDropDownList: { data: ds.collectionNames, value: qr.queryOfFrom, optionLabel: 'Select one' }" style="width: 100%;"></select>
 		        	</div>
 		        	<div class="clearfix"></div>
 	        	</div>
