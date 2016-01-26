@@ -404,20 +404,12 @@
         	</div>
 
 			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'order'">
-				<div class="form-group">
-			        <label class="col-sm-4 filter-label" style="text-align: right; padding-left: 0px;">Order Field</label>
-        			<div class="col-md-3" style="padding-left: 0px;">
-		        		<select data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: qr.queryOfOrder.field, optionLabel: 'Select one' }"></select>
-        			</div>
-    				<div class="clearfix"></div>
+				<div class="col-md-12">
+					<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click: addQueryOfOrder">
+						<span class="glyphicon glyphicon-plus"></span>
+					</button>
 				</div>
-				<div class="form-group">
-			        <label class="col-sm-4 filter-label" style="text-align: right; padding-left: 0px;">Order Direction</label>
-        			<div class="col-md-3" style="padding-left: 0px;">
-		        		<select data-bind="kendoDropDownList: { data: qr.dataQueryOfOrder, dataValueField: 'value', dataTextField: 'title', value: qr.queryOfOrder.direction, optionLabel: 'Select one' }"></select>
-        			</div>
-    				<div class="clearfix"></div>
-			    </div>
+				<div class="form-group" data-bind="foreach: queryOfOrder "></div>
         	</div>
 
 			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'take' || qr.queryBuilderMode() == 'skip'">

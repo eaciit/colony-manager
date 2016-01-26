@@ -30,12 +30,13 @@ qr.dataQueryOfWhere = [
 	{ key: "Contains", title: "Contains", type: "field, array string" },
 ];
 
-qr.templateQueryOfInsert = { 
-	field: "", 
+qr.templateQueryOfInsert = {
+	field: "",
 	value: ""
 };
-qr.templateQueryOfOrder = { 
-	field: "", 
+qr.templateQueryOfOrder = {
+	key: "",
+	field: "",
 	direction: ""
 };
 qr.templateWhereOfOrder = {
@@ -51,7 +52,7 @@ qr.valueCommands = ko.observableArray([]);
 qr.queryOfSelect = ko.observableArray([]);
 qr.queryOfInsert = ko.observableArray([]);
 qr.queryOfFrom = ko.observable("");
-qr.queryOfOrder = ko.mapping.fromJS(qr.templateQueryOfOrder);
+qr.queryOfOrder = ko.observableArray([]);
 qr.queryOfTake = ko.observable(0);
 qr.queryOfWhere = ko.observableArray([]);
 
@@ -106,7 +107,7 @@ qr.addFilter = function (filter) {
 
 		if (filter.key == "delete") {
 			$('#textquery').tokenInput("remove", { key: filter.key });
-			$('#textquery').tokenInput("add", { 
+			$('#textquery').tokenInput("add", {
 				id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
 				key: filter.key,
 				value: ""
@@ -119,7 +120,8 @@ qr.addFilter = function (filter) {
 		}
 
 		if (filter.key == "order") {
-			ko.mapping.fromJS(qr.templateQueryOfOrder, qr.queryOfOrder);
+			qr.queryOfOrder([]);
+			qr.addQueryOfOrder();
 			$(".modal-query").modal("show");
 		}
 
@@ -136,7 +138,7 @@ qr.addFilter = function (filter) {
 	};
 };
 qr.querySave = function () {
-	var o = { 
+	var o = {
 		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
 		key: qr.queryBuilderMode(),
 		value: ""
@@ -198,7 +200,7 @@ qr.getQuery = function () {
 qr.setQuery = function (queries) {
 	for (var key in queries) {
 		if (queries.hasOwnProperty(key)) {
-			var o = { 
+			var o = {
 				id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
 				key: key,
 				value: queries[key]
@@ -224,8 +226,13 @@ qr.validateQuery = function () {
 
 	return true;
 };
-qr.clearQuery = function () { 
+qr.clearQuery = function () {
 	$('#textquery').tokenInput("remove", { });
+};
+qr.addQueryOfOrder = function () {
+	var o = $.extend(true, {}, qr.templateQueryOfOrder);
+	var m = ko.mapping.fromJS(o);
+	qr.queryOfOrder.push(m);
 };
 qr.addQueryOfWhere = function () {
 	var o = $.extend(true, {}, qr.templateWhereOfOrder);
@@ -239,7 +246,7 @@ qr.removeQueryOfWhere = function (index) {
 	};
 };
 qr.saveQueryOfWhere = function () {
-	var o = { 
+	var o = {
 		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
 		key: "where",
 		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).where(function (e) {
@@ -257,7 +264,7 @@ qr.changeQueryOfWhere = function(e){
 };
 
 qr.createTextQuery = function () {
-	$("#textquery").tokenInput(qr.dataCommand(), { 
+	$("#textquery").tokenInput(qr.dataCommand(), {
 		zindex: 700,
 		noResultsText: "Add New Query",
 		allowFreeTagging: true,
