@@ -363,21 +363,15 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
 };
-ds.fetchDataSourceMetaData = function () {
+ds.forceFetchDataSourceMetaData = function () {
 	ds.saveDataSource(function (res) {
-		var param = { _id: ds.confDataSource._id() };
-		app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
-			if (!app.isFine(res)) {
-				return;
-			}
+		var queries = qr.getQuery();
+		if (!queries.hasOwnProperty("from")) {
+			toastr["error"]("", 'ERROR: Cannot fetch meta data without using "from" command on Query Builder');
+			return;
+		}
 
-			res.data.QueryInfo = qr.parseQuery(res.data);
-			ko.mapping.fromJS(res.data, ds.confDataSource);
-		}, function (a) {
-			toastr["error"]("", "ERROR: " + a.statusText);
-		}, { 
-			timout: 3000 
-		});
+		ds.fetchDataSourceMetaData(queries.from);
 	});
 };
 ds.saveDataSource = function (c) {
