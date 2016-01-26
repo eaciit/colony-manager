@@ -14,7 +14,7 @@ ds.templateConfigSetting = {
 	key: "",
 	value: ""
 };
-ds.templateConfig = { 
+ds.templateConfig = {
 	_id: "",
 	ConnectionName: "",
 	Driver: "",
@@ -70,7 +70,7 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span></button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
@@ -81,7 +81,7 @@ ds.dataSourceColumns = ko.observableArray([
 		return "test"
 	} },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span></button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -150,8 +150,8 @@ ds.fetchDataSourceMetaData = function (from) {
 		ds.saveDataSource();
 	}, function (a) {
 		toastr["error"]("", "ERROR: " + a.statusText);
-	}, { 
-		timout: 3000 
+	}, {
+		timout: 3000
 	});
 };
 ds.changeActiveSection = function (section) {
@@ -196,7 +196,7 @@ ds.saveNewConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		return;
 	}
-	
+
 	var param = ko.mapping.toJS(ds.config);
 	param.Settings = JSON.stringify(param.Settings);
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
@@ -211,10 +211,10 @@ ds.testConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		return;
 	}
-	
+
 	var param = ko.mapping.toJS(ds.config);
 	param.Settings = JSON.stringify(param.Settings);
-	
+
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -286,7 +286,7 @@ ds.editDataSource = function (_id) {
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 		qr.setQuery(res.data.QueryInfo);
-		
+
 		setTimeout(function () {
 			$("select.data-connection").data("kendoDropDownList").trigger("change");
 		}, 200);
@@ -408,7 +408,7 @@ ds.testQuery = function () {
 
 			var gridConfig = {
 				columns: columns,
-				dataSource: { 
+				dataSource: {
 					data: res.data.data,
 					pageSize: 15
 				},
@@ -480,7 +480,7 @@ ds.changeLookupDataSource = function () {
 			return;
 		}
 
-		ds.lookupFields(Lazy(res.data.MetaData).sort(function (e) { 
+		ds.lookupFields(Lazy(res.data.MetaData).sort(function (e) {
 			return e.Label;
 		}).toArray());
 		ds.changeLookupDataSourceCallback();
@@ -537,7 +537,7 @@ ds.showLookupData = function (lookupID, lookupData) {
 
 		var gridConfig = {
 			columns: columns,
-			dataSource: { 
+			dataSource: {
 				data: res.data.data,
 				pageSize: 10
 			},
