@@ -208,7 +208,12 @@ qr.setQuery = function (queries) {
 	}
 };
 qr.validateQuery = function () {
-	var isKeywordExists = Lazy($('#textquery').tokenInput("get")).where(function (e) {
+	var queries = $('#textquery').tokenInput("get");
+	if (queries.length == 0) {
+		return true;
+	}
+
+	var isKeywordExists = Lazy(queries).where(function (e) {
 		return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
 	}).toArray().length > 0;
 	if (!isKeywordExists) {

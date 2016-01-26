@@ -256,11 +256,6 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	o.Password = payload["Password"].(string)
 	o.Settings = d.parseSettings(payload["Settings"], map[string]interface{}{}).(map[string]interface{})
 
-	if o.ID == "" {
-		// set new ID while inserting fresh new data
-		o.ID = helper.RandomIDWithPrefix("c")
-	}
-
 	err = colonycore.Save(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -603,35 +598,12 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 		}
 	}
 
-	needToFetchMetaData := false
-
-	if o.ID == "" {
-		// set new ID while inserting fresh new data
-		o.ID = helper.RandomIDWithPrefix("ds")
-		needToFetchMetaData = true
-	} else {
-		oldDS := new(colonycore.DataSource)
-		colonycore.Get(oldDS, o.ID)
-
-		oldQuery, _ := json.Marshal(oldDS.QueryInfo)
-		newQuery, _ := json.Marshal(o.QueryInfo)
-
-		if oldDS.ConnectionID != o.ConnectionID || string(oldQuery) != string(newQuery) {
-			needToFetchMetaData = true
-		}
-
-		if len(oldDS.MetaData) == 0 {
-			needToFetchMetaData = true
-		}
-	}
-
 	err = colonycore.Save(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	result := toolkit.M{"data": o, "needTofetchMetaData": needToFetchMetaData}
-	return helper.CreateResult(true, result, "")
+	return helper.CreateResult(true, o, "")
 }
 
 func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {

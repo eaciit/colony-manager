@@ -48,6 +48,8 @@ ds.templateLookup = {
 };
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
+ds.connectionListMode = ko.observable('');
+ds.dataSourceMode = ko.observable('');
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confDataSourceConnectionInfo = ko.mapping.fromJS(ds.templateConfig);
 ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
@@ -161,8 +163,16 @@ ds.changeActiveSection = function (section) {
 		ds.mode('');
 	};
 };
+ds.resetValidation = function (selectorID) {
+	var $form = $(selectorID).data("kendoValidator");
+	if ($form != undefined) {
+		$form.hideMessages();
+	}
+};
 ds.openConnectionForm = function () {
 	ds.mode('edit');
+	ds.connectionListMode('');
+	ds.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
 };
@@ -194,7 +204,16 @@ ds.populateGridConnections = function () {
 };
 ds.saveNewConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		return;
+		if (ds.config.Driver() == "json") {
+			var err = $("#form-add-connection").data("kendoValidator").errors();
+			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
+				// no problem
+			} else {
+				return;
+			}
+		} else {
+			return;
+		}
 	}
 	
 	var param = ko.mapping.toJS(ds.config);
@@ -237,6 +256,8 @@ ds.editConnection = function (_id) {
 		}
 
 		ds.mode("edit");
+		ds.connectionListMode('edit');
+		ds.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
 	});
 };
@@ -269,6 +290,9 @@ ds.removeDataSource = function (_id) {
 	});
 }
 ds.editDataSource = function (_id) {
+	ds.dataSourceMode('edit');
+	ds.resetValidation(".form-datasource");
+
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
@@ -330,6 +354,8 @@ ds.populateGridDataSource = function () {
 };
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
+	ds.dataSourceMode('');
+	ds.resetValidation(".form-datasource");
 
 	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
@@ -344,7 +370,7 @@ ds.saveDataSource = function (c) {
 			return;
 		}
 
-		ko.mapping.fromJS(res.data.data, ds.confDataSource);
+		ko.mapping.fromJS(res.data, ds.confDataSource);
 		if (typeof c !== "undefined") c(res);
 	});
 };

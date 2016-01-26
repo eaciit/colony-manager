@@ -56,12 +56,19 @@
 		<div class="panel panel-default" data-bind="visible: (mode() == 'edit')" style="width: 600px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (config._id() == '') ? 'Add New' : 'Edit'"></span>
+		        	<span data-bind="text: (ds.connectionListMode() == '') ? 'Add New' : 'Edit'"></span>
 		        	Connection
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
 				<form class="form-horizontal" data-bind="with: config" id="form-add-connection" novalidate>
+				    <div class="form-group">
+				        <label class="col-sm-4 filter-label" style="text-align: right">Connection ID</label>
+				        <div class="col-sm-5">
+				            <input required type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
+							<span class="k-invalid-msg" data-for="ID"></span>
+				        </div>
+				    </div>
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label" style="text-align: right">Connection Name</label>
 				        <div class="col-sm-5">
@@ -86,8 +93,10 @@
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label" style="text-align: right">Database</label>
 				        <div class="col-sm-5">
-				            <input type="text" class="form-control input-sm" name="Database" placeholder="Example: mydatabase" data-bind="value: Database">
-							<span class="k-invalid-msg" data-for="Database"></span>
+				            <input required type="text" class="form-control input-sm" name="Database" placeholder="Example: mydatabase" data-bind="value: Database">
+				            <div data-bind="visible: (Driver() != 'json')">
+								<span class="k-invalid-msg" data-for="Database"></span>
+							</div>
 				        </div>
 				    </div>
 				    <div class="form-group">
@@ -181,7 +190,7 @@
 		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (config._id() == '') ? 'Add New' : 'Edit'"></span>
+		        	<span data-bind="text: (ds.dataSourceMode() == '') ? 'Add New' : 'Edit'"></span>
 		        	Data Source
 	        	</h1>
 		    </div>
@@ -189,14 +198,14 @@
 				<form class="form-horizontal form-datasource" data-bind="with: confDataSource" novalidate>
 					<div class="form-group">
 						<div class="col-md-6">
-				        	<label class="col-md-3 filter-label" style="text-align: right;">Name</label>
+				        	<label class="col-md-4 filter-label" style="text-align: right;">Data Source ID</label>
 				        	<div class="col-md-8">
-				        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type name here" data-bind="value: DataSourceName">
-								<span class="k-invalid-msg" data-for="query"></span>
+				        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
+								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
 				        </div>
 					    <div class="col-md-6">
-				            <label class="col-md-3 filter-label" style="text-align: right;">Connection</label>
+				            <label class="col-md-4 filter-label" style="text-align: right;">Connection</label>
 				            <div class="col-md-8">
 				                <select required class="data-connection" data-bind="kendoDropDownList: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', optionLabel: 'Select one', value: ConnectionID, change: ds.changeDataSourceConnection }" style="width: 100%;" name="connection"></select>
 								<span class="k-invalid-msg" data-for="connection"></span>
@@ -204,8 +213,15 @@
 				        </div>
 				    </div>
 					<div class="form-group">
-					    <div class="col-md-6 col-md-offset-6">
-				            <label class="col-md-3 filter-label" style="text-align: right;">Database</label>
+						<div class="col-md-6">
+				        	<label class="col-md-4 filter-label" style="text-align: right;">Data Source Name</label>
+				        	<div class="col-md-8">
+				        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type data source name here" data-bind="value: DataSourceName">
+								<span class="k-invalid-msg" data-for="query"></span>
+				        	</div>
+				        </div>
+					    <div class="col-md-6">
+				            <label class="col-md-4 filter-label" style="text-align: right;">Database</label>
 				            <div class="col-md-8">
 					            <input readonly disabled type="text" class="form-control input-sm" data-bind="value: ds.confDataSourceConnectionInfo.Database" />
 				            </div>
