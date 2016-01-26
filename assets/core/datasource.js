@@ -72,7 +72,7 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> </button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> </button>"
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
@@ -83,7 +83,7 @@ ds.dataSourceColumns = ko.observableArray([
 		return "test"
 	} },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> </button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> </button>"
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -362,6 +362,17 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
+};
+ds.forceFetchDataSourceMetaData = function () {
+	ds.saveDataSource(function (res) {
+		var queries = qr.getQuery();
+		if (!queries.hasOwnProperty("from")) {
+			toastr["error"]("", 'ERROR: Cannot fetch meta data without using "from" command on Query Builder');
+			return;
+		}
+
+		ds.fetchDataSourceMetaData(queries.from);
+	});
 };
 ds.saveDataSource = function (c) {
 	var param = ds.getParamForSavingDataSource();
