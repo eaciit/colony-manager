@@ -312,7 +312,7 @@ ds.editDataSource = function (_id) {
 		qr.setQuery(res.data.QueryInfo);
 		
 		setTimeout(function () {
-			$("select.data-connection").data("kendoDropDownList").trigger("change");
+			$("select.data-connection").data("kendoComboBox").trigger("change");
 		}, 200);
 	});
 }
