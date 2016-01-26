@@ -249,12 +249,27 @@ qr.addQueryOfWhere = function () {
 	m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
 	qr.queryOfWhere.push(m);
 };
-qr.removeQueryOfWhere = function (index) {
+qr.removeQueryOfWhere = function (id, index) {
 	return function () {
-		var o = qr.queryOfWhere()[index];
-		qr.queryOfWhere.remove(o);
+		// var o = qr.queryOfWhere()[index];
+		// qr.queryOfWhere.remove(o);
+		var a = qr.queryOfWhere.remove( function (item) { return item.id() == id; } );
+		if (a.length == 0){
+			for (var key in qr.queryOfWhere()){
+				qr.removeSubQueryOfWhere(qr.queryOfWhere()[key], id);
+			}
+		}
 	};
 };
+qr.removeSubQueryOfWhere = function(obj,id){
+	for (var key in obj.subquery()){
+		if (id == obj.subquery()[key].id()){
+			obj.subquery.remove( function (item) { return item.id() == id; } );
+		} else {
+			qr.removeSubQueryOfWhere(obj.subquery()[key], id);
+		}
+	}
+}
 qr.saveQueryOfWhere = function () {
 	var o = { 
 		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
