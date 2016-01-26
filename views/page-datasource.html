@@ -544,7 +544,7 @@
 			<input type="text" class="form-control input-sm" data-bind="value: value" placeholder="Value" />
 		</td>
 		<td style="text-align: center;">
-			<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: qr.removeQueryOfWhere($index())">
+			<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: qr.removeQueryOfWhere(id(), $index())">
 				<span class="glyphicon glyphicon-remove"></span>
 			</button>
 			<button class="btn btn-sm btn-primary" data-bind="style: { 'visibility': key()=='And'||key()=='Or' ? 'visible' : 'hidden' }, click: function(){qr.changeQueryOfWhere($data.key(), id(), $index())}"><span class="glyphicon glyphicon-plus"></span></button>
@@ -561,11 +561,11 @@
 			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), $index()) } }"></select>
 		</td>
 		<td>
-			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, optionLabel: 'Select one' }"></select>
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoComboBox: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, placeholder: 'Type something here', filter: 'contains', suggest: true, index: 1 }"></select>
 		</td>
 		<td><input type="text" class="form-control input-sm" data-bind="value: value" placeholder="Value" /></td>
 		<td style="text-align: center;">
-			<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: qr.removeQueryOfWhere($index())">
+			<button class="btn btn-sm btn-danger" data-bind="click: qr.removeQueryOfWhere(id(), $index())">
 				<span class="glyphicon glyphicon-remove"></span>
 			</button>
 			<button class="btn btn-sm btn-primary" data-bind="style: { 'visibility': key()=='And'||key()=='Or' ? 'visible' : 'hidden' }, click: function(){qr.changeQueryOfWhere($data.key(), id(), $index())}"><span class="glyphicon glyphicon-plus"></span></button>
