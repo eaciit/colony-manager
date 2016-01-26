@@ -255,9 +255,9 @@ qr.saveQueryOfWhere = function () {
 	$('#textquery').tokenInput("add", o);
 	$(".modal-query-where").modal("hide");
 };
-qr.changeQueryOfWhere = function(dataItem, idparent, indexval){
+qr.changeQueryOfWhere = function(datakey, idparent, indexval){
 	// var dataItem = this.dataItem(e.item);
-	if (dataItem.key == "And" || dataItem.key == "Or"){
+	if (datakey == "And" || datakey == "Or"){
 		var o = $.extend(true, {}, qr.templateWhereOfOrder);
 		var m = ko.mapping.fromJS(o);
 		m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
@@ -287,6 +287,9 @@ qr.AddSubQuery = function(idparent,i,obj, parentsum){
 			qr.AddSubQuery(idparent,key, obj.subquery()[key]);
 		}
 	}
+}
+qr.addSubQueryOfWhere = function(dataItem){
+	console.log(dataItem);
 }
 qr.createTextQuery = function () {
 	$("#textquery").tokenInput(qr.dataCommand(), { 
