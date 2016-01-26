@@ -72,7 +72,7 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> </button> <button class='btn btn-xs btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> </button>"
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
@@ -83,7 +83,7 @@ ds.dataSourceColumns = ko.observableArray([
 		return "test"
 	} },
 	{ title: "", width: 150, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> Edit</button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> Remove</button>"
+		return "<button class='btn btn-xs btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-edit'></span> </button> <button class='btn btn-xs btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span> </button>"
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -285,18 +285,20 @@ ds.openDataSourceForm = function(){
 	ds.idThereAnyDataSourceResult(false);
 };
 ds.fetchDataSourceMetaData = function () {
-	var param = { _id: ds.confDataSource._id() };
-	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
+	ds.saveDataSource(function (res) {
+		var param = { _id: ds.confDataSource._id() };
+		app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) { 
 		if (!app.isFine(res)) {
 			return;
 		}
 
-		res.data.QueryInfo = qr.parseQuery(res.data);
-		ko.mapping.fromJS(res.data, ds.confDataSource);
-	}, function (a) {
-		toastr["error"]("", "ERROR: " + a.statusText);
-	}, { 
-		timout: 3000 
+			res.data.QueryInfo = qr.parseQuery(res.data);
+			ko.mapping.fromJS(res.data, ds.confDataSource);
+		}, function (a) {
+			toastr["error"]("", "ERROR: " + a.statusText);
+		}, { 
+			timout: 3000 
+		});
 	});
 };
 ds.saveDataSource = function (c) {
