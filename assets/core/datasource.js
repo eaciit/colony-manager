@@ -1,6 +1,6 @@
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "weblink", text: "Weblink" },
+	{ value: "json", text: "Weblink" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mssql", text: "SQLServer" },
 	{ value: "mysql", text: "MySQL" },

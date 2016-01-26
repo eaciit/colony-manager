@@ -18,6 +18,8 @@ func main() {
 	wd, _ := os.Getwd()
 	colonycore.ConfigPath = filepath.Join(wd, "config")
 
+	knot.SharedObject().Set("FilePath", path.Join(controller.AppViewPath, "config", "files"))
+
 	server = new(knot.Server)
 	server.Address = "localhost:3000"
 	server.RouteStatic("res", path.Join(controller.AppViewPath, "assets"))
