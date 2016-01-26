@@ -387,7 +387,7 @@
 	        	</div>
         	</div>
 
-			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'update' || qr.queryBuilderMode() == 'insert'">
+			<div class="modal-body query-of-insert" data-bind="visible: qr.queryBuilderMode() == 'update' || qr.queryBuilderMode() == 'insert'">
 				<div class="col-md-12" style="margin-bottom: 10px;">
 					<button class="btn btn-sm btn-primary" data-bind="click: addQueryOfInsert">
 						<span class="glyphicon glyphicon-plus"></span>
@@ -398,12 +398,14 @@
 				    <div class="form-group">
 				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Field</label>
 	        			<div class="col-md-3" style="padding-left: 0px;">
-	        				<input type="text" class="form-control input-sm" placeholder="Type field here" style="width: 100%;" data-bind="value: $data.field, enable: ($index() > 0)" />
+	        				<input required data-required-msg="Field cannot be empty" type="text" class="form-control input-sm" placeholder="Type field here" style="width: 100%;" data-bind="value: $data.field, enable: ($index() > 0), attr: { name: 'query-insert-field-' + $index() }" />
+		        			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-insert-field-' + $index() }"></span>
 	        			</div>
 
 				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Value</label>
 	        			<div class="col-md-3" style="padding-left: 0px;">
-	        				<input type="text" class="form-control input-sm" placeholder="Type value here" style="width: 100%;" data-bind="value: $data.value" />
+	        				<input required data-required-msg="Value cannot be empty" type="text" class="form-control input-sm" placeholder="Type value here" style="width: 100%;" data-bind="value: $data.value, attr: { name: 'query-insert-value-' + $index() }" />
+		        			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-insert-value-' + $index() }"></span>
 	        			</div>
 	        			<div class="col-md-1">
 							<button class="btn btn-sm btn-danger" data-bind="click: qr.removeQueryOfInsert($index()), visible: ($index() > 0)">
@@ -416,11 +418,12 @@
 	        	<div class="clearfix"></div>
         	</div>
 
-			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'from'">
+			<div class="modal-body query-of-from" data-bind="visible: qr.queryBuilderMode() == 'from'">
 			    <div class="form-group">
 		    		<label class="col-md-4 filter-label" style="text-align: right;">Table Name</label>
 		        	<div class="col-md-6">
-		        		<select data-bind="kendoDropDownList: { data: ds.collectionNames, value: qr.queryOfFrom, optionLabel: 'Select one' }" style="width: 100%;"></select>
+		        		<select required data-required-msg="Table name cannot be empty" name="query-from" data-bind="kendoComboBox: { data: ds.collectionNames, value: qr.queryOfFrom, optionLabel: 'Type something here', filter: 'contains', suggest: true, index: 1 }" style="width: 100%;"></select>
+		        		<span class="k-invalid-msg" data-for="query-from"></span>
 		        	</div>
 		        	<div class="clearfix"></div>
 	        	</div>

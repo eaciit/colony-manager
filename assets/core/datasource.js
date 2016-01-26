@@ -166,9 +166,12 @@ ds.changeActiveSection = function (section) {
 };
 ds.resetValidation = function (selectorID) {
 	var $form = $(selectorID).data("kendoValidator");
-	if ($form != undefined) {
-		$form.hideMessages();
+	if ($form == undefined) {
+		$(selectorID).kendoValidator();
+		$form = $(selectorID).data("kendoValidator");
 	}
+
+	$form.hideMessages();
 };
 ds.openConnectionForm = function () {
 	ds.mode('edit');

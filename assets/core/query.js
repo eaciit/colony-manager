@@ -104,6 +104,7 @@ qr.addFilter = function (filter) {
 			var row = $.extend(true, { }, qr.templateQueryOfInsert);
 			row.field = "_id";
 			qr.queryOfInsert.push(row);
+			ds.resetValidation(".query-of-insert");
 			$(".modal-query").modal("show");
 		}
 
@@ -118,6 +119,7 @@ qr.addFilter = function (filter) {
 
 		if (filter.key == "from") {
 			qr.queryOfFrom('');
+			ds.resetValidation(".query-of-from");
 			$(".modal-query").modal("show");
 		}
 
@@ -150,10 +152,12 @@ qr.querySave = function () {
 	}
 
 	if (qr.queryBuilderMode() == "insert" || qr.queryBuilderMode() == "update" ) {
+		if (!app.isFormValid(".query-of-insert")) {
+			return;
+		}
+		
 		var data = {};
-		Lazy(qr.queryOfInsert()).where(function (e) {
-			return $.trim(e.field) != "" && $.trim(e.value) != "";
-		}).each(function (e) {
+		Lazy(qr.queryOfInsert()).each(function (e) {
 			data[e.field] = qr.couldBeNumber(e.value);
 		});
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
@@ -165,6 +169,10 @@ qr.querySave = function () {
 	}
 
 	if (qr.queryBuilderMode() == "from") {
+		if (!app.isFormValid(".query-of-from")) {
+			return;
+		}
+
 		o.value = qr.queryOfFrom();
 		ds.fetchDataSourceMetaData(o.value);
 	}
