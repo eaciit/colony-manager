@@ -54,18 +54,28 @@ qr.valueCommands = ko.observableArray([]);
 qr.queryOfSelect = ko.observableArray([]);
 qr.queryOfInsert = ko.observableArray([]);
 qr.queryOfFrom = ko.observable("");
-qr.queryOfOrder = ko.mapping.fromJS(qr.templateQueryOfOrder);
+qr.queryOfOrder = ko.observableArray([]);
 qr.queryOfTake = ko.observable(0);
 qr.queryOfWhere = ko.observableArray([]);
 
 qr.addQueryOfInsert = function () {
 	var o = $.extend(true, {}, qr.templateQueryOfInsert);
-	qr.queryOfInsert.push(o);
+	qr.queryOfInsert.push(ko.mapping.fromJS(o));
 };
 qr.removeQueryOfInsert = function (index) {
 	return function () {
 		var o = qr.queryOfInsert()[index];
 		qr.queryOfInsert.remove(o);
+	};
+};
+qr.addQueryOfOrder = function () {
+	var o = $.extend(true, {}, qr.templateQueryOfOrder);
+	qr.queryOfOrder.push(ko.mapping.fromJS(o));
+};
+qr.removeQueryOfOrder = function (index) {
+	return function () {
+		var o = qr.queryOfOrder()[index];
+		qr.queryOfOrder.remove(o);
 	};
 };
 qr.addFilter = function (filter) {
@@ -103,7 +113,7 @@ qr.addFilter = function (filter) {
 			qr.queryOfInsert([]);
 			var row = $.extend(true, { }, qr.templateQueryOfInsert);
 			row.field = "_id";
-			qr.queryOfInsert.push(row);
+			qr.queryOfInsert.push(ko.mapping.fromJS(row));
 			ds.resetValidation(".query-of-insert");
 			$(".modal-query").modal("show");
 		}
@@ -124,7 +134,8 @@ qr.addFilter = function (filter) {
 		}
 
 		if (filter.key == "order") {
-			ko.mapping.fromJS(qr.templateQueryOfOrder, qr.queryOfOrder);
+			qr.queryOfOrder([]);
+			qr.addQueryOfOrder();
 			$(".modal-query").modal("show");
 		}
 
@@ -136,6 +147,7 @@ qr.addFilter = function (filter) {
 		if (filter.key == "where") {
 			qr.queryOfWhere([]);
 			qr.addQueryOfWhere();
+			ds.resetValidation(".query-of-where");
 			$(".modal-query-where").modal("show");
 		}
 	};
@@ -157,7 +169,7 @@ qr.querySave = function () {
 		}
 		
 		var data = {};
-		Lazy(qr.queryOfInsert()).each(function (e) {
+		Lazy(ko.mapping.toJS(qr.queryOfInsert())).each(function (e) {
 			data[e.field] = qr.couldBeNumber(e.value);
 		});
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
@@ -178,17 +190,16 @@ qr.querySave = function () {
 	}
 
 	if (qr.queryBuilderMode() == "order") {
-		if ($.trim(qr.queryOfOrder.field()) == '') {
-			toastr["error"]("", 'Order field cannot be empty');
-			return
+		if (!app.isFormValid(".query-of-order")) {
+			return;
 		}
 
-		if ($.trim(qr.queryOfOrder.direction()) == '') {
-			toastr["error"]("", 'Order direction cannot be empty');
-			return
-		}
+		var all = {};
+		ko.mapping.toJS(qr.queryOfOrder()).forEach(function (e) {
+			all[e.field] = e.direction;
+		});
 
-		o.value = [qr.queryOfOrder.field(), qr.queryOfOrder.direction()].join(",");
+		o.value = JSON.stringify(all);
 	}
 
 	if (qr.queryBuilderMode() == "take" || qr.queryBuilderMode() == "skip") {
@@ -271,14 +282,15 @@ qr.removeSubQueryOfWhere = function(obj,id){
 	}
 }
 qr.saveQueryOfWhere = function () {
+	if (!app.isFormValid(".query-of-where")) {
+		return;
+	}
+
 	var o = { 
 		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
 		key: "where",
-		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).where(function (e) {
-			return e.field != "" && e.key != "";
-		}).map(function (e) {
+		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).map(function (e) {
 			e.value = qr.couldBeNumber(e.value);
-
 			return e;
 		}).toArray()
 	};
@@ -342,11 +354,6 @@ qr.createTextQuery = function () {
 		theme: "facebook",
 		onAdd: function (item) {
 			qr.valueCommands.push(item);
-			// console.log("=====", item);
-			 // Object {id: "q1620160125200018702", key: "select", value: "_id,name,age", label: "_id,name,age"}
-			// qr.queryAdd(item);
-			// qr.chooseQuery("");
-			// qr.selectQuery("");
 		},
 		onDelete: function (item) {
 			var target = Lazy(qr.valueCommands()).find({ key: item.key });
@@ -354,9 +361,6 @@ qr.createTextQuery = function () {
 				qr.valueCommands.remove(target);
 			}
 		},
-		// resultsFormatter: function(item){
-		// 	return "<li>"+item.key +"(" + item.type +")</li>";
-		// },
 		tokenFormatter: function (item) {
 			var text = item.value;
 			if (item.key == "where") {
@@ -370,7 +374,11 @@ qr.createTextQuery = function () {
 				});
 			}
 
-			return "<li>" + item.key + "(" + text + ")</li>";
+			var key = item.key.replace(/\b[a-z](?=[a-z]{2})/g, function(letter) {
+				return letter.toUpperCase();
+			});
+			
+			return "<li>" + key + "(" + text + ")</li>";
 		}
 	});
 };

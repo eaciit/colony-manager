@@ -130,11 +130,15 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 		}
 	}
 	if qOrder := queryInfo.Get("order", "").(string); qOrder != "" {
-		qOrderPart := strings.Split(qOrder, ",")
-		if len(qOrderPart) == 1 {
-			query = query.Order(strings.Trim(qOrderPart[0], ""))
-		} else if len(qOrderPart) == 2 {
-			query = query.Order(strings.Trim(qOrderPart[0], ""), strings.Trim(qOrderPart[1], ""))
+		orderAll := map[string]string{}
+		err := json.Unmarshal([]byte(qOrder), &orderAll)
+		if err == nil {
+			orderString := []string{}
+			for key, val := range orderAll {
+				orderString = append(orderString, key)
+				orderString = append(orderString, val)
+			}
+			query = query.Order(orderString...)
 		}
 	}
 
