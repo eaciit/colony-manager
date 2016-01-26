@@ -259,6 +259,9 @@
 		    </div>
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length > 0)">
 		    	<div id="grid-metadata" data-bind="kendoGrid: { dataSource: ds.gridMetaDataSchema, data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true, editable: true, }"></div>
+		    	<label style="margin-top: 10px; margin-bottom: 0px; font-weight: normal;">
+		    		<span style='color: red;'>*</span> Editable
+		    	</label>
 		    </div>
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length == 0)">
 				<br />
@@ -516,7 +519,7 @@
 			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
 		</td>
 		<td>
-			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: key, optionLabel: 'Select one', select: qr.changeQueryOfWhere }"></select>
+			<select required data-required-msg="Where cannot be empty" name="query-where" style="width: 97%" data-bind="kendoDropDownList: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, optionLabel: 'Select one' }"></select>
 		</td>
 		<td>
 			<input type="text" class="form-control input-sm" data-bind="value: value" placeholder="Value" />

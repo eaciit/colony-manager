@@ -96,7 +96,7 @@ ds.metadataColumns = ko.observableArray([
 	{ field: "_id", title: "ID" },
 	{ field: "Label", title: "Label", editor: function (container, options) {
 		$('<input required data-text-field="Label" data-value-field="Label" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
-	} },
+	}, headerTemplate: "Label <span style='color: red;'>*</span>" },
 	{ field: "Type", title: "Type" },
 	{ field: "Format", title: "Format", editor: function (container, options) {
 		$('<input data-text-field="Format" data-value-field="Format" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
@@ -114,7 +114,7 @@ ds.gridMetaDataSchema = {
 				_id: { type: "string", editable: false },
 				Label: { type: "string" },
 				Type: { type: "string", editable: false },
-				Format: { type: "string" },
+				Format: { type: "string", editable: false },
 			}
 		}
 	}

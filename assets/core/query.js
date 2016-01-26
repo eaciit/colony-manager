@@ -151,7 +151,7 @@ qr.querySave = function () {
 		Lazy(qr.queryOfInsert()).where(function (e) {
 			return $.trim(e.field) != "" && $.trim(e.value) != "";
 		}).each(function (e) {
-			data[e.field] = e.value;
+			data[e.field] = qr.couldBeNumber(e.value);
 		});
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 
@@ -244,6 +244,10 @@ qr.saveQueryOfWhere = function () {
 		key: "where",
 		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).where(function (e) {
 			return e.field != "" && e.key != "";
+		}).map(function (e) {
+			e.value = qr.couldBeNumber(e.value);
+
+			return e;
 		}).toArray()
 	};
 
@@ -254,7 +258,19 @@ qr.saveQueryOfWhere = function () {
 qr.changeQueryOfWhere = function(e){
 	// var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
 	// qr.valueWhere()[indexlist].parm(dataItem.parm);
+	return true;
 };
+qr.couldBeNumber = function (value) {
+	if (!isNaN(value)) {
+		if (String(value).indexOf(".") > -1) {
+			return parseFloat(value);
+		} else {
+			return parseInt(value, 10);
+		}
+	}
+
+	return value;
+}
 
 qr.createTextQuery = function () {
 	$("#textquery").tokenInput(qr.dataCommand(), { 

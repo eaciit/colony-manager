@@ -168,9 +168,19 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 			value := fmt.Sprintf("%v", where["value"])
 
 			if key := where.Get("key", "").(string); key == "Eq" {
-				filter = dbox.Eq(field, value)
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Eq(field, valueInt)
+				} else {
+					filter = dbox.Eq(field, value)
+				}
 			} else if key == "Ne" {
-				filter = dbox.Ne(field, value)
+				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+				if errv == nil {
+					filter = dbox.Ne(field, valueInt)
+				} else {
+					filter = dbox.Ne(field, value)
+				}
 			} else if key == "Lt" {
 				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
 				if errv == nil {
