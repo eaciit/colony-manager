@@ -110,13 +110,26 @@ body {
         width: 100%;
         border: 1px solid #DDDDDD;
         padding: 4px; }
-      body #content > .col-md-12 .panel .form-datasource .area-command .token-input-input-token-facebook {
-        height: 120px; }
+        body #content > .col-md-12 .panel .form-datasource .area-command ul.token-input-list-facebook .token-input-token-facebook {
+          height: 120px;
+          padding: 2px 5px;
+          background-color: #3A8BDF;
+          color: #FFF;
+          border: 1px solid #3A8BDF; }
+          body #content > .col-md-12 .panel .form-datasource .area-command ul.token-input-list-facebook .token-input-token-facebook span {
+            color: #FFFFFF; }
+          body #content > .col-md-12 .panel .form-datasource .area-command ul.token-input-list-facebook .token-input-token-facebook:hover {
+            background-color: white;
+            color: #5F5F5F; }
+            body #content > .col-md-12 .panel .form-datasource .area-command ul.token-input-list-facebook .token-input-token-facebook:hover span {
+              color: #3A8BDF; }
       body #content > .col-md-12 .panel #datasource-settings thead tr th {
         padding-top: 15px; }
       body #content > .col-md-12 .panel #datasource-settings tbody tr td {
         padding-top: 8px;
         padding-right: 5px; }
+      body #content > .col-md-12 .panel #grid-metadata tr.has-lookup td {
+        font-weight: bold; }
     body #content > .col-md-12 .filter-label {
       line-height: 25px; }
       body #content > .col-md-12 .filter-label:after {

@@ -122,6 +122,18 @@ ds.gridMetaDataSchema = {
 		}
 	}
 };
+ds.gridMetaDataBound = function (e, f) {
+	var $grid = $("#grid-metadata");
+	$grid.data("kendoGrid").dataSource.data().forEach(function (e) {
+		if (e.Lookup._id == "") {
+			return;
+		}
+
+	    $grid.find("[data-uid='" + e.uid + "']")
+	    	.addClass("has-lookup")
+	    	.attr("title", "this data has lookup");
+	});
+};
 ds.gridMetaDataChangeTimer = undefined;
 ds.gridMetaDataChange = function (o) {
 	if (ds.gridMetaDataChangeTimer != undefined) {
