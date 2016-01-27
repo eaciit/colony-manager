@@ -263,6 +263,7 @@ ds.editConnection = function (_id) {
 		ds.connectionListMode('edit');
 		ds.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
+		ds.addSettings();
 	});
 };
 ds.removeConnection = function (_id) {

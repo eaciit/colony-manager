@@ -160,20 +160,33 @@ body
 					tbody tr td 
 						padding-top: 8px
 						padding-right: 5px 
-		
-				.filter-label
-					line-height: 25px
 
-					&:after
-						content: ":"
-						position: absolute
-						right: 5px
+			.filter-label
+				line-height: 25px
 
-				.modal-query
-					.modal-title
-						span
-							font-weight: bold
-							color: #337AB7
+				&:after
+					content: ":"
+					position: absolute
+					right: 5px
+
+			.nav.nav-tabs
+				li:hover
+					cursor: pointer
+					
+			.navbar-button
+				padding: 14px
+
+			.bg-notif
+				padding: 8px 10px
+				width: 100%
+				margin: 0
+				margin-bottom: 15px
+
+	.modal-query
+		.modal-title
+			span
+				font-weight: bold
+				color: $blue
 
 	.loader-container
 		position: fixed
@@ -206,19 +219,6 @@ body
 				transform: translate(-50%, -50%)
 				-webkit-animation: loading 1000ms ease-out forwards infinite
 				animation: loading 1000ms ease-out forwards infinite
-
-	.nav.nav-tabs
-		li:hover
-			cursor: pointer
-			
-	.navbar-button
-		padding: 14px
-
-	.bg-notif
-		padding: 8px 10px
-		width: 100%
-		margin: 0
-		margin-bottom: 15px
 
 
 @-webkit-keyframes loading
