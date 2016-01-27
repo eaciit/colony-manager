@@ -581,22 +581,24 @@
 <script id="queryWhere" type="text/html">
 	<tr data-bind="attr:{idwhere:id()}">
 		<td>
-			<select required data-required-msg="Operator cannot be empty" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), $index()) } }, attr: { name: 'query-where-key-' + $index() }"></select>
+			<select required data-required-msg="Operator cannot be empty" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), 'select') } }, attr: { name: 'query-where-key-' + $index() }"></select>
 			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-where-key-' + $index() }"></span>
 		</td>
 		<td>
+			<div data-bind="style: { 'visibility': key()!='And' && key()!='Or' ? 'visible' : 'hidden' }">
 			<select required data-required-msg="Field cannot be empty" style="width: 97%" data-bind="kendoComboBox: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2 }, attr: { name: 'query-where-field-' + $index() }"></select>
-			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-where-field-' + $index() }"></span>
+			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-where-field-' + $index() }"></span></div>
 		</td>
 		<td>
+			<div data-bind="style: { 'visibility': key()!='And' && key()!='Or' ? 'visible' : 'hidden' }">
 			<input required data-required-msg="Value cannot be empty" type="text" class="form-control input-sm" data-bind="value: value, attr: { name: 'query-where-value-' + $index() }" placeholder="Value" />
-			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-where-value-' + $index() }"></span
+			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-where-value-' + $index() }"></span></div>
 		</td>
 		<td style="text-align: center;">
 			<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: qr.removeQueryOfWhere(id(), $index())">
 				<span class="glyphicon glyphicon-remove"></span>
 			</button>
-			<button class="btn btn-sm btn-primary" data-bind="style: { 'visibility': key()=='And'||key()=='Or' ? 'visible' : 'hidden' }, click: function(){qr.changeQueryOfWhere($data.key(), id(), $index())}"><span class="glyphicon glyphicon-plus"></span></button>
+			<button class="btn btn-sm btn-primary" data-bind="style: { 'visibility': key()=='And'||key()=='Or' ? 'visible' : 'hidden' }, click: function(){qr.changeQueryOfWhere($data.key(), id(), 'btnadd')}"><span class="glyphicon glyphicon-plus"></span></button>
 		</td>
 	</tr>
 	<!-- ko if: subquery().length>0 -->
@@ -607,22 +609,24 @@
 <script id="querySubWhere" type="text/html">
 	<tr data-bind="attr:{idwhere:id()}">
 		<td data-bind="style:{'padding-left':parentsum()*20+'px'}">
-			<select required data-required-msg="Operator cannot be empty" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), $index()) } }, attr: { name: 'query-subwhere-key-' + $index() }"></select>
+			<select required data-required-msg="Operator cannot be empty" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), 'select') } }, attr: { name: 'query-subwhere-key-' + $index() }"></select>
 			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-subwhere-key-' + $index() }"></span>
 		</td>
 		<td>
+			<div data-bind="style: { 'visibility': key()!='And' && key()!='Or' ? 'visible' : 'hidden' }">
 			<select required data-required-msg="Field cannot be empty" style="width: 97%" data-bind="kendoComboBox: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2 }, attr: { name: 'query-subwhere-field-' + $index() }"></select>
-			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-subwhere-field-' + $index() }"></span>
+			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-subwhere-field-' + $index() }"></span></div>
 		</td>
 		<td>
+			<div data-bind="style: { 'visibility': key()!='And' && key()!='Or' ? 'visible' : 'hidden' }">
 			<input required data-required-msg="Value cannot be empty" type="text" class="form-control input-sm" data-bind="value: value, attr: { name: 'query-subwhere-value-' + $index() }" placeholder="Value" />
-			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-subwhere-value-' + $index() }"></span>
+			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-subwhere-value-' + $index() }"></span></div>
 		</td>
 		<td style="text-align: center;">
 			<button class="btn btn-sm btn-danger" data-bind="click: qr.removeQueryOfWhere(id(), $index())">
 				<span class="glyphicon glyphicon-remove"></span>
 			</button>
-			<button class="btn btn-sm btn-primary" data-bind="style: { 'visibility': key()=='And'||key()=='Or' ? 'visible' : 'hidden' }, click: function(){qr.changeQueryOfWhere($data.key(), id(), $index())}">
+			<button class="btn btn-sm btn-primary" data-bind="style: { 'visibility': key()=='And'||key()=='Or' ? 'visible' : 'hidden' }, click: function(){qr.changeQueryOfWhere($data.key(), id(), 'btnadd')}">
 				<span class="glyphicon glyphicon-plus"></span>
 			</button>
 		</td>
