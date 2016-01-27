@@ -81,7 +81,34 @@ app.isFormValid = function (selector) {
     return ($validator.validate());
 };
 app.isLoading = ko.observable(false);
+app.fixKendoMultiSelect = function () {
+    $("*.k-multiselect").change(function (e) {
+        var existingValue = $(this).attr("existingValue");
+        if (existingValue !== undefined) {
+            var d = $(this).find("select[multiple='multiple']").data("kendoMultiSelect");
+            var newValue = existingValue.split(",");
+            var existingDataSource = d.dataSource._data;
+            newValue.push(d.value()[0]);
+            d.setDataSource(existingDataSource);
+        }
+    });
+
+    $("*.k-multiselect").keydown(function (e) {
+        var d = $(this).find("select[multiple='multiple']").data("kendoMultiSelect");
+        if (e.keyCode == 13) {
+            var existingValue = $(this).attr("existingValue");
+            var newValue = existingValue.split(",");
+            var existingDataSource = d.dataSource._data;
+            newValue.push(d.value()[0]);
+            d.setDataSource(existingDataSource);
+            d.value(newValue);
+        } else {
+            $(this).attr("existingValue",d.value())
+        }
+    });
+};
 
 $(function () {
 	app.prepare();
+    app.fixKendoMultiSelect();
 });
