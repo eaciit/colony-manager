@@ -95,7 +95,7 @@ qr.addFilter = function (filter) {
 
 			if (keywords.length > 0) {
 				if (keywords[0].key != filter.key) {
-					toastr["error"]("", "ERROR: " + 'Cannot use both "' + keywords[0].key + '" and "' + filter.key + '" together');
+					sweetAlert("Oops...", 'Cannot use both "' + keywords[0].key + '" and "' + filter.key + '" together', "error");
 					return;
 				}
 			}
@@ -105,7 +105,7 @@ qr.addFilter = function (filter) {
 			var keywords = Lazy($('#textquery').tokenInput("get")).where({ key: "from" }).toArray();
 
 			if (keywords.length == 0) {
-				toastr["error"]("", "ERROR: " + 'Cannot use "select" / "order" / "where" without using "from" first');
+				sweetAlert("Oops...", 'Cannot use "select" / "order" / "where" without using "from" first', "error");
 				return;
 			}
 		}
@@ -187,7 +187,7 @@ qr.querySave = function () {
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 
 		if (!data.hasOwnProperty("_id")) {
-			toastr["error"]("", 'There must be field called "_id"');
+			sweetAlert("Oops...", 'There must be field called "_id"', "error");
 			return;
 		}
 	}
@@ -261,7 +261,7 @@ qr.validateQuery = function () {
 		return (["select", "insert", "update", "delete", "command"].indexOf(e.key) > -1);
 	}).toArray().length > 0;
 	if (!isKeywordExists) {
-		toastr["error"]("", "ERROR: " + 'Query must contains "select" / "insert" / "update" / "delete" / "command" !');
+		sweetAlert("Oops...", 'Query must contains "select" / "insert" / "update" / "delete" / "command" !', "error");
 		return false;
 	}
 
@@ -269,7 +269,7 @@ qr.validateQuery = function () {
 		return ["from", "command"].indexOf(e.key) > -1
 	}).toArray().length > 0;
 	if (!isFromExists) {
-		toastr["error"]("", "ERROR: " + 'Query must contains "from" / "command" !');
+		sweetAlert("Oops...", 'Query must contains "from" / "command" !', "error");
 		return false;
 	}
 

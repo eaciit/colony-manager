@@ -152,7 +152,7 @@ ds.fetchDataSourceMetaData = function (from) {
 		ds.confDataSource.MetaData(res.data);
 		ds.saveDataSource();
 	}, function (a) {
-		toastr["error"]("", "ERROR: " + a.statusText);
+        sweetAlert("Oops...", a.statusText, "error");
 	}, {
 		timeout: 10000
 	});
@@ -243,9 +243,9 @@ ds.testConnection = function () {
 			return;
 		}
 
-		toastr["success"]("", "Connected");
+		swal({ title: "Connected", type: "success" });
 	}, function (a, b, c) {
-		toastr["error"]("", "ERROR: " + a.statusText);
+        sweetAlert("Oops...", a.statusText, "error");
 		console.log(a, b, c);
 	}, {
 		timeout: 10000
@@ -266,31 +266,43 @@ ds.editConnection = function (_id) {
 	});
 };
 ds.removeConnection = function (_id) {
-	var yes = confirm("Are you sure want to delete connection " + _id + " ?");
-	if (!yes) {
-		return;
-	}
+	swal({
+	    title: "Are you sure?",
+	    text: 'Data connection with id "' + _id + '" will be deleted',
+	    type: "warning",
+	    showCancelButton: true,
+	    confirmButtonColor: "#DD6B55",
+	    confirmButtonText: "Delete",
+	    closeOnConfirm: true
+	}, function() {
+	    app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
 
-	app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-
-		ds.backToFrontPage();
+			ds.backToFrontPage();
+			swal({ title: "Data successfully deleted", type: "success" });
+		});
 	});
 };
 ds.removeDataSource = function (_id) {
-	var yes = confirm("Are you sure want to delete connection " + _id + " ?");
-	if (!yes) {
-		return;
-	}
+	swal({
+	    title: "Are you sure?",
+	    text: 'Data source with id "' + _id + '" will be deleted',
+	    type: "warning",
+	    showCancelButton: true,
+	    confirmButtonColor: "#DD6B55",
+	    confirmButtonText: "Delete",
+	    closeOnConfirm: true
+	}, function() {
+		app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
 
-	app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-
-		ds.backToFrontPage();
+			ds.backToFrontPage();
+			swal({ title: "Data successfully deleted", type: "success" });
+		});
 	});
 }
 ds.editDataSource = function (_id) {
@@ -371,7 +383,7 @@ ds.forceFetchDataSourceMetaData = function () {
 	ds.saveDataSource(function (res) {
 		var queries = qr.getQuery();
 		if (!queries.hasOwnProperty("from")) {
-			toastr["error"]("", 'ERROR: Cannot fetch meta data without using "from" command on Query Builder');
+        	sweetAlert("Oops...", 'Cannot fetch meta data without using "from" command on Query Builder', "error");
 			return;
 		}
 
@@ -395,7 +407,7 @@ ds.testQuery = function () {
 	}
 
 	if (ds.confDataSource._id() == '') {
-		toastr["info"]("", "Please save the datasource first");
+		swal({ title: "Warning", text: "Please save the datasource first", type: "warning" });
 		return;
 	}
 
@@ -466,7 +478,7 @@ ds.testQuery = function () {
 				ds.fetchDataSourceMetaData(queryInfo.from);
 			}
 		}, function (a, b, c) {
-			toastr["error"]("", "ERROR: " + a.statusText);
+        	sweetAlert("Oops...", a.statusText, "error");
 			console.log(a);
 		}, {
 			timeout: 10000
@@ -506,7 +518,7 @@ ds.fetchAllCollections = function () {
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
 		ds.collectionNames(res.data);
 	}, function (a) {
-		toastr["error"]("", "ERROR: " + a.statusText);
+    	sweetAlert("Oops...", a.statusText, "error");
 	}, {
 		timeout: 10000
 	});
