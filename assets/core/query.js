@@ -86,6 +86,11 @@ qr.removeQueryOfOrder = function (index) {
 };
 qr.addFilter = function (filter) {
 	return function () {
+		if (!app.isFormValid(".form-datasource")) {
+			sweetAlert("Oops...", 'Fill the datasource informations first', "error");
+			return;
+		}
+
 		qr.queryBuilderMode(filter.key);
 
 		if (["select", "insert", "update", "delete", "command"].indexOf(filter.key) > -1) {

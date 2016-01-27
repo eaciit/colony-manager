@@ -109,7 +109,8 @@ body {
       body #content > .col-md-12 .panel .form-datasource .area-command ul.token-input-list-facebook {
         width: 100%;
         border: 1px solid #DDDDDD;
-        padding: 4px; }
+        padding: 4px;
+        min-height: 100px; }
         body #content > .col-md-12 .panel .form-datasource .area-command ul.token-input-list-facebook .token-input-token-facebook {
           height: 120px;
           padding: 2px 5px;

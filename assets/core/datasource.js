@@ -154,10 +154,11 @@ ds.fetchDataSourceMetaData = function (from) {
 	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) {
 		if (!res.success && res.message == "[eaciit.dbox.dbc.mongo.Cursor.Fetch] Not found") {
 			ds.confDataSource.MetaData([]);
-			// toastr["error"]("", 'ERROR: Table "' + from + '" not found');
+			qr.clearQuery();
 			return;
 		}
 		if (!app.isFine(res)) {
+			qr.clearQuery();
 			return;
 		}
 
@@ -165,6 +166,7 @@ ds.fetchDataSourceMetaData = function (from) {
 		ds.saveDataSource();
 	}, function (a) {
         sweetAlert("Oops...", a.statusText, "error");
+		qr.clearQuery();
 	}, {
 		timeout: 10000
 	});
@@ -395,6 +397,10 @@ ds.forceFetchDataSourceMetaData = function () {
 	});
 };
 ds.saveDataSource = function (c) {
+	if (!app.isFormValid(".form-datasource")) {
+		return;
+	}
+
 	var param = ds.getParamForSavingDataSource();
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {

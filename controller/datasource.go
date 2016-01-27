@@ -461,7 +461,13 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	}
 	defer conn.Close()
 
-	cursor, err := conn.NewQuery().From(from).Select().Take(1).Cursor(nil)
+	var query = conn.NewQuery().Select("*").Take(1)
+
+	if dataConn.Driver != "weblink" {
+		query = query.From(from)
+	}
+
+	cursor, err := query.Cursor(nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
