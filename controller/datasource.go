@@ -146,18 +146,19 @@ func (d *DataSourceController) filterParse(where toolkit.M) *dbox.Filter {
 			return dbox.Gte(field, value)
 		}
 	} else if key == "In" {
-		valueArray := where.Get("value", []interface{}{}).([]interface{})
+		valueArray := []interface{}{}
+		for _, e := range strings.Split(value, ",") {
+			valueArray = append(valueArray, strings.Trim(e, ""))
+		}
 		return dbox.In(field, valueArray...)
 	} else if key == "Nin" {
-		valueArray := where.Get("value", []interface{}{}).([]interface{})
+		valueArray := []interface{}{}
+		for _, e := range strings.Split(value, ",") {
+			valueArray = append(valueArray, strings.Trim(e, ""))
+		}
 		return dbox.Nin(field, valueArray...)
 	} else if key == "Contains" {
-		valueArrayIntfc := where.Get("value", []interface{}{}).([]interface{})
-		valueArrayStr := []string{}
-		for _, e := range valueArrayIntfc {
-			valueArrayStr = append(valueArrayStr, fmt.Sprintf("%v", e))
-		}
-		return dbox.Contains(field, valueArrayStr...)
+		return dbox.Contains(field, value)
 	} else if key == "Or" {
 		subs := where.Get("value", []interface{}{}).([]interface{})
 		filtersToMerge := []*dbox.Filter{}
