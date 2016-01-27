@@ -280,19 +280,30 @@ qr.removeSubQueryOfWhere = function(obj,id){
 			qr.removeSubQueryOfWhere(obj.subquery()[key], id);
 		}
 	}
-}
+};
 qr.saveQueryOfWhere = function () {
 	if (!app.isFormValid(".query-of-where")) {
 		return;
 	}
 
+	var parseWhereOneByOne = function (items) {
+		return items.map(function (e) {
+			var v = { key: e.key, field: e.field, value: e.value };
+
+			if (e.subquery.length > 0) {
+				v.value = parseWhereOneByOne(e.subquery);
+			}
+
+			return v;
+		});
+	};
+	
+	var queryOfWhere = ko.mapping.toJS(qr.queryOfWhere());
+
 	var o = { 
 		id: 'q' + moment(new Date()).format("YYYMMDDHHmmssSSS"),
 		key: "where",
-		value: Lazy(ko.mapping.toJS(qr.queryOfWhere())).map(function (e) {
-			e.value = qr.couldBeNumber(e.value);
-			return e;
-		}).toArray()
+		value: JSON.stringify(parseWhereOneByOne(queryOfWhere))
 	};
 
 	$('#textquery').tokenInput("remove", { key: "where" });
@@ -364,14 +375,23 @@ qr.createTextQuery = function () {
 		tokenFormatter: function (item) {
 			var text = item.value;
 			if (item.key == "where") {
-				text = item.value.map(function (e) {
-				    var o = {};
-				    var v = {};
-				    v[e.field] = e.value;
-				    o[e.key] = v;
+				var itemToQueryStyle = function (items) {
+					return items.map(function (e) {
+						var o = {};
+						o[e.field] = e.value;
 
-				    return JSON.stringify(o);
-				});
+						var v = {};
+						v[e.key] = o;
+
+						if (e.value instanceof Array) {
+							v[e.key] = itemToQueryStyle(e.value);
+						}
+
+						return v;
+					});
+				}
+
+				text = JSON.stringify(itemToQueryStyle(JSON.parse(item.value)));
 			}
 
 			var key = item.key.replace(/\b[a-z](?=[a-z]{2})/g, function(letter) {

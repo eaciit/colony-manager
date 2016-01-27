@@ -99,6 +99,85 @@ func (d *DataSourceController) connectToDataSource(_id string) (*colonycore.Data
 	query, metaSave := d.parseQuery(connection.NewQuery(), dataDS.QueryInfo)
 	return dataDS, dataConn, connection, query, metaSave, nil
 }
+func (d *DataSourceController) filterParse(where toolkit.M) *dbox.Filter {
+	field := where.Get("field", "").(string)
+	value := fmt.Sprintf("%v", where["value"])
+
+	if key := where.Get("key", "").(string); key == "Eq" {
+		valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+		if errv == nil {
+			return dbox.Eq(field, valueInt)
+		} else {
+			return dbox.Eq(field, value)
+		}
+	} else if key == "Ne" {
+		valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+		if errv == nil {
+			return dbox.Ne(field, valueInt)
+		} else {
+			return dbox.Ne(field, value)
+		}
+	} else if key == "Lt" {
+		valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+		if errv == nil {
+			return dbox.Lt(field, valueInt)
+		} else {
+			return dbox.Lt(field, value)
+		}
+	} else if key == "Lte" {
+		valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+		if errv == nil {
+			return dbox.Lte(field, valueInt)
+		} else {
+			return dbox.Lte(field, value)
+		}
+	} else if key == "Gt" {
+		valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+		if errv == nil {
+			return dbox.Gt(field, valueInt)
+		} else {
+			return dbox.Gt(field, value)
+		}
+	} else if key == "Gte" {
+		valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
+		if errv == nil {
+			return dbox.Gte(field, valueInt)
+		} else {
+			return dbox.Gte(field, value)
+		}
+	} else if key == "In" {
+		valueArray := where.Get("value", []interface{}{}).([]interface{})
+		return dbox.In(field, valueArray...)
+	} else if key == "Nin" {
+		valueArray := where.Get("value", []interface{}{}).([]interface{})
+		return dbox.Nin(field, valueArray...)
+	} else if key == "Contains" {
+		valueArrayIntfc := where.Get("value", []interface{}{}).([]interface{})
+		valueArrayStr := []string{}
+		for _, e := range valueArrayIntfc {
+			valueArrayStr = append(valueArrayStr, fmt.Sprintf("%v", e))
+		}
+		return dbox.Contains(field, valueArrayStr...)
+	} else if key == "Or" {
+		subs := where.Get("value", []interface{}{}).([]interface{})
+		filtersToMerge := []*dbox.Filter{}
+		for _, eachSub := range subs {
+			eachWhere, _ := toolkit.ToM(eachSub)
+			filtersToMerge = append(filtersToMerge, d.filterParse(eachWhere))
+		}
+		return dbox.Or(filtersToMerge...)
+	} else if key == "And" {
+		subs := where.Get("value", []interface{}{}).([]interface{})
+		filtersToMerge := []*dbox.Filter{}
+		for _, eachSub := range subs {
+			eachWhere, _ := toolkit.ToM(eachSub)
+			filtersToMerge = append(filtersToMerge, d.filterParse(eachWhere))
+		}
+		return dbox.And(filtersToMerge...)
+	}
+
+	return nil
+}
 
 func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M) (dbox.IQuery, MetaSave) {
 	metaSave := MetaSave{}
@@ -161,79 +240,22 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 		query = query.Delete()
 	}
 
-	if qWhere := queryInfo.Get("where", []interface{}{}).([]interface{}); len(qWhere) > 0 {
-		allFilter := []*dbox.Filter{}
+	if qWhere := queryInfo.Get("where", "").(string); qWhere != "" {
+		whereAll := []map[string]interface{}{}
+		err := json.Unmarshal([]byte(qWhere), &whereAll)
+		if err == nil {
+			allFilter := []*dbox.Filter{}
 
-		for _, each := range qWhere {
-			where, _ := toolkit.ToM(each.(map[string]interface{}))
-			var filter *dbox.Filter = nil
-
-			field := where.Get("field", "").(string)
-			value := fmt.Sprintf("%v", where["value"])
-
-			if key := where.Get("key", "").(string); key == "Eq" {
-				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
-				if errv == nil {
-					filter = dbox.Eq(field, valueInt)
-				} else {
-					filter = dbox.Eq(field, value)
+			for _, each := range whereAll {
+				where, _ := toolkit.ToM(each)
+				filter := d.filterParse(where)
+				if filter != nil {
+					allFilter = append(allFilter, filter)
 				}
-			} else if key == "Ne" {
-				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
-				if errv == nil {
-					filter = dbox.Ne(field, valueInt)
-				} else {
-					filter = dbox.Ne(field, value)
-				}
-			} else if key == "Lt" {
-				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
-				if errv == nil {
-					filter = dbox.Lt(field, valueInt)
-				} else {
-					filter = dbox.Lt(field, value)
-				}
-			} else if key == "Lte" {
-				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
-				if errv == nil {
-					filter = dbox.Lte(field, valueInt)
-				} else {
-					filter = dbox.Lte(field, value)
-				}
-			} else if key == "Gt" {
-				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
-				if errv == nil {
-					filter = dbox.Gt(field, valueInt)
-				} else {
-					filter = dbox.Gt(field, value)
-				}
-			} else if key == "Gte" {
-				valueInt, errv := strconv.Atoi(fmt.Sprintf("%v", where["value"]))
-				if errv == nil {
-					filter = dbox.Gte(field, valueInt)
-				} else {
-					filter = dbox.Gte(field, value)
-				}
-			} else if key == "In" {
-				valueArray := where.Get("field", []interface{}{}).([]interface{})
-				filter = dbox.In(field, valueArray...)
-			} else if key == "Nin" {
-				valueArray := where.Get("field", []interface{}{}).([]interface{})
-				filter = dbox.Nin(field, valueArray...)
-			} else if key == "Contains" {
-				valueArrayIntfc := where.Get("field", []interface{}{}).([]interface{})
-				valueArrayStr := []string{}
-				for _, e := range valueArrayIntfc {
-					valueArrayStr = append(valueArrayStr, fmt.Sprintf("%v", e))
-				}
-				filter = dbox.Contains(field, valueArrayStr...)
 			}
 
-			if filter != nil {
-				allFilter = append(allFilter, filter)
-			}
+			query = query.Where(allFilter...)
 		}
-
-		query = query.Where(allFilter...)
 	}
 
 	return query, metaSave

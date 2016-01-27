@@ -1,6 +1,9 @@
-<link href="/res/js/tokeninput/token-input.css" rel="stylesheet">
-<link href="/res/js/tokeninput/token-input-facebook.css" rel="stylesheet">
-<script src="/res/js/tokeninput/jquery.tokeninput.js"></script>
+<!-- token input -->
+<link href="/res/tokeninput/token-input.css" rel="stylesheet">
+<link href="/res/tokeninput/token-input-facebook.css" rel="stylesheet">
+<script src="/res/tokeninput/jquery.tokeninput.js"></script>
+
+<!-- core -->
 <script src="/res/core/datasource.js"></script>
 <script src="/res/core/query.js"></script>
 
@@ -584,7 +587,7 @@
 <script id="querySubWhere" type="text/html">
 	<tr data-bind="attr:{idwhere:id()}">
 		<td data-bind="style:{'padding-left':parentsum()*20+'px'}">
-			<select required data-required-msg="Operator cannot be empty" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), $index()) }, attr: { name: 'query-subwhere-key-' + $index() }"></select>
+			<select required data-required-msg="Operator cannot be empty" style="width: 97%" data-bind="kendoDropDownList: { data: qr.dataQueryOfWhere, dataValueField: 'key', dataTextField: 'title', value: key, optionLabel: 'Select one', select: function(e){ qr.changeQueryOfWhere(this.dataItem(e.item).key,id(), $index()) } }, attr: { name: 'query-subwhere-key-' + $index() }"></select>
 			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-subwhere-key-' + $index() }"></span>
 		</td>
 		<td>
