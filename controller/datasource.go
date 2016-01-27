@@ -474,7 +474,16 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	defer cursor.Close()
 
 	data := toolkit.M{}
-	err = cursor.Fetch(&data, 1, false)
+	if dataConn.Driver != "weblink" {
+		err = cursor.Fetch(&data, 1, false)
+	} else {
+		dataAll := []toolkit.M{}
+		err = cursor.Fetch(&dataAll, 1, false)
+		if len(dataAll) > 0 {
+			data = dataAll[0]
+		}
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
