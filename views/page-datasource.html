@@ -22,18 +22,16 @@
 	<div class="col-md-12" data-bind="visible: (section() == 'connection-list')">
 		<h1>Connection List</h1>
 
-		<nav class="navbar navbar-default" data-bind="visible: (mode() == '')">
-		    <div class="container-fluid">
-	            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridConnections">
-		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-		    	</button>
-	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: openConnectionForm">
-		    		<span class="glyphicon glyphicon-plus"></span> Create New Connection
-		    	</button>
-		    </div>
+		<nav class="navbar" data-bind="visible: (mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridConnections">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: openConnectionForm">
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Connection
+	    	</button>
 		</nav>
 
-		<div class="panel panel-default" data-bind="visible: (mode() == '')">
+		<div class="panel" data-bind="visible: (mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Connections</h1>
 		    </div>
@@ -42,21 +40,19 @@
 		    </div>
 		</div>
 
-		<nav class="navbar navbar-default" data-bind="visible: (mode() == 'edit')">
-		    <div class="container-fluid">
-	            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
-		    		<span class="glyphicon glyphicon-chevron-left"></span> Back
-		    	</button>
-	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewConnection">
-		    		<span class="glyphicon glyphicon-save"></span> Save
-		    	</button>
-	            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testConnection">
-		    		<span class="glyphicon glyphicon-save"></span> Test Connection
-		    	</button>
-		    </div>
+		<nav class="navbar" data-bind="visible: (mode() == 'edit')">
+            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewConnection">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testConnection">
+	    		<span class="glyphicon glyphicon-save"></span> Test Connection
+	    	</button>
 		</nav>
 
-		<div class="panel panel-default" data-bind="visible: (mode() == 'edit')" style="width: 600px;">
+		<div class="panel" data-bind="visible: (mode() == 'edit')" style="width: 600px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (ds.connectionListMode() == '') ? 'Add New' : 'Edit'"></span>
@@ -156,35 +152,31 @@
 	<div class="col-md-12" data-bind="visible: (section() == 'data-source')">
 		<h1>Data Source</h1>
 
-		<nav class="navbar navbar-default" data-bind="visible: (mode() == '')">
-		    <div class="container-fluid">
-	            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridDataSource">
-		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-		    	</button>
-		    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: openDataSourceForm">
-		    		<span class="glyphicon glyphicon-plus"></span> Create New Data Source
-		    	</button>
-		    </div>
+		<nav class="navbar" data-bind="visible: (mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridDataSource">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: openDataSourceForm">
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Source
+	    	</button>
 		</nav>
 
-		<nav class="navbar navbar-default" data-bind="visible: (mode() == 'editDataSource')">
-		    <div class="container-fluid">
-	            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
-		    		<span class="glyphicon glyphicon-chevron-left"></span> Back
-		    	</button>
-	            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
-		    		<span class="glyphicon glyphicon-save"></span> Save
-		    	</button>
-		    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testQuery">
-		    		<span class="glyphicon glyphicon-play"></span> Run Query
-		    	</button>
-		    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: forceFetchDataSourceMetaData">
-		    		<span class="glyphicon glyphicon-refresh"></span> Refresh Meta Data
-		    	</button>
-		    </div>
+		<nav class="navbar" data-bind="visible: (mode() == 'editDataSource')">
+            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testQuery">
+	    		<span class="glyphicon glyphicon-play"></span> Run Query
+	    	</button>
+	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: forceFetchDataSourceMetaData">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh Meta Data
+	    	</button>
 		</nav>
 
-		<div class="panel panel-default" data-bind="visible: (mode() == '')">
+		<div class="panel" data-bind="visible: (mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
@@ -193,7 +185,7 @@
 		    </div>
 		</div>
 
-		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (ds.dataSourceMode() == '') ? 'Add New' : 'Edit'"></span>
@@ -246,7 +238,7 @@
 		<div class="tab-content" data-bind="visible: (mode() == 'editDataSource')" style="padding-top: 10px;">
 		
 		<div class="tab-pane active" id="ds-tab-1">
-		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Query Builder</h1>
 		    </div>
@@ -274,12 +266,12 @@
 		</div>
 
 		<div class="tab-pane" id="ds-tab-2">
-		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Meta Data</h1>
 		    </div>
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length > 0)">
-		    	<div id="grid-metadata" data-bind="kendoGrid: { dataSource: ds.gridMetaDataSchema, data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true, editable: true, }"></div>
+		    	<div id="grid-metadata" data-bind="kendoGrid: { dataSource: ds.gridMetaDataSchema, data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true, editable: true, dataBound: gridMetaDataBound }"></div>
 		    	<label style="margin-top: 10px; margin-bottom: 0px; font-weight: normal;">
 		    		<span style='color: red;'>*</span> Editable
 		    	</label>
@@ -291,7 +283,7 @@
 		</div>
 
 		<div class="tab-pane" id="ds-tab-3">
-		<div class="panel panel-default" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Query Test Result</h1>
 		    </div>
@@ -500,7 +492,7 @@
         	</div>
 
 			<div class="modal-footer">
-				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
 					<span class="glyphicon glyphicon-remove"></span> Close
 				</button>
 				<button type="button" class="btn btn-sm btn-primary" data-bind="click: querySave">
@@ -525,7 +517,7 @@
 			</div>
 			<div class="modal-body" data-bind="with: qr">
 				<div class="col-md-12">
-					<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click: addQueryOfWhere">
+					<button class="btn btn-sm btn-primary btn-addwhere" data-bind="click: addQueryOfWhere" style="margin-bottom: 5px;">
 						<span class="glyphicon glyphicon-plus"></span> Add more
 					</button>
 				</div>
@@ -542,7 +534,7 @@
 				</table>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
 					<span class="glyphicon glyphicon-remove"></span> Close
 				</button>
 				<button type="button" class="btn btn-sm btn-primary" data-bind="click: qr.saveQueryOfWhere">
@@ -570,7 +562,7 @@
 				<div id="grid-lookup-data"></div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
 					<span class="glyphicon glyphicon-remove"></span> Close
 				</button>
 			</div>
