@@ -11,6 +11,7 @@ qr.dataCommand = ko.observableArray([
 	{ id: 0, key: "order", type: "string", value: ""},
 	{ id: 0, key: "take", type: "number", value: ""},
 	{ id: 0, key: "skip", type: "number", value: ""},
+	{ id: 0, key: "command", type: "field, field", value: ""},
 ]);
 qr.dataQueryOfOrder = ko.observableArray([
 	{ value: "asc", title: "Ascending" },
@@ -38,7 +39,7 @@ qr.templateQueryOfOrder = {
 	field: "", 
 	direction: ""
 };
-qr.templateWhereOfOrder = {
+qr.templateQueryOfWhere = {
 	id: "",
 	key: "",
 	parm: "",
@@ -46,6 +47,10 @@ qr.templateWhereOfOrder = {
 	value: "",
 	subquery: [],
 	parentsum: 0,
+};
+qr.templateQueryOfCommand = {
+	command: "",
+	value: ""
 };
 
 qr.queryBuilderMode = ko.observable('');
@@ -57,6 +62,7 @@ qr.queryOfFrom = ko.observable("");
 qr.queryOfOrder = ko.observableArray([]);
 qr.queryOfTake = ko.observable(0);
 qr.queryOfWhere = ko.observableArray([]);
+qr.queryOfCommand = ko.observableArray([]);
 
 qr.addQueryOfInsert = function () {
 	var o = $.extend(true, {}, qr.templateQueryOfInsert);
@@ -76,6 +82,16 @@ qr.removeQueryOfOrder = function (index) {
 	return function () {
 		var o = qr.queryOfOrder()[index];
 		qr.queryOfOrder.remove(o);
+	};
+};
+qr.addQueryOfCommand = function () {
+	var o = $.extend(true, {}, qr.templateQueryOfCommand);
+	qr.queryOfCommand.push(ko.mapping.fromJS(o));
+};
+qr.removeQueryOfCommand = function (index) {
+	return function () {
+		var o = qr.queryOfCommand()[index];
+		qr.queryOfCommand.remove(o);
 	};
 };
 qr.addFilter = function (filter) {
@@ -150,6 +166,13 @@ qr.addFilter = function (filter) {
 			ds.resetValidation(".query-of-where");
 			$(".modal-query-where").modal("show");
 		}
+
+		if (filter.key == "command") {
+			qr.queryOfCommand([]);
+			qr.addQueryOfCommand();
+			ds.resetValidation(".query-of-command");
+			$(".modal-query").modal("show");
+		}
 	};
 };
 qr.querySave = function () {
@@ -206,6 +229,18 @@ qr.querySave = function () {
 		o.value = parseInt(qr.queryOfTake(), 10);
 	}
 
+	if (qr.queryBuilderMode() == "command" ) {
+		if (!app.isFormValid(".query-of-command")) {
+			return;
+		}
+		
+		var data = {};
+		Lazy(ko.mapping.toJS(qr.queryOfCommand())).each(function (e) {
+			data[e.command] = qr.couldBeNumber(e.value);
+		});
+		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
+	}
+
 	$('#textquery').tokenInput("remove", { key: qr.queryBuilderMode() });
 	$('#textquery').tokenInput("add", o);
 	$(".modal-query").modal("hide");
@@ -255,7 +290,7 @@ qr.clearQuery = function () {
 	$('#textquery').tokenInput("remove", { });
 };
 qr.addQueryOfWhere = function () {
-	var o = $.extend(true, {}, qr.templateWhereOfOrder);
+	var o = $.extend(true, {}, qr.templateQueryOfWhere);
 	var m = ko.mapping.fromJS(o);
 	m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
 	qr.queryOfWhere.push(m);
@@ -313,7 +348,7 @@ qr.saveQueryOfWhere = function () {
 qr.changeQueryOfWhere = function(datakey, idparent, indexval){
 	// var dataItem = this.dataItem(e.item);
 	if (datakey == "And" || datakey == "Or"){
-		var o = $.extend(true, {}, qr.templateWhereOfOrder);
+		var o = $.extend(true, {}, qr.templateQueryOfWhere);
 		var m = ko.mapping.fromJS(o);
 		m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
 		for(var key in qr.queryOfWhere()){
@@ -330,7 +365,7 @@ qr.changeQueryOfWhere = function(datakey, idparent, indexval){
 	// qr.valueWhere()[indexlist].parm(dataItem.parm);
 };
 qr.AddSubQuery = function(idparent,i,obj, parentsum){
-	var o = $.extend(true, {}, qr.templateWhereOfOrder);
+	var o = $.extend(true, {}, qr.templateQueryOfWhere);
 	var m = ko.mapping.fromJS(o);
 	m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
 	qr.parentSumWhere(qr.parentSumWhere() + 1);
