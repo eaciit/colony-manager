@@ -19,6 +19,15 @@ import (
 	"time"
 )
 
+func GetFileExtension(file string) string {
+	fileComp := strings.Split(file, ".")
+	if len(fileComp) == 0 {
+		return ""
+	}
+
+	return fileComp[len(fileComp)-1]
+}
+
 func Printf(format string, a ...interface{}) (n int, err error) {
 	return fmt.Printf(format, a)
 }

@@ -1,6 +1,6 @@
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "json", text: "Weblink" },
+	{ value: "weblink", text: "Weblink" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mssql", text: "SQLServer" },
 	{ value: "mysql", text: "MySQL" },
@@ -176,19 +176,10 @@ ds.changeActiveSection = function (section) {
 		ds.mode('');
 	};
 };
-ds.resetValidation = function (selectorID) {
-	var $form = $(selectorID).data("kendoValidator");
-	if ($form == undefined) {
-		$(selectorID).kendoValidator();
-		$form = $(selectorID).data("kendoValidator");
-	}
-
-	$form.hideMessages();
-};
 ds.openConnectionForm = function () {
 	ds.mode('edit');
 	ds.connectionListMode('');
-	ds.resetValidation("#form-add-connection");
+	app.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
 };
@@ -220,7 +211,7 @@ ds.populateGridConnections = function () {
 };
 ds.saveNewConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		if (ds.config.Driver() == "json") {
+		if (ds.config.Driver() == "weblink") {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
 			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
 				// no problem
@@ -273,7 +264,7 @@ ds.editConnection = function (_id) {
 
 		ds.mode("edit");
 		ds.connectionListMode('edit');
-		ds.resetValidation("#form-add-connection");
+		app.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
 		ds.addSettings();
 	});
@@ -320,7 +311,7 @@ ds.removeDataSource = function (_id) {
 }
 ds.editDataSource = function (_id) {
 	ds.dataSourceMode('edit');
-	ds.resetValidation(".form-datasource");
+	app.resetValidation(".form-datasource");
 
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
@@ -384,7 +375,7 @@ ds.populateGridDataSource = function () {
 ds.openDataSourceForm = function(){
 	ds.mode('editDataSource');
 	ds.dataSourceMode('');
-	ds.resetValidation(".form-datasource");
+	app.resetValidation(".form-datasource");
 
 	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);

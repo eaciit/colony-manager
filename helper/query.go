@@ -6,10 +6,14 @@ import (
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	// _ "github.com/eaciit/dbox/dbc/mssql"
+	"github.com/eaciit/colony-core/v0"
 	_ "github.com/eaciit/dbox/dbc/mysql"
 	// _ "github.com/eaciit/dbox/dbc/oracle"
 	// _ "github.com/eaciit/dbox/dbc/postgres"
+	"fmt"
 	"github.com/eaciit/toolkit"
+	"os"
+	"path/filepath"
 )
 
 type queryWrapper struct {
@@ -173,4 +177,16 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 	}
 
 	return errors.New("nothing changes")
+}
+
+func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
+	if dataConn.Driver == "weblink" {
+		basePath, _ := os.Getwd()
+		fileType := GetFileExtension(dataConn.Host)
+		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(basePath, "config", "etc", dataConn.ID), fileType)
+
+		return Query(fileType, fileLocation)
+	}
+
+	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
 }

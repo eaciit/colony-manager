@@ -120,7 +120,7 @@ qr.addFilter = function (filter) {
 			var row = $.extend(true, { }, qr.templateQueryOfInsert);
 			row.field = "_id";
 			qr.queryOfInsert.push(ko.mapping.fromJS(row));
-			ds.resetValidation(".query-of-insert");
+			app.resetValidation(".query-of-insert");
 			$(".modal-query").modal("show");
 		}
 
@@ -135,7 +135,7 @@ qr.addFilter = function (filter) {
 
 		if (filter.key == "from") {
 			qr.queryOfFrom('');
-			ds.resetValidation(".query-of-from");
+			app.resetValidation(".query-of-from");
 			$(".modal-query").modal("show");
 		}
 
@@ -153,13 +153,13 @@ qr.addFilter = function (filter) {
 		if (filter.key == "where") {
 			qr.queryOfWhere([]);
 			qr.addQueryOfWhere();
-			ds.resetValidation(".query-of-where");
+			app.resetValidation(".query-of-where");
 			$(".modal-query-where").modal("show");
 		}
 
 		if (filter.key == "command") {
 			ko.mapping.fromJS(qr.templateQueryOfCommand, qr.queryOfCommand);
-			ds.resetValidation(".query-of-command");
+			app.resetValidation(".query-of-command");
 			$(".modal-query").modal("show");
 		}
 	};

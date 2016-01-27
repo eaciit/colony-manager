@@ -75,9 +75,18 @@ app.isFine = function (res) {
     return true;
 };
 app.isFormValid = function (selector) {
-    $(selector).kendoValidator();
+    app.resetValidation(selector);
     var $validator = $(selector).data("kendoValidator");
     return ($validator.validate());
+};
+app.resetValidation = function (selectorID) {
+    var $form = $(selectorID).data("kendoValidator");
+    if ($form == undefined) {
+        $(selectorID).kendoValidator();
+        $form = $(selectorID).data("kendoValidator");
+    }
+
+    $form.hideMessages();
 };
 app.isLoading = ko.observable(false);
 app.fixKendoMultiSelect = function () {
