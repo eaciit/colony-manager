@@ -5,13 +5,13 @@ qr.dataCommand = ko.observableArray([
 	{ id: 0, key: "insert", type: "", value: ""},
 	{ id: 0, key: "update", type: "", value: ""},
 	{ id: 0, key: "delete", type: "", value: ""},
+	{ id: 0, key: "command", type: "field, field", value: ""},
 	// { id: 0, key: "save", type: "", value: ""},
 	{ id: 0, key: "from", type: "table", value: ""},
 	{ id: 0, key: "where", type: "string", value: ""},
 	{ id: 0, key: "order", type: "string", value: ""},
 	{ id: 0, key: "take", type: "number", value: ""},
 	{ id: 0, key: "skip", type: "number", value: ""},
-	{ id: 0, key: "command", type: "field, field", value: ""},
 ]);
 qr.dataQueryOfOrder = ko.observableArray([
 	{ value: "asc", title: "Ascending" },
@@ -50,7 +50,7 @@ qr.templateQueryOfWhere = {
 };
 qr.templateQueryOfCommand = {
 	command: "",
-	value: ""
+	param: ""
 };
 
 qr.queryBuilderMode = ko.observable('');
@@ -62,7 +62,7 @@ qr.queryOfFrom = ko.observable("");
 qr.queryOfOrder = ko.observableArray([]);
 qr.queryOfTake = ko.observable(0);
 qr.queryOfWhere = ko.observableArray([]);
-qr.queryOfCommand = ko.observableArray([]);
+qr.queryOfCommand = ko.mapping.fromJS(qr.templateQueryOfCommand);
 
 qr.addQueryOfInsert = function () {
 	var o = $.extend(true, {}, qr.templateQueryOfInsert);
@@ -84,23 +84,13 @@ qr.removeQueryOfOrder = function (index) {
 		qr.queryOfOrder.remove(o);
 	};
 };
-qr.addQueryOfCommand = function () {
-	var o = $.extend(true, {}, qr.templateQueryOfCommand);
-	qr.queryOfCommand.push(ko.mapping.fromJS(o));
-};
-qr.removeQueryOfCommand = function (index) {
-	return function () {
-		var o = qr.queryOfCommand()[index];
-		qr.queryOfCommand.remove(o);
-	};
-};
 qr.addFilter = function (filter) {
 	return function () {
 		qr.queryBuilderMode(filter.key);
 
-		if (["select", "insert", "update", "delete"].indexOf(filter.key) > -1) {
+		if (["select", "insert", "update", "delete", "command"].indexOf(filter.key) > -1) {
 			var keywords = Lazy($('#textquery').tokenInput("get")).where(function (e) {
-				return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
+				return (["select", "insert", "update", "delete", "command"].indexOf(e.key) > -1);
 			}).toArray();
 
 			if (keywords.length > 0) {
@@ -168,8 +158,7 @@ qr.addFilter = function (filter) {
 		}
 
 		if (filter.key == "command") {
-			qr.queryOfCommand([]);
-			qr.addQueryOfCommand();
+			ko.mapping.fromJS(qr.templateQueryOfCommand, qr.queryOfCommand);
 			ds.resetValidation(".query-of-command");
 			$(".modal-query").modal("show");
 		}
@@ -235,9 +224,7 @@ qr.querySave = function () {
 		}
 		
 		var data = {};
-		Lazy(ko.mapping.toJS(qr.queryOfCommand())).each(function (e) {
-			data[e.command] = qr.couldBeNumber(e.value);
-		});
+		data[qr.queryOfCommand.command()] = qr.queryOfCommand.param();
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 	}
 
@@ -271,16 +258,18 @@ qr.validateQuery = function () {
 	}
 
 	var isKeywordExists = Lazy(queries).where(function (e) {
-		return (["select", "insert", "update", "delete"].indexOf(e.key) > -1);
+		return (["select", "insert", "update", "delete", "command"].indexOf(e.key) > -1);
 	}).toArray().length > 0;
 	if (!isKeywordExists) {
-		toastr["error"]("", "ERROR: " + 'Query must contains "select" / "insert" / "update" / "delete" !');
+		toastr["error"]("", "ERROR: " + 'Query must contains "select" / "insert" / "update" / "delete" / "command" !');
 		return false;
 	}
 
-	var isFromExists = Lazy($('#textquery').tokenInput("get")).where({ key: "from" }).toArray().length > 0;
+	var isFromExists = Lazy($('#textquery').tokenInput("get")).where(function (e) {
+		return ["from", "command"].indexOf(e.key) > -1
+	}).toArray().length > 0;
 	if (!isFromExists) {
-		toastr["error"]("", "ERROR: " + 'Query must contains "from" !');
+		toastr["error"]("", "ERROR: " + 'Query must contains "from" / "command" !');
 		return false;
 	}
 

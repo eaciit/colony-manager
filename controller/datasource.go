@@ -239,6 +239,16 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 		metaSave.keyword = "delete"
 		query = query.Delete()
 	}
+	if qCommand := queryInfo.Get("command", "").(string); qCommand != "" {
+		command := map[string]interface{}{}
+		err := json.Unmarshal([]byte(qCommand), &command)
+		if err == nil {
+			for key, value := range command {
+				query = query.Command(key, value)
+				break
+			}
+		}
+	}
 
 	if qWhere := queryInfo.Get("where", "").(string); qWhere != "" {
 		whereAll := []map[string]interface{}{}
