@@ -334,36 +334,61 @@ qr.saveQueryOfWhere = function () {
 	$('#textquery').tokenInput("add", o);
 	$(".modal-query-where").modal("hide");
 };
-qr.changeQueryOfWhere = function(datakey, idparent, indexval){
-	// var dataItem = this.dataItem(e.item);
-	if (datakey == "And" || datakey == "Or"){
-		var o = $.extend(true, {}, qr.templateQueryOfWhere);
-		var m = ko.mapping.fromJS(o);
-		m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
-		for(var key in qr.queryOfWhere()){
-			if (idparent == qr.queryOfWhere()[key].id()){
-				m.parentsum(1);
-				qr.queryOfWhere()[key].subquery.push(m);
-			} else if (idparent != qr.queryOfWhere()[key].id() && qr.queryOfWhere()[key].subquery().length > 0) {
-				qr.parentSumWhere(1);
-				qr.AddSubQuery(idparent,key, qr.queryOfWhere()[key], 1);
+qr.changeQueryOfWhere = function(datakey, idparent, chooseadd){
+	var o = $.extend(true, {}, qr.templateQueryOfWhere);
+	var m = ko.mapping.fromJS(o);
+	m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
+	for(var key in qr.queryOfWhere()){
+		if (idparent == qr.queryOfWhere()[key].id()){
+			if (datakey == "And" || datakey == "Or"){
+				if (chooseadd != 'select'){
+					m.parentsum(1);
+					qr.queryOfWhere()[key].subquery.push(m);
+				} else if (chooseadd == 'select' && qr.queryOfWhere()[key].subquery().length == 0){
+					m.parentsum(1);
+					qr.queryOfWhere()[key].subquery.push(m);
+				}
+				qr.queryOfWhere()[key].field('a');
+				qr.queryOfWhere()[key].value('a');
+			} else {
+				qr.queryOfWhere()[key].field('');
+				qr.queryOfWhere()[key].value('');
+				if (qr.queryOfWhere()[key].subquery().length > 0)
+					qr.queryOfWhere()[key].subquery([]);
 			}
+			break;
+		} else if (idparent != qr.queryOfWhere()[key].id() && qr.queryOfWhere()[key].subquery().length > 0) {
+			qr.parentSumWhere(1);
+			qr.AddSubQuery(idparent, qr.queryOfWhere()[key], 1, chooseadd, datakey);
 		}
 	}
-	// var dataItem = this.dataItem(e.item), indexlist = $(this.element).closest(".list-where").index();
-	// qr.valueWhere()[indexlist].parm(dataItem.parm);
 };
-qr.AddSubQuery = function(idparent,i,obj, parentsum){
+qr.AddSubQuery = function(idparent,obj, parentsum, chooseadd, datakey){
 	var o = $.extend(true, {}, qr.templateQueryOfWhere);
 	var m = ko.mapping.fromJS(o);
 	m.id('wh' + moment(new Date()).format("YYYMMDDHHmmssSSS"));
 	qr.parentSumWhere(qr.parentSumWhere() + 1);
 	for(var key in obj.subquery()){
 		if (idparent == obj.subquery()[key].id()){
-			m.parentsum(qr.parentSumWhere());
-			obj.subquery()[key].subquery.push(m);
+			if (datakey == "And" || datakey == "Or"){
+				if (chooseadd != 'select'){
+					m.parentsum(qr.parentSumWhere());
+					obj.subquery()[key].subquery.push(m);
+				} else if (chooseadd == 'select' && obj.subquery()[key].subquery().length == 0){
+					m.parentsum(qr.parentSumWhere());
+					obj.subquery()[key].subquery.push(m);
+				}
+				obj.subquery()[key].field('a');
+				obj.subquery()[key].value('a');
+			} else {
+				obj.subquery()[key].field('');
+				obj.subquery()[key].value('');
+				if (obj.subquery()[key].subquery().length > 0)
+					obj.subquery()[key].subquery([]);
+			}
+			break;
 		} else {
-			qr.AddSubQuery(idparent,key, obj.subquery()[key]);
+			qr.AddSubQuery(idparent, obj.subquery()[key], parentsum, chooseadd, datakey);
 		}
 	}
 }
