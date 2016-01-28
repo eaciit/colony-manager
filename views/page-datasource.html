@@ -4,25 +4,25 @@
 <script src="/res/tokeninput/jquery.tokeninput.js"></script>
 
 <!-- core -->
-<script src="/res/core/datasource.js"></script>
-<script src="/res/core/query.js"></script>
+<script src="/res/core/page-datasource.js"></script>
+<script src="/res/core/page-datasource-query.js"></script>
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
 		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (section() == 'connection-list') }, click: changeActiveSection('connection-list')">Connection List<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
-			<li><a href="#" data-bind="css: { 'active': (section() == 'data-source') }, click: changeActiveSection('data-source')">Data Source<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'connection-list') }, click: app.changeActiveSection('connection-list')">Connection List<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'data-source') }, click: app.changeActiveSection('data-source')">Data Source<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
 		</ul>
 	</div>
 </div>
 
 <!-- main area -->
 <div class="col-xs-12 col-sm-10" id="content" data-bind="with: datasource">
-	<div class="col-md-12" data-bind="visible: (section() == 'connection-list')">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'connection-list')">
 		<h1>Connection List</h1>
 
-		<nav class="navbar" data-bind="visible: (mode() == '')">
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridConnections">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
@@ -31,7 +31,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (mode() == '')">
+		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Connections</h1>
 		    </div>
@@ -40,7 +40,7 @@
 		    </div>
 		</div>
 
-		<nav class="navbar" data-bind="visible: (mode() == 'edit')">
+		<nav class="navbar" data-bind="visible: (app.mode() == 'edit')">
             <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
@@ -52,45 +52,45 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (mode() == 'edit')" style="width: 600px;">
+		<div class="panel" data-bind="visible: (app.mode() == 'edit')" style="width: 600px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (ds.connectionListMode() == '') ? 'Add New' : 'Edit'"></span>
+		        	<span data-bind="text: (ds.connectionListMode() == '') ? 'Create New' : 'Edit'"></span>
 		        	Connection
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
 				<form class="form-horizontal" data-bind="with: config" id="form-add-connection" novalidate>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Connection ID</label>
+				        <label class="col-sm-4 filter-label">Connection ID</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
 							<span class="k-invalid-msg" data-for="ID"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Connection Name</label>
+				        <label class="col-sm-4 filter-label">Connection Name</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: ConnectionName">
 							<span class="k-invalid-msg" data-for="Name"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Driver</label>
+				        <label class="col-sm-4 filter-label">Driver</label>
 				        <div class="col-sm-5">
-				        	<select required data-required-msg="Driver cannot be empty" name="driver" style="width: 100%" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one' }"></select>
+				        	<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one' }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Host</label>
+				        <label class="col-sm-4 filter-label">Host</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Host" placeholder="Example: 127.0.0.1:27108" data-bind="value: Host">
 							<span class="k-invalid-msg" data-for="Host"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Database</label>
+				        <label class="col-sm-4 filter-label">Database</label>
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="Database" placeholder="Example: mydatabase" data-bind="value: Database">
 				            <div data-bind="visible: (Driver() != 'json')">
@@ -99,27 +99,27 @@
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">User Name</label>
+				        <label class="col-sm-4 filter-label">User Name</label>
 				        <div class="col-sm-5">
 				            <input type="text" class="form-control input-sm" name="Username" placeholder="Example: root" data-bind="value: UserName">
 							<span class="k-invalid-msg" data-for="Username"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Password</label>
+				        <label class="col-sm-4 filter-label">Password</label>
 				        <div class="col-sm-5">
 				            <input type="password" class="form-control input-sm" placeholder="Type password here" data-bind="value: Password">
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Settings</label>
+				        <label class="col-sm-4 filter-label">Settings</label>
 				        <div class="col-sm-8">
 				        	<div class="nav">
 				        		<button class="btn btn-primary btn-sm" data-bind="click: ds.addSettings">
 				        			<span class="glyphicon glyphicon-plus"></span> Add
 				        		</button>
 				        	</div>
-				        	<table id="datasource-settings">
+				        	<table class="table" id="datasource-settings">
 			        			<thead>
 			        				<tr>
 			        					<th>Key</th>
@@ -129,10 +129,10 @@
 			        			<tbody data-bind="foreach: Settings">
 			        				<tr>
 			        					<td>
-			        						<input class="form-control input-sm" type="text" style="width: 100%;" data-bind="value: key" />
+			        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
 			        					</td>
 			        					<td>
-			        						<input class="form-control input-sm" type="text" style="width: 100%;" data-bind="value: value" />
+			        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: value" />
 			        					</td>
 			        					<td>
 			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
@@ -149,10 +149,10 @@
 		</div>
 	</div>
 
-	<div class="col-md-12" data-bind="visible: (section() == 'data-source')">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'data-source')">
 		<h1>Data Source</h1>
 
-		<nav class="navbar" data-bind="visible: (mode() == '')">
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridDataSource">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
@@ -161,7 +161,7 @@
 	    	</button>
 		</nav>
 
-		<nav class="navbar" data-bind="visible: (mode() == 'editDataSource')">
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editDataSource')">
             <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
@@ -176,7 +176,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (mode() == '')">
+		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
@@ -185,10 +185,10 @@
 		    </div>
 		</div>
 
-		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (app.mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (ds.dataSourceMode() == '') ? 'Add New' : 'Edit'"></span>
+		        	<span data-bind="text: (ds.dataSourceMode() == '') ? 'Create New' : 'Edit'"></span>
 		        	Data Source
 	        	</h1>
 		    </div>
@@ -196,30 +196,30 @@
 				<form class="form-horizontal form-datasource" data-bind="with: confDataSource" novalidate>
 					<div class="form-group">
 						<div class="col-md-6">
-				        	<label class="col-md-4 filter-label" style="text-align: right;">Data Source ID</label>
+				        	<label class="col-md-4 filter-label">Data Source ID</label>
 				        	<div class="col-md-8">
 				        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
 								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
 				        </div>
 					    <div class="col-md-6">
-				            <label class="col-md-4 filter-label" style="text-align: right;">Connection</label>
+				            <label class="col-md-4 filter-label">Connection</label>
 				            <div class="col-md-8">
-				                <select required class="data-connection" data-bind="kendoComboBox: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: ds.changeDataSourceConnection, filter: 'contains', suggest: true, minLength: 2 }" style="width: 100%;" name="connection"></select>
+				                <select required class="data-connection full-width" data-bind="kendoComboBox: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: ds.changeDataSourceConnection, filter: 'contains', suggest: true, minLength: 2 }" name="connection"></select>
 								<span class="k-invalid-msg" data-for="connection"></span>
 				            </div>
 				        </div>
 				    </div>
 					<div class="form-group">
 						<div class="col-md-6">
-				        	<label class="col-md-4 filter-label" style="text-align: right;">Data Source Name</label>
+				        	<label class="col-md-4 filter-label">Data Source Name</label>
 				        	<div class="col-md-8">
 				        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type data source name here" data-bind="value: DataSourceName">
 								<span class="k-invalid-msg" data-for="query"></span>
 				        	</div>
 				        </div>
 					    <div class="col-md-6">
-				            <label class="col-md-4 filter-label" style="text-align: right;">Database</label>
+				            <label class="col-md-4 filter-label">Database</label>
 				            <div class="col-md-8">
 					            <input readonly disabled type="text" class="form-control input-sm" data-bind="value: ds.confDataSourceConnectionInfo.Database" />
 				            </div>
@@ -229,16 +229,16 @@
 		    </div>
 		</div>
 
-		<ul class="nav nav-tabs" data-bind="visible: (mode() == 'editDataSource')">
+		<ul class="nav nav-tabs" data-bind="visible: (app.mode() == 'editDataSource')">
 		    <li class="active"><a data-target="#ds-tab-1" data-toggle="tab">Query Builder</a></li>
 		    <li><a data-target="#ds-tab-2" data-toggle="tab">Meta Data</a></li>
 		    <li><a data-target="#ds-tab-3" data-toggle="tab">Query Result</a></li>
 		</ul>
 
-		<div class="tab-content" data-bind="visible: (mode() == 'editDataSource')" style="padding-top: 10px;">
+		<div class="tab-content" data-bind="visible: (app.mode() == 'editDataSource')" style="padding-top: 10px;">
 		
 		<div class="tab-pane active" id="ds-tab-1">
-		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (app.mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Query Builder</h1>
 		    </div>
@@ -266,7 +266,7 @@
 		</div>
 
 		<div class="tab-pane" id="ds-tab-2">
-		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (app.mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Meta Data</h1>
 		    </div>
@@ -283,7 +283,7 @@
 		</div>
 
 		<div class="tab-pane" id="ds-tab-3">
-		<div class="panel" data-bind="visible: (mode() == 'editDataSource')">
+		<div class="panel" data-bind="visible: (app.mode() == 'editDataSource')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Query Test Result</h1>
 		    </div>
@@ -317,30 +317,30 @@
             <div class="modal-body">
             	<form class="form-horizontal" id="form-lookup" novalidate>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Data Source</label>
+				        <label class="col-sm-4 filter-label">Data Source</label>
 				        <div class="col-sm-5">
-				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" style="width: 100%" data-bind="kendoDropDownList: { data: ds.dataSourceDataForLookup, dataValueField: '_id', dataTextField: 'DataSourceName', value: ds.confLookup.DataSourceID, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
+				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" class="full-width" data-bind="kendoDropDownList: { data: ds.dataSourceDataForLookup, dataValueField: '_id', dataTextField: 'DataSourceName', value: ds.confLookup.DataSourceID, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
 							<span class="k-invalid-msg" data-for="lookup-datasource"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">ID Field</label>
+				        <label class="col-sm-4 filter-label">ID Field</label>
 				        <div class="col-sm-5">
-				            <select required data-required-msg="ID Field cannot be empty" name="lookup-idfield" style="width: 100%" data-bind="kendoComboBox: { data: ds.lookupFields, value: ds.confLookup.IDField, placeholder: 'Type something here', dataValueField: '_id', dataTextField: '_id', filter: 'contains', suggest: true, minLength: 2 }"></select>
+				            <select required data-required-msg="ID Field cannot be empty" name="lookup-idfield" class="full-width" data-bind="kendoComboBox: { data: ds.lookupFields, value: ds.confLookup.IDField, placeholder: 'Type something here', dataValueField: '_id', dataTextField: '_id', filter: 'contains', suggest: true, minLength: 2 }"></select>
 							<span class="k-invalid-msg" data-for="lookup-idfield"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Display Field</label>
+				        <label class="col-sm-4 filter-label">Display Field</label>
 				        <div class="col-sm-5">
-				            <select required data-required-msg="Display Field cannot be empty" name="lookup-displayfield" style="width: 100%" data-bind="kendoComboBox: { data: ds.lookupFields, value: ds.confLookup.DisplayField, placeholder: 'Type something here', dataValueField: 'Label', dataTextField: 'Label', filter: 'contains', suggest: true, minLength: 2 }"></select>
+				            <select required data-required-msg="Display Field cannot be empty" name="lookup-displayfield" class="full-width" data-bind="kendoComboBox: { data: ds.lookupFields, value: ds.confLookup.DisplayField, placeholder: 'Type something here', dataValueField: 'Label', dataTextField: 'Label', filter: 'contains', suggest: true, minLength: 2 }"></select>
 							<span class="k-invalid-msg" data-for="lookup-displayfield"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
-				        <label class="col-sm-4 filter-label" style="text-align: right">Lookup Fields</label>
+				        <label class="col-sm-4 filter-label">Lookup Fields</label>
 				        <div class="col-sm-5">
-				            <select name="lookup-fields" style="width: 100%" data-bind="kendoMultiSelect: { data: ds.lookupFields, dataValueField: '_id', dataTextField: '_id', value: ds.confLookup.LookupFields, optionLabel: 'Select one', minLength: 2 }" multiple='multiple'></select>
+				            <select name="lookup-fields" class="full-width" data-bind="kendoMultiSelect: { data: ds.lookupFields, dataValueField: '_id', dataTextField: '_id', value: ds.confLookup.LookupFields, optionLabel: 'Select one', minLength: 2 }" multiple='multiple'></select>
 							<span class="k-invalid-msg" data-for="lookup-fields"></span>
 				        </div>
 				    </div>
@@ -373,9 +373,9 @@
 
 			<div class="modal-body" data-bind="visible: qr.queryBuilderMode() == 'select'">
 			    <div class="form-group">
-		    		<label class="col-md-4 filter-label" style="text-align: right;">Fields</label>
+		    		<label class="col-md-4 filter-label">Fields</label>
 		        	<div class="col-md-5">
-		        		<select data-bind="kendoMultiSelect: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: qr.queryOfSelect, placeholder: 'Choose the fields', filter: 'contains', minLength: 2 }" style="width: 100%;" multiple='multiple'></select>
+		        		<select data-bind="kendoMultiSelect: { data: ds.confDataSource.MetaData, dataValueField: '_id', dataTextField: 'Label', value: qr.queryOfSelect, placeholder: 'Choose the fields', filter: 'contains', minLength: 2 }" class="full-width" multiple='multiple'></select>
 		        	</div>
 		        	<div class="clearfix"></div>
 	        	</div>
@@ -392,13 +392,13 @@
 				    <div class="form-group">
 				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Field</label>
 	        			<div class="col-md-3" style="padding-left: 0px;">
-	        				<input required data-required-msg="Field cannot be empty" type="text" class="form-control input-sm" placeholder="Type field here" style="width: 100%;" data-bind="value: $data.field, enable: ($index() > 0), attr: { name: 'query-insert-field-' + $index() }" />
+	        				<input required data-required-msg="Field cannot be empty" type="text" class="form-control input-sm full-width" placeholder="Type field here" data-bind="value: $data.field, enable: ($index() > 0), attr: { name: 'query-insert-field-' + $index() }" />
 		        			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-insert-field-' + $index() }"></span>
 	        			</div>
 
 				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Value</label>
 	        			<div class="col-md-3" style="padding-left: 0px;">
-	        				<input required data-required-msg="Value cannot be empty" type="text" class="form-control input-sm" placeholder="Type value here" style="width: 100%;" data-bind="value: $data.value, attr: { name: 'query-insert-value-' + $index() }" />
+	        				<input required data-required-msg="Value cannot be empty" type="text" class="form-control input-sm full-width" placeholder="Type value here" data-bind="value: $data.value, attr: { name: 'query-insert-value-' + $index() }" />
 		        			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-insert-value-' + $index() }"></span>
 	        			</div>
 	        			<div class="col-md-1">
@@ -414,9 +414,9 @@
 
 			<div class="modal-body query-of-from" data-bind="visible: qr.queryBuilderMode() == 'from'">
 			    <div class="form-group">
-		    		<label class="col-md-4 filter-label" style="text-align: right;">Table Name</label>
+		    		<label class="col-md-4 filter-label">Table Name</label>
 		        	<div class="col-md-6">
-		        		<select required data-required-msg="Table name cannot be empty" name="query-from" data-bind="kendoComboBox: { data: ds.collectionNames, value: qr.queryOfFrom, optionLabel: 'Type something here', filter: 'contains', suggest: true, minLength: 2 }" style="width: 100%;"></select>
+		        		<select required data-required-msg="Table name cannot be empty" name="query-from" data-bind="kendoComboBox: { data: ds.collectionNames, value: qr.queryOfFrom, optionLabel: 'Type something here', filter: 'contains', suggest: true, minLength: 2 }" class="full-width"></select>
 		        		<span class="k-invalid-msg" data-for="query-from"></span>
 		        	</div>
 		        	<div class="clearfix"></div>
@@ -465,7 +465,7 @@
 			    <div class="form-group">
 		    		<label class="col-md-5 filter-label" style="text-align: right; text-transform: capitalize" data-bind="text: 'Total ' + qr.queryBuilderMode() + ' records'"></label>
 		        	<div class="col-md-4">
-		        		<input type="text" style="width: 100%;" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: qr.queryOfTake, placeholder: 'Example: 2' }" />
+		        		<input type="text" class="full-width" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: qr.queryOfTake, placeholder: 'Example: 2' }" />
 		        	</div>
 		        	<div class="clearfix"></div>
 	        	</div>
@@ -476,13 +476,13 @@
 				    <div class="form-group">
 				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Command</label>
 	        			<div class="col-md-4" style="padding-left: 0px;">
-	        				<input required data-required-msg="Command cannot be empty" type="text" class="form-control input-sm" placeholder="Type command here" style="width: 100%;" data-bind="value: qr.queryOfCommand.command, attr: { name: 'query-command-field' }" />
+	        				<input required data-required-msg="Command cannot be empty" type="text" class="form-control input-sm full-width" placeholder="Type command here" data-bind="value: qr.queryOfCommand.command, attr: { name: 'query-command-field' }" />
 		        			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-command-field' }"></span>
 	        			</div>
 
 				        <label class="col-sm-2 filter-label" style="text-align: right; padding-left: 0px;">Param</label>
 	        			<div class="col-md-4" style="padding-left: 0px;">
-	        				<input required data-required-msg="Param cannot be empty" type="text" class="form-control input-sm" placeholder="Type param here" style="width: 100%;" data-bind="value: qr.queryOfCommand.param, attr: { name: 'query-command-value' }" />
+	        				<input required data-required-msg="Param cannot be empty" type="text" class="form-control input-sm full-width" placeholder="Type param here" data-bind="value: qr.queryOfCommand.param, attr: { name: 'query-command-value' }" />
 		        			<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-command-value' }"></span>
 	        			</div>
         				<div class="clearfix"></div>

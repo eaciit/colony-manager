@@ -12,11 +12,11 @@ type App struct {
 
 var (
 	LayoutFile   string   = "views/layout.html"
-	IncludeFiles []string = []string{"views/_head.html", "views/_nav.html", "views/_header.html", "views/_loader.html"}
-	AppViewPath  string   = "/"
+	IncludeFiles []string = []string{"views/_head.html", "views/_loader.html"}
+	AppBasePath  string   = "/"
 )
 
 func init() {
-	AppViewPath, _ = os.Getwd()
-	fmt.Println(AppViewPath)
+	AppBasePath, _ = os.Getwd()
+	fmt.Println("Base Path ===> ", AppBasePath)
 }

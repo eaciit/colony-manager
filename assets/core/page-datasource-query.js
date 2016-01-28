@@ -86,6 +86,11 @@ qr.removeQueryOfOrder = function (index) {
 };
 qr.addFilter = function (filter) {
 	return function () {
+		if (!app.isFormValid(".form-datasource")) {
+			sweetAlert("Oops...", 'Fill the datasource informations first', "error");
+			return;
+		}
+
 		qr.queryBuilderMode(filter.key);
 
 		if (["select", "insert", "update", "delete", "command"].indexOf(filter.key) > -1) {
@@ -120,7 +125,7 @@ qr.addFilter = function (filter) {
 			var row = $.extend(true, { }, qr.templateQueryOfInsert);
 			row.field = "_id";
 			qr.queryOfInsert.push(ko.mapping.fromJS(row));
-			ds.resetValidation(".query-of-insert");
+			app.resetValidation(".query-of-insert");
 			$(".modal-query").modal("show");
 		}
 
@@ -135,7 +140,7 @@ qr.addFilter = function (filter) {
 
 		if (filter.key == "from") {
 			qr.queryOfFrom('');
-			ds.resetValidation(".query-of-from");
+			app.resetValidation(".query-of-from");
 			$(".modal-query").modal("show");
 		}
 
@@ -153,13 +158,13 @@ qr.addFilter = function (filter) {
 		if (filter.key == "where") {
 			qr.queryOfWhere([]);
 			qr.addQueryOfWhere();
-			ds.resetValidation(".query-of-where");
+			app.resetValidation(".query-of-where");
 			$(".modal-query-where").modal("show");
 		}
 
 		if (filter.key == "command") {
 			ko.mapping.fromJS(qr.templateQueryOfCommand, qr.queryOfCommand);
-			ds.resetValidation(".query-of-command");
+			app.resetValidation(".query-of-command");
 			$(".modal-query").modal("show");
 		}
 	};
@@ -182,7 +187,7 @@ qr.querySave = function () {
 		
 		var data = {};
 		Lazy(ko.mapping.toJS(qr.queryOfInsert())).each(function (e) {
-			data[e.field] = qr.couldBeNumber(e.value);
+			data[e.field] = app.couldBeNumber(e.value);
 		});
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 
@@ -392,17 +397,6 @@ qr.AddSubQuery = function(idparent,obj, parentsum, chooseadd, datakey){
 		}
 	}
 }
-qr.couldBeNumber = function (value) {
-	if (!isNaN(value)) {
-		if (String(value).indexOf(".") > -1) {
-			return parseFloat(value);
-		} else {
-			return parseInt(value, 10);
-		}
-	}
-
-	return value;
-};
 qr.createTextQuery = function () {
 	$("#textquery").tokenInput(qr.dataCommand(), { 
 		zindex: 700,

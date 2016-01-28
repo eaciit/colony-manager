@@ -1,14 +1,14 @@
+app.section('connection-list');
+
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "json", text: "Weblink" },
+	{ value: "weblink", text: "Weblink" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mssql", text: "SQLServer" },
 	{ value: "mysql", text: "MySQL" },
 	{ value: "oracle", text: "Oracle" },
 	{ value: "erp", text: "ERP" }
 ]);
-ds.section = ko.observable('connection-list');
-ds.mode = ko.observable('');
 ds.templateConfigSetting = {
 	id: "",
 	key: "",
@@ -154,10 +154,11 @@ ds.fetchDataSourceMetaData = function (from) {
 	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) {
 		if (!res.success && res.message == "[eaciit.dbox.dbc.mongo.Cursor.Fetch] Not found") {
 			ds.confDataSource.MetaData([]);
-			// toastr["error"]("", 'ERROR: Table "' + from + '" not found');
+			qr.clearQuery();
 			return;
 		}
 		if (!app.isFine(res)) {
+			qr.clearQuery();
 			return;
 		}
 
@@ -165,30 +166,15 @@ ds.fetchDataSourceMetaData = function (from) {
 		ds.saveDataSource();
 	}, function (a) {
         sweetAlert("Oops...", a.statusText, "error");
+		qr.clearQuery();
 	}, {
 		timeout: 10000
 	});
 };
-ds.changeActiveSection = function (section) {
-	return function (self, e) {
-		$(e.currentTarget).parent().siblings().removeClass("active");
-		ds.section(section);
-		ds.mode('');
-	};
-};
-ds.resetValidation = function (selectorID) {
-	var $form = $(selectorID).data("kendoValidator");
-	if ($form == undefined) {
-		$(selectorID).kendoValidator();
-		$form = $(selectorID).data("kendoValidator");
-	}
-
-	$form.hideMessages();
-};
 ds.openConnectionForm = function () {
-	ds.mode('edit');
+	app.mode('edit');
 	ds.connectionListMode('');
-	ds.resetValidation("#form-add-connection");
+	app.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
 };
@@ -204,7 +190,7 @@ ds.removeSetting = function (each) {
 	};
 };
 ds.backToFrontPage = function () {
-	ds.mode('');
+	app.mode('');
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
 };
@@ -220,7 +206,7 @@ ds.populateGridConnections = function () {
 };
 ds.saveNewConnection = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		if (ds.config.Driver() == "json") {
+		if (ds.config.Driver() == "weblink") {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
 			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
 				// no problem
@@ -271,9 +257,9 @@ ds.editConnection = function (_id) {
 			return;
 		}
 
-		ds.mode("edit");
+		app.mode("edit");
 		ds.connectionListMode('edit');
-		ds.resetValidation("#form-add-connection");
+		app.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
 		ds.addSettings();
 	});
@@ -320,7 +306,7 @@ ds.removeDataSource = function (_id) {
 }
 ds.editDataSource = function (_id) {
 	ds.dataSourceMode('edit');
-	ds.resetValidation(".form-datasource");
+	app.resetValidation(".form-datasource");
 
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
@@ -335,7 +321,7 @@ ds.editDataSource = function (_id) {
 			return;
 		}
 
-		ds.mode("editDataSource");
+		app.mode("editDataSource");
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 		qr.setQuery(res.data.QueryInfo);
@@ -382,9 +368,9 @@ ds.populateGridDataSource = function () {
 	});
 };
 ds.openDataSourceForm = function(){
-	ds.mode('editDataSource');
+	app.mode('editDataSource');
 	ds.dataSourceMode('');
-	ds.resetValidation(".form-datasource");
+	app.resetValidation(".form-datasource");
 
 	qr.clearQuery();
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
@@ -404,6 +390,10 @@ ds.forceFetchDataSourceMetaData = function () {
 	});
 };
 ds.saveDataSource = function (c) {
+	if (!app.isFormValid(".form-datasource")) {
+		return;
+	}
+
 	var param = ds.getParamForSavingDataSource();
 	app.ajaxPost("/datasource/savedatasource", param, function (res) {
 		if (!app.isFine(res)) {

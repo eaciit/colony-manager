@@ -26,6 +26,18 @@ a
 	padding: 0px
 	margin: 0px
 
+.full-width
+	width: 100%
+
+.filter-label
+	line-height: 25px
+	text-align: right
+
+	&:after
+		content: ":"
+		position: absolute
+		right: 5px
+
 /** structured stylesheet */
 
 body
@@ -152,6 +164,7 @@ body
 							width: 100%
 							border: 1px solid #DDDDDD
 							padding: 4px
+							min-height: 100px
 
 							.token-input-token-facebook
 								height : 120px
@@ -182,14 +195,6 @@ body
 						td
 							font-weight: bold
 
-			.filter-label
-				line-height: 25px
-
-				&:after
-					content: ":"
-					position: absolute
-					right: 5px
-
 			.nav.nav-tabs
 				li:hover
 					cursor: pointer
@@ -208,6 +213,10 @@ body
 			span
 				font-weight: bold
 				color: $blue
+
+	#content-preview
+		border: 1px solid whitesmoke
+		min-height: 300px
 
 	.loader-container
 		position: fixed

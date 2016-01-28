@@ -1,0 +1,132 @@
+<!-- core -->
+<script src="/res/core/page-webgrabber.js"></script>
+
+<!-- sidebar -->
+<div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber">
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Scrapper<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<!-- <li><a href="#" data-bind="css: { 'active': (app.section() == 'scheduler') }, click: app.changeActiveSection('scheduler')">Scheduler<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> -->
+		</ul>
+	</div>
+</div>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-10" id="content" data-bind="with: webGrabber">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
+		<h1>Scrapper</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: wg.backToFront">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: wg.createNewScrapper">
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Scrapper
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">All Scrappers</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true }"></div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getURL">
+	    		<span class="glyphicon glyphicon-refresh"></span> Fetch Content
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewScrapper, visible: wg.isContentFetched">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+		        	Scrapper
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<form class="form-horizontal form-scrapper-top" data-bind="with: configScrapper" novalidate>
+					<div class="col-md-11">
+						<div class="form-group">
+				        	<label class="col-md-2 filter-label">Source Type</label>
+				        	<div class="col-md-3">
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: SourceType, dataValueField: 'value', dataTextField: 'title' }"></select>
+								<span class="k-invalid-msg" data-for="source-type"></span>
+				        	</div>
+
+				        	<label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
+				        	<div class="col-md-3">
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: CallType, dataValueField: 'value', dataTextField: 'title' }"></select>
+								<span class="k-invalid-msg" data-for="source-type"></span>
+					        </div>
+				        </div>
+						<div class="form-group">
+				        	<label class="col-md-2 filter-label">URL</label>
+				        	<div class="col-md-10">
+				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: URL">
+								<span class="k-invalid-msg" data-for="URL"></span>
+				        	</div>
+				        </div>
+						<div class="form-group">
+				        	<label class="col-md-2 filter-label">Payload</label>
+				        	<div class="col-md-2">
+				        		<button class="btn btn-sm btn-primary" data-bind="click: wg.addScrapperPayload">
+				        			<span class="glyphicon glyphicon-plus"></span> Add more
+				        		</button>
+				        	</div>
+				        	<div class="col-md-8">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Key</th>
+											<th>Value</th>
+											<th>&nbsp;</th>
+										</tr>
+									</thead>
+									<tbody data-bind="foreach: wg.scrapperPayloads">
+										<tr>
+											<td>
+												<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-key-' + $index() }"></span>
+											</td>
+											<td>
+												<input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
+											</td>
+											<td>
+												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeScrapperPayload($index())">
+													<span class="glyphicon glyphicon-remove"></span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+				        	</div>
+				        </div>
+					</div>
+				</form>
+		    </div>
+		</div>
+
+
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Preview
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<iframe class="full-width" id="content-preview"></iframe>
+		    </div>
+		</div>
+	</div>
+</div>

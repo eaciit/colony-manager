@@ -1,5 +1,7 @@
 viewModel.app = {}; var app = viewModel.app;
 
+app.section = ko.observable('');
+app.mode = ko.observable('');
 app.applyNavigationActive = function () {
 	var currentURL = document.URL.split("/").slice(3).join("/");
 	var $a = $("a[href='/" + currentURL + "']");
@@ -19,25 +21,14 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
     var callbackScheduler = function (callback) {
         app.isLoading(false);
         callback();
-        
-        // var finishReq = moment();
-        // var responseTime = finishReq.diff(startReq, "second");
-        // if (responseTime > 1) {
-        //     app.isLoading(false);
-        //     callback();
-        // } else {
-        //     setTimeout(function () {
-        //         app.isLoading(false);
-        //         callback();
-        //     }, 1000);
-        // }
     };
 
     var config = {
         url: url,
         type: 'post',
         dataType: 'json',
-        data: data,
+        contentType: 'application/json; charset=utf-8',
+        data: ko.mapping.toJSON(data),
         success: function (a) {
             callbackScheduler(function () {
                 callbackSuccess(a);
@@ -75,9 +66,18 @@ app.isFine = function (res) {
     return true;
 };
 app.isFormValid = function (selector) {
-    $(selector).kendoValidator();
+    app.resetValidation(selector);
     var $validator = $(selector).data("kendoValidator");
     return ($validator.validate());
+};
+app.resetValidation = function (selectorID) {
+    var $form = $(selectorID).data("kendoValidator");
+    if ($form == undefined) {
+        $(selectorID).kendoValidator();
+        $form = $(selectorID).data("kendoValidator");
+    }
+
+    $form.hideMessages();
 };
 app.isLoading = ko.observable(false);
 app.fixKendoMultiSelect = function () {
@@ -105,6 +105,24 @@ app.fixKendoMultiSelect = function () {
             $(this).attr("existingValue",d.value())
         }
     });
+};
+app.changeActiveSection = function (section) {
+    return function (self, e) {
+        $(e.currentTarget).parent().siblings().removeClass("active");
+        app.section(section);
+        app.mode('');
+    };
+};
+app.couldBeNumber = function (value) {
+    if (!isNaN(value)) {
+        if (String(value).indexOf(".") > -1) {
+            return parseFloat(value);
+        } else {
+            return parseInt(value, 10);
+        }
+    }
+
+    return value;
 };
 
 $(function () {

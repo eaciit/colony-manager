@@ -10,6 +10,10 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -62,7 +66,7 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql"
+	supportedDrivers := "mongo mysql weblink"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
@@ -89,9 +93,7 @@ func (d *DataSourceController) connectToDataSource(_id string) (*colonycore.Data
 		return nil, nil, nil, nil, MetaSave{}, err
 	}
 
-	conn := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
-
-	connection, err := conn.Connect()
+	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
 	if err != nil {
 		return nil, nil, nil, nil, MetaSave{}, err
 	}
@@ -293,6 +295,27 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	o.Password = payload["Password"].(string)
 	o.Settings = d.parseSettings(payload["Settings"], map[string]interface{}{}).(map[string]interface{})
 
+	if o.Driver == "weblink" {
+		fileType := helper.GetFileExtension(o.Host)
+		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(AppBasePath, "config", "etc", o.ID), fileType)
+		file, err := os.Create(fileLocation)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer file.Close()
+
+		resp, err := http.Get(o.Host)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer resp.Body.Close()
+
+		_, err = io.Copy(file, resp.Body)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
 	err = colonycore.Save(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -388,7 +411,15 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	err = helper.Query(driver, host, database, username, password, settings).CheckIfConnected()
+	fakeDataConn := &colonycore.Connection{
+		Database: database,
+		Driver:   driver,
+		Host:     host,
+		UserName: username,
+		Password: password,
+		Settings: settings,
+	}
+	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -423,22 +454,36 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	connWrapper := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
 	var conn dbox.IConnection
-	conn, err = connWrapper.Connect()
+	conn, err = helper.ConnectUsingDataConn(dataConn).Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer conn.Close()
 
-	cursor, err := conn.NewQuery().From(from).Select().Take(1).Cursor(nil)
+	var query = conn.NewQuery().Select("*").Take(1)
+
+	if dataConn.Driver != "weblink" {
+		query = query.From(from)
+	}
+
+	cursor, err := query.Cursor(nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer cursor.Close()
 
 	data := toolkit.M{}
-	err = cursor.Fetch(&data, 1, false)
+	if dataConn.Driver != "weblink" {
+		err = cursor.Fetch(&data, 1, false)
+	} else {
+		dataAll := []toolkit.M{}
+		err = cursor.Fetch(&dataAll, 1, false)
+		if len(dataAll) > 0 {
+			data = dataAll[0]
+		}
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -729,9 +774,12 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	connWrapper := helper.Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
+	if dataConn.Driver == "weblink" {
+		return helper.CreateResult(true, []string{"weblink"}, "")
+	}
+
 	var conn dbox.IConnection
-	conn, err = connWrapper.Connect()
+	conn, err = helper.ConnectUsingDataConn(dataConn).Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
