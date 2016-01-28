@@ -13,8 +13,13 @@ wg.templateConfigScrapper = {
 	IntervalDuration: 0,
 	TimeoutDuration: 0,
 	URL: "",
-	Parameter: {},
+	Parameter: ko.observable({}),
 };
+wg.templateScrapperPayload = {
+	key: "",
+	value: ""
+};
+wg.scrapperPayloads = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110 },
@@ -57,6 +62,8 @@ wg.createNewScrapper = function () {
 	wg.scrapperMode('');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 	wg.isContentFetched(false);
+	wg.scrapperPayloads([]);
+	wg.addScrapperPayload();
 };
 wg.backToFront = function () {
 	app.mode("");
@@ -72,6 +79,7 @@ wg.getURL = function () {
 		return;
 	}
 	
+	wg.encodePayload();
 	var param = ko.mapping.toJS(wg.configScrapper);
 	app.ajaxPost("/webgrabber/fetchcontent", param, function (res) {
 		if (!app.isFine(res)) {
@@ -87,6 +95,35 @@ wg.saveNewScrapper = function () {
 		return;
 	}
 	
+};
+wg.addScrapperPayload = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, wg.templateScrapperPayload));
+	wg.scrapperPayloads.push(item);
+};
+wg.removeScrapperPayload = function (index) {
+	return function () {
+		var item = wg.scrapperPayloads()[index];
+		wg.scrapperPayloads.remove(item);
+	};
+};
+wg.encodePayload = function () {
+	wg.configScrapper.Parameter({});
+
+	var p = {};
+	wg.scrapperPayloads().forEach(function (e) {
+		p[e.key()] = app.couldBeNumber(e.value());
+	});
+	wg.configScrapper.Parameter(p);
+};
+wg.decodePayload = function () {
+	wg.scrapperPayloads([]);
+
+	var param = wg.configScrapper.Parameter();
+	for (var key in param) {
+		if (param.hasOwnProperty(key)) {
+			wg.scrapperPayloads.push({ key: key, value: param[key] });
+		}
+	}
 };
 
 $(function () {

@@ -187,7 +187,7 @@ qr.querySave = function () {
 		
 		var data = {};
 		Lazy(ko.mapping.toJS(qr.queryOfInsert())).each(function (e) {
-			data[e.field] = qr.couldBeNumber(e.value);
+			data[e.field] = app.couldBeNumber(e.value);
 		});
 		o.value = JSON.stringify(data).replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
 
@@ -397,17 +397,6 @@ qr.AddSubQuery = function(idparent,obj, parentsum, chooseadd, datakey){
 		}
 	}
 }
-qr.couldBeNumber = function (value) {
-	if (!isNaN(value)) {
-		if (String(value).indexOf(".") > -1) {
-			return parseFloat(value);
-		} else {
-			return parseInt(value, 10);
-		}
-	}
-
-	return value;
-};
 qr.createTextQuery = function () {
 	$("#textquery").tokenInput(qr.dataCommand(), { 
 		zindex: 700,

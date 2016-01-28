@@ -113,6 +113,17 @@ app.changeActiveSection = function (section) {
         app.mode('');
     };
 };
+app.couldBeNumber = function (value) {
+    if (!isNaN(value)) {
+        if (String(value).indexOf(".") > -1) {
+            return parseFloat(value);
+        } else {
+            return parseInt(value, 10);
+        }
+    }
+
+    return value;
+};
 
 $(function () {
 	app.prepare();
