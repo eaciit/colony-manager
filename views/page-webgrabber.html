@@ -95,11 +95,11 @@
 									<tbody data-bind="foreach: wg.scrapperPayloads">
 										<tr>
 											<td>
-												<input class="form-control input-sm full-width" type="text" required data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
+												<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
 												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-key-' + $index() }"></span>
 											</td>
 											<td>
-												<input class="form-control input-sm full-width" type="text" required data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
+												<input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
 												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
 											</td>
 											<td>

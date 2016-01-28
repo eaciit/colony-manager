@@ -10,11 +10,12 @@ wg.templateConfigScrapper = {
 	CallType: "get",
 	IntervalType: "",
 	SourceType: "http",
-	IntervalDuration: 0,
-	TimeoutDuration: 0,
+	GrabInterval: 0,
+	TimeoutInterval: 0,
 	URL: "",
-	Parameter: ko.observable({}),
+	// Parameter: ko.observable({}),
 };
+
 wg.templateScrapperPayload = {
 	key: "",
 	value: ""
@@ -26,8 +27,8 @@ wg.scrapperColumns = ko.observableArray([
 	{ field: "CallType", title: "Request Type" },
 	{ field: "IntervalType", title: "Interval Unit" },
 	{ field: "SourceType", title: "Source Type" },
-	{ field: "IntervalDuration", title: "Interval Duration" },
-	{ field: "TimeoutDuration", title: "Timeout Duration" },
+	{ field: "GrabInterval", title: "Interval Duration" },
+	{ field: "TimeoutInterval", title: "Timeout Duration" },
 	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
 		return "<button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
@@ -79,7 +80,7 @@ wg.getURL = function () {
 		return;
 	}
 	
-	wg.encodePayload();
+	// wg.encodePayload();
 	var param = ko.mapping.toJS(wg.configScrapper);
 	app.ajaxPost("/webgrabber/fetchcontent", param, function (res) {
 		if (!app.isFine(res)) {
