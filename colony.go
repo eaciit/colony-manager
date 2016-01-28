@@ -25,6 +25,8 @@ func main() {
 	server.RouteStatic("res", path.Join(controller.AppBasePath, "assets"))
 	server.Register(controller.CreateWebController(server), "")
 	server.Register(controller.CreateDataSourceController(server), "")
+	server.Register(controller.CreateDataGrabberController(server), "")
+	server.Register(controller.CreateWebGrabberController(server), "")
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		http.Redirect(r.Writer, r.Request, "/web/index", 301)
 		return true

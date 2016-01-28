@@ -1,5 +1,7 @@
 viewModel.app = {}; var app = viewModel.app;
 
+app.section = ko.observable('');
+app.mode = ko.observable('');
 app.applyNavigationActive = function () {
 	var currentURL = document.URL.split("/").slice(3).join("/");
 	var $a = $("a[href='/" + currentURL + "']");
@@ -19,25 +21,14 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
     var callbackScheduler = function (callback) {
         app.isLoading(false);
         callback();
-        
-        // var finishReq = moment();
-        // var responseTime = finishReq.diff(startReq, "second");
-        // if (responseTime > 1) {
-        //     app.isLoading(false);
-        //     callback();
-        // } else {
-        //     setTimeout(function () {
-        //         app.isLoading(false);
-        //         callback();
-        //     }, 1000);
-        // }
     };
 
     var config = {
         url: url,
         type: 'post',
         dataType: 'json',
-        data: data,
+        contentType: 'application/json; charset=utf-8',
+        data: ko.mapping.toJSON(data),
         success: function (a) {
             callbackScheduler(function () {
                 callbackSuccess(a);
@@ -114,6 +105,13 @@ app.fixKendoMultiSelect = function () {
             $(this).attr("existingValue",d.value())
         }
     });
+};
+app.changeActiveSection = function (section) {
+    return function (self, e) {
+        $(e.currentTarget).parent().siblings().removeClass("active");
+        app.section(section);
+        app.mode('');
+    };
 };
 
 $(function () {

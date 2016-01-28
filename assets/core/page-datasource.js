@@ -1,3 +1,5 @@
+app.section('connection-list');
+
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
 	{ value: "weblink", text: "Weblink" },
@@ -7,8 +9,6 @@ ds.templateDrivers = ko.observableArray([
 	{ value: "oracle", text: "Oracle" },
 	{ value: "erp", text: "ERP" }
 ]);
-ds.section = ko.observable('connection-list');
-ds.mode = ko.observable('');
 ds.templateConfigSetting = {
 	id: "",
 	key: "",
@@ -171,15 +171,8 @@ ds.fetchDataSourceMetaData = function (from) {
 		timeout: 10000
 	});
 };
-ds.changeActiveSection = function (section) {
-	return function (self, e) {
-		$(e.currentTarget).parent().siblings().removeClass("active");
-		ds.section(section);
-		ds.mode('');
-	};
-};
 ds.openConnectionForm = function () {
-	ds.mode('edit');
+	app.mode('edit');
 	ds.connectionListMode('');
 	app.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
@@ -197,7 +190,7 @@ ds.removeSetting = function (each) {
 	};
 };
 ds.backToFrontPage = function () {
-	ds.mode('');
+	app.mode('');
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
 };
@@ -264,7 +257,7 @@ ds.editConnection = function (_id) {
 			return;
 		}
 
-		ds.mode("edit");
+		app.mode("edit");
 		ds.connectionListMode('edit');
 		app.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
@@ -328,7 +321,7 @@ ds.editDataSource = function (_id) {
 			return;
 		}
 
-		ds.mode("editDataSource");
+		app.mode("editDataSource");
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 		qr.setQuery(res.data.QueryInfo);
@@ -375,7 +368,7 @@ ds.populateGridDataSource = function () {
 	});
 };
 ds.openDataSourceForm = function(){
-	ds.mode('editDataSource');
+	app.mode('editDataSource');
 	ds.dataSourceMode('');
 	app.resetValidation(".form-datasource");
 

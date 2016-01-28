@@ -19,6 +19,17 @@ a {
   padding: 0px;
   margin: 0px; }
 
+.full-width {
+  width: 100%; }
+
+.filter-label {
+  line-height: 25px;
+  text-align: right; }
+  .filter-label:after {
+    content: ":";
+    position: absolute;
+    right: 5px; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
@@ -131,12 +142,6 @@ body {
         padding-right: 5px; }
       body #content > .col-md-12 .panel #grid-metadata tr.has-lookup td {
         font-weight: bold; }
-    body #content > .col-md-12 .filter-label {
-      line-height: 25px; }
-      body #content > .col-md-12 .filter-label:after {
-        content: ":";
-        position: absolute;
-        right: 5px; }
     body #content > .col-md-12 .nav.nav-tabs li:hover {
       cursor: pointer; }
     body #content > .col-md-12 .navbar-button {
@@ -149,6 +154,9 @@ body {
   body .modal-query .modal-title span {
     font-weight: bold;
     color: #3A8BDF; }
+  body #content-preview {
+    border: 1px solid whitesmoke;
+    min-height: 300px; }
   body .loader-container {
     position: fixed;
     top: 0;
