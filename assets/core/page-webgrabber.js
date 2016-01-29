@@ -4,6 +4,7 @@ viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 
 wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
+wg.modeSelector = ko.observable("");
 wg.scrapperData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.templateConfigScrapper = {
@@ -16,15 +17,35 @@ wg.templateConfigScrapper = {
 	URL: "http://www.shfe.com.cn/en/products/Gold/",
 	// Parameter: ko.observable({}),
 };
+wg.templateConfigSelector = {
+	SelectorName: "",
+	RowSelector: "",
+	SelectorSetting: {
+		ColumnSetting: [],
+		FilterCond: "",
+		DestinationType: "Mongo",
+		Host: "",
+		Database: "",
+		Collection: "",
+		FileName: "",
+		UseHeader: true,
+		Delimiter: ","
+	}
+}
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
+wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
+wg.templateDestinationType = ["Mongo", "CSV"];
+wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
 	key: "",
 	value: ""
 };
 wg.scrapperPayloads = ko.observableArray([]);
 wg.selectorRowSetting = ko.observableArray([]);
+// wg.columnSettingSelector = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
+wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110 },
 	{ field: "CallType", title: "Request Type" },
@@ -137,10 +158,22 @@ wg.backSetting = function(){
 	wg.modeSetting(wg.modeSetting()-1);
 };
 wg.addSelectorSetting = function(){
-	wg.selectorRowSetting.push({name:"",selector:""});
+	wg.selectorRowSetting.push(wg.configSelector);
 }
 wg.removeSelectorSetting = function(){
-	
+
+}
+wg.showSelectorSetting = function(index,nameSelector){
+	wg.modeSelector("edit");
+}
+wg.backSettingSelector = function(){
+	wg.modeSelector("");
+}
+wg.saveSettingSelector = function(){
+	wg.modeSelector("");
+}
+wg.addColumnSetting = function(){
+	wg.configSelector.SelectorSetting.ColumnSetting.push({Alias: "", Type: "", Selector: ""});
 }
 
 $(function () {
