@@ -13,7 +13,7 @@ wg.templateConfigScrapper = {
 	GrabInterval: 0,
 	TimeoutInterval: 0,
 	URL: "",
-	// Parameter: ko.observable({}),
+	Parameter: ko.observable([]),
 };
 
 wg.templateScrapperPayload = {
@@ -29,8 +29,8 @@ wg.scrapperColumns = ko.observableArray([
 	{ field: "SourceType", title: "Source Type" },
 	{ field: "GrabInterval", title: "Interval Duration" },
 	{ field: "TimeoutInterval", title: "Timeout Duration" },
-	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
+		return "<button class='btn btn-sm btn-success' onclick='wg.startStopScrapper(\"" + d._id + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 wg.dataSourceTypes = ko.observableArray([
@@ -125,6 +125,15 @@ wg.decodePayload = function () {
 			wg.scrapperPayloads.push({ key: key, value: param[key] });
 		}
 	}
+};
+wg.startStopScrapper = function (_id) {
+	app.ajaxPost("/webgrabber/startstopscrapper", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		console.log(res);
+	});
 };
 
 $(function () {

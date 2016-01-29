@@ -5,7 +5,7 @@
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber">
 	<div class="row">
 		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Scrapper<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Web Grabber<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
 			<!-- <li><a href="#" data-bind="css: { 'active': (app.section() == 'scheduler') }, click: app.changeActiveSection('scheduler')">Scheduler<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> -->
 		</ul>
 	</div>
@@ -14,20 +14,20 @@
 <!-- main area -->
 <div class="col-xs-12 col-sm-10" id="content" data-bind="with: webGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
-		<h1>Scrapper</h1>
+		<h1>Web Grabber</h1>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: wg.backToFront">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: wg.createNewScrapper">
-	    		<span class="glyphicon glyphicon-plus"></span> Create New Scrapper
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Grabber
 	    	</button>
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">All Scrappers</h1>
+		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
 		    <div class="panel-body">
 		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true }"></div>
@@ -50,7 +50,7 @@
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
-		        	Scrapper
+		        	Grabber
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
