@@ -280,7 +280,7 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -328,7 +328,7 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -352,7 +352,7 @@ func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} 
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -368,7 +368,7 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -388,7 +388,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -433,7 +433,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -512,7 +512,7 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -574,7 +574,7 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -651,7 +651,7 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -692,7 +692,7 @@ func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -716,7 +716,7 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -735,7 +735,7 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -755,7 +755,7 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
