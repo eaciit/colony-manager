@@ -3,6 +3,7 @@ app.section('scrapper');
 viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 
 wg.scrapperMode = ko.observable('');
+wg.modeSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.templateConfigScrapper = {
@@ -12,15 +13,17 @@ wg.templateConfigScrapper = {
 	SourceType: "http",
 	GrabInterval: 0,
 	TimeoutInterval: 0,
-	URL: "",
+	URL: "http://www.shfe.com.cn/en/products/Gold/",
 	// Parameter: ko.observable({}),
 };
-
+wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
+wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
 wg.templateScrapperPayload = {
 	key: "",
 	value: ""
 };
 wg.scrapperPayloads = ko.observableArray([]);
+wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110 },
@@ -89,6 +92,7 @@ wg.getURL = function () {
 
 		wg.isContentFetched(true);
 		wg.writeContent(res.data);
+		wg.modeSetting(1);
 	});
 };
 wg.saveNewScrapper = function () {
@@ -126,6 +130,18 @@ wg.decodePayload = function () {
 		}
 	}
 };
+wg.nextSetting = function(){
+	wg.modeSetting(wg.modeSetting()+1);
+};
+wg.backSetting = function(){
+	wg.modeSetting(wg.modeSetting()-1);
+};
+wg.addSelectorSetting = function(){
+	wg.selectorRowSetting.push({name:"",selector:""});
+}
+wg.removeSelectorSetting = function(){
+	
+}
 
 $(function () {
 	wg.getScrapperData();

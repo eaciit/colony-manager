@@ -44,7 +44,7 @@ func (w *WebGrabberController) FetchContent(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	param := toolkit.M{}.Set("formvalues", payload.Parameter)
+	param := toolkit.M{} //.Set("formvalues", payload.Parameter)
 	res, err := toolkit.HttpCall(payload.URL, payload.CallType, nil, param)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())

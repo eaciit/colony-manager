@@ -2,7 +2,7 @@
 <script src="/res/core/page-webgrabber.js"></script>
 
 <!-- sidebar -->
-<div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber">
+<div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
 	<div class="row">
 		<ul class="nav">
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Scrapper<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
@@ -12,7 +12,7 @@
 </div>
 
 <!-- main area -->
-<div class="col-xs-12 col-sm-10" id="content" data-bind="with: webGrabber">
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: webGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
 		<h1>Scrapper</h1>
 
@@ -117,15 +117,106 @@
 		    </div>
 		</div>
 
-
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+		<div class="panel" data-bind="visible: (app.mode() == 'editor') && (wg.modeSetting() != 0)">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	Preview
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<iframe class="full-width" id="content-preview"></iframe>
+		    	<div class="row">
+		    		<div class="col-md-4 vv-padding-right" data-bind="with:wg.configScrapper">
+		    			<div class="col-md-12 sub-title-content">
+		    				<span data-bind="text:wg.templateStepSetting()[wg.modeSetting()-1]"></span>
+		    			</div>
+		    			<div class="col-md-12 form-action">
+		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 3, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
+		    				<button class="btn btn-sm btn-success" data-bind="visible: wg.modeSetting() == 3"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    			</div>
+	    				<div class="col-md-12 form-row" data-bind="visible: wg.modeSetting() == 1">
+	    					<div class="row">
+					        	<label class="col-md-6 filter-label">ID</label>
+					        	<div class="col-md-6">
+					        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+									<span class="k-invalid-msg" data-for="ID"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Interval Type</label>
+					        	<div class="col-md-6">
+									<select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: IntervalType, optionLabel: 'Select one'}"></select>
+									<span class="k-invalid-msg" data-for="IntervalType"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Grap Interval</label>
+					        	<div class="col-md-6">
+					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: GrabInterval, placeholder: 'Example: 2' }" />
+									<span class="k-invalid-msg" data-for="GrabInterval"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Timeout Interval</label>
+					        	<div class="col-md-6">
+					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: TimeoutInterval, placeholder: 'Example: 2' }" />
+									<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
+					        	</div>
+					        </div>
+	    				</div>
+	    				<div class="col-md-12" data-bind="visible:wg.modeSetting() == 2">
+	    					<div class="row">
+	    						<label class="col-md-3 filter-label">Selector</label>
+	    						<div class="col-md-6">
+	    							<button class="btn btn-sm btn-primary" data-bind="click: wg.addSelectorSetting">
+					        			<span class="glyphicon glyphicon-plus"></span>
+					        		</button>
+	    						</div>
+					        	<div class="col-md-12 vv-padding-right">
+					        		<table class="table">
+										<thead>
+											<tr>
+												<th>Name</th>
+												<th>Selector</th>
+												<th>&nbsp;</th>
+											</tr>
+										</thead>
+										<tbody data-bind="foreach: wg.selectorRowSetting">
+											<tr>
+												<td>
+													<input class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
+												</td>
+												<td>
+													<div class="input-group input-group-sm" style="width:150px;">
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'selector-setting-value-' + $index() }" />
+														<span class="input-group-btn">
+															<button class="btn btn-sm btn-info" type="button"><span class="glyphicon glyphicon-search"></span></button>
+														</span>
+														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-value-' + $index() }"></span>
+													</div>
+												</td>
+												<td>
+													<button class="btn btn-sm btn-success" data-bind="click: wg.showSelectorSetting">
+														<span class="glyphicon glyphicon-cog"></span>
+													</button>
+													<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeSelectorSetting($index())">
+														<span class="glyphicon glyphicon-remove"></span>
+													</button>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+					        	</div>
+	    					</div>
+	    				</div>
+	    				<div class="col-md-12" data-bind="visible:wg.modeSetting() == 3"></div>
+		    		</div>
+		    		<div class="col-md-8">
+		    			<iframe class="full-width" id="content-preview"></iframe>
+		    		</div>
+		    	</div>
 		    </div>
 		</div>
 	</div>
