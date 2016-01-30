@@ -1,1 +1,121 @@
-page-datagrabber.html
+<!-- core -->
+<script src="/res/core/page-datagrabber.js"></script>
+
+<!-- sidebar -->
+<div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: dataGrabber">
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Data Grabber<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<!-- <li><a href="#" data-bind="css: { 'active': (app.section() == 'scheduler') }, click: app.changeActiveSection('scheduler')">Scheduler<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> -->
+		</ul>
+	</div>
+</div>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-10" id="content" data-bind="with: dataGrabber">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
+		<h1>Data Grabber</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: dg.getScrapperData">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: dg.createNewScrapper">
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Grabber
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">All Data Grabber</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData, columns: dg.scrapperColumns, filterfable: false, pageable: true }"></div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveDataGrabber">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 600px;">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+		        	Data Grabber
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" novalidate>
+					<div class="col-md-12">
+						<div class="form-group">
+				        	<label class="col-md-4 filter-label">ID</label>
+				        	<div class="col-md-5">
+				        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id" />
+								<span class="k-invalid-msg" data-for="ID"></span>
+				        	</div>
+				        </div>
+						<div class="form-group">
+				        	<label class="col-md-4 filter-label">Data Source Origin</label>
+				        	<div class="col-md-5">
+				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: 'DataSourceName', optionLabel: 'Select one' }"></select>
+								<span class="k-invalid-msg" data-for="data-source-origin"></span>
+				        	</div>
+				        </div>
+				        <div class="form-group">
+				        	<label class="col-md-4 filter-label">Data Source Destination</label>
+				        	<div class="col-md-5">
+				        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: 'DataSourceName', optionLabel: 'Select one' }"></select>
+								<span class="k-invalid-msg" data-for="data-source-destination"></span>
+				        	</div>
+				        </div>
+				        <div class="form-group">
+				        	<label class="col-md-4 filter-label">Fields Mapping</label>
+				        	<div class="col-md-5">
+				        		<button class="btn btn-sm btn-primary" data-bind="click: dg.addMap">
+				        			<span class="glyphicon glyphicon-plus"></span> Add more
+				        		</button>
+				        	</div>
+				        </div>
+
+				        <div class="form-group">
+				        	<div class="col-md-12">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Field Origin</th>
+											<th>Field Destination</th>
+											<th>&nbsp;</th>
+										</tr>
+									</thead>
+									<tbody data-bind="foreach: dg.configScrapper.Map">
+										<tr>
+											<td>
+												<select required data-required-msg="Field Origin cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSourceOrigin, value: FieldOrigin, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-origin-' + $index() }"></select>
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-origin-' + $index() }"></span>
+											</td>
+											<td>
+												<select required data-required-msg="Field Destination cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSourceDestination, value: FieldDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-destination-' + $index() }"></select>
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-destination-' + $index() }"></span>
+											</td>
+											<td>
+												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: dg.removeMap($index())">
+													<span class="glyphicon glyphicon-remove"></span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+				        	</div>
+				        </div>
+		        	</div>
+		        </div>
+		    </div>
+		</div>
+	</div>
+</div>
