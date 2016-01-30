@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
+	modelWebgrabber "github.com/eaciit/colony-manager/model/webgrabber"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/sedotan/sedotan.v1"
 	"github.com/eaciit/toolkit"
 	"path"
 	"reflect"
@@ -81,7 +81,7 @@ func (w *WebGrabberController) StartStopScrapper(r *knot.WebContext) interface{}
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var grab *sedotan.GrabService
+	var grab *modelWebgrabber.GrabService
 
 	if o.SourceType == "SourceType_Http" {
 		grab, err = w.PrepareGrabConfigForHTML(o)
@@ -101,7 +101,7 @@ func (w *WebGrabberController) StartStopScrapper(r *knot.WebContext) interface{}
 	return helper.CreateResult(true, []interface{}{o, grab, isServerRunning}, "")
 }
 
-func (w *WebGrabberController) StartService(grab *sedotan.GrabService) (error, bool) {
+func (w *WebGrabberController) StartService(grab *modelWebgrabber.GrabService) (error, bool) {
 	err := grab.StartService()
 
 	if err != nil {
@@ -122,7 +122,7 @@ func (w *WebGrabberController) StartService(grab *sedotan.GrabService) (error, b
 	return nil, grab.ServiceRunningStat
 }
 
-func (w *WebGrabberController) StopService(grab *sedotan.GrabService) (error, bool) {
+func (w *WebGrabberController) StopService(grab *modelWebgrabber.GrabService) (error, bool) {
 	err := grab.StopService()
 	if err != nil {
 		return err, grab.ServiceRunningStat
@@ -134,13 +134,13 @@ func (w *WebGrabberController) StopService(grab *sedotan.GrabService) (error, bo
 	return nil, grab.ServiceRunningStat
 }
 
-// func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber) (*sedotan.GrabService, error) {
-func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber) (*sedotan.GrabService, error) {
-	gService := sedotan.NewGrabService()
+// func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber) (*modelWebgrabber.GrabService, error) {
+func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber) (*modelWebgrabber.GrabService, error) {
+	gService := modelWebgrabber.NewGrabService()
 
 	gService.Name = o.ID
 	gService.Url = o.URL
-	gService.SourceType = sedotan.SourceType_HttpHtml
+	gService.SourceType = modelWebgrabber.SourceType_HttpHtml
 
 	if o.IntervalType == "seconds" {
 		gService.GrabInterval = time.Duration(o.GrabInterval) * time.Second
@@ -154,7 +154,7 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 	}
 
 	gService.TimeOutIntervalInfo = fmt.Sprintf("%v %s", o.TimeoutInterval, o.IntervalType)
-	gConfig := sedotan.Config{}
+	gConfig := modelWebgrabber.Config{}
 
 	if o.CallType == "POST" {
 		dataURL := toolkit.M{}
@@ -167,7 +167,7 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 
 			for key, subConf := range eachData {
 				if reflect.ValueOf(subConf).Kind() == reflect.Float64 {
-					dataURL.Set(key, strconv.Itoa(toolkit.ToInt(subConf, "10")))
+					dataURL.Set(key, strconv.Itoa(toolkit.ToInt(subConf, toolkit.RoundingAuto)))
 				} else {
 					dataURL.Set(key, subConf)
 				}
@@ -185,10 +185,10 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 		loginValues := o.GrabConfiguration["loginvalues"].(map[string]interface{})
 		gConfig.LoginValues = toolkit.M{}.
 			Set("name", loginValues["name"].(string)).
-			Set("password", loginValues["name"].(string))
+			Set("password", loginValues["password"].(string))
 	}
 
-	gService.ServGrabber = sedotan.NewGrabber(gService.Url, o.CallType, &gConfig)
+	gService.ServGrabber = modelWebgrabber.NewGrabber(gService.Url, o.CallType, &gConfig)
 
 	logPath := o.LogConfiguration.LogPath
 	fileName := o.LogConfiguration.FileName
@@ -196,25 +196,24 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 
 	logConf, err := toolkit.NewLog(false, true, logPath, fileName, filePattern)
 	if err != nil {
-		fmt.Println("=========a==", err)
 		return nil, err
 	}
 
 	gService.Log = logConf
-	gService.ServGrabber.DataSettings = make(map[string]*sedotan.DataSetting)
-	gService.DestDbox = make(map[string]*sedotan.DestInfo)
+	gService.ServGrabber.DataSettings = make(map[string]*modelWebgrabber.DataSetting)
+	gService.DestDbox = make(map[string]*modelWebgrabber.DestInfo)
 
-	tempDataSetting := sedotan.DataSetting{}
-	tempDestinationInfo := sedotan.DestInfo{}
+	tempDataSetting := modelWebgrabber.DataSetting{}
+	tempDestinationInfo := modelWebgrabber.DestInfo{}
 	tempFilterCondition := toolkit.M{}
 
 	for _, each := range o.DataSettings {
 		tempDataSetting.RowSelector = each.RowSelector
 
 		for _, columnSet := range each.ColumnSettings {
-			i := toolkit.ToInt(columnSet.Index, "10")
+			i := toolkit.ToInt(columnSet.Index, toolkit.RoundingAuto)
 			// column := colonycore.ColumnSetting{Alias: columnSet.Alias, Selector: columnSet.Selector}
-			column := sedotan.GrabColumn{Alias: columnSet.Alias, Selector: columnSet.Selector}
+			column := modelWebgrabber.GrabColumn{Alias: columnSet.Alias, Selector: columnSet.Selector}
 			tempDataSetting.Column(i, &column)
 		}
 
@@ -257,8 +256,8 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 	return gService, nil
 }
 
-func (w *WebGrabberController) PrepareGrabConfigForDoc(o *colonycore.WebGrabber) (*sedotan.GrabService, error) {
-	return new(sedotan.GrabService), nil
+func (w *WebGrabberController) PrepareGrabConfigForDoc(o *colonycore.WebGrabber) (*modelWebgrabber.GrabService, error) {
+	return new(modelWebgrabber.GrabService), nil
 }
 
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
