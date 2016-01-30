@@ -134,7 +134,6 @@ func (w *WebGrabberController) StopService(grab *modelWebgrabber.GrabService) (e
 	return nil, grab.ServiceRunningStat
 }
 
-// func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber) (*modelWebgrabber.GrabService, error) {
 func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber) (*modelWebgrabber.GrabService, error) {
 	gService := modelWebgrabber.NewGrabService()
 
@@ -207,56 +206,126 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 	tempDestinationInfo := modelWebgrabber.DestInfo{}
 	tempFilterCondition := toolkit.M{}
 
-	for _, each := range o.DataSettings {
-		tempDataSetting.RowSelector = each.RowSelector
+	tempDataSetting.RowSelector = o.DataSetting.RowSelector
 
-		for _, columnSet := range each.ColumnSettings {
-			i := toolkit.ToInt(columnSet.Index, toolkit.RoundingAuto)
-			// column := colonycore.ColumnSetting{Alias: columnSet.Alias, Selector: columnSet.Selector}
-			column := modelWebgrabber.GrabColumn{Alias: columnSet.Alias, Selector: columnSet.Selector}
-			tempDataSetting.Column(i, &column)
-		}
+	for _, columnSet := range o.DataSetting.ColumnSettings {
+		i := toolkit.ToInt(columnSet.Index, toolkit.RoundingAuto)
+		column := modelWebgrabber.GrabColumn{Alias: columnSet.Alias, Selector: columnSet.Selector}
+		tempDataSetting.Column(i, &column)
+	}
 
-		if len(each.RowDeleteCondition) > 0 {
-			tempFilterCondition, err = toolkit.ToM(each.RowDeleteCondition.Get("filtercond", nil))
-			if err != nil {
-				return nil, err
-			}
-
-			// tempDataSetting.FilterCondition = tempFilterCondition
-			tempDataSetting.FilterCond = tempFilterCondition
-		}
-
-		if len(each.RowIncludeCondition) > 0 {
-			tempFilterCondition, err = toolkit.ToM(each.RowIncludeCondition.Get("filtercond", nil))
-			if err != nil {
-				return nil, err
-			}
-
-			// tempDataSetting.FilterCondition = tempFilterCondition
-			tempDataSetting.FilterCond = tempFilterCondition
-		}
-
-		gService.ServGrabber.DataSettings[each.Name] = &tempDataSetting
-
-		tempDestinationInfo.Collection = each.ConnectionInfo.Collection
-		tempDestinationInfo.Desttype = each.DestinationType
-
-		conn, err := dbox.NewConnection(tempDestinationInfo.Desttype, &each.ConnectionInfo.ConnectionInfo)
+	if len(o.DataSetting.RowDeleteCondition) > 0 {
+		tempFilterCondition, err = toolkit.ToM(o.DataSetting.RowDeleteCondition.Get("filtercond", nil))
 		if err != nil {
 			return nil, err
 		}
 
-		tempDestinationInfo.IConnection = conn
-		gService.DestDbox[each.Name] = &tempDestinationInfo
-		gService.HistoryPath = historyPath
-		gService.HistoryRecPath = historyRecPath
+		tempDataSetting.FilterCond = tempFilterCondition
 	}
+
+	if len(o.DataSetting.RowIncludeCondition) > 0 {
+		tempFilterCondition, err = toolkit.ToM(o.DataSetting.RowIncludeCondition.Get("filtercond", nil))
+		if err != nil {
+			return nil, err
+		}
+
+		tempDataSetting.FilterCond = tempFilterCondition
+	}
+
+	gService.ServGrabber.DataSettings[o.DataSetting.Name] = &tempDataSetting
+	tempDestinationInfo.Collection = o.DataSetting.ConnectionInfo.Collection
+	tempDestinationInfo.Desttype = o.DataSetting.DestinationType
+
+	conn, err := dbox.NewConnection(tempDestinationInfo.Desttype, &o.DataSetting.ConnectionInfo.ConnectionInfo)
+	if err != nil {
+		return nil, err
+	}
+	tempDestinationInfo.IConnection = conn
+
+	gService.DestDbox[o.DataSetting.Name] = &tempDestinationInfo
+	gService.HistoryPath = historyPath
+	gService.HistoryRecPath = historyRecPath
 
 	return gService, nil
 }
 
 func (w *WebGrabberController) PrepareGrabConfigForDoc(o *colonycore.WebGrabber) (*modelWebgrabber.GrabService, error) {
+	gService := modelWebgrabber.NewGrabService()
+
+	gService.Name = o.ID
+	gService.Url = o.URL
+	gService.SourceType = modelWebgrabber.SourceType_HttpHtml
+
+	if o.IntervalType == "seconds" {
+		gService.GrabInterval = time.Duration(o.GrabInterval) * time.Second
+		gService.TimeOutInterval = time.Duration(o.TimeoutInterval) * time.Second
+	} else if o.IntervalType == "minutes" {
+		gService.GrabInterval = time.Duration(o.GrabInterval) * time.Minute
+		gService.TimeOutInterval = time.Duration(o.TimeoutInterval) * time.Minute
+	} else if o.IntervalType == "hours" {
+		gService.GrabInterval = time.Duration(o.GrabInterval) * time.Hour
+		gService.TimeOutInterval = time.Duration(o.TimeoutInterval) * time.Hour
+	}
+
+	gService.TimeOutIntervalInfo = fmt.Sprintf("%v %s", o.TimeoutInterval, o.IntervalType)
+
+	if o.GrabConfiguration.Has("doctype") {
+		conn, err := toolkit.ToM(o.GrabConfiguration["connectioninfo"])
+
+		ci := dbox.ConnectionInfo{}
+		ci.Host = conn["host"].(string)
+		ci.Settings = nil
+
+		if o.GrabConfiguration.Has("settings") {
+			connSettings, err := toolkit.ToM(conn["settings"])
+			if err != nil {
+				return nil, err
+			}
+			ci.Settings = connSettings
+		}
+
+		gService.ServGetData, err = modelWebgrabber.NewGetDatabase(ci.Host, o.GrabConfiguration["doctype"].(string), &ci)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	logPath := o.LogConfiguration.LogPath
+	fileName := o.LogConfiguration.FileName
+	filePattern := o.LogConfiguration.FilePattern
+
+	logConf, err := toolkit.NewLog(false, true, logPath, fileName, filePattern)
+	if err != nil {
+		return nil, err
+	}
+
+	gService.Log = logConf
+	gService.ServGetData.CollectionSettings = make(map[string]*modelWebgrabber.CollectionSetting)
+	gService.DestDbox = make(map[string]*modelWebgrabber.DestInfo)
+
+	dataSettings := modelWebgrabber.CollectionSetting{}
+	destinationInfo := modelWebgrabber.DestInfo{}
+
+	dataSettings.Collection = o.DataSetting.RowSelector
+
+	for _, columnSet := range o.DataSetting.ColumnSettings {
+		dataSettings.SelectColumn = append(dataSettings.SelectColumn, &modelWebgrabber.GrabColumn{Alias: columnSet.Alias, Selector: columnSet.Selector})
+	}
+
+	gService.ServGetData.CollectionSettings[o.DataSetting.Name] = &dataSettings
+	destinationInfo.Collection = o.DataSetting.ConnectionInfo.Collection
+	destinationInfo.Desttype = o.DataSetting.DestinationType
+
+	conn, err := dbox.NewConnection(destinationInfo.Desttype, &o.DataSetting.ConnectionInfo.ConnectionInfo)
+	if err != nil {
+		return nil, err
+	}
+	destinationInfo.IConnection = conn
+
+	gService.DestDbox[o.DataSetting.Name] = &destinationInfo
+	gService.HistoryPath = historyPath
+	gService.HistoryRecPath = historyRecPath
+
 	return new(modelWebgrabber.GrabService), nil
 }
 
@@ -265,25 +334,23 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 
 	wg := new(colonycore.WebGrabber)
 	wg.CallType = "POST"
-	wg.DataSettings = []*colonycore.DataSetting{
-		&colonycore.DataSetting{
-			ColumnSettings: []*colonycore.ColumnSetting{
-				&colonycore.ColumnSetting{Alias: "Contract", Index: 0, Selector: "td:nth-child(1)", ValueType: "string"},
-				&colonycore.ColumnSetting{Alias: "Open", Index: 0, Selector: "td:nth-child(2)", ValueType: "string"},
-				&colonycore.ColumnSetting{Alias: "High", Index: 0, Selector: "td:nth-child(3)", ValueType: "string"},
-				&colonycore.ColumnSetting{Alias: "Low", Index: 0, Selector: "td:nth-child(4)", ValueType: "string"},
-				&colonycore.ColumnSetting{Alias: "Close", Index: 0, Selector: "td:nth-child(5)", ValueType: "string"},
-			},
-			ConnectionInfo: &colonycore.ConnectionInfo{
-				ConnectionInfo: dbox.ConnectionInfo{
-					Host:     path.Join(AppBasePath, "config", "webgrabber", "output", "DataTest_POST.csv"),
-					Settings: toolkit.M{"delimiter": ",", "useheader": true},
-				},
-			},
-			DestinationType: "csv",
-			Name:            "GoldTab01",
-			RowSelector:     "table .table tbody tr",
+	wg.DataSetting = &colonycore.DataSetting{
+		ColumnSettings: []*colonycore.ColumnSetting{
+			&colonycore.ColumnSetting{Alias: "Contract", Index: 0, Selector: "td:nth-child(1)", ValueType: "string"},
+			&colonycore.ColumnSetting{Alias: "Open", Index: 0, Selector: "td:nth-child(2)", ValueType: "string"},
+			&colonycore.ColumnSetting{Alias: "High", Index: 0, Selector: "td:nth-child(3)", ValueType: "string"},
+			&colonycore.ColumnSetting{Alias: "Low", Index: 0, Selector: "td:nth-child(4)", ValueType: "string"},
+			&colonycore.ColumnSetting{Alias: "Close", Index: 0, Selector: "td:nth-child(5)", ValueType: "string"},
 		},
+		ConnectionInfo: &colonycore.ConnectionInfo{
+			ConnectionInfo: dbox.ConnectionInfo{
+				Host:     path.Join(AppBasePath, "config", "webgrabber", "output", "DataTest_POST.csv"),
+				Settings: toolkit.M{"delimiter": ",", "useheader": true},
+			},
+		},
+		DestinationType: "csv",
+		Name:            "GoldTab01",
+		RowSelector:     "table .table tbody tr",
 	}
 	wg.GrabConfiguration = toolkit.M{
 		"data": toolkit.M{
