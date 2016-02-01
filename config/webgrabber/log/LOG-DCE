@@ -139,3 +139,16 @@ ERROR 2016/01/30 01:03:44 [Test Post] Setup connection to history failed [csv-/c
 INFO 2016/01/30 01:03:49 [Test Post] Grab Started http://www.dce.com.cn/PublicWeb/MainServlet
 ERROR 2016/01/30 01:03:51 [Test Post] Grab Failed http://www.dce.com.cn/PublicWeb/MainServlet, repeat after 5 seconds :Unable to grab http://www.dce.com.cn/PublicWeb/MainServlet. Post http://www.dce.com.cn/PublicWeb/MainServlet: EOF
 ERROR 2016/01/30 01:03:51 [Test Post] Setup connection to history failed [csv-/config/webgrabber/historyTest Post-201601.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File
+INFO 2016/02/01 11:56:34 [Test Post] Service Running
+INFO 2016/02/01 11:56:39 [Test Post] Grab Started http://www.dce.com.cn/PublicWeb/MainServlet
+ERROR 2016/02/01 11:56:40 [Test Post] Grab Failed http://www.dce.com.cn/PublicWeb/MainServlet, repeat after 5 seconds :Unable to grab http://www.dce.com.cn/PublicWeb/MainServlet. Post http://www.dce.com.cn/PublicWeb/MainServlet: EOF
+ERROR 2016/02/01 11:56:40 [Test Post] Setup connection to history failed [csv-/config/webgrabber/historyTest Post-201602.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File
+INFO 2016/02/01 11:56:45 [Test Post] Grab Started http://www.dce.com.cn/PublicWeb/MainServlet
+ERROR 2016/02/01 11:56:46 [Test Post] Grab Failed http://www.dce.com.cn/PublicWeb/MainServlet, repeat after 5 seconds :Unable to grab http://www.dce.com.cn/PublicWeb/MainServlet. Post http://www.dce.com.cn/PublicWeb/MainServlet: EOF
+ERROR 2016/02/01 11:56:46 [Test Post] Setup connection to history failed [csv-/config/webgrabber/historyTest Post-201602.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File
+INFO 2016/02/01 11:56:51 [Test Post] Grab Started http://www.dce.com.cn/PublicWeb/MainServlet
+ERROR 2016/02/01 11:56:52 [Test Post] Grab Failed http://www.dce.com.cn/PublicWeb/MainServlet, repeat after 5 seconds :Unable to grab http://www.dce.com.cn/PublicWeb/MainServlet. Post http://www.dce.com.cn/PublicWeb/MainServlet: EOF
+ERROR 2016/02/01 11:56:52 [Test Post] Setup connection to history failed [csv-/config/webgrabber/historyTest Post-201602.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File
+INFO 2016/02/01 11:56:57 [Test Post] Grab Started http://www.dce.com.cn/PublicWeb/MainServlet
+ERROR 2016/02/01 11:56:57 [Test Post] Grab Failed http://www.dce.com.cn/PublicWeb/MainServlet, repeat after 5 seconds :Unable to grab http://www.dce.com.cn/PublicWeb/MainServlet. Post http://www.dce.com.cn/PublicWeb/MainServlet: EOF
+ERROR 2016/02/01 11:56:57 [Test Post] Setup connection to history failed [csv-/config/webgrabber/historyTest Post-201602.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File
