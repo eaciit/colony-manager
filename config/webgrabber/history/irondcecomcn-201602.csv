@@ -1,0 +1,5 @@
+datasettingname,grabdate,grabstatus,rowgrabbed,rowsaved,note,recfile
+GoldTab01,2016-02-01T12:36:39.679289447+07:00,SUCCESS,15.000000,15.000000,[irondcecomcn] Setup connection to history failed [csv-/Users/novalagung/Documents/go/src/github.com/eaciit/colony-manager/config/webgrabber/historyrec/irondcecomcn.GoldTab01-20160201123640.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File,
+GoldTab01,2016-02-01T12:37:00.768429152+07:00,SUCCESS,30.000000,15.000000,[irondcecomcn] Setup connection to history failed [csv-/Users/novalagung/Documents/go/src/github.com/eaciit/colony-manager/config/webgrabber/historyrec/irondcecomcn.GoldTab01-20160201123700.csv]:[eaciit.dbox.dbc.csv.Connection.Connect] Cannot Create New File,
+GoldTab01,2016-02-01T12:37:20.956816543+07:00,SUCCESS,45.000000,15.000000,,/Users/novalagung/Documents/go/src/github.com/eaciit/colony-manager/config/webgrabber/historyrec/irondcecomcn.GoldTab01-20160201123721.csv
+GoldTab01,2016-02-01T12:37:41.144304798+07:00,SUCCESS,60.000000,15.000000,,/Users/novalagung/Documents/go/src/github.com/eaciit/colony-manager/config/webgrabber/historyrec/irondcecomcn.GoldTab01-20160201123741.csv

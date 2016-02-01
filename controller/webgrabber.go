@@ -8,6 +8,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"os"
 	"path"
 	"reflect"
 	"strconv"
@@ -15,8 +16,8 @@ import (
 )
 
 var (
-	historyPath    = path.Join(AppBasePath, "config", "webgrabber", "history")
-	historyRecPath = path.Join(AppBasePath, "config", "webgrabber", "historyrec")
+	historyPath    = path.Join(AppBasePath, "config", "webgrabber", "history") + string(os.PathSeparator)
+	historyRecPath = path.Join(AppBasePath, "config", "webgrabber", "historyrec") + string(os.PathSeparator)
 )
 
 type WebGrabberController struct {
