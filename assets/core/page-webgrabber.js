@@ -5,6 +5,7 @@ viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
+wg.tempIndexColumn = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.templateConfigScrapper = {
@@ -44,7 +45,6 @@ wg.templateScrapperPayload = {
 };
 wg.scrapperPayloads = ko.observableArray([]);
 wg.selectorRowSetting = ko.observableArray([]);
-// wg.columnSettingSelector = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
@@ -166,27 +166,41 @@ wg.startStopScrapper = function (_id) {
 };
 wg.nextSetting = function(){
 	wg.modeSetting(wg.modeSetting()+1);
+	if (wg.selectorRowSetting().length == 0)
+		wg.addSelectorSetting();
 };
 wg.backSetting = function(){
 	wg.modeSetting(wg.modeSetting()-1);
 };
 wg.addSelectorSetting = function(){
-	wg.selectorRowSetting.push(wg.configSelector);
+	wg.selectorRowSetting.push(ko.mapping.fromJS(wg.templateConfigSelector));
 }
-wg.removeSelectorSetting = function(){
-
+wg.removeSelectorSetting = function(each){
+	// console.log(ko.mapping.toJS(each));
+	var item = wg.selectorRowSetting()[each];
+	wg.selectorRowSetting.remove(item);
 }
 wg.showSelectorSetting = function(index,nameSelector){
+	if (wg.selectorRowSetting()[index].SelectorSetting.ColumnSetting().length == 0)
+		wg.selectorRowSetting()[index].SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
+
+	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
 }
 wg.backSettingSelector = function(){
 	wg.modeSelector("");
 }
 wg.saveSettingSelector = function(){
+	ko.mapping.fromJS(wg.configSelector,wg.selectorRowSetting()[wg.tempIndexColumn()]);
 	wg.modeSelector("");
 }
 wg.addColumnSetting = function(){
-	wg.configSelector.SelectorSetting.ColumnSetting.push({Alias: "", Type: "", Selector: ""});
+	wg.configSelector.SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
+}
+wg.removeColumnSetting = function(each){
+	var item = wg.configSelector.SelectorSetting.ColumnSetting()[each];
+	wg.configSelector.SelectorSetting.ColumnSetting.remove(item);
 }
 
 $(function () {
