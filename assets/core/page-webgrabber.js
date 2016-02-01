@@ -137,10 +137,11 @@ wg.getURL = function () {
 		// });
 	// console.log(bodyyo);
 		$("#inspectElement").replaceWith("<div id='inspectElement'></div>");
-		$("#inspectElement").html(URLSource);
+		// $("#inspectElement").html(URLSource);
 		var editor = CodeMirror(document.getElementById("inspectElement"), {
 	        mode: "text/html",
 	        lineNumbers: true,
+			lineWrapping: true,
 	        readOnly : true,
 	        value: bodyyo
 	      });
