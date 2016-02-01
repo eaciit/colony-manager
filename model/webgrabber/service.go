@@ -224,6 +224,7 @@ func (g *GrabService) AddRecHistory(key string, docs []toolkit.M) string {
 	ci := &dbox.ConnectionInfo{file, "", "", "", config}
 	c, e := dbox.NewConnection("csv", ci)
 	if e != nil {
+		fmt.Println("==============a> %#v", e)
 		g.ErrorNotes = fmt.Sprintf("[%s] Setup connection to Record history failed [csv-%s]:%s", g.Name, file, e)
 		g.Log.AddLog(g.ErrorNotes, "ERROR")
 		return ""
@@ -231,6 +232,7 @@ func (g *GrabService) AddRecHistory(key string, docs []toolkit.M) string {
 
 	e = c.Connect()
 	if e != nil {
+		fmt.Println("==============b> %#v", e, "asdf   ", file)
 		g.ErrorNotes = fmt.Sprintf("[%s] Setup connection to history failed [csv-%s]:%s", g.Name, file, e)
 		g.Log.AddLog(g.ErrorNotes, "ERROR")
 		return ""
@@ -241,6 +243,7 @@ func (g *GrabService) AddRecHistory(key string, docs []toolkit.M) string {
 	for _, doc := range docs {
 		e = c.NewQuery().Insert().Exec(toolkit.M{"data": doc})
 		if e != nil {
+			fmt.Println("==============c> %#v", e)
 			g.ErrorNotes = fmt.Sprintf("[%s] Insert to history failed [csv-%s]:%s", g.Name, file, e)
 			g.Log.AddLog(g.ErrorNotes, "ERROR")
 			return ""
@@ -266,6 +269,7 @@ func (g *GrabService) AddHistory(history toolkit.M) {
 	ci := &dbox.ConnectionInfo{file, "", "", "", config}
 	c, e := dbox.NewConnection("csv", ci)
 	if e != nil {
+		fmt.Println("==============d> %#v", e)
 		g.ErrorNotes = fmt.Sprintf("[%s] Setup connection to history failed [csv-%s]:%s", g.Name, file, e)
 		g.Log.AddLog(g.ErrorNotes, "ERROR")
 		return
@@ -273,6 +277,7 @@ func (g *GrabService) AddHistory(history toolkit.M) {
 
 	e = c.Connect()
 	if e != nil {
+		fmt.Println("==============e> %#v", e)
 		g.ErrorNotes = fmt.Sprintf("[%s] Setup connection to history failed [csv-%s]:%s", g.Name, file, e)
 		g.Log.AddLog(g.ErrorNotes, "ERROR")
 		return
@@ -280,6 +285,7 @@ func (g *GrabService) AddHistory(history toolkit.M) {
 
 	e = c.NewQuery().Insert().Exec(toolkit.M{"data": history})
 	if e != nil {
+		fmt.Println("==============f> %#v", e)
 		g.ErrorNotes = fmt.Sprintf("[%s] Insert to history failed [csv-%s]:%s", g.Name, file, e)
 		g.Log.AddLog(g.ErrorNotes, "ERROR")
 		c.Close()

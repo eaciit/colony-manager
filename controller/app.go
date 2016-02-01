@@ -13,10 +13,9 @@ type App struct {
 var (
 	LayoutFile   string   = "views/layout.html"
 	IncludeFiles []string = []string{"views/_head.html", "views/_loader.html"}
-	AppBasePath  string   = "/"
+	AppBasePath  string   = func(dir string, err error) string { return dir }(os.Getwd())
 )
 
 func init() {
-	AppBasePath, _ = os.Getwd()
 	fmt.Println("Base Path ===> ", AppBasePath)
 }

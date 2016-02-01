@@ -8,6 +8,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"os"
 	"path"
 	"reflect"
 	"strconv"
@@ -15,8 +16,8 @@ import (
 )
 
 var (
-	historyPath    = path.Join(AppBasePath, "config", "webgrabber", "history")
-	historyRecPath = path.Join(AppBasePath, "config", "webgrabber", "historyrec")
+	historyPath    = path.Join(AppBasePath, "config", "webgrabber", "history") + string(os.PathSeparator)
+	historyRecPath = path.Join(AppBasePath, "config", "webgrabber", "historyrec") + string(os.PathSeparator)
 )
 
 type WebGrabberController struct {
@@ -206,6 +207,8 @@ func (w *WebGrabberController) PrepareGrabConfigForHTML(o *colonycore.WebGrabber
 	tempDestinationInfo := modelWebgrabber.DestInfo{}
 	tempFilterCondition := toolkit.M{}
 
+	fmt.Printf("====== %#v\n", o)
+
 	tempDataSetting.RowSelector = o.DataSetting.RowSelector
 
 	for _, columnSet := range o.DataSetting.ColumnSettings {
@@ -336,26 +339,42 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 	wg.CallType = "POST"
 	wg.DataSetting = &colonycore.DataSetting{
 		ColumnSettings: []*colonycore.ColumnSetting{
-			&colonycore.ColumnSetting{Alias: "Contract", Index: 0, Selector: "td:nth-child(1)", ValueType: "string"},
-			&colonycore.ColumnSetting{Alias: "Open", Index: 0, Selector: "td:nth-child(2)", ValueType: "string"},
-			&colonycore.ColumnSetting{Alias: "High", Index: 0, Selector: "td:nth-child(3)", ValueType: "string"},
-			&colonycore.ColumnSetting{Alias: "Low", Index: 0, Selector: "td:nth-child(4)", ValueType: "string"},
-			&colonycore.ColumnSetting{Alias: "Close", Index: 0, Selector: "td:nth-child(5)", ValueType: "string"},
+			&colonycore.ColumnSetting{Alias: "Contract", Index: 0, Selector: "td:nth-child(1)"},
+			&colonycore.ColumnSetting{Alias: "Open", Index: 0, Selector: "td:nth-child(2)"},
+			&colonycore.ColumnSetting{Alias: "High", Index: 0, Selector: "td:nth-child(3)"},
+			&colonycore.ColumnSetting{Alias: "Low", Index: 0, Selector: "td:nth-child(4)"},
+			&colonycore.ColumnSetting{Alias: "Close", Index: 0, Selector: "td:nth-child(5)"},
+			&colonycore.ColumnSetting{Alias: "Prev Settle", Index: 0, Selector: "td:nth-child(6)"},
+			&colonycore.ColumnSetting{Alias: "Prev Settle", Index: 0, Selector: "td:nth-child(7)"},
+			&colonycore.ColumnSetting{Alias: "Settle", Index: 0, Selector: "td:nth-child(8)"},
+			&colonycore.ColumnSetting{Alias: "Chg", Index: 0, Selector: "td:nth-child(9)"},
+			&colonycore.ColumnSetting{Alias: "Volume", Index: 0, Selector: "td:nth-child(10)"},
+			&colonycore.ColumnSetting{Alias: "OI", Index: 0, Selector: "td:nth-child(11)"},
+			&colonycore.ColumnSetting{Alias: "OI Chg", Index: 0, Selector: "td:nth-child(12)"},
+			&colonycore.ColumnSetting{Alias: "Turnover", Index: 0, Selector: "td:nth-child(13)"},
 		},
 		ConnectionInfo: &colonycore.ConnectionInfo{
+			Collection: "irondcecom",
 			ConnectionInfo: dbox.ConnectionInfo{
-				Host:     path.Join(AppBasePath, "config", "webgrabber", "output", "DataTest_POST.csv"),
-				Settings: toolkit.M{"delimiter": ",", "useheader": true},
+				Database: "valegrab",
+				Host:     "localhost:27017",
 			},
 		},
-		DestinationType: "csv",
+		DestinationType: "mongo",
 		Name:            "GoldTab01",
 		RowSelector:     "table .table tbody tr",
+		RowDeleteCondition: toolkit.M{
+			"$or": []toolkit.M{
+				toolkit.M{"Contract": "Contract"},
+				toolkit.M{"Contract": "Iron Ore Subtotal"},
+				toolkit.M{"Contract": "Total"},
+			},
+		},
 	}
 	wg.GrabConfiguration = toolkit.M{
 		"data": toolkit.M{
-			"Pu00231_Input.trade_date": "Date2String(time.Now(),'YYYYMMDD')",
-			"Pu00231_Input.trade_type": "0",
+			"Pu00231_Input.trade_date": 2.0151214e+07,
+			"Pu00231_Input.trade_type": 0,
 			"Pu00231_Input.variety":    "i",
 			"Submit":                   "Go",
 			"action":                   "Pu00231_result",
@@ -364,44 +383,12 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 	wg.GrabInterval = 20
 	wg.IntervalType = "seconds"
 	wg.LogConfiguration = &colonycore.LogConfiguration{
-		FileName:    "LOG-DCE",
+		FileName:    "LOG-GRABDCE",
 		FilePattern: "20060102",
 		LogPath:     path.Join(AppBasePath, "config", "webgrabber", "log"),
 	}
-	wg.ID = "Test Post"
+	wg.ID = "irondcecomcn"
 	wg.SourceType = "SourceType_Http"
-	wg.Parameter = []*colonycore.Parameter{
-		&colonycore.Parameter{
-			Format:  "YYYYMMDD",
-			Key:     "Pu00231_Input.trade_date",
-			Pattern: "time.Now()",
-			Value:   "20151214",
-		},
-		&colonycore.Parameter{
-			Format:  "",
-			Key:     "Pu00231_Input.trade_type",
-			Pattern: "",
-			Value:   "0",
-		},
-		&colonycore.Parameter{
-			Format:  "",
-			Key:     "Pu00231_Input.variety",
-			Pattern: "",
-			Value:   "i",
-		},
-		&colonycore.Parameter{
-			Format:  "",
-			Key:     "Submit",
-			Pattern: "",
-			Value:   "Go",
-		},
-		&colonycore.Parameter{
-			Format:  "",
-			Key:     "action",
-			Pattern: "",
-			Value:   "Pu00231_result",
-		},
-	}
 	wg.TimeoutInterval = 5
 	wg.URL = "http://www.dce.com.cn/PublicWeb/MainServlet"
 
