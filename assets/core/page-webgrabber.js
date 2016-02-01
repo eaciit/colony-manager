@@ -9,7 +9,7 @@ wg.scrapperData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.templateConfigScrapper = {
 	_id: "",
-	CallType: "get",
+	CallType: "GET",
 	IntervalType: "",
 	SourceType: "http",
 	GrabInterval: 0,
@@ -63,8 +63,8 @@ wg.dataSourceTypes = ko.observableArray([
 	{ value: "dbox", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
-	{ value: "get", title: "GET" },
-	{ value: "post", title: "POST" },
+	{ value: "GET", title: "GET" },
+	{ value: "POST", title: "POST" },
 ]);
 
 wg.editScrapper = function (_id) {
@@ -95,6 +95,9 @@ wg.backToFront = function () {
 	app.mode("");
 };
 wg.writeContent = function (html) {
+	var baseURL = wg.configScrapper.URL().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
+	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
+	
 	var contentDoc = $("#content-preview")[0].contentWindow.document;
 	contentDoc.open();
 	contentDoc.write(html);
