@@ -102,6 +102,7 @@ wg.writeContent = function (html) {
 	contentDoc.open();
 	contentDoc.write(html);
 	contentDoc.close();
+	return contentDoc;
 }
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
@@ -116,8 +117,33 @@ wg.getURL = function () {
 		}
 
 		wg.isContentFetched(true);
-		wg.writeContent(res.data);
+		var doc = wg.writeContent(res.data);
 		wg.modeSetting(1);
+
+		var startofbody = res.data.indexOf("<body");
+		var endofbody = res.data.indexOf("</body");
+		var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
+		startofbody = bodyyo.indexOf(">");
+		bodyyo = bodyyo.substr(startofbody+1);
+		URLSource = $.parseHTML(bodyyo);
+		// console.log(URLSource);
+		// var editor = CodeMirror($("inspectElement"), {
+		//   mode: "text/html",
+		//   // styleActiveLine: true,
+		//   // lineNumbers: true,
+		//   // lineWrapping: true,
+		//   readOnly : true,
+		//   value: URLSource
+		// });
+	// console.log(bodyyo);
+		$("#inspectElement").replaceWith("<div id='inspectElement'></div>");
+		$("#inspectElement").html(URLSource);
+		var editor = CodeMirror(document.getElementById("inspectElement"), {
+	        mode: "text/html",
+	        lineNumbers: true,
+	        readOnly : true,
+	        value: bodyyo
+	      });
 	});
 };
 wg.saveNewScrapper = function () {
@@ -201,6 +227,11 @@ wg.addColumnSetting = function(){
 wg.removeColumnSetting = function(each){
 	var item = wg.configSelector.SelectorSetting.ColumnSetting()[each];
 	wg.configSelector.SelectorSetting.ColumnSetting.remove(item);
+}
+wg.GetRowSelector = function(index){
+	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+	wg.tempIndexColumn(index);
+	wg.modeSelector("editElement");
 }
 
 $(function () {
