@@ -1,7 +1,6 @@
-# Ignore everything in this directory
-*
-# Except this file
-!.gitignore
+# Ignore everything in this directory, Except .gitignore
+# *
+# !.gitignore
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
