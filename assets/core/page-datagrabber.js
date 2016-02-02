@@ -2,35 +2,18 @@ app.section('scrapper');
 
 viewModel.dataGrabber = {}; var dg = viewModel.dataGrabber;
 
-dg.sampleDataSource = ko.observableArray([
-	{ _id: "DS01", DataSourceName: "Data Source 1", MetaData: ["ID", "Name", "Age", "Title"] },
-  	{ _id: "DS02", DataSourceName: "Data Source 2", MetaData: ["_id", "Title", "Cover"] },
-  	{ _id: "DS03", DataSourceName: "Data Source 3", MetaData: ["ID", "Full Name", "Age"] }
-]);
-dg.sampleScrapperData = ko.observableArray([
-  { 
-  	_id: "WG01", 
-  	DataSourceOrigin: "DS01", 
-  	DataSourceDestination: "DS02", 
-  	Map: [
-		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
-		{fieldOrigin: "RigType", fieldDestination: "RigType"},
-		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
-	] 
-},
-]);
-
 dg.templateConfigScrapper = {
 	_id: "",
 	DataSourceOrigin: "",
 	DataSourceDestination: "",
+	IgnoreFieldsOrigin: [],
+	IgnoreFieldsDestination: [],
 	Map: []
 };
 dg.templateMap = {
 	FieldOrigin: "",
 	FieldDestination: ""
 };
-dg.newScrapperMode = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
 dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
@@ -66,11 +49,11 @@ dg.fieldOfDataSourceDestination = ko.computed(function () {
 	return ds.MetaData;
 }, dg);
 dg.getScrapperData = function (){
-	//dg.scrapperData(dg.sampleScrapperData);
 	app.ajaxPost("/datagrabber/getdatagrabber", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
+
 		dg.scrapperData(res.data);
 	});
 };
@@ -86,7 +69,7 @@ dg.removeMap = function (index) {
 }
 dg.createNewScrapper = function () {
 	app.mode("editor");
-	dg.newScrapperMode('');
+	dg.scrapperMode('');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 	dg.addMap();
 };
@@ -95,17 +78,15 @@ dg.saveDataGrabber = function () {
 		return;
 	}
 
-	var paramscrapper = ko.mapping.toJS(dg.configScrapper);
-	app.ajaxPost("/datagrabber/savedatagrabber", paramscrapper, function (res) {
+	var param = ko.mapping.toJS(dg.configScrapper);
+	app.ajaxPost("/datagrabber/savedatagrabber", param, function (res) {
 		if(!app.isFine(res)) {
 			return;
 		}
+
 		dg.backToFront();
 		dg.getScrapperData();
 	});
-
-
-
 };
 dg.backToFront = function () {
 	app.mode("");
@@ -120,6 +101,7 @@ dg.getDataSourceData = function () {
 	});
 };
 dg.editScrapper = function (_id) {
+	dg.scrapperMode('edit');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 
 	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {
@@ -133,7 +115,6 @@ dg.editScrapper = function (_id) {
 		
 	});
 };
-
 dg.removeScrapper = function (_id) {
 	swal({
 		title: "Are you sure?",
@@ -144,14 +125,14 @@ dg.removeScrapper = function (_id) {
 		confirmButtonText: "Delete",
 		closeOnConfirm: true
 	}, function() {
-		app.ajaxPost("",{ _id: _id },
-			function(res) {
-				if (!app.isFine(res)) {
-					return;
-				}
-				dg.backToFrontPage();
-				swal({ title: "Data successfully deleted", type: "success"});
-			});
+		app.ajaxPost("/datagrabber/removedatagrabber", { _id: _id }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			swal({ title: "Data successfully deleted", type: "success" });
+			dg.backToFrontPage();
+		});
 	});
 };
 dg.backToFrontPage = function () {
