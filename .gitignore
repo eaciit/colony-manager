@@ -27,4 +27,4 @@ _testmain.go
 *.test
 *.prof
 
-assets/core/.sass-cache/
+.sass-cache/
