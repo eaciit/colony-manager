@@ -1,10 +1,9 @@
 package controller
 
 import (
-	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/toolkit"
 	"github.com/eaciit/colony-core/v0"
+	"github.com/eaciit/colony-manager/helper"
+	"github.com/eaciit/knot/knot.v1"
 )
 
 type DataGrabberController struct {
@@ -17,54 +16,51 @@ func CreateDataGrabberController(s *knot.Server) *DataGrabberController {
 	return controller
 }
 
-type Maps struct {
-	fieldOrigin		string
-	fieldDestination	string
-}
-type ResponseTest struct {
-	_id		string
-	DataSourceOrigin	string
-	DataSourceDestination	string
-	Map []*Maps
-}
 func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
+	payload := new(colonycore.DataGrabber)
+	err := r.GetPayload(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	o := new(colonycore.DataGrabber)
-	o.ID = payload["_id"].(string)
-	o.DataSourceOrigin = payload["DataSourceOrigin"].(string)
-	o.DataSourceDestination = payload["DataSourceDestination"].(string)
-
-	imap := toolkit.JsonString(payload["Map"])
-	var imaps []*colonycore.Maps
-	toolkit.UnjsonFromString(imap, &imaps)
-	o.Map = imaps
-
-	err = colonycore.Save(o)
+	err = colonycore.Save(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, o, "")
+	return helper.CreateResult(true, payload, "")
 }
+
 func (d *DataGrabberController) SelectDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
+	payload := new(colonycore.DataGrabber)
+	err := r.GetPayload(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["_id"].(string)
 
-	data := new(colonycore.DataGrabber)
-	err = colonycore.Get(data, id)
+	err = colonycore.Get(payload, payload.ID)
+
+	return helper.CreateResult(true, payload, "")
+}
+
+func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := []colonycore.DataGrabber{}
+	cursor, err := colonycore.Find(new(colonycore.DataGrabber), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
 }

@@ -1,0 +1,1 @@
+[{"DataSourceDestination":"DS02","DataSourceOrigin":"DS01","IgnoreFieldsDestination":["F03","F04"],"IgnoreFieldsOrigin":["F01","F02"],"Map":[{"fieldDestination":"ASdf","fieldOrigin":"Asdf"},{"fieldDestination":"fff","fieldOrigin":"sss"}],"_id":"asdf"}]
