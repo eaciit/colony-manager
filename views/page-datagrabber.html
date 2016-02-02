@@ -67,11 +67,23 @@
 								<span class="k-invalid-msg" data-for="data-source-origin"></span>
 				        	</div>
 				        </div>
+						<div class="form-group">
+				        	<label class="col-md-4 filter-label">Ignored Fields DS Origin</label>
+				        	<div class="col-md-5">
+				        		<select class="full-width" name="data-source-origin" data-bind="kendoMultiSelect: { data: dg.fieldOfDataSource('origin'), value: IgnoreFieldsOrigin, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', enabled: dg.isDataSourceNotEmpty('origin') }"></select>
+				        	</div>
+				        </div>
 				        <div class="form-group">
 				        	<label class="col-md-4 filter-label">Data Source Destination</label>
 				        	<div class="col-md-5">
 				        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: 'DataSourceName', optionLabel: 'Select one' }"></select>
 								<span class="k-invalid-msg" data-for="data-source-destination"></span>
+				        	</div>
+				        </div>
+				        <div class="form-group">
+				        	<label class="col-md-4 filter-label">Ignored Fields DS Destination</label>
+				        	<div class="col-md-5">
+				        		<select class="full-width" name="data-source-destination" data-bind="kendoMultiSelect: { data: dg.fieldOfDataSource('destination'), value: IgnoreFieldsDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', enabled: dg.isDataSourceNotEmpty('destination') }"></select>
 				        	</div>
 				        </div>
 				        <div class="form-group">
@@ -96,11 +108,11 @@
 									<tbody data-bind="foreach: dg.configScrapper.Map">
 										<tr>
 											<td>
-												<select required data-required-msg="Field Origin cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSourceOrigin, value: FieldOrigin, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-origin-' + $index() }"></select>
+												<select required data-required-msg="Field Origin cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSource('origin'), value: FieldOrigin, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-origin-' + $index() }"></select>
 												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-origin-' + $index() }"></span>
 											</td>
 											<td>
-												<select required data-required-msg="Field Destination cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSourceDestination, value: FieldDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-destination-' + $index() }"></select>
+												<select required data-required-msg="Field Destination cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSource('destination'), value: FieldDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-destination-' + $index() }"></select>
 												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-destination-' + $index() }"></span>
 											</td>
 											<td>

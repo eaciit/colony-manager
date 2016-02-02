@@ -26,17 +26,26 @@ dg.scrapperColumns = ko.observableArray([
 		return "<button class='btn btn-sm btn-primary' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
-dg.fieldOfDataSourceOrigin = ko.computed(function () {
-	var ds = Lazy(dg.dataSourcesData()).find({
-		_id: dg.configScrapper.DataSourceOrigin()
-	});
+dg.fieldOfDataSource = function (which) {
+	return ko.computed(function () {
+		var ds = Lazy(dg.dataSourcesData()).find({
+			_id: dg.configScrapper[which == "origin" ? "DataSourceOrigin" : "DataSourceDestination"]()
+		});
 
-	if (ds == undefined) {
-		return [];
-	}
+		if (ds == undefined) {
+			return [];
+		}
 
-	return ds.MetaData;
-}, dg);
+		return ds.MetaData;
+	}, dg);
+};
+dg.isDataSourceNotEmpty = function (which) {
+	return ko.computed(function () {
+		var dsID = dg.configScrapper[which == "origin" ? "DataSourceOrigin" : "DataSourceDestination"]();
+
+		return dsID != "";
+	}, dg);
+};
 dg.fieldOfDataSourceDestination = ko.computed(function () {
 	var ds = Lazy(dg.dataSourcesData()).find({
 		_id: dg.configScrapper.DataSourceDestination()
