@@ -174,7 +174,7 @@ body {
     color: #3A8BDF; }
   body #content-preview {
     border: 1px solid whitesmoke;
-    min-height: 300px; }
+    min-height: 400px; }
   body .loader-container {
     position: fixed;
     top: 0;

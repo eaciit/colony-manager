@@ -1,5 +1,12 @@
 <!-- core -->
+<script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script>
+<script type="text/javascript" src="/res/js/codemirror/xml.js"></script>
+<script type="text/javascript" src="/res/js/codemirror/javascript.js"></script>
+<script type="text/javascript" src="/res/js/codemirror/active-line.js"></script>
+<script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script>
+<link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css">
 <script src="/res/core/page-webgrabber.js"></script>
+
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
@@ -196,7 +203,7 @@
 													<div class="input-group input-group-sm" style="width:150px;">
 														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: RowSelector, attr: { 'name': 'selector-setting-value-' + $index() }" />
 														<span class="input-group-btn">
-															<button class="btn btn-sm btn-info" type="button"><span class="glyphicon glyphicon-search"></span></button>
+															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-value-' + $index() }"></span>
 													</div>
@@ -323,6 +330,18 @@
 			    						</div>
 		    						</div>
 	    						</div>
+		    				</div>
+		    			</div>
+
+		    			<!-- Form Inspect Element -->
+		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElement'">
+		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+		    				<button class="btn btn-sm btn-success"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    			</div>
+		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElement'">
+		    				<label class="col-md-6 filter-label">Selected Element</label>
+		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
+		    					<div id="inspectElement"></div>
 		    				</div>
 		    			</div>
 
