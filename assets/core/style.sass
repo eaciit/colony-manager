@@ -3,6 +3,12 @@
 $black: #5F5F5F
 $blue: #3A8BDF
 $blue-hover: #4F9AE6
+$green: #5cb85c
+$green-hover: #449d44
+$red: #d9534f
+$red-hover: #c9302c
+$orange: #f0ad4e
+$orange-hover: #ec971f
 
 html, body, #container, #container > .row, #sidebar, #content
 	height: 100%
@@ -19,8 +25,52 @@ a
 	border-color: #3282D6
 
 	&:hover
-		border-color: #3282D6
 		background-color: $blue-hover
+		border-color: #3282D6
+
+.color-blue
+	color: $blue
+.color-green
+	color: $green
+.color-red
+	color: $red
+.color-orange
+	color: $orange
+
+.btn-text-primary, .btn-text-success, .btn-text-warning, .btn-text-danger
+	background-color: white
+	border-color: #DADADA
+
+	&:hover
+		border-color: #DADADA
+
+.btn-text-primary
+	color: $blue
+
+	&:hover
+		color: $blue-hover
+.btn-text-success
+	color: $green
+
+	&:hover
+		color: $green-hover
+.btn-text-warning
+	color: $orange
+
+	&:hover
+		color: $orange-hover
+.btn-text-danger
+	color: $red
+
+	&:hover
+		color: $red-hover
+
+.align-right
+	text-align: right
+.align-center
+	text-align: center
+.align-left
+	text-align: left
 
 .no-padding
 	padding: 0px

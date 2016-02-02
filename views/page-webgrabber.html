@@ -43,7 +43,7 @@
 		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-web-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: scrapperBound }"></div>
+		    	<div class="grid grid-web-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
 		</div>
 
@@ -358,6 +358,24 @@
 		    			<iframe class="full-width" id="content-preview"></iframe>
 		    		</div>
 		    	</div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'history')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'history')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Grab Histories of
+		        	<span data-bind="text: wg.selectedID" class="color-blue"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: historyData, columns: historyColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
 		    </div>
 		</div>
 	</div>

@@ -41,7 +41,9 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         data: ko.mapping.toJSON(data),
         success: function (a) {
             callbackScheduler(function () {
-                callbackSuccess(a);
+                if (callbackSuccess !== undefined) {
+                    callbackSuccess(a);
+                }
             });
         },
         error: function (a, b, c) {
@@ -140,6 +142,11 @@ app.couldBeNumber = function (value) {
     }
 
     return value;
+};
+app.gridBoundTooltipster = function (selector) {
+    return function () {
+        app.prepareTooltipster($(selector).find(".tooltipster"));
+    };
 };
 
 $(function () {

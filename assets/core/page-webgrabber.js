@@ -7,7 +7,9 @@ wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
+wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
+wg.selectedID = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	calltype: "GET",
@@ -76,15 +78,42 @@ wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110, locked: true },
-	{ title: "status", width: 80, locked: true, attributes: { class:'scrapper-status' }, template: "<span></span>" },
+	{ title: "Status", width: 80, locked: true, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button> <button class='btn btn-sm btn-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button> <button class='btn btn-sm btn-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
+		return [
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
+		].join(" ");
 	}, locked: true },
 	{ field: "calltype", title: "Request Type", width: 150 },
 	{ field: "intervaltype", title: "Interval Unit", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
 	{ field: "grabinterval", title: "Interval Duration", width: 150 },
 	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
+]);
+wg.historyColumns = ko.observableArray([
+	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
+	{ field: "grabstatus", title: "STATUS", attributes: { class: "align-center" }, template: function (d) {
+		if (d.grabstatus == "SUCCESS") {
+			return '<i class="fa fa-check fa-2x color-green"></i>';
+		} else {
+			return '<i class="fa fa-times fa-2x color-red"></i>';
+		}
+	}, filterable: false, width: 60 },
+	{ field: "datasettingname", title: "DATA NAME" }, 
+	{ field: "grabdate", filterable: { ui: "datetimepicker" }, title: "START", format: "{0:yyyy/MM/dd HH:mm tt}" },
+	{ field: "rowgrabbed", title: "GRAB COUNT" },
+	{ field: "rowsaved", title: "ROW SAVE" },
+	{ field: "notehistory", title: "NOTE" },
+	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(\"" + d.datasettingname + "\", \"" + d.id + "\")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\", \"" + d._id + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
+		].join(" ");
+	}, filterable: false }
 ]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "http", title: "HTTP / Web" },
@@ -96,7 +125,8 @@ wg.dataRequestTypes = ko.observableArray([
 ]);
 
 wg.editScrapper = function (_id) {
-
+	app.mode('editor');
+	wg.scrapperMode('edit');
 };
 wg.removeScrapper = function (_id) {
 
@@ -122,6 +152,7 @@ wg.createNewScrapper = function () {
 };
 wg.backToFront = function () {
 	app.mode("");
+	wg.selectedID('');
 };
 wg.writeContent = function (html) {
 	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
@@ -132,9 +163,6 @@ wg.writeContent = function (html) {
 	contentDoc.write(html);
 	contentDoc.close();
 	return contentDoc;
-}
-wg.scrapperBound = function () {
-	app.prepareTooltipster($(".grid-web-grabber").find(".tooltipster"));
 };
 wg.botStats = ko.observableArray([]);
 wg.runBotStats = function () {
@@ -266,7 +294,6 @@ wg.startScrapper = function (_id) {
 			return;
 		}
 
-		console.log(res);
 		wg.runBotStats();
 	});
 };
@@ -276,19 +303,29 @@ wg.stopScrapper = function (_id) {
 			return;
 		}
 
-		console.log(res);
 		wg.runBotStats();
 	});
 };
-wg.nextSetting = function(){
+wg.viewHistory = function (_id) {
+	app.ajaxPost("/webgrabber/gethistory", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		wg.selectedID(_id);
+		app.mode('history');
+		wg.historyData(res.data);
+	});
+}
+wg.nextSetting = function() {
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
 		wg.addSelectorSetting();
 };
-wg.backSetting = function(){
+wg.backSetting = function() {
 	wg.modeSetting(wg.modeSetting()-1);
 };
-wg.addSelectorSetting = function(){
+wg.addSelectorSetting = function() {
 	wg.selectorRowSetting.push(ko.mapping.fromJS(wg.templateConfigSelector));
 }
 wg.removeSelectorSetting = function(each){
@@ -304,14 +341,14 @@ wg.showSelectorSetting = function(index,nameSelector){
 	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
 }
-wg.backSettingSelector = function(){
+wg.backSettingSelector = function() {
 	wg.modeSelector("");
 }
-wg.saveSettingSelector = function(){
+wg.saveSettingSelector = function() {
 	ko.mapping.fromJS(wg.configSelector,wg.selectorRowSetting()[wg.tempIndexColumn()]);
 	wg.modeSelector("");
 }
-wg.addColumnSetting = function(){
+wg.addColumnSetting = function() {
 	wg.configSelector.SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
 }
 wg.removeColumnSetting = function(each){

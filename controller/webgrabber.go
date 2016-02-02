@@ -11,7 +11,8 @@ import (
 	"github.com/eaciit/toolkit"
 	"path"
 	f "path/filepath"
-	// "reflect"
+	"reflect"
+	"strings"
 	// "strconv"
 	// "time"
 )
@@ -146,6 +147,28 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 
 	grabStatus := modules.NewGrabService().CheckStat([]interface{}{o})
 	return helper.CreateResult(true, grabStatus, "")
+}
+
+func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	module := modules.NewHistory(payload.ID)
+	history := module.OpenHistory()
+
+	if reflect.ValueOf(history).Kind() == reflect.String {
+		if strings.Contains(history.(string), "Cannot Open File") {
+			return helper.CreateResult(false, nil, "Cannot Open File")
+		}
+	}
+
+	return helper.CreateResult(true, history, "")
 }
 
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
