@@ -13,8 +13,18 @@ app.applyNavigationActive = function () {
 		$a.closest("li").closest("li").addClass("active");
 	}
 };
-app.prepare = function () {
-	app.applyNavigationActive();
+app.prepareTooltipster = function ($o) {
+    var $tooltipster = ($o == undefined) ? $('.tooltipster') : $o;
+
+    $tooltipster.tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "top"
+    });
 };
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
@@ -31,7 +41,9 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         data: ko.mapping.toJSON(data),
         success: function (a) {
             callbackScheduler(function () {
-                callbackSuccess(a);
+                if (callbackSuccess !== undefined) {
+                    callbackSuccess(a);
+                }
             });
         },
         error: function (a, b, c) {
@@ -54,7 +66,14 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         config = $.extend(true, config, otherConfig);
     }
 
-    app.isLoading(true);
+    if (config.hasOwnProperty("withLoader")) {
+        if (config.withLoader) {
+            app.isLoading(true);
+        }
+    } else {
+        app.isLoading(true);
+    }
+
     $.ajax(config);
 };
 app.isFine = function (res) {
@@ -124,8 +143,13 @@ app.couldBeNumber = function (value) {
 
     return value;
 };
+app.gridBoundTooltipster = function (selector) {
+    return function () {
+        app.prepareTooltipster($(selector).find(".tooltipster"));
+    };
+};
 
 $(function () {
-	app.prepare();
+	app.applyNavigationActive();
     app.fixKendoMultiSelect();
 });

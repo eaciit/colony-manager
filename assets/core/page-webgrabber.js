@@ -7,9 +7,11 @@ wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
+wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
+wg.selectedID = ko.observable('');
 wg.templateConfigScrapper = {
-	nameid: "",
+	_id: "",
 	calltype: "GET",
 	intervaltype: "",
 	sourcetype: "http",
@@ -75,15 +77,43 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ field: "nameid", title: "ID", width: 110 },
-	{ field: "calltype", title: "Request Type" },
-	{ field: "intervaltype", title: "Interval Unit" },
-	{ field: "sourcetype", title: "Source Type" },
-	{ field: "grabinterval", title: "Interval Duration" },
-	{ field: "timeoutinterval", title: "Timeout Duration" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-success' onclick='wg.startStopScrapper(\"" + d.nameid + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d.nameid + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d.nameid + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
-	} },
+	{ field: "_id", title: "ID", width: 110, locked: true },
+	{ title: "Status", width: 80, locked: true, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
+	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
+		].join(" ");
+	}, locked: true },
+	{ field: "calltype", title: "Request Type", width: 150 },
+	{ field: "intervaltype", title: "Interval Unit", width: 150 },
+	{ field: "sourcetype", title: "Source Type", width: 150 },
+	{ field: "grabinterval", title: "Interval Duration", width: 150 },
+	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
+]);
+wg.historyColumns = ko.observableArray([
+	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
+	{ field: "grabstatus", title: "STATUS", attributes: { class: "align-center" }, template: function (d) {
+		if (d.grabstatus == "SUCCESS") {
+			return '<i class="fa fa-check fa-2x color-green"></i>';
+		} else {
+			return '<i class="fa fa-times fa-2x color-red"></i>';
+		}
+	}, filterable: false, width: 60 },
+	{ field: "datasettingname", title: "DATA NAME" }, 
+	{ field: "grabdate", filterable: { ui: "datetimepicker" }, title: "START", format: "{0:yyyy/MM/dd HH:mm tt}" },
+	{ field: "rowgrabbed", title: "GRAB COUNT" },
+	{ field: "rowsaved", title: "ROW SAVE" },
+	{ field: "notehistory", title: "NOTE" },
+	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(\"" + d.id + "\")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\", \"" + d._id + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
+		].join(" ");
+	}, filterable: false }
 ]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "http", title: "HTTP / Web" },
@@ -94,10 +124,11 @@ wg.dataRequestTypes = ko.observableArray([
 	{ value: "POST", title: "POST" },
 ]);
 
-wg.editScrapper = function (nameid) {
-
+wg.editScrapper = function (_id) {
+	app.mode('editor');
+	wg.scrapperMode('edit');
 };
-wg.removeScrapper = function (nameid) {
+wg.removeScrapper = function (_id) {
 
 };
 wg.getScrapperData = function () {
@@ -108,6 +139,7 @@ wg.getScrapperData = function () {
 		}
 
 		wg.scrapperData(res.data);
+		wg.runBotStats();
 	});
 };
 wg.createNewScrapper = function () {
@@ -120,6 +152,7 @@ wg.createNewScrapper = function () {
 };
 wg.backToFront = function () {
 	app.mode("");
+	wg.selectedID('');
 };
 wg.writeContent = function (html) {
 	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
@@ -130,7 +163,53 @@ wg.writeContent = function (html) {
 	contentDoc.write(html);
 	contentDoc.close();
 	return contentDoc;
-}
+};
+wg.botStats = ko.observableArray([]);
+wg.runBotStats = function () {
+	wg.botStats().forEach(function (bot) {
+		clearInterval(bot.interval);
+	});
+
+	var isThereAnyError = false;
+
+	wg.scrapperData().forEach(function (each) {
+		var checkStat = function () {
+			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+				if (res.success) {
+					var $grid = $(".grid-web-grabber").data("kendoGrid");
+					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+					var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+
+					if (res.data.isRun) {
+						$tr.addClass("started");
+					} else {
+						$tr.removeClass("started");
+					}
+				}
+
+				if (isThereAnyError) {
+					return;
+				}
+
+				if (!app.isFine(res)) {
+					isThereAnyError = true;
+					return;
+				}
+			}, function (a) {
+		        sweetAlert("Oops...", a.statusText, "error");
+			}, {
+				withLoader: false
+			});
+		};
+
+		wg.botStats.push({ 
+			_id: each._id,
+			interval: setInterval(checkStat, each.grabinterval * 1000)
+		});
+
+		checkStat();
+	});
+};
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
@@ -209,24 +288,44 @@ wg.decodePayload = function () {
 		}
 	}
 };
-wg.startStopScrapper = function (nameid) {
-	app.ajaxPost("/webgrabber/startstopscrapper", { nameid: nameid }, function (res) {
+wg.startScrapper = function (_id) {
+	app.ajaxPost("/webgrabber/startservice", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
-		console.log(res);
+		wg.runBotStats();
 	});
 };
-wg.nextSetting = function(){
+wg.stopScrapper = function (_id) {
+	app.ajaxPost("/webgrabber/stopservice", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		wg.runBotStats();
+	});
+};
+wg.viewHistory = function (_id) {
+	app.ajaxPost("/webgrabber/gethistory", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		wg.selectedID(_id);
+		app.mode('history');
+		wg.historyData(res.data);
+	});
+}
+wg.nextSetting = function() {
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
 		wg.addSelectorSetting();
 };
-wg.backSetting = function(){
+wg.backSetting = function() {
 	wg.modeSetting(wg.modeSetting()-1);
 };
-wg.addSelectorSetting = function(){
+wg.addSelectorSetting = function() {
 	wg.selectorRowSetting.push(ko.mapping.fromJS(wg.templateConfigSelector));
 }
 wg.removeSelectorSetting = function(each){
@@ -242,14 +341,14 @@ wg.showSelectorSetting = function(index,nameSelector){
 	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
 }
-wg.backSettingSelector = function(){
+wg.backSettingSelector = function() {
 	wg.modeSelector("");
 }
-wg.saveSettingSelector = function(){
+wg.saveSettingSelector = function() {
 	ko.mapping.fromJS(wg.configSelector,wg.selectorRowSetting()[wg.tempIndexColumn()]);
 	wg.modeSelector("");
 }
-wg.addColumnSetting = function(){
+wg.addColumnSetting = function() {
 	wg.configSelector.SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
 }
 wg.removeColumnSetting = function(each){
@@ -260,7 +359,32 @@ wg.GetRowSelector = function(index){
 	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 	wg.tempIndexColumn(index);
 	wg.modeSelector("editElement");
-}
+};
+wg.viewData = function (id) {
+	var row = Lazy(wg.historyData()).find({ id: id });
+	var param = {
+		host: row.recfile,
+		delimiter: ",",
+		useheader: true
+	};
+	app.ajaxPost("/webgrabber/getdatafromcsv", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+ //        for(var i in res){
+ //            for(var x in res[i]){
+ //                var field = x.replace(/ /g, "_");
+ //                res[i][field] = res[i][x];
+ //            }
+ //        }
+
+		wg.runBotStats();
+	});
+};
+wg.viewLog = function (_id) {
+
+};
 
 $(function () {
 	wg.getScrapperData();
