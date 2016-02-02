@@ -28,8 +28,8 @@ func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 }
 
 func (w *WebGrabberController) PrepareHistoryPath() {
-	modules.HistoryPath = AppBasePath + f.Join("data", "History") + string(os.PathSeparator)
-	modules.HistoryRecPath = AppBasePath + f.Join("data", "HistoryRec") + string(os.PathSeparator)
+	modules.HistoryPath = AppBasePath + f.Join("config", "webgrabber", "History") + string(os.PathSeparator)
+	modules.HistoryRecPath = AppBasePath + f.Join("config", "webgrabber", "HistoryRec") + string(os.PathSeparator)
 }
 
 func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
@@ -67,6 +67,34 @@ func (w *WebGrabberController) FetchContent(r *knot.WebContext) interface{} {
 
 	data := toolkit.HttpContentString(res)
 	return helper.CreateResult(true, data, "")
+}
+
+func (w *WebGrabberController) StartService(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o, err := toolkit.ToM(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err, isRun := modules.Process([]interface{}{o})
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(isRun, nil, "")
 }
 
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
@@ -125,6 +153,7 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 		LogPath:     path.Join(AppBasePath, "config", "webgrabber", "log"),
 	}
 	wg.ID = "irondcecomcn"
+	wg.IDBackup = "irondcecomcn"
 	wg.SourceType = "SourceType_Http"
 	wg.TimeoutInterval = 5
 	wg.URL = "http://www.dce.com.cn/PublicWeb/MainServlet"

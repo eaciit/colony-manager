@@ -9,7 +9,7 @@ wg.tempIndexColumn = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.templateConfigScrapper = {
-	nameid: "",
+	_id: "",
 	calltype: "GET",
 	intervaltype: "",
 	sourcetype: "http",
@@ -75,14 +75,14 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ field: "nameid", title: "ID", width: 110 },
+	{ field: "_id", title: "ID", width: 110 },
 	{ field: "calltype", title: "Request Type" },
 	{ field: "intervaltype", title: "Interval Unit" },
 	{ field: "sourcetype", title: "Source Type" },
 	{ field: "grabinterval", title: "Interval Duration" },
 	{ field: "timeoutinterval", title: "Timeout Duration" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-success' onclick='wg.startStopScrapper(\"" + d.nameid + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d.nameid + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d.nameid + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
+		return "<button class='btn btn-sm btn-success' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 wg.dataSourceTypes = ko.observableArray([
@@ -94,10 +94,10 @@ wg.dataRequestTypes = ko.observableArray([
 	{ value: "POST", title: "POST" },
 ]);
 
-wg.editScrapper = function (nameid) {
+wg.editScrapper = function (_id) {
 
 };
-wg.removeScrapper = function (nameid) {
+wg.removeScrapper = function (_id) {
 
 };
 wg.getScrapperData = function () {
@@ -209,8 +209,8 @@ wg.decodePayload = function () {
 		}
 	}
 };
-wg.startStopScrapper = function (nameid) {
-	app.ajaxPost("/webgrabber/startstopscrapper", { nameid: nameid }, function (res) {
+wg.startScrapper = function (_id) {
+	app.ajaxPost("/webgrabber/startservice", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
