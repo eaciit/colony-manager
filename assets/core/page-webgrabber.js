@@ -77,8 +77,8 @@ wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110, locked: true },
 	{ title: "status", width: 80, locked: true, attributes: { class:'scrapper-status' }, template: "<span></span>" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-success btn-start' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-danger btn-stop' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
+	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
+		return "<button class='btn btn-sm btn-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button> <button class='btn btn-sm btn-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button> <button class='btn btn-sm btn-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
 	}, locked: true },
 	{ field: "calltype", title: "Request Type", width: 150 },
 	{ field: "intervaltype", title: "Interval Unit", width: 150 },
@@ -133,6 +133,9 @@ wg.writeContent = function (html) {
 	contentDoc.close();
 	return contentDoc;
 }
+wg.scrapperBound = function () {
+	app.prepareTooltipster($(".grid-web-grabber").find(".tooltipster"));
+};
 wg.botStats = ko.observableArray([]);
 wg.runBotStats = function () {
 	wg.botStats().forEach(function (bot) {

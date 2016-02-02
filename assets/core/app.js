@@ -13,8 +13,18 @@ app.applyNavigationActive = function () {
 		$a.closest("li").closest("li").addClass("active");
 	}
 };
-app.prepare = function () {
-	app.applyNavigationActive();
+app.prepareTooltipster = function ($o) {
+    var $tooltipster = ($o == undefined) ? $('.tooltipster') : $o;
+
+    $tooltipster.tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "top"
+    });
 };
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
@@ -133,6 +143,6 @@ app.couldBeNumber = function (value) {
 };
 
 $(function () {
-	app.prepare();
+	app.applyNavigationActive();
     app.fixKendoMultiSelect();
 });
