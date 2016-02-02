@@ -46,12 +46,12 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 600px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+		        	<span data-bind="text: (dg.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
 		        	Data Grabber
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" novalidate>
+		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" id="form-add-scrapper" novalidate>
 					<div class="col-md-12">
 						<div class="form-group">
 				        	<label class="col-md-4 filter-label">ID</label>
