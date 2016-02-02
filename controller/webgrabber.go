@@ -28,8 +28,8 @@ func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 }
 
 func (w *WebGrabberController) PrepareHistoryPath() {
-	modules.HistoryPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "History") + toolkit.PathSeparator
-	modules.HistoryRecPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "HistoryRec") + toolkit.PathSeparator
+	modules.HistoryPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "history") + toolkit.PathSeparator
+	modules.HistoryRecPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "historyrec") + toolkit.PathSeparator
 }
 
 func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
