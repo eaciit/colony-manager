@@ -110,7 +110,7 @@ wg.historyColumns = ko.observableArray([
 	{ field: "notehistory", title: "NOTE" },
 	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(\"" + d.datasettingname + "\", \"" + d.id + "\")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(\"" + d.id + "\")'><span class='fa fa-file-text'></span> View Data</button>",
 			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\", \"" + d._id + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
 		].join(" ");
 	}, filterable: false }
@@ -359,7 +359,32 @@ wg.GetRowSelector = function(index){
 	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 	wg.tempIndexColumn(index);
 	wg.modeSelector("editElement");
-}
+};
+wg.viewData = function (id) {
+	var row = Lazy(wg.historyData()).find({ id: id });
+	var param = {
+		host: row.recfile,
+		delimiter: ",",
+		useheader: true
+	};
+	app.ajaxPost("/webgrabber/getdatafromcsv", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+ //        for(var i in res){
+ //            for(var x in res[i]){
+ //                var field = x.replace(/ /g, "_");
+ //                res[i][field] = res[i][x];
+ //            }
+ //        }
+
+		wg.runBotStats();
+	});
+};
+wg.viewLog = function (_id) {
+
+};
 
 $(function () {
 	wg.getScrapperData();
