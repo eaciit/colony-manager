@@ -7,6 +7,12 @@
 <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css">
 <script src="/res/core/page-webgrabber.js"></script>
 
+<style>
+	.k-grid .k-grid-content-locked {
+		height: auto !important;
+	}
+</style>
+
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
@@ -37,7 +43,7 @@
 		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true }"></div>
+		    	<div class="grid grid-web-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true }"></div>
 		    </div>
 		</div>
 

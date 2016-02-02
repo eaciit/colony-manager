@@ -54,7 +54,14 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         config = $.extend(true, config, otherConfig);
     }
 
-    app.isLoading(true);
+    if (config.hasOwnProperty("withLoader")) {
+        if (config.withLoader) {
+            app.isLoading(true);
+        }
+    } else {
+        app.isLoading(true);
+    }
+
     $.ajax(config);
 };
 app.isFine = function (res) {

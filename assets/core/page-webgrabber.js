@@ -75,15 +75,16 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 110 },
-	{ field: "calltype", title: "Request Type" },
-	{ field: "intervaltype", title: "Interval Unit" },
-	{ field: "sourcetype", title: "Source Type" },
-	{ field: "grabinterval", title: "Interval Duration" },
-	{ field: "timeoutinterval", title: "Timeout Duration" },
+	{ field: "_id", title: "ID", width: 110, locked: true },
+	{ title: "status", width: 80, locked: true, attributes: { class:'scrapper-status' }, template: "<span></span>" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-success' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
-	} },
+		return "<button class='btn btn-sm btn-success btn-start' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-danger btn-stop' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
+	}, locked: true },
+	{ field: "calltype", title: "Request Type", width: 150 },
+	{ field: "intervaltype", title: "Interval Unit", width: 150 },
+	{ field: "sourcetype", title: "Source Type", width: 150 },
+	{ field: "grabinterval", title: "Interval Duration", width: 150 },
+	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
 ]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "http", title: "HTTP / Web" },
@@ -108,6 +109,7 @@ wg.getScrapperData = function () {
 		}
 
 		wg.scrapperData(res.data);
+		wg.runBotStats();
 	});
 };
 wg.createNewScrapper = function () {
@@ -131,6 +133,52 @@ wg.writeContent = function (html) {
 	contentDoc.close();
 	return contentDoc;
 }
+wg.botStats = ko.observableArray([]);
+wg.runBotStats = function () {
+	wg.botStats().forEach(function (bot) {
+		clearInterval(bot.interval);
+	});
+
+	var isThereAnyError = false;
+
+	wg.scrapperData().forEach(function (each) {
+		var checkStat = function () {
+			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+				if (res.success) {
+					var $grid = $(".grid-web-grabber").data("kendoGrid");
+					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+					var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+
+					if (res.data.isRun) {
+						$tr.addClass("started");
+					} else {
+						$tr.removeClass("started");
+					}
+				}
+
+				if (isThereAnyError) {
+					return;
+				}
+
+				if (!app.isFine(res)) {
+					isThereAnyError = true;
+					return;
+				}
+			}, function (a) {
+		        sweetAlert("Oops...", a.statusText, "error");
+			}, {
+				withLoader: false
+			});
+		};
+
+		wg.botStats.push({ 
+			_id: each._id,
+			interval: setInterval(checkStat, each.grabinterval * 1000)
+		});
+
+		checkStat();
+	});
+};
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
@@ -216,6 +264,17 @@ wg.startScrapper = function (_id) {
 		}
 
 		console.log(res);
+		wg.runBotStats();
+	});
+};
+wg.stopScrapper = function (_id) {
+	app.ajaxPost("/webgrabber/stopservice", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		console.log(res);
+		wg.runBotStats();
 	});
 };
 wg.nextSetting = function(){

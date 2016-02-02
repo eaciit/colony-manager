@@ -9,7 +9,6 @@ import (
 	// "github.com/eaciit/sedotan/sedotan.v1"
 	"github.com/eaciit/sedotan/sedotan.v1/webapps/modules"
 	"github.com/eaciit/toolkit"
-	"os"
 	"path"
 	f "path/filepath"
 	// "reflect"
@@ -28,8 +27,8 @@ func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 }
 
 func (w *WebGrabberController) PrepareHistoryPath() {
-	modules.HistoryPath = AppBasePath + f.Join("config", "webgrabber", "History") + string(os.PathSeparator)
-	modules.HistoryRecPath = AppBasePath + f.Join("config", "webgrabber", "HistoryRec") + string(os.PathSeparator)
+	modules.HistoryPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "History") + toolkit.PathSeparator
+	modules.HistoryRecPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "HistoryRec") + toolkit.PathSeparator
 }
 
 func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
@@ -95,6 +94,58 @@ func (w *WebGrabberController) StartService(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(isRun, nil, "")
+}
+
+func (w *WebGrabberController) StopService(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o, err := toolkit.ToM(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err, isRun := modules.StopProcess([]interface{}{o})
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(isRun, nil, "")
+}
+
+func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o, err := toolkit.ToM(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	grabStatus := modules.NewGrabService().CheckStat([]interface{}{o})
+	return helper.CreateResult(true, grabStatus, "")
 }
 
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
