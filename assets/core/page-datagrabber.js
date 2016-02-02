@@ -8,10 +8,52 @@ dg.sampleDataSource = ko.observableArray([
   	{ _id: "DS03", DataSourceName: "Data Source 3", MetaData: ["ID", "Full Name", "Age"] }
 ]);
 dg.sampleScrapperData = ko.observableArray([
-  { _id: "WG02", DataSourceOrigin: "DS01", DataSourceDestination: "DS02", Map: [
-    { fieldOrigin: "ID", fieldDestination: "_id" },
-  ] },
-  { _id: "WG03", DataSourceOrigin: "DS03", DataSourceDestination: "DS02", Map: [] },
+  { 
+  	_id: "WG01", 
+  	DataSourceOrigin: "DS01", 
+  	DataSourceDestination: "DS02", 
+  	Map: [
+		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
+		{fieldOrigin: "RigType", fieldDestination: "RigType"},
+		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
+	] 
+}, { 
+	_id: "WG02", 
+	DataSourceOrigin: "DS03", 
+	DataSourceDestination: "DS04", 
+	Map: [
+		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
+		{fieldOrigin: "RigType", fieldDestination: "RigType"},
+		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
+	] 
+},{ 
+	_id: "WG03", 
+	DataSourceOrigin: "DS02", 
+	DataSourceDestination: "DS05", 
+	Map: [
+		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
+		{fieldOrigin: "RigType", fieldDestination: "RigType"},
+		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
+	] 
+},{ 
+	_id: "WG04", 
+	DataSourceOrigin: "DS01", 
+	DataSourceDestination: "DS04", 
+	Map: [
+		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
+		{fieldOrigin: "RigType", fieldDestination: "RigType"},
+		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
+	] 
+},{ 
+	_id: "WG05", 
+	DataSourceOrigin: "DS03", 
+	DataSourceDestination: "DS05", 
+	Map: [
+		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
+		{fieldOrigin: "RigType", fieldDestination: "RigType"},
+		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
+	] 
+},
 ]);
 
 dg.templateConfigScrapper = {
@@ -24,6 +66,7 @@ dg.templateMap = {
 	FieldOrigin: "",
 	FieldDestination: ""
 };
+dg.newScrapperMode = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
 dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
@@ -73,11 +116,13 @@ dg.removeMap = function (index) {
 }
 dg.createNewScrapper = function () {
 	app.mode("editor");
+	dg.newScrapperMode('');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 	dg.addMap();
 };
 dg.saveDataGrabber = function () {
 	if (!app.isFormValid(".form-datagrabber")) {
+
 		return;
 	}
 };
@@ -93,7 +138,39 @@ dg.getDataSourceData = function () {
 		dg.dataSourcesData(res.data);
 	});
 };
+dg.editScrapper = function (_id) {
+	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
+	app.mode("editor");
+	dg.scrapperMode('editor');
+	app.resetValidation("#form-add-scrapper");
 
+	ko.mapping.fromJS(dg.template)
+};
+dg.removeScrapper = function (_id) {
+	swal({
+		title: "Are you sure?",
+		text: 'Data grabber with id "' + _id + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+	}, function() {
+		app.ajaxPost("",{ _id: _id },
+			function(res) {
+				if (!app.isFine(res)) {
+					return;
+				}
+				dg.backToFrontPage();
+				swal({ title: "Data successfully deleted", type: "success"});
+			});
+	});
+};
+dg.backToFrontPage = function () {
+	app.mode('');
+	dg.getScrapperData();
+	dg.getDataSourceData();
+};
 $(function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
