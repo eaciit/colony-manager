@@ -176,19 +176,29 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	w.PrepareHistoryPath()
 
 	payload := struct {
-		Host      string `json:"host"`
-		Delimiter string `json:"delimiter"`
-		UseHeader string `json:"useheader"`
+		Driver     string
+		Host       string
+		Database   string
+		Collection string
+		Username   string
+		Password   string
 	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	config := toolkit.M{"useheader": payload.UseHeader, "delimiter": payload.Delimiter}
-	query := helper.Query("csv", payload.Host, "", "", "", config)
+	var data []toolkit.M
 
-	data, err := query.SelectAll("")
+	if payload.Driver == "csv" {
+		config := toolkit.M{"useheader": true, "delimiter": ","}
+		query := helper.Query("csv", payload.Host, "", "", "", config)
+		data, err = query.SelectAll("")
+	} else {
+		query := helper.Query("mongo", payload.Host, payload.Database, payload.Username, payload.Password)
+		data, err = query.SelectAll(payload.Collection)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

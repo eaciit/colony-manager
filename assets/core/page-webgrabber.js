@@ -361,12 +361,31 @@ wg.GetRowSelector = function(index){
 	wg.modeSelector("editElement");
 };
 wg.viewData = function (id) {
+	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
+
 	var param = {
-		host: row.recfile,
-		delimiter: ",",
-		useheader: true
+		Driver: "csv",
+		Host: row.recfile,
+		Database: "",
+		Collection: "",
+		Username: "",
+		Password: ""
 	};
+
+	if (base.datasettings.length > 0) {
+		var baseSetting = base.datasettings[0];
+		param.Driver = baseSetting.desttype;
+
+		if (param.Driver == "mongo") {
+			param.Host = baseSetting.Host;
+			param.Database = baseSetting.connectioninfo.database;
+			param.Collection = baseSetting.connectioninfo.collection;
+			param.Username = baseSetting.connectioninfo.username;
+			param.Password = baseSetting.connectioninfo.password;
+		}
+	}
+	
 	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
