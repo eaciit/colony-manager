@@ -17,42 +17,6 @@ dg.sampleScrapperData = ko.observableArray([
 		{fieldOrigin: "RigType", fieldDestination: "RigType"},
 		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
 	] 
-}, { 
-	_id: "WG02", 
-	DataSourceOrigin: "DS03", 
-	DataSourceDestination: "DS04", 
-	Map: [
-		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
-		{fieldOrigin: "RigType", fieldDestination: "RigType"},
-		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
-	] 
-},{ 
-	_id: "WG03", 
-	DataSourceOrigin: "DS02", 
-	DataSourceDestination: "DS05", 
-	Map: [
-		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
-		{fieldOrigin: "RigType", fieldDestination: "RigType"},
-		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
-	] 
-},{ 
-	_id: "WG04", 
-	DataSourceOrigin: "DS01", 
-	DataSourceDestination: "DS04", 
-	Map: [
-		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
-		{fieldOrigin: "RigType", fieldDestination: "RigType"},
-		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
-	] 
-},{ 
-	_id: "WG05", 
-	DataSourceOrigin: "DS03", 
-	DataSourceDestination: "DS05", 
-	Map: [
-		{fieldOrigin: "PsSchedule", fieldDestination: "_id"},
-		{fieldOrigin: "RigType", fieldDestination: "RigType"},
-		{fieldOrigin: "VirtualPhase", fieldDestination: "EXType"},
-	] 
 },
 ]);
 
@@ -102,7 +66,13 @@ dg.fieldOfDataSourceDestination = ko.computed(function () {
 	return ds.MetaData;
 }, dg);
 dg.getScrapperData = function (){
-	dg.scrapperData(dg.sampleScrapperData);
+	//dg.scrapperData(dg.sampleScrapperData);
+	app.ajaxPost("/datagrabber/getdatagrabber", {}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		dg.scrapperData(res.data);
+	});
 };
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
@@ -152,29 +122,18 @@ dg.getDataSourceData = function () {
 dg.editScrapper = function (_id) {
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 
-	// app.ajaxPost(dg.sampleScrapperData, {_id: _id},
-	// 	function(res) {
-	// 		if(!app.isFine(res)) {
-	// 			return;
-	// 		}
-
-	// 		app.mode("editor");
-	// 		dg.scrapperMode('editor');
-	// 		app.resetValidation("#form-add-scrapper");
-	// 		ko.mapping.fromJS(res.data, dg.configScrapper);
-	// 		dg.addSetting();
-	// 	});
-	// };	
-	app.mode("editor");
-	dg.scrapperMode('editor');
-	app.resetValidation("#form-add-scrapper");
-
+	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		app.mode("editor");
+		dg.scrapperMode('editor');
+		app.resetValidation("#form-add-scrapper");
+		ko.mapping.fromJS(res.data, dg.configScrapper);
+		
+	});
 };
-dg.addSetting = function () {
-	var setting = $.extend(true, {}, ds.templateConfigScrapper);
-	setting.id = "s" + moment.now();
-	dg.configScrapper.Settings.push(setting);
-}
+
 dg.removeScrapper = function (_id) {
 	swal({
 		title: "Are you sure?",

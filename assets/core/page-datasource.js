@@ -219,7 +219,6 @@ ds.saveNewConnection = function () {
 	}
 
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
