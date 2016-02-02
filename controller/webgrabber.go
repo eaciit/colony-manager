@@ -28,8 +28,8 @@ func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 }
 
 func (w *WebGrabberController) PrepareHistoryPath() {
-	modules.HistoryPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "History") + toolkit.PathSeparator
-	modules.HistoryRecPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "HistoryRec") + toolkit.PathSeparator
+	modules.HistoryPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "history") + toolkit.PathSeparator
+	modules.HistoryRecPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "historyrec") + toolkit.PathSeparator
 }
 
 func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
@@ -169,6 +169,71 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, history, "")
+}
+
+func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := struct {
+		Driver     string
+		Host       string
+		Database   string
+		Collection string
+		Username   string
+		Password   string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	var data []toolkit.M
+
+	if payload.Driver == "csv" {
+		config := toolkit.M{"useheader": true, "delimiter": ","}
+		query := helper.Query("csv", payload.Host, "", "", "", config)
+		data, err = query.SelectAll("")
+	} else {
+		query := helper.Query("mongo", payload.Host, payload.Database, payload.Username, payload.Password)
+		data, err = query.SelectAll(payload.Collection)
+	}
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := struct {
+		ID   string `json:"_id"`
+		Date string `json:"date"`
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	wg := new(colonycore.WebGrabber)
+	err = colonycore.Get(wg, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o, err := toolkit.ToM(wg)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	history := modules.NewHistory(payload.ID)
+	logs := history.GetLog([]interface{}{o}, payload.Date)
+
+	return helper.CreateResult(true, logs, "")
 }
 
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {

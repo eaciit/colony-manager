@@ -1,1 +1,1 @@
-[{"DataSourceDestination":"DS02","DataSourceOrigin":"DS01","IgnoreFieldsDestination":["F03","F04"],"IgnoreFieldsOrigin":["F01","F02"],"Map":[{"fieldDestination":"ASdf","fieldOrigin":"Asdf"},{"fieldDestination":"fff","fieldOrigin":"sss"}],"_id":"asdf"}]
+[{"DataSourceDestination":"ds1453549868712","DataSourceOrigin":"ds1453549917327","IgnoreFieldsDestination":["UARigSequenceId"],"IgnoreFieldsOrigin":[],"Map":[{"FieldDestination":"UARigSequenceId","FieldOrigin":"_id"},{"FieldDestination":"AssignTOOps","FieldOrigin":"_id"}],"_id":"adsfasdf"}]

@@ -64,3 +64,20 @@ func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, data, "")
 }
+
+func (d *DataGrabberController) RemoveDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.DataGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Delete(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
