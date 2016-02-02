@@ -122,9 +122,20 @@ dg.createNewScrapper = function () {
 };
 dg.saveDataGrabber = function () {
 	if (!app.isFormValid(".form-datagrabber")) {
-
 		return;
 	}
+
+	var paramscrapper = ko.mapping.toJS(dg.configScrapper);
+	app.ajaxPost("/datagrabber/savedatagrabber", paramscrapper, function (res) {
+		if(!app.isFine(res)) {
+			return;
+		}
+		dg.backToFront();
+		dg.getScrapperData();
+	});
+
+
+
 };
 dg.backToFront = function () {
 	app.mode("");
@@ -140,12 +151,30 @@ dg.getDataSourceData = function () {
 };
 dg.editScrapper = function (_id) {
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
+
+	// app.ajaxPost(dg.sampleScrapperData, {_id: _id},
+	// 	function(res) {
+	// 		if(!app.isFine(res)) {
+	// 			return;
+	// 		}
+
+	// 		app.mode("editor");
+	// 		dg.scrapperMode('editor');
+	// 		app.resetValidation("#form-add-scrapper");
+	// 		ko.mapping.fromJS(res.data, dg.configScrapper);
+	// 		dg.addSetting();
+	// 	});
+	// };	
 	app.mode("editor");
 	dg.scrapperMode('editor');
 	app.resetValidation("#form-add-scrapper");
 
-	ko.mapping.fromJS(dg.template)
 };
+dg.addSetting = function () {
+	var setting = $.extend(true, {}, ds.templateConfigScrapper);
+	setting.id = "s" + moment.now();
+	dg.configScrapper.Settings.push(setting);
+}
 dg.removeScrapper = function (_id) {
 	swal({
 		title: "Are you sure?",
