@@ -56,7 +56,7 @@
 						<div class="form-group">
 				        	<label class="col-md-4 filter-label">ID</label>
 				        	<div class="col-md-5">
-				        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id" />
+				        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
 								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
 				        </div>
