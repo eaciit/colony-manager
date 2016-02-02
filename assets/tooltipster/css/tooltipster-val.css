@@ -1,0 +1,15 @@
+/* © 2015 - Noval Agung Prayogo */
+/* tooptipster val theme, copied from www.depeloper.com */
+
+.tooltipster-val {
+	border-radius: 5px; 
+	border: 1px solid #272822;
+	background: #272822;
+	color: #f8f8f2;
+}
+.tooltipster-val .tooltipster-content {
+	font-family: Lato, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 16px;
+	padding: 4px 8px;
+}

@@ -80,8 +80,8 @@ dg.scrapperColumns = ko.observableArray([
 	} },
 ]);
 dg.fieldOfDataSourceOrigin = ko.computed(function () {
-	var ds = Lazy(dg.dataSourcesData()).find({ 
-		_id: dg.configScrapper.DataSourceOrigin() 
+	var ds = Lazy(dg.dataSourcesData()).find({
+		_id: dg.configScrapper.DataSourceOrigin()
 	});
 
 	if (ds == undefined) {
@@ -91,8 +91,8 @@ dg.fieldOfDataSourceOrigin = ko.computed(function () {
 	return ds.MetaData;
 }, dg);
 dg.fieldOfDataSourceDestination = ko.computed(function () {
-	var ds = Lazy(dg.dataSourcesData()).find({ 
-		_id: dg.configScrapper.DataSourceDestination() 
+	var ds = Lazy(dg.dataSourcesData()).find({
+		_id: dg.configScrapper.DataSourceDestination()
 	});
 
 	if (ds == undefined) {

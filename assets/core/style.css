@@ -12,8 +12,55 @@ a {
   background-color: #3A8BDF;
   border-color: #3282D6; }
   .btn-primary:hover {
-    border-color: #3282D6;
-    background-color: #4F9AE6; }
+    background-color: #4F9AE6;
+    border-color: #3282D6; }
+
+.color-blue {
+  color: #3A8BDF; }
+
+.color-green {
+  color: #5cb85c; }
+
+.color-red {
+  color: #d9534f; }
+
+.color-orange {
+  color: #f0ad4e; }
+
+.btn-text-primary, .btn-text-success, .btn-text-warning, .btn-text-danger {
+  background-color: white;
+  border-color: #DADADA; }
+  .btn-text-primary:hover, .btn-text-success:hover, .btn-text-warning:hover, .btn-text-danger:hover {
+    border-color: #DADADA; }
+
+.btn-text-primary {
+  color: #3A8BDF; }
+  .btn-text-primary:hover {
+    color: #4F9AE6; }
+
+.btn-text-success {
+  color: #5cb85c; }
+  .btn-text-success:hover {
+    color: #449d44; }
+
+.btn-text-warning {
+  color: #f0ad4e; }
+  .btn-text-warning:hover {
+    color: #ec971f; }
+
+.btn-text-danger {
+  color: #d9534f; }
+  .btn-text-danger:hover {
+    color: #c9302c; }
+
+.align-right {
+  text-align: right; }
+
+.align-center {
+  text-align: center; }
+
+.align-left {
+  text-align: left; }
 
 .no-padding {
   padding: 0px;
@@ -160,6 +207,30 @@ body {
         padding-right: 5px; }
       body #content > .col-md-12 .panel #grid-metadata tr.has-lookup td {
         font-weight: bold; }
+      body #content > .col-md-12 .panel .grid-web-grabber tr td .btn-start {
+        display: inherit; }
+      body #content > .col-md-12 .panel .grid-web-grabber tr td .btn-stop {
+        display: none; }
+      body #content > .col-md-12 .panel .grid-web-grabber tr td.scrapper-status {
+        background-color: #D9534F;
+        position: relative; }
+        body #content > .col-md-12 .panel .grid-web-grabber tr td.scrapper-status span:after {
+          content: "STOPPED";
+          position: absolute;
+          top: 10px;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          text-align: center;
+          color: white; }
+      body #content > .col-md-12 .panel .grid-web-grabber tr.started td .btn-start {
+        display: none; }
+      body #content > .col-md-12 .panel .grid-web-grabber tr.started td .btn-stop {
+        display: inherit; }
+      body #content > .col-md-12 .panel .grid-web-grabber tr.started td.scrapper-status {
+        background-color: #5CB85C; }
+        body #content > .col-md-12 .panel .grid-web-grabber tr.started td.scrapper-status span:after {
+          content: "STARTED"; }
     body #content > .col-md-12 .nav.nav-tabs li:hover {
       cursor: pointer; }
     body #content > .col-md-12 .navbar-button {
