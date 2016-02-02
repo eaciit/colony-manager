@@ -9,16 +9,43 @@ wg.tempIndexColumn = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.templateConfigScrapper = {
-	_id: "",
-	CallType: "GET",
-	IntervalType: "",
-	SourceType: "http",
-	GrabInterval: 0,
-	TimeoutInterval: 0,
-	Parameter: ko.observable([]),
-	URL: "http://www.shfe.com.cn/en/products/Gold/",
-	Parameter: ko.observable([]),
+	nameid: "",
+	calltype: "GET",
+	intervaltype: "",
+	sourcetype: "http",
+	grabinterval: 0,
+	timeoutinterval: 0,
+	url: "http://www.shfe.com.cn/en/products/Gold/",
+	logconf: {
+		filename: "",
+		filepattern: "",
+		logpath: ""
+	},
+	grabconf: {},
+	datasettings: []
 };
+wg.templateDataSetting = {
+	rowselector: "",
+	columnsettings: [],
+	rowdeletecond: {},
+	rowincludecond: {},
+	connectioninfo: {
+		host: "",
+		database: "",
+		username: "",
+		password: "",
+		settings: "",
+		collection: ""
+	},
+	desttype: "",
+	name: ""
+};
+wg.templateColumnSetting = {
+	alias: "",
+	index: "",
+	selector: "",
+	valuetype: ""
+}
 wg.templateConfigSelector = {
 	SelectorName: "",
 	RowSelector: "",
@@ -35,7 +62,7 @@ wg.templateConfigSelector = {
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
-wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
+wg.templateintervaltype = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
 wg.templateDestinationType = ["Mongo", "CSV"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
@@ -48,14 +75,14 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 110 },
-	{ field: "CallType", title: "Request Type" },
-	{ field: "IntervalType", title: "Interval Unit" },
-	{ field: "SourceType", title: "Source Type" },
-	{ field: "GrabInterval", title: "Interval Duration" },
-	{ field: "TimeoutInterval", title: "Timeout Duration" },
+	{ field: "nameid", title: "ID", width: 110 },
+	{ field: "calltype", title: "Request Type" },
+	{ field: "intervaltype", title: "Interval Unit" },
+	{ field: "sourcetype", title: "Source Type" },
+	{ field: "grabinterval", title: "Interval Duration" },
+	{ field: "timeoutinterval", title: "Timeout Duration" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-success' onclick='wg.startStopScrapper(\"" + d._id + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
+		return "<button class='btn btn-sm btn-success' onclick='wg.startStopScrapper(\"" + d.nameid + "\")' title='Start Grabber'><span class='fa fa-play'></span></button> <button class='btn btn-sm btn-primary' onclick='wg.editScrapper(\"" + d.nameid + "\")' title='Edit Grabber'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='wg.removeScrapper(\"" + d.nameid + "\")' title='Delete Grabber'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 wg.dataSourceTypes = ko.observableArray([
@@ -67,10 +94,10 @@ wg.dataRequestTypes = ko.observableArray([
 	{ value: "POST", title: "POST" },
 ]);
 
-wg.editScrapper = function (_id) {
+wg.editScrapper = function (nameid) {
 
 };
-wg.removeScrapper = function (_id) {
+wg.removeScrapper = function (nameid) {
 
 };
 wg.getScrapperData = function () {
@@ -95,7 +122,7 @@ wg.backToFront = function () {
 	app.mode("");
 };
 wg.writeContent = function (html) {
-	var baseURL = wg.configScrapper.URL().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
+	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
 	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
 	
 	var contentDoc = $("#content-preview")[0].contentWindow.document;
@@ -182,8 +209,8 @@ wg.decodePayload = function () {
 		}
 	}
 };
-wg.startStopScrapper = function (_id) {
-	app.ajaxPost("/webgrabber/startstopscrapper", { _id: _id }, function (res) {
+wg.startStopScrapper = function (nameid) {
+	app.ajaxPost("/webgrabber/startstopscrapper", { nameid: nameid }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

@@ -1,12 +1,9 @@
 package controller
 
 import (
-	"encoding/json"
-	"fmt"
-	_ "github.com/eaciit/knot/knot.v1"
-	_ "github.com/eaciit/colony-manager/helper"
+	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/toolkit"
-	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/colony-core/v0"
 )
 
@@ -30,29 +27,44 @@ type ResponseTest struct {
 	DataSourceDestination	string
 	Map []*Maps
 }
-func main() {
-}
-func (d *DataSourceController) SaveDataGrabber(r *knot.WebContext) interface{} {
+func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
 
-	str := `[{ "_id": "WG02", "DataSourceOrigin": "DS01", "DataSourceDestination": "DS02", "Map": [{ "fieldOrigin": "ID", "fieldDestination": "_id" }] }]`
-	var maps []toolkit.M
-	toolkit.UnjsonFromString(str, &maps)
-	err := json.Unmarshal([]byte(str), &maps)
-
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
 	if err != nil {
-		fmt.Printf("someting error >_<  ",err )
-		fmt.Printf("\n=================\n")
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	o := new(colonycore.DataGrabber)
-	o.ID = maps[0].Get("_id").(string)
-	o.DataSourceOrigin = maps[0].Get("DataSourceOrigin").(string)
-	o.DataSourceDestination = maps[0].Get("DataSourceDestination").(string)
-	o.Map = maps[0].Get("Map").([]*colonycore.Maps)
+	o.ID = payload["_id"].(string)
+	o.DataSourceOrigin = payload["DataSourceOrigin"].(string)
+	o.DataSourceDestination = payload["DataSourceDestination"].(string)
+
+	imap := toolkit.JsonString(payload["Map"])
+	var imaps []*colonycore.Maps
+	toolkit.UnjsonFromString(imap, &imaps)
+	o.Map = imaps
 
 	err = colonycore.Save(o)
 	if err != nil {
-		fmt.Printf("someting error >_<  ",err )
-		fmt.Printf("\n=================\n")
+		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	return helper.CreateResult(true, o, "")
+}
+func (d *DataGrabberController) SelectDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	id := payload["_id"].(string)
+
+	data := new(colonycore.DataGrabber)
+	err = colonycore.Get(data, id)
+
+	return helper.CreateResult(true, data, "")
 }
