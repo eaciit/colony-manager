@@ -171,6 +171,61 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, history, "")
 }
 
+func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := struct {
+		Host      string `json:"host"`
+		Delimiter string `json:"delimiter"`
+		UseHeader string `json:"useheader"`
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	config := toolkit.M{"useheader": payload.UseHeader, "delimiter": payload.Delimiter}
+	query := helper.Query("csv", payload.Host, "", "", "", config)
+
+	data, err := query.SelectAll("")
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := struct {
+		ID   string `json:"_id"`
+		Date string `json:"date"`
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	wg := new(colonycore.WebGrabber)
+	err = colonycore.Get(wg, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o, err := toolkit.ToM(wg)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	history := modules.NewHistory(payload.ID)
+	logs := history.GetLog([]interface{}{o}, payload.Date)
+
+	return helper.CreateResult(true, logs, "")
+}
+
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 

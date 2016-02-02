@@ -110,8 +110,8 @@ wg.historyColumns = ko.observableArray([
 	{ field: "notehistory", title: "NOTE" },
 	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(\"" + d.id + "\")'><span class='fa fa-file-text'></span> View Data</button>",
-			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\", \"" + d._id + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(" + d.id + ")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
 		].join(" ");
 	}, filterable: false }
 ]);
@@ -367,7 +367,7 @@ wg.viewData = function (id) {
 		delimiter: ",",
 		useheader: true
 	};
-	app.ajaxPost("/webgrabber/getdatafromcsv", param, function (res) {
+	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -379,11 +379,16 @@ wg.viewData = function (id) {
  //            }
  //        }
 
-		wg.runBotStats();
 	});
 };
-wg.viewLog = function (_id) {
+wg.viewLog = function (date) {
+	var param = { date: date, _id: wg.selectedID() };
+	app.ajaxPost("/webgrabber/getlog", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
 
+	});
 };
 
 $(function () {
