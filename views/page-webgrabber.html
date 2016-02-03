@@ -378,5 +378,43 @@
 		    	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: historyData, columns: historyColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
 		    </div>
 		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'log')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'log')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Grab Logs of
+		        	<span data-bind="text: wg.selectedID" class="color-blue"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+            	<div class="col-md-12" data-bind="html: wg.logData"></div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'data')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'data')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Data of
+		        	<span data-bind="text: wg.selectedID" class="color-blue"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+            	<div class="col-md-12">
+            		<div class="grid-data"></div>
+            	</div>
+		    </div>
+		</div>
 	</div>
 </div>

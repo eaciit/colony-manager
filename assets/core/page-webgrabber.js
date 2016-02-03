@@ -2,6 +2,7 @@ app.section('scrapper');
 
 viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 
+wg.logData = ko.observable('');
 wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
@@ -153,6 +154,9 @@ wg.createNewScrapper = function () {
 wg.backToFront = function () {
 	app.mode("");
 	wg.selectedID('');
+};
+wg.backToHistory = function () {
+	app.mode('history')
 };
 wg.writeContent = function (html) {
 	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
@@ -385,28 +389,69 @@ wg.viewData = function (id) {
 			param.Password = baseSetting.connectioninfo.password;
 		}
 	}
+
+	$(".grid-data").replaceWith('<div class="grid-data"></div>');
 	
 	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
- //        for(var i in res){
- //            for(var x in res[i]){
- //                var field = x.replace(/ /g, "_");
- //                res[i][field] = res[i][x];
- //            }
- //        }
+		var columns = [{ title: "&nbsp;", width: 5 }];
+		var data = res.data.map(function (e) {
+			var f = {};
 
+			for (var key in e) {
+				if (e.hasOwnProperty(key)) {
+					f[key.replace(/ /g, "_")] = e[key];
+				}
+			} 
+
+			return f;
+		});
+
+		if (data.length > 0) {
+			columns[0].locked = true;
+			var sample = data[0];
+
+			for (var key in sample) {
+				if (sample.hasOwnProperty(key)) {
+					var column = { field: key, width: 100 };
+					columns.push(column);
+				}
+			}
+		}
+
+		var gridConfig = {
+			dataSource: { 
+				pageSize: 10,
+				data: data
+			}, 
+			columns: columns,
+			filterfable: false,
+			pageable: true
+		};
+
+		app.mode('data');
+		$(".grid-data").kendoGrid(gridConfig);
 	});
 };
 wg.viewLog = function (date) {
+	wg.logData('');
+
 	var param = { date: date, _id: wg.selectedID() };
 	app.ajaxPost("/webgrabber/getlog", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
+		app.mode('log');
+
+		try {
+			wg.logData(res.data.logs.join(''));
+		} catch (err) {
+
+		}
 	});
 };
 
