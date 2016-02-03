@@ -78,8 +78,8 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 110, locked: true },
-	{ title: "Status", width: 80, locked: true, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
+	{ field: "_id", title: "Web Grabber ID", width: 130 },
+	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
@@ -88,7 +88,7 @@ wg.scrapperColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
 		].join(" ");
-	}, locked: true },
+	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
 	{ field: "intervaltype", title: "Interval Unit", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
@@ -147,14 +147,16 @@ wg.removeScrapper = function (_id) {
 	    confirmButtonText: "Delete",
 	    closeOnConfirm: true
 	}, function() {
-	    app.ajaxPost("/webgrabber/removegrabber", { _id: _id }, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
+	    setTimeout(function () {
+			app.ajaxPost("/webgrabber/removegrabber", { _id: _id }, function (res) {
+				if (!app.isFine(res)) {
+					return;
+				}
 
-			wg.backToFront();
-			swal({ title: "Data successfully deleted", type: "success" });
-		});
+				wg.backToFront();
+				swal({ title: "Data successfully deleted", type: "success" });
+			});
+	    }, 1000);
 	});
 };
 wg.getScrapperData = function () {

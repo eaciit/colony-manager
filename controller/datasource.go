@@ -292,6 +292,11 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 	o.Password = payload["Password"].(string)
 	o.Settings = d.parseSettings(payload["Settings"], map[string]interface{}{}).(map[string]interface{})
 
+	err = colonycore.Delete(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	if o.Driver == "weblink" {
 		fileType := helper.GetFileExtension(o.Host)
 		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(AppBasePath, "config", "etc", o.ID), fileType)
@@ -370,6 +375,17 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	id := payload["_id"].(string)
+
+	ds := new(colonycore.DataSource)
+	cursor, err := colonycore.Find(ds, dbox.Eq("ConnectionID", id))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	if cursor.Count() > 0 {
+		return helper.CreateResult(false, nil, "Cannot delete connection because used on data source")
+	}
 
 	o := new(colonycore.Connection)
 	o.ID = id
@@ -661,6 +677,11 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	o.QueryInfo = queryInfo
 	o.MetaData = []*colonycore.FieldInfo{}
 
+	err = colonycore.Delete(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	if payload["MetaData"] != nil {
 		metadataString := payload["MetaData"].(string)
 
@@ -732,6 +753,18 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	id := payload["_id"].(string)
+
+	dg := new(colonycore.DataGrabber)
+	filter := dbox.Or(dbox.Eq("DataSourceOrigin", id), dbox.Eq("DataSourceDestination", id))
+	cursor, err := colonycore.Find(dg, filter)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	if cursor.Count() > 0 {
+		return helper.CreateResult(false, nil, "Cannot delete data source because used on data grabber")
+	}
 
 	o := new(colonycore.DataSource)
 	o.ID = id

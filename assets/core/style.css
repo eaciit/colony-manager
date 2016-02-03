@@ -207,14 +207,14 @@ body {
         padding-right: 5px; }
       body #content > .col-md-12 .panel #grid-metadata tr.has-lookup td {
         font-weight: bold; }
-      body #content > .col-md-12 .panel .grid-web-grabber tr td .btn-start {
+      body #content > .col-md-12 .panel .grid-service tr td .btn-start {
         display: inherit; }
-      body #content > .col-md-12 .panel .grid-web-grabber tr td .btn-stop {
+      body #content > .col-md-12 .panel .grid-service tr td .btn-stop {
         display: none; }
-      body #content > .col-md-12 .panel .grid-web-grabber tr td.scrapper-status {
+      body #content > .col-md-12 .panel .grid-service tr td.scrapper-status {
         background-color: #D9534F;
         position: relative; }
-        body #content > .col-md-12 .panel .grid-web-grabber tr td.scrapper-status span:after {
+        body #content > .col-md-12 .panel .grid-service tr td.scrapper-status span:after {
           content: "STOPPED";
           position: absolute;
           top: 10px;
@@ -223,13 +223,13 @@ body {
           left: 0;
           text-align: center;
           color: white; }
-      body #content > .col-md-12 .panel .grid-web-grabber tr.started td .btn-start {
+      body #content > .col-md-12 .panel .grid-service tr.started td .btn-start {
         display: none; }
-      body #content > .col-md-12 .panel .grid-web-grabber tr.started td .btn-stop {
+      body #content > .col-md-12 .panel .grid-service tr.started td .btn-stop {
         display: inherit; }
-      body #content > .col-md-12 .panel .grid-web-grabber tr.started td.scrapper-status {
+      body #content > .col-md-12 .panel .grid-service tr.started td.scrapper-status {
         background-color: #5CB85C; }
-        body #content > .col-md-12 .panel .grid-web-grabber tr.started td.scrapper-status span:after {
+        body #content > .col-md-12 .panel .grid-service tr.started td.scrapper-status span:after {
           content: "STARTED"; }
     body #content > .col-md-12 .nav.nav-tabs li:hover {
       cursor: pointer; }

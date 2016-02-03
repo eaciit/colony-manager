@@ -1,18 +1,8 @@
 <!-- core -->
 <script src="/res/core/page-datagrabber.js"></script>
 
-<!-- sidebar -->
-<div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: dataGrabber">
-	<div class="row">
-		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Data Grabber<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
-			<!-- <li><a href="#" data-bind="css: { 'active': (app.section() == 'scheduler') }, click: app.changeActiveSection('scheduler')">Scheduler<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> -->
-		</ul>
-	</div>
-</div>
-
 <!-- main area -->
-<div class="col-xs-12 col-sm-10" id="content" data-bind="with: dataGrabber">
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
 		<h1>Data Grabber</h1>
 
@@ -30,7 +20,7 @@
 		        <h1 class="panel-title">All Data Grabber</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData, columns: dg.scrapperColumns, filterfable: false, pageable: true }"></div>
+		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
 		</div>
 
@@ -78,9 +68,30 @@
 				        	</div>
 				        </div>
 				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Ignored Fields DS Destination</label>
+				        	<label class="col-md-4 filter-label">Ignored Fields</label>
 				        	<div class="col-md-5">
-				        		<select class="full-width" name="data-source-destination" data-bind="kendoMultiSelect: { data: dg.fieldOfDataSource('destination'), value: IgnoreFieldsDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', enabled: dg.isDataSourceNotEmpty('destination') }"></select>
+				        		<select class="full-width" data-bind="kendoMultiSelect: { data: dg.fieldOfDataSource('destination'), value: IgnoreFieldsDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', enabled: dg.isDataSourceNotEmpty('destination') }"></select>
+				        	</div>
+				        </div>
+				        <div class="form-group">
+				        	<label class="col-md-4 filter-label">Interval Type</label>
+				        	<div class="col-md-5">
+				        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateIntervalType, value: IntervalType, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
+								<span class="k-invalid-msg" data-for="interval-type"></span>
+				        	</div>
+				        </div>
+				        <div class="form-group">
+				        	<label class="col-md-4 filter-label">Interval Duration</label>
+				        	<div class="col-md-5">
+				        		<input class="full-width" name="interval-duration" required data-required-msg="Interval duration cannot be empty" data-bind="kendoNumericTextBox: { value: GrabInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
+								<span class="k-invalid-msg" data-for="interval-duration"></span>
+				        	</div>
+				        </div>
+				        <div class="form-group">
+				        	<label class="col-md-4 filter-label">Timeout Duration</label>
+				        	<div class="col-md-5">
+				        		<input class="full-width" name="timeout-duration" required data-required-msg="Timeout duration cannot be empty" data-bind="kendoNumericTextBox: { value: TimeoutInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
+								<span class="k-invalid-msg" data-for="timeout-duration"></span>
 				        	</div>
 				        </div>
 				        <div class="form-group">

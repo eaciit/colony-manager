@@ -1,12 +1,17 @@
 package controller
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"github.com/robfig/cron"
+)
+
+var (
+	serviceHolder = map[string]*cron.Cron{}
 )
 
 type DataGrabberController struct {
@@ -24,6 +29,11 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 
 	payload := new(colonycore.DataGrabber)
 	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Delete(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -85,7 +95,7 @@ func (d *DataGrabberController) RemoveDataGrabber(r *knot.WebContext) interface{
 	return helper.CreateResult(true, nil, "")
 }
 
-func (d *DataGrabberController) Transform(r *knot.WebContext) interface{} {
+func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	dataGrabber := new(colonycore.DataGrabber)
@@ -99,42 +109,96 @@ func (d *DataGrabberController) Transform(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	dsOrigin := new(colonycore.DataSource)
-	err = colonycore.Get(dsOrigin, dataGrabber.DataSourceOrigin)
+	if _, ok := serviceHolder[dataGrabber.ID]; !ok {
+		yo := func() {
+			success, data, message := d.Transform(dataGrabber)
+			_, _, _ = success, data, message
+			// timeout not yet implemented
+			// also later, write the logs
+		}
+		yo()
+
+		process := cron.New()
+		serviceHolder[dataGrabber.ID] = process
+		process.AddFunc("@every 20s", yo)
+		process.Start()
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func (d *DataGrabberController) StopTransformation(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	dataGrabber := new(colonycore.DataGrabber)
+	err := r.GetPayload(dataGrabber)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if _, ok := serviceHolder[dataGrabber.ID]; ok {
+		process := serviceHolder[dataGrabber.ID]
+		process.Stop()
+		delete(serviceHolder, dataGrabber.ID)
+
+		fmt.Println("===> Transformation stopped!", dataGrabber.DataSourceOrigin, "->", dataGrabber.DataSourceDestination)
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func (d *DataGrabberController) Stat(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	dataGrabber := new(colonycore.DataGrabber)
+	err := r.GetPayload(dataGrabber)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	_, ok := serviceHolder[dataGrabber.ID]
+	return helper.CreateResult(true, ok, "")
+}
+
+func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (bool, interface{}, string) {
+	fmt.Println("===> Transformation started!", dataGrabber.DataSourceOrigin, "->", dataGrabber.DataSourceDestination)
+
+	dsOrigin := new(colonycore.DataSource)
+	err := colonycore.Get(dsOrigin, dataGrabber.DataSourceOrigin)
+	if err != nil {
+		return false, nil, err.Error()
 	}
 
 	dsDestination := new(colonycore.DataSource)
 	err = colonycore.Get(dsDestination, dataGrabber.DataSourceDestination)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return false, nil, err.Error()
 	}
 
 	dataDS, _, conn, query, metaSave, err := new(DataSourceController).
 		ConnectToDataSource(dataGrabber.DataSourceOrigin)
 	if len(dataDS.QueryInfo) == 0 {
-		return helper.CreateResult(false, nil, "Data source origin has invalid query")
+		return false, nil, "Data source origin has invalid query"
 	}
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return false, nil, err.Error()
 	}
 	defer conn.Close()
 
 	if metaSave.keyword != "" {
-		return helper.CreateResult(false, nil, `Data source origin query is not "Select"`)
+		return false, nil, `Data source origin query is not "Select"`
 	}
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return false, nil, err.Error()
 	}
 	defer cursor.Close()
 
 	data := []toolkit.M{}
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return false, nil, err.Error()
 	}
 
 	arrayContains := func(slice []string, key string) bool {
@@ -150,7 +214,7 @@ func (d *DataGrabberController) Transform(r *knot.WebContext) interface{} {
 	connDesc := new(colonycore.Connection)
 	err = colonycore.Get(connDesc, dsDestination.ConnectionID)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return false, nil, err.Error()
 	}
 
 	transformedData := []toolkit.M{}
@@ -185,9 +249,9 @@ func (d *DataGrabberController) Transform(r *knot.WebContext) interface{} {
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		err = queryWrapper.Save(tableName, eachTransformedData)
 		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
+			return false, nil, err.Error()
 		}
 	}
 
-	return helper.CreateResult(true, len(transformedData), "")
+	return true, len(transformedData), ""
 }
