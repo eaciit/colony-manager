@@ -16,7 +16,6 @@ ds.templateConfigSetting = {
 };
 ds.templateConfig = {
 	_id: "",
-	ConnectionName: "",
 	Driver: "",
 	Host: "",
 	Database: "",
@@ -26,7 +25,6 @@ ds.templateConfig = {
 };
 ds.templateDataSource = {
 	_id: "",
-	DataSourceName: "",
 	ConnectionID: "",
 	QueryInfo : {},
 	MetaData: [],
@@ -65,9 +63,8 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 110 },
-	{ field: "ConnectionName", title: "Connection Name" },
-	{ field: "Driver", title: "Driver", width: 90 },
+	{ field: "_id", title: "Connection ID" },
+	{ field: "Driver", title: "Driver" },
 	{ field: "Host", title: "Host" },
 	{ field: "Database", title: "Database" },
 	{ field: "UserName", title: "User Name" },
@@ -77,8 +74,7 @@ ds.connectionListColumns = ko.observableArray([
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
-	{ field: "_id", title: "ID" },
-	{ field: "DataSourceName", title: "Data Source Name" },
+	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
 		return "test"

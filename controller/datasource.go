@@ -285,7 +285,6 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 
 	o := new(colonycore.Connection)
 	o.ID = payload["_id"].(string)
-	o.ConnectionName = payload["ConnectionName"].(string)
 	o.Driver = payload["Driver"].(string)
 	o.Host = payload["Host"].(string)
 	o.Database = payload["Database"].(string)
@@ -658,7 +657,6 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 
 	o := new(colonycore.DataSource)
 	o.ID = payload["_id"].(string)
-	o.DataSourceName = payload["DataSourceName"].(string)
 	o.ConnectionID = payload["ConnectionID"].(string)
 	o.QueryInfo = queryInfo
 	o.MetaData = []*colonycore.FieldInfo{}

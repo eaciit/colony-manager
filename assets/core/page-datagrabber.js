@@ -6,7 +6,6 @@ dg.templateConfigScrapper = {
 	_id: "",
 	DataSourceOrigin: "",
 	DataSourceDestination: "",
-	IgnoreFieldsOrigin: [],
 	IgnoreFieldsDestination: [],
 	Map: []
 };
@@ -19,7 +18,7 @@ dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
 dg.scrapperColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 110 },
+	{ field: "_id", title: "Data Grabber ID" },
 	{ field: "DataSourceOrigin", title: "Data Source Origin" },
 	{ field: "DataSourceDestination", title: "Data Source Destination" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
