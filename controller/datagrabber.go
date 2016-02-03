@@ -127,7 +127,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 	process := cron.New()
 	serviceHolder[dataGrabber.ID] = process
-	duration := fmt.Sprintf("%d%s", dataGrabber.GrabInterval, string(dataGrabber.IntervalType[1]))
+	duration := fmt.Sprintf("%d%s", dataGrabber.GrabInterval, string(dataGrabber.IntervalType[0]))
 	process.AddFunc("@every "+duration, yo)
 	process.Start()
 
