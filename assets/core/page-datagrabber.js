@@ -22,8 +22,8 @@ dg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110 },
 	{ field: "DataSourceOrigin", title: "Data Source Origin" },
 	{ field: "DataSourceDestination", title: "Data Source Destination" },
-	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-primary' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+	{ title: "", width: 180, attributes: { style: "text-align: center;" }, template: function (d) {
+		return "<button class='btn btn-sm btn-success' onclick='#'><span class='glyphicon glyphicon-play'></span></button> <button class='btn btn-sm btn-primary' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
 dg.fieldOfDataSource = function (which) {
