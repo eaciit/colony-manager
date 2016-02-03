@@ -34,7 +34,7 @@
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: wg.createNewScrapper">
-	    		<span class="glyphicon glyphicon-plus"></span> Create New Grabber
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Web Grabber
 	    	</button>
 		</nav>
 
@@ -43,7 +43,7 @@
 		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-web-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
+		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
 		</div>
 

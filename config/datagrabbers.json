@@ -1,1 +1,1 @@
-[{"DataSourceDestination":"ds1453549868712","DataSourceOrigin":"ds1453549917327","IgnoreFieldsDestination":["UARigSequenceId"],"IgnoreFieldsOrigin":[],"Map":[{"FieldDestination":"UARigSequenceId","FieldOrigin":"_id"},{"FieldDestination":"AssignTOOps","FieldOrigin":"_id"}],"_id":"adsfasdf"}]
+[{"DataSourceDestination":"DS_200_STUDENTS","DataSourceOrigin":"DS_200_USER","GrabInterval":20,"IgnoreFieldsDestination":["Hobbies"],"IntervalType":"seconds","Map":[{"FieldDestination":"Name","FieldOrigin":"FullName"}],"TimeoutInterval":20,"_id":"GRAB_TEST"}]

@@ -76,7 +76,7 @@ func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
 	return nil
 }
 
-func (d *DataSourceController) connectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connection, dbox.IConnection, dbox.IQuery, MetaSave, error) {
+func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connection, dbox.IConnection, dbox.IQuery, MetaSave, error) {
 	dataDS := new(colonycore.DataSource)
 	err := colonycore.Get(dataDS, _id)
 	if err != nil {
@@ -189,9 +189,7 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 		query = query.From(qFrom)
 	}
 	if qSelect := queryInfo.Get("select", "").(string); qSelect != "" {
-		if qSelect == "*" {
-			query = query.Select()
-		} else {
+		if qSelect != "*" {
 			query = query.Select(strings.Split(qSelect, ",")...)
 		}
 	}
@@ -287,13 +285,17 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 
 	o := new(colonycore.Connection)
 	o.ID = payload["_id"].(string)
-	o.ConnectionName = payload["ConnectionName"].(string)
 	o.Driver = payload["Driver"].(string)
 	o.Host = payload["Host"].(string)
 	o.Database = payload["Database"].(string)
 	o.UserName = payload["UserName"].(string)
 	o.Password = payload["Password"].(string)
 	o.Settings = d.parseSettings(payload["Settings"], map[string]interface{}{}).(map[string]interface{})
+
+	err = colonycore.Delete(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	if o.Driver == "weblink" {
 		fileType := helper.GetFileExtension(o.Host)
@@ -373,6 +375,17 @@ func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	id := payload["_id"].(string)
+
+	ds := new(colonycore.DataSource)
+	cursor, err := colonycore.Find(ds, dbox.Eq("ConnectionID", id))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	if cursor.Count() > 0 {
+		return helper.CreateResult(false, nil, "Cannot delete connection because used on data source")
+	}
 
 	o := new(colonycore.Connection)
 	o.ID = id
@@ -461,7 +474,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	}
 	defer conn.Close()
 
-	var query = conn.NewQuery().Select("*").Take(1)
+	var query = conn.NewQuery().Take(1)
 
 	if dataConn.Driver != "weblink" {
 		query = query.From(from)
@@ -518,7 +531,7 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	}
 	_id := payload["_id"].(string)
 
-	dataDS, _, conn, query, metaSave, err := d.connectToDataSource(_id)
+	dataDS, _, conn, query, metaSave, err := d.ConnectToDataSource(_id)
 	if len(dataDS.QueryInfo) == 0 {
 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
 		return helper.CreateResult(true, result, "")
@@ -548,10 +561,6 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 
 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
 		return helper.CreateResult(true, result, "")
-	}
-
-	if _, isTakeOK := dataDS.QueryInfo["take"]; !isTakeOK {
-		query = query.Take(15)
 	}
 
 	cursor, err := query.Cursor(nil)
@@ -590,7 +599,7 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 
 	for _, meta := range dataDS.MetaData {
 		if meta.ID == lookupID {
-			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.connectToDataSource(meta.Lookup.DataSourceID)
+			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(meta.Lookup.DataSourceID)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
@@ -664,10 +673,14 @@ func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 
 	o := new(colonycore.DataSource)
 	o.ID = payload["_id"].(string)
-	o.DataSourceName = payload["DataSourceName"].(string)
 	o.ConnectionID = payload["ConnectionID"].(string)
 	o.QueryInfo = queryInfo
 	o.MetaData = []*colonycore.FieldInfo{}
+
+	err = colonycore.Delete(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	if payload["MetaData"] != nil {
 		metadataString := payload["MetaData"].(string)
@@ -740,6 +753,18 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	id := payload["_id"].(string)
+
+	dg := new(colonycore.DataGrabber)
+	filter := dbox.Or(dbox.Eq("DataSourceOrigin", id), dbox.Eq("DataSourceDestination", id))
+	cursor, err := colonycore.Find(dg, filter)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	if cursor.Count() > 0 {
+		return helper.CreateResult(false, nil, "Cannot delete data source because used on data grabber")
+	}
 
 	o := new(colonycore.DataSource)
 	o.ID = id

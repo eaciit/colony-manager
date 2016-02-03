@@ -76,6 +76,11 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	err = colonycore.Delete(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	err = colonycore.Save(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())

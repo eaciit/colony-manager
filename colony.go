@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 )
 
 var (
@@ -15,6 +16,8 @@ var (
 )
 
 func main() {
+	runtime.GOMAXPROCS(4)
+
 	wd, _ := os.Getwd()
 	colonycore.ConfigPath = filepath.Join(wd, "config")
 

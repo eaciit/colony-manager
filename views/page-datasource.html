@@ -36,7 +36,7 @@
 		        <h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, pageable: true }"></div>
+		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
 		    </div>
 		</div>
 
@@ -66,13 +66,6 @@
 				        <div class="col-sm-5">
 				            <input required type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
 							<span class="k-invalid-msg" data-for="ID"></span>
-				        </div>
-				    </div>
-				    <div class="form-group">
-				        <label class="col-sm-4 filter-label">Connection Name</label>
-				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="Name" placeholder="Type connection name here" data-bind="value: ConnectionName">
-							<span class="k-invalid-msg" data-for="Name"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
@@ -181,7 +174,7 @@
 		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="gridDataSource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true }"></div>
+		    	<div class="gridDataSource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
 		    </div>
 		</div>
 
@@ -205,7 +198,7 @@
 					    <div class="col-md-6">
 				            <label class="col-md-4 filter-label">Connection</label>
 				            <div class="col-md-8">
-				                <select required class="data-connection full-width" data-bind="kendoComboBox: { data: viewModel.datasource.connectionListData, dataTextField: 'ConnectionName', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: ds.changeDataSourceConnection, filter: 'contains', suggest: true, minLength: 2 }" name="connection"></select>
+				                <select required class="data-connection full-width" data-bind="kendoComboBox: { data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: ds.changeDataSourceConnection, filter: 'contains', suggest: true, minLength: 2 }" name="connection"></select>
 								<span class="k-invalid-msg" data-for="connection"></span>
 				            </div>
 				        </div>
@@ -214,8 +207,8 @@
 						<div class="col-md-6">
 				        	<label class="col-md-4 filter-label">Data Source Name</label>
 				        	<div class="col-md-8">
-				        		<input required type="text" class="form-control input-sm" name="query" placeholder="Type data source name here" data-bind="value: DataSourceName">
-								<span class="k-invalid-msg" data-for="query"></span>
+				        		<input required type="text" class="form-control input-sm" name="Name" placeholder="Type data source name here" data-bind="value: _id">
+								<span class="k-invalid-msg" data-for="Name"></span>
 				        	</div>
 				        </div>
 					    <div class="col-md-6">
@@ -294,7 +287,7 @@
 		    	<p class="bg-notif bg-info">
 			    	Need to run 
 			    	<button class="btn btn-xs btn-primary" data-bind="click: testQuery">
-			    		<span class="glyphicon glyphicon-play"></span> Test Query
+			    		<span class="glyphicon glyphicon-play"></span> Run Query
 			    	</button> 
 			    	to see the result.
 		    	</p>
@@ -319,7 +312,7 @@
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Data Source</label>
 				        <div class="col-sm-5">
-				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" class="full-width" data-bind="kendoDropDownList: { data: ds.dataSourceDataForLookup, dataValueField: '_id', dataTextField: 'DataSourceName', value: ds.confLookup.DataSourceID, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
+				            <select required data-required-msg="Data source cannot be empty" name="lookup-datasource" class="full-width" data-bind="kendoDropDownList: { data: ds.dataSourceDataForLookup, dataValueField: '_id', dataTextField: '_id', value: ds.confLookup.DataSourceID, optionLabel: 'Select one', change: ds.changeLookupDataSource }"></select>
 							<span class="k-invalid-msg" data-for="lookup-datasource"></span>
 				        </div>
 				    </div>

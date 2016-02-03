@@ -16,7 +16,6 @@ ds.templateConfigSetting = {
 };
 ds.templateConfig = {
 	_id: "",
-	ConnectionName: "",
 	Driver: "",
 	Host: "",
 	Database: "",
@@ -26,7 +25,6 @@ ds.templateConfig = {
 };
 ds.templateDataSource = {
 	_id: "",
-	DataSourceName: "",
 	ConnectionID: "",
 	QueryInfo : {},
 	MetaData: [],
@@ -65,26 +63,31 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 110 },
-	{ field: "ConnectionName", title: "Connection Name" },
-	{ field: "Driver", title: "Driver", width: 90 },
+	{ field: "_id", title: "Connection ID" },
+	{ field: "Driver", title: "Driver" },
 	{ field: "Host", title: "Host" },
 	{ field: "Database", title: "Database" },
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
-	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Connection' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Connection' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
+		].join(" ");
 	} },
 ]);
 ds.dataSourceColumns = ko.observableArray([
-	{ field: "_id", title: "ID" },
-	{ field: "DataSourceName", title: "Data Source Name" },
+	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
 		return "test"
 	} },
 	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-primary' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+		return [
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Source' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Source' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
+		].join(" ");
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -104,9 +107,9 @@ ds.metadataColumns = ko.observableArray([
 	{ field: "Format", title: "Format", editor: function (container, options) {
 		$('<input data-text-field="Format" data-value-field="Format" data-bind="value:' + options.field + '" style="width: 100%;" onkeyup="ds.gridMetaDataChange(this)" />').appendTo(container);
 	} },
-	{ title: "_id", template: function (d) {
-		return "<button class='btn btn-xs btn-success' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='fa fa-eye'></span> Lookup</button>";
-	}, width: 100, attributes: { style: "text-align: center;" } },
+	{ title: "", template: function (d) {
+		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Show Meta Data Lookup of \"" + d._id + "\"' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='fa fa-eye'></span></button>";
+	}, width: 60, attributes: { style: "text-align: center;" } },
 ]);
 ds.gridMetaDataSchema = {
 	pageSize: 15,
@@ -133,6 +136,8 @@ ds.gridMetaDataBound = function (e, f) {
 	    	.addClass("has-lookup")
 	    	.attr("title", "this data has lookup");
 	});
+
+	app.gridBoundTooltipster('#grid-metadata')();
 };
 ds.gridMetaDataChangeTimer = undefined;
 ds.gridMetaDataChange = function (o) {
@@ -219,12 +224,30 @@ ds.saveNewConnection = function () {
 	}
 
 	var param = ko.mapping.toJS(ds.config);
+	param.Settings = JSON.stringify(param.Settings);
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		ds.backToFrontPage();
+	});
+};
+ds.testConnectionFromGrid = function (_id) {
+	var param = $.extend(true, {}, Lazy(ds.connectionListData()).find({ _id: _id }));
+	param.Settings = JSON.stringify(param.Settings);
+
+	app.ajaxPost("/datasource/testconnection", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		swal({ title: "Connected", type: "success" });
+	}, function (a, b, c) {
+        sweetAlert("Oops...", a.statusText, "error");
+		console.log(a, b, c);
+	}, {
+		timeout: 10000
 	});
 };
 ds.testConnection = function () {
@@ -273,14 +296,16 @@ ds.removeConnection = function (_id) {
 	    confirmButtonText: "Delete",
 	    closeOnConfirm: true
 	}, function() {
-	    app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
+	    setTimeout(function () {
+	    	app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
+				if (!app.isFine(res)) {
+					return;
+				}
 
-			ds.backToFrontPage();
-			swal({ title: "Data successfully deleted", type: "success" });
-		});
+				ds.backToFrontPage();
+				swal({ title: "Data successfully deleted", type: "success" });
+			});
+	    }, 1000);
 	});
 };
 ds.removeDataSource = function (_id) {
@@ -293,14 +318,16 @@ ds.removeDataSource = function (_id) {
 	    confirmButtonText: "Delete",
 	    closeOnConfirm: true
 	}, function() {
-		app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
+		setTimeout(function () {
+			app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
+				if (!app.isFine(res)) {
+					return;
+				}
 
-			ds.backToFrontPage();
-			swal({ title: "Data successfully deleted", type: "success" });
-		});
+				ds.backToFrontPage();
+				swal({ title: "Data successfully deleted", type: "success" });
+			});
+		}, 1000);
 	});
 }
 ds.editDataSource = function (_id) {
