@@ -22,8 +22,12 @@ dg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 110 },
 	{ field: "DataSourceOrigin", title: "Data Source Origin" },
 	{ field: "DataSourceDestination", title: "Data Source Destination" },
-	{ title: "", width: 120, attributes: { style: "text-align: center;" }, template: function (d) {
-		return "<button class='btn btn-sm btn-success' onclick='#'><span class='glyphicon glyphicon-play'></span></button> <button class='btn btn-sm btn-primary' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-success' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-primary' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			"<button class='btn btn-sm btn-danger' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+		].join(" ");
 	} },
 ]);
 dg.fieldOfDataSource = function (which) {
@@ -149,6 +153,18 @@ dg.backToFrontPage = function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
 };
+dg.runTransformation = function (_id) {
+	return function () {
+		app.ajaxPost("/datagrabber/transform", { _id: _id }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			swal({ title: "Transformation success.\n" + res.data + " data saved", type: "success" });
+		});
+	}
+};
+
 $(function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();

@@ -76,7 +76,7 @@ func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
 	return nil
 }
 
-func (d *DataSourceController) connectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connection, dbox.IConnection, dbox.IQuery, MetaSave, error) {
+func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connection, dbox.IConnection, dbox.IQuery, MetaSave, error) {
 	dataDS := new(colonycore.DataSource)
 	err := colonycore.Get(dataDS, _id)
 	if err != nil {
@@ -189,9 +189,7 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 		query = query.From(qFrom)
 	}
 	if qSelect := queryInfo.Get("select", "").(string); qSelect != "" {
-		if qSelect == "*" {
-			query = query.Select()
-		} else {
+		if qSelect != "*" {
 			query = query.Select(strings.Split(qSelect, ",")...)
 		}
 	}
@@ -461,7 +459,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	}
 	defer conn.Close()
 
-	var query = conn.NewQuery().Select("*").Take(1)
+	var query = conn.NewQuery().Take(1)
 
 	if dataConn.Driver != "weblink" {
 		query = query.From(from)
@@ -518,7 +516,7 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	}
 	_id := payload["_id"].(string)
 
-	dataDS, _, conn, query, metaSave, err := d.connectToDataSource(_id)
+	dataDS, _, conn, query, metaSave, err := d.ConnectToDataSource(_id)
 	if len(dataDS.QueryInfo) == 0 {
 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
 		return helper.CreateResult(true, result, "")
@@ -548,10 +546,6 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 
 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
 		return helper.CreateResult(true, result, "")
-	}
-
-	if _, isTakeOK := dataDS.QueryInfo["take"]; !isTakeOK {
-		query = query.Take(15)
 	}
 
 	cursor, err := query.Cursor(nil)
@@ -590,7 +584,7 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 
 	for _, meta := range dataDS.MetaData {
 		if meta.ID == lookupID {
-			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.connectToDataSource(meta.Lookup.DataSourceID)
+			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(meta.Lookup.DataSourceID)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
