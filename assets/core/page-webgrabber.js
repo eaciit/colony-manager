@@ -15,7 +15,7 @@ wg.templateConfigScrapper = {
 	_id: "",
 	calltype: "GET",
 	intervaltype: "",
-	sourcetype: "http",
+	sourcetype: "SourceType_Http",
 	grabinterval: 0,
 	timeoutinterval: 0,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
@@ -117,8 +117,8 @@ wg.historyColumns = ko.observableArray([
 	}, filterable: false }
 ]);
 wg.dataSourceTypes = ko.observableArray([
-	{ value: "http", title: "HTTP / Web" },
-	{ value: "dbox", title: "Data File" },
+	{ value: "SourceType_Http", title: "HTTP / Web" },
+	{ value: "SourceType_Dbox", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -126,11 +126,36 @@ wg.dataRequestTypes = ko.observableArray([
 ]);
 
 wg.editScrapper = function (_id) {
-	app.mode('editor');
-	wg.scrapperMode('edit');
+	app.ajaxPost("/webgrabber/selectscrapperdata", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		app.mode('editor');
+		wg.scrapperMode('edit');
+		ko.mapping.fromJS(res.data, wg.configScrapper);
+		wg.isContentFetched(false);
+	});
 };
 wg.removeScrapper = function (_id) {
+	swal({
+	    title: "Are you sure?",
+	    text: 'Data connection with id "' + _id + '" will be deleted',
+	    type: "warning",
+	    showCancelButton: true,
+	    confirmButtonColor: "#DD6B55",
+	    confirmButtonText: "Delete",
+	    closeOnConfirm: true
+	}, function() {
+	    app.ajaxPost("/webgrabber/removegrabber", { _id: _id }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
 
+			wg.backToFront();
+			swal({ title: "Data successfully deleted", type: "success" });
+		});
+	});
 };
 wg.getScrapperData = function () {
 	wg.scrapperData([]);
@@ -154,6 +179,7 @@ wg.createNewScrapper = function () {
 wg.backToFront = function () {
 	app.mode("");
 	wg.selectedID('');
+	wg.getScrapperData();
 };
 wg.backToHistory = function () {
 	app.mode('history')

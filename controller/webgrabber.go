@@ -50,6 +50,40 @@ func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
+func (w *WebGrabberController) SelectScrapperData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, payload, "")
+}
+
+func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Save(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, payload, "")
+}
+
 func (w *WebGrabberController) FetchContent(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -234,6 +268,24 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	logs := history.GetLog([]interface{}{o}, payload.Date)
 
 	return helper.CreateResult(true, logs, "")
+}
+
+func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Delete(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
 }
 
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
