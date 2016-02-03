@@ -109,20 +109,26 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if _, ok := serviceHolder[dataGrabber.ID]; !ok {
-		yo := func() {
-			success, data, message := d.Transform(dataGrabber)
-			_, _, _ = success, data, message
-			// timeout not yet implemented
-			// also later, write the logs
-		}
-		yo()
+	if _, ok := serviceHolder[dataGrabber.ID]; ok {
+		process := serviceHolder[dataGrabber.ID]
+		process.Stop()
+		delete(serviceHolder, dataGrabber.ID)
 
-		process := cron.New()
-		serviceHolder[dataGrabber.ID] = process
-		process.AddFunc("@every 20s", yo)
-		process.Start()
+		fmt.Println("===> Transformation stopped!", dataGrabber.DataSourceOrigin, "->", dataGrabber.DataSourceDestination)
 	}
+
+	yo := func() {
+		success, data, message := d.Transform(dataGrabber)
+		_, _, _ = success, data, message
+		// timeout not yet implemented
+		// also later, write the logs
+	}
+	yo()
+
+	process := cron.New()
+	serviceHolder[dataGrabber.ID] = process
+	process.AddFunc("@every 20s", yo)
+	process.Start()
 
 	return helper.CreateResult(true, nil, "")
 }
