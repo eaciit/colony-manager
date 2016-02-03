@@ -127,7 +127,8 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 	process := cron.New()
 	serviceHolder[dataGrabber.ID] = process
-	process.AddFunc("@every 20s", yo)
+	duration := fmt.Sprintf("%d%s", dataGrabber.GrabInterval, string(dataGrabber.IntervalType[1]))
+	process.AddFunc("@every "+duration, yo)
 	process.Start()
 
 	return helper.CreateResult(true, nil, "")
@@ -167,7 +168,7 @@ func (d *DataGrabberController) Stat(r *knot.WebContext) interface{} {
 }
 
 func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (bool, interface{}, string) {
-	fmt.Println("===> Transformation started!", dataGrabber.DataSourceOrigin, "->", dataGrabber.DataSourceDestination)
+	fmt.Println("===> Transformation started!", dataGrabber.DataSourceOrigin, "->", dataGrabber.DataSourceDestination, "interval", dataGrabber.GrabInterval, dataGrabber.IntervalType)
 
 	dsOrigin := new(colonycore.DataSource)
 	err := colonycore.Get(dsOrigin, dataGrabber.DataSourceOrigin)
