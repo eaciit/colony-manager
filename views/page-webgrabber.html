@@ -1,18 +1,11 @@
 <!-- core -->
-<script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/xml.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/javascript.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/active-line.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script>
-<link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css">
+<!-- <script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/xml.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/javascript.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/active-line.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script> -->
+<!-- <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css"> -->
 <script src="/res/core/page-webgrabber.js"></script>
-
-<style>
-	.k-grid .k-grid-content-locked {
-		height: auto !important;
-	}
-</style>
-
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
@@ -59,7 +52,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+		<div class="panel" id="panel-set-up" data-bind="visible: (app.mode() == 'editor')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
@@ -347,7 +340,7 @@
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElement'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
 		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-		    					<div id="inspectElement"></div>
+		    					<div id="inspectElement"><ul></ul></div>
 		    				</div>
 		    			</div>
 

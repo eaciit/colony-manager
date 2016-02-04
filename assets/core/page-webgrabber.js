@@ -11,6 +11,7 @@ wg.scrapperData = ko.observableArray([]);
 wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
+wg.selectedItem = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	calltype: "GET",
@@ -264,7 +265,13 @@ wg.getURL = function () {
 		startofbody = bodyyo.indexOf(">");
 		bodyyo = bodyyo.substr(startofbody+1);
 		URLSource = $.parseHTML(bodyyo);
-		// console.log(URLSource);
+		$("#inspectElement").replaceWith("<div id='inspectElement'><ul></ul></div>");
+		// $('#panel-set-up').scrollTop = $('#panel-set-up').scrollHeight;
+		$(URLSource).each(function(i,e){
+			if($(this).html()!==undefined){
+				linenumber = wg.GetElement($(this),0,0,0,"body");
+			}
+		})
 		// var editor = CodeMirror($("inspectElement"), {
 		//   mode: "text/html",
 		//   // styleActiveLine: true,
@@ -274,17 +281,124 @@ wg.getURL = function () {
 		//   value: URLSource
 		// });
 	// console.log(bodyyo);
-		$("#inspectElement").replaceWith("<div id='inspectElement'></div>");
+		// $("#inspectElement").replaceWith("<textarea id='inspectElement'></textarea>");
 		// $("#inspectElement").html(URLSource);
-		var editor = CodeMirror(document.getElementById("inspectElement"), {
-	        mode: "text/html",
-	        lineNumbers: true,
-			lineWrapping: true,
-	        readOnly : true,
-	        value: bodyyo
-	      });
+		// var editor = CodeMirror(document.getElementById("inspectElement"), {
+		// var editor = CodeMirror.fromTextArea(document.getElementById("inspectElement"), {
+	 //        mode: "text/html",
+	 //        lineNumbers: true,
+		// 	lineWrapping: true,
+	 //        readOnly : true,
+	        // value: bodyyo
+	      // });
 	});
 };
+wg.getNodeElement = function(obj,classes,id){
+	var selector = "", nodeName = obj.get()[0].nodeName.toLowerCase();
+
+	if(id!=="")
+		selector+=" > "+nodeName+"#"+obj.attr("id").split(" ")[0];
+	else if(classes!=="")
+		selector+=" > "+nodeName+"."+obj.attr("class").split(" ")[0];
+	else
+		selector+=" > "+nodeName;
+
+	return {element: selector, id: id, classes: classes};
+}
+wg.GetElement = function(obj,parent,linenumber,index,selector){
+	linenumber +=1;
+	var classes = obj.attr("class"), id = obj.attr("id");
+	if(id !== undefined && id !== "")
+		id = "id='"+id+"'";
+	else
+		id = "";
+	
+	if( classes !== undefined && classes !== "" )
+		classes = "class='"+classes+"'";
+	else
+		classes = "";
+	
+	var nodeName = obj.get()[0].nodeName.toLowerCase();
+	if(id!=="")
+		selector+=" > "+nodeName+"#"+obj.attr("id").split(" ")[0]+":eq("+index+")";
+	else if(classes!=="")
+		selector+=" > "+nodeName+"."+obj.attr("class").split(" ")[0]+":eq("+index+")";
+	else
+		selector+=" > "+nodeName+":eq("+index+")";
+	// var elemSelector = wg.getNodeElement(obj);
+	// selector += elemSelector.element+":eq("+index+")";
+
+	$("#inspectElement>ul").css({'list-style-type':'none', 'margin-left':'0px','padding-left':'0px'});
+
+	$liElem = $("<li id='scw"+linenumber+"' class='selector'></li>");
+	$liElem.attr("onclick","wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"')");
+	$liElem.appendTo($("#inspectElement>ul"));
+
+	$divSeqElem = $("<div></div>");
+	$divSeqElem.text(linenumber+". ");
+	$divSeqElem.css("display","inline");
+	$divSeqElem.appendTo($liElem);
+
+	$divContentElem = $("<div></div>");
+	$divContentElem.text("<"+nodeName+" "+id+" "+classes+"> "+obj.text().replace(/ /g,'').substring(0,20));
+	$divContentElem.css({'margin-left':parseFloat(parent)*10+"px", "display":"inline"});
+	$divContentElem.appendTo($liElem);
+
+	var idx = 0, prevNode = new Array();
+	// var prevNode = "";
+	obj.children().each(function(i,e){
+		var node = $(this).get()[0].nodeName.toLowerCase();
+		// console.log(wg.getNodeElement($(this)));
+		var searchElem = ko.utils.arrayFilter(prevNode,function (item) {
+            return item === node;
+        });
+        if (searchElem.length == 0){
+        	idx=0;
+        	prevNode.push(node);
+        } else
+        	idx++;
+
+        // console.log(selector);
+		// if (prevNode == node)
+		// 	idx=0;
+		
+		if($(this).html()!==undefined && node!== "link" && node !=="script" && node !=="br" && node !=="hr" ){
+			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector);
+			// idx++;
+		}
+		// prevNode = node;
+	})
+	return linenumber;
+}
+wg.GetCurrentSelector = function(id,selector){
+	$("*.selector").attr("class","selector");
+	$("#"+id).attr("class","selector active");
+	var existingStyle = $(wg.selectedItem(), $("#URLPreview").contents()).attr("style");
+	
+	if(existingStyle!==undefined){
+		existingStyle = existingStyle.replace(";border:5px solid #FF9900","");
+		existingStyle = existingStyle.replace("border:5px solid #FF9900","");
+		$(wg.selectedItem(), $("#URLPreview").contents()).attr("style",existingStyle);
+	}
+	
+	console.log(selector);
+	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
+	
+	wg.selectedItem(selector);
+	existingStyle = "";
+	existingStyle = $(selector, $("#URLPreview").contents()).attr("style");
+	if(existingStyle!==undefined){
+		if(existingStyle[existingStyle.length-1]==";"){
+			existingStyle += existingStyle+"border:5px solid #FF9900";
+		}else{
+			existingStyle += existingStyle+";border:5px solid #FF9900";
+		}
+		
+	}else{
+		existingStyle = "border:5px solid #FF9900";
+	}
+	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
+}
 wg.saveNewScrapper = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
