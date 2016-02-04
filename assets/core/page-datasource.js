@@ -531,7 +531,7 @@ ds.showMetadataLookup = function (_id, o) {
 		// trigger datasource, and fill the value for edit
 		ds.changeLookupDataSourceCallback = function () {
 			setTimeout(function () {
-				$('[name="lookup-idfield"]').data("List").value(ds.confLookup.IDField());
+				$('[name="lookup-idfield"]').data("kendoDropDownList").value(ds.confLookup.IDField());
 				$('[name="lookup-displayfield"]').data("kendoDropDownList").value(ds.confLookup.DisplayField());
 				$('[name="lookup-fields"]').data("kendoMultiSelect").value(ds.confLookup.LookupFields());
 			}, 200);
