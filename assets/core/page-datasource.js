@@ -76,6 +76,7 @@ ds.connectionListColumns = ko.observableArray([
 		return "<button class='btn btn-sm btn-primary' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button> <button class='btn btn-sm btn-danger' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 	} },
 ]);
+ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
 	{ field: "_id", title: "ID" },
 	{ field: "DataSourceName", title: "Data Source Name" },
@@ -503,7 +504,7 @@ ds.showMetadataLookup = function (_id, o) {
 		// trigger datasource, and fill the value for edit
 		ds.changeLookupDataSourceCallback = function () {
 			setTimeout(function () {
-				$('[name="lookup-idfield"]').data("kendoDropDownList").value(ds.confLookup.IDField());
+				$('[name="lookup-idfield"]').data("List").value(ds.confLookup.IDField());
 				$('[name="lookup-displayfield"]').data("kendoDropDownList").value(ds.confLookup.DisplayField());
 				$('[name="lookup-fields"]').data("kendoMultiSelect").value(ds.confLookup.LookupFields());
 			}, 200);
