@@ -31,10 +31,10 @@
 	    	</button>
 		</nav>
 
-		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 		    <div class="col-md-4">
 		    	<label class="col-md-4 filter-label">
-		    		Searching
+		    		Search
 		    	</label>
 		    	<div class="col-md-8">
 		    		<input class="form-control input-sm" type="" name="" />
@@ -173,10 +173,10 @@
 	    	</button>
 		</nav>
 
-		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 		    <div class="col-md-4">
 		    	<label class="col-md-4 filter-label">
-		    		Searching
+		    		Search
 		    	</label>
 		    	<div class="col-md-8">
 		    		<input class="form-control input-sm" type="" name="" />
@@ -249,7 +249,7 @@
 				        </div>
 				    </div>
 				</form>
-		    </div> dat
+		    </div>
 		</div>
 
 		<ul class="nav nav-tabs" data-bind="visible: (app.mode() == 'editDataSource')">
@@ -294,17 +294,6 @@
 		        <h1 class="panel-title">Meta Data</h1>
 		    </div>
 
-		    <nav class="navbar" style="padding-top:15px;">
-			    <div class="col-md-4">
-			    	<label class="col-md-4 filter-label">
-			    		Searching
-			    	</label>
-			    	<div class="col-md-8">
-			    		<input class="form-control input-sm" type="" name="" />
-			    	</div>
-			    </div>
-			</nav>
-
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length > 0)">
 		    	<div id="grid-metadata" data-bind="kendoGrid: { dataSource: ds.gridMetaDataSchema, data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true, editable: true, dataBound: gridMetaDataBound }"></div>
 		    	<label style="margin-top: 5px; margin-bottom: 0px; font-weight: normal;">
@@ -326,7 +315,7 @@
 		    	<nav class="navbar" style="padding-top:5px;">
 				    <div class="col-md-4">
 				    	<label class="col-md-4 filter-label">
-				    		Searching
+				    		Search
 				    	</label>
 				    	<div class="col-md-8">
 				    		<input class="form-control input-sm" type="" name="" />
