@@ -41,6 +41,34 @@ apl.editScrapper = function(_id) {
 	});
 };
 
+apl.removeScrapper = function(_id) {
+	swal({
+		title: "Are you sure?",
+		text: 'Application with id "' + _id + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: false
+	},
+	function() {
+		setTimeout(function () {
+			app.ajaxPost("/application/deleteapps", { _id: _id }, function () {
+				if (!app.isFine) {
+					return;
+				}
+
+				apl.backToFront()
+				swal({title: "Application successfully deleted", type: "success"});
+			});
+		},1000);
+	});
+};
+
+apl.backToFront = function () {
+	apl.getApplications();
+};
+
 $(function () {
 	apl.getApplications();
 });

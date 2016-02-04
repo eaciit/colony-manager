@@ -51,3 +51,20 @@ func (a *ApplicationController) SelectApps(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, payload, "")
 }
+
+func (a *ApplicationController) DeleteApps(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.Application)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Delete(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
