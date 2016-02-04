@@ -23,6 +23,7 @@
 		    	<div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.scrapperData, columns: apl.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
 		    </div>
 		</div>
+
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" >
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
@@ -41,12 +42,12 @@
 		        </h1>
 		    </div>
 		    <div class="panel-body">
-		    	<form class="form-horizontal form-datagrabber" id="form-add-scrapper" data-bind="with: configScrapper" novalidate>
+		    	<form class="form-horizontal form-datagrabber" id="form-add-scrapper" novalidate>
 		    		<div class="col-md-12">
 			    		<div class="form-group">
 				    		<label class="col-md-4 filter-label">Application ID</label>
 				    		<div class="col-md-5">
-				    			<input class="form-control input-sm full-width" type="text" data-bind="value: _id, enable: (apl.scrapperMode() == '')"/>
+				    			<input class="form-control input-sm full-width" type="text" data-bind="enable: (apl.scrapperMode() == '')"/>
 				    		</div>
 			    		</div>
 			    		<div class="form-group">
