@@ -161,6 +161,9 @@ body {
     body #content > .col-md-12 .navbar {
       border-radius: 0px;
       margin-bottom: 5px; }
+      body #content > .col-md-12 .navbar.no-padding {
+        margin: 0px !important;
+        padding: 0px !important; }
       body #content > .col-md-12 .navbar .navbar-btn {
         margin-right: 2px; }
     body #content > .col-md-12 .panel {

@@ -117,6 +117,8 @@ wg.historyColumns = ko.observableArray([
 		].join(" ");
 	}, filterable: false }
 ]);
+wg.filterRequestTypes = ko.observable('');
+wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_Http", title: "HTTP / Web" },
 	{ value: "SourceType_Dbox", title: "Data File" },
