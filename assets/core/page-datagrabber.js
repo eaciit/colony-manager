@@ -10,7 +10,8 @@ dg.templateConfigScrapper = {
 	IntervalType: "seconds",
 	GrabInterval: 20,
 	TimeoutInterval: 20,
-	Map: []
+	Map: [],
+	RunAt: []
 };
 dg.templateMap = {
 	FieldOrigin: "",
@@ -26,22 +27,33 @@ dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
+dg.selectedDataGrabber = ko.observable('');
 dg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "Data Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Grabber' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Grabber' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 		].join(" ");
 	} },
-	{ field: "DataSourceOrigin", title: "Data Source Origin" },
-	{ field: "DataSourceDestination", title: "Data Source Destination" },
-	{ field: "IntervalType", title: "Interval Unit", width: 150 },
-	{ field: "GrabInterval", title: "Interval Duration", width: 150 },
-	{ field: "TimeoutInterval", title: "Timeout Duration", width: 150 },
+	{ field: "DataSourceOrigin", title: "Data Source Origin", width: 150 },
+	{ field: "DataSourceDestination", title: "Data Source Destination", width: 150 },
+	{ field: "IntervalType", title: "Interval Unit" },
+	{ field: "GrabInterval", title: "Interval Duration" },
+	{ field: "TimeoutInterval", title: "Timeout Duration" },
+]);
+dg.logData = ko.observable('');
+dg.historyData = ko.observableArray([]);
+dg.historyColumns = ko.observableArray([
+	{ field: "_id", title: "Number", width: 100, },
+	{ field: "Date", title: "History At" },
+	{ title: "&nbsp;", width: 120, attributes: { class: "align-center" }, template: function (d) {
+		return "<button class='btn btn-sm btn-default btn-text-primary' onclick='dg.viewLog(\"" + kendo.toString(d.Date, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text-o'></span> View Log</button>";
+	}, filterable: false }
 ]);
 dg.fieldOfDataSource = function (which) {
 	return ko.computed(function () {
@@ -202,16 +214,20 @@ dg.checkTransformationStatus = function () {
 	dg.scrapperIntervals([]);
 	dg.scrapperData().forEach(function (each) {
 		var process = function () {
+			var $grid = $(".grid-data-grabber");
+			var $kendoGrid = $grid.data("kendoGrid");
+			var gridData = $kendoGrid.dataSource.data();
+
 			app.ajaxPost("/datagrabber/stat", { _id: each._id }, function (res) {
 				if (!app.isFine(res)) {
 					return;
 				}
 
-				var $grid = $(".grid-data-grabber");
-				var $kendoGrid = $grid.data("kendoGrid");
-				var gridData = $kendoGrid.dataSource.data();
-
 				var row = Lazy(gridData).find({ _id: each._id });
+				if (row == undefined) {
+					row = { uid: "fake!" };
+				}
+
 				var $row = $grid.find("tr[data-uid='" + row.uid + "']");
 
 				if (res.data) {
@@ -219,6 +235,15 @@ dg.checkTransformationStatus = function () {
 				} else {
 					$row.removeClass("started");
 				}
+			}, function (a) {
+				var row = Lazy(gridData).find({ _id: each._id });
+				if (row == undefined) {
+					row = { uid: "fake!" };
+				}
+
+				var $row = $grid.find("tr[data-uid='" + row.uid + "']");
+
+				$row.removeClass("started");
 			});
 		};
 
@@ -226,6 +251,49 @@ dg.checkTransformationStatus = function () {
 		dg.scrapperIntervals.push(setInterval(process, 10 * 1000));
 	});
 };
+dg.viewHistory = function (_id) {
+	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		app.mode("history");
+		dg.selectedDataGrabber(_id);
+		dg.historyData([]);
+		res.data.RunAt.forEach(function (e, i) {
+			dg.historyData.push({ _id: (i + 1), Date: e });
+		});
+	});
+};
+dg.backToHistory = function () {
+	app.mode("history");
+};
+dg.viewLog = function (Date) {
+	var param = { 
+		_id: dg.selectedDataGrabber(), 
+		Date: Date
+	};
+	app.ajaxPost("/datagrabber/getlogs", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		app.mode("log");
+
+		var startLine = "SUCCESS " + moment(Date, "YYYYMMDD-HHmmss")
+			.format("YYYY/MM/DD HH:mm:ss");
+		var message = res.data;
+		message = startLine + message.split(startLine).slice(1).join(startLine);
+		message = message.split("Starting transform!").slice(0, 2)
+			.join("Starting transform!").split("SUCCESS");
+		message = message.slice(0, message.length - 1).join("SUCCESS");
+		message = $.trim(message);
+
+		dg.logData(message.split("\n").map(function (e) { 
+			return "<li>" + e + "</li>";
+		}).join(""));
+	});
+}
 
 $(function () {
 	dg.getScrapperData();
