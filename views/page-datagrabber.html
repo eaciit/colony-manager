@@ -165,14 +165,34 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'log')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	All Log Grabber of
+		        	Log Grabber of
 		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
+		        	<span data-bind="text: dg.selectedLogDate"></span>
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
 		    	<div class="col-md-12">
 		    		<ul data-bind="html: dg.logData"></ul>
 		    	</div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'data')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'data')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Transformed Data Grabber of
+		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
+		        	<span data-bind="text: dg.selectedLogDate"></span>
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+	    		<div class="grid-transformed-data"></div>
 		    </div>
 		</div>
 	</div>

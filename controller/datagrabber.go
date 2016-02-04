@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
@@ -9,15 +10,18 @@ import (
 	"github.com/eaciit/toolkit"
 	"github.com/robfig/cron"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
 var (
-	serviceHolder = map[string]*cron.Cron{}
-	logAt         = ""
-	logFileName   = ""
+	serviceHolder       = map[string]*cron.Cron{}
+	logPath             = filepath.Join(AppBasePath, "config", "datagrabber", "log")
+	transformedDataPath = filepath.Join(AppBasePath, "config", "datagrabber", "data")
+	logAt               = ""
+	logFileName         = ""
 )
 
 type DataGrabberController struct {
@@ -31,7 +35,6 @@ func CreateDataGrabberController(s *knot.Server) *DataGrabberController {
 }
 
 func (d *DataGrabberController) getLogger(dataGrabber *colonycore.DataGrabber) (*toolkit.LogEngine, error) {
-	logPath := filepath.Join(AppBasePath, "config", "datagrabber", "log")
 	logFileName := fmt.Sprintf("%s-%s", dataGrabber.ID, logFileName)
 	logFilePattern := ""
 
@@ -139,6 +142,34 @@ func (d *DataGrabberController) GetLogs(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, logs, "")
 }
 
+func (d *DataGrabberController) GetTransformedData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		ID   string `json:"_id",bson:"_id"`
+		Date string
+	}{}
+
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	filepath := filepath.Join(AppBasePath, "config", "datagrabber", "data", fmt.Sprintf("%s.json", payload.Date))
+	bytes, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	transformedData := []toolkit.M{}
+	err = json.Unmarshal(bytes, &transformedData)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, transformedData, "")
+}
+
 func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -201,7 +232,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 		logConf, err := d.getLogger(dataGrabber)
 		if err != nil {
-			logConf.AddLog(message, "ERROR")
+			logConf.AddLog(err.Error(), "ERROR")
 			defer logConf.Close()
 		}
 
@@ -212,7 +243,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 		logConf, err := d.getLogger(dataGrabber)
 		if err != nil {
-			logConf.AddLog(message, "ERROR")
+			logConf.AddLog(err.Error(), "ERROR")
 			defer logConf.Close()
 		}
 
@@ -220,9 +251,34 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 
 	yo := func() {
+		logConfTransformation, err := d.getLogger(dataGrabber)
+		if err != nil {
+			logConfTransformation.AddLog(err.Error(), "ERROR")
+			defer logConfTransformation.Close()
+		}
+
 		success, data, message := d.Transform(dataGrabber)
 		_, _, _ = success, data, message
 		// timeout not yet implemented
+
+		dataPath := filepath.Join(transformedDataPath, fmt.Sprintf("%s.json", logAt))
+		if toolkit.IsFileExist(dataPath) {
+			if err = os.Remove(dataPath); err != nil {
+				logConfTransformation.AddLog(err.Error(), "ERROR")
+			}
+		}
+
+		if _, err = os.Create(dataPath); err != nil {
+			logConfTransformation.AddLog(err.Error(), "ERROR")
+		} else {
+			if bytes, err := json.Marshal(data); err != nil {
+				logConfTransformation.AddLog(err.Error(), "ERROR")
+			} else {
+				if err = ioutil.WriteFile(dataPath, bytes, 0666); err != nil {
+					logConfTransformation.AddLog(err.Error(), "ERROR")
+				}
+			}
+		}
 	}
 	yo()
 
@@ -244,7 +300,6 @@ func (d *DataGrabberController) StopTransformation(r *knot.WebContext) interface
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	logPath := filepath.Join(AppBasePath, "config", "datagrabber", "log")
 	logFileName = dataGrabber.ID
 	logFilePattern := ""
 	logConf, err := toolkit.NewLog(false, true, logPath, logFileName, logFilePattern)
@@ -278,7 +333,7 @@ func (d *DataGrabberController) Stat(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, ok, "")
 }
 
-func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (bool, interface{}, string) {
+func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (bool, []toolkit.M, string) {
 	logConf, err := d.getLogger(dataGrabber)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
@@ -394,5 +449,5 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	logConf.AddLog(message, "SUCCESS")
 	fmt.Println(message)
 
-	return true, len(transformedData), ""
+	return true, transformedData, ""
 }

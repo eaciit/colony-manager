@@ -28,6 +28,7 @@ dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
 dg.selectedDataGrabber = ko.observable('');
+dg.selectedLogDate = ko.observable('');
 dg.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "Data Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
@@ -51,8 +52,11 @@ dg.historyData = ko.observableArray([]);
 dg.historyColumns = ko.observableArray([
 	{ field: "_id", title: "Number", width: 100, },
 	{ field: "Date", title: "History At" },
-	{ title: "&nbsp;", width: 120, attributes: { class: "align-center" }, template: function (d) {
-		return "<button class='btn btn-sm btn-default btn-text-primary' onclick='dg.viewLog(\"" + kendo.toString(d.Date, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text-o'></span> View Log</button>";
+	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='dg.viewData(\"" + kendo.toString(d.Date, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='dg.viewLog(\"" + kendo.toString(d.Date, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text-o'></span> View Log</button>",
+		].join(" ");
 	}, filterable: false }
 ]);
 dg.fieldOfDataSource = function (which) {
@@ -268,10 +272,10 @@ dg.viewHistory = function (_id) {
 dg.backToHistory = function () {
 	app.mode("history");
 };
-dg.viewLog = function (Date) {
+dg.viewLog = function (date) {
 	var param = { 
 		_id: dg.selectedDataGrabber(), 
-		Date: Date
+		Date: date
 	};
 	app.ajaxPost("/datagrabber/getlogs", param, function (res) {
 		if (!app.isFine(res)) {
@@ -279,8 +283,9 @@ dg.viewLog = function (Date) {
 		}
 
 		app.mode("log");
+		dg.selectedLogDate(date);
 
-		var startLine = "SUCCESS " + moment(Date, "YYYYMMDD-HHmmss")
+		var startLine = "SUCCESS " + moment(date, "YYYYMMDD-HHmmss")
 			.format("YYYY/MM/DD HH:mm:ss");
 		var message = res.data;
 		message = startLine + message.split(startLine).slice(1).join(startLine);
@@ -293,7 +298,48 @@ dg.viewLog = function (Date) {
 			return "<li>" + e + "</li>";
 		}).join(""));
 	});
-}
+};
+dg.viewData = function (date) {
+	var param = { 
+		_id: dg.selectedDataGrabber(), 
+		Date: date
+	};
+	app.ajaxPost("/datagrabber/gettransformeddata", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		app.mode("data");
+		dg.selectedLogDate(date);
+
+		var columns = [{ title: "&nbsp" }];
+		if (res.data.length > 0) {
+			columns = [];
+			var sample = res.data[0];
+			for (key in sample) {
+				if (sample.hasOwnProperty(key)) {
+					columns.push({
+						field: key,
+						width: 100
+					});
+				}
+			}
+		}
+
+		$(".grid-transformed-data").replaceWith("<div class='grid-transformed-data'></div>");
+		$(".grid-transformed-data").kendoGrid({
+			filterable: false,
+			dataSource: {
+				data: res.data,
+				pageSize: 10
+			},
+			columns: columns
+		});
+
+		console.log(columns);
+		console.log(res.data);
+	});
+};
 
 $(function () {
 	dg.getScrapperData();
