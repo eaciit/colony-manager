@@ -1,8 +1,28 @@
+<!-- core -->
 <script src="/res/core/page-application.js"></script>
 
 <!-- main area -->
-<div class="col-xs-12 col-sm-12">
-	<div class="col-md-12">
-		<h1>Application Page</h1>
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: application">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
+		<h1>Data Application</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" >
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn">
+	    		<span class="glyphicon glyphicon-plus"></span> Create Application
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">All Application</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid grid-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.scrapperData, columns: apl.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-application') }">
+		    	</div>
+		    </div>
+		</div>
 	</div>
 </div>
