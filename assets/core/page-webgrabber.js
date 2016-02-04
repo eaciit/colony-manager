@@ -91,8 +91,8 @@ wg.scrapperColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
-	{ field: "intervaltype", title: "Interval Unit", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
+	{ field: "intervaltype", title: "Interval Unit", width: 150 },
 	{ field: "grabinterval", title: "Interval Duration", width: 150 },
 	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
 ]);
