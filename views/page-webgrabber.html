@@ -1,18 +1,11 @@
 <!-- core -->
-<script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/xml.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/javascript.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/active-line.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script>
-<link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css">
+<!-- <script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/xml.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/javascript.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/active-line.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script> -->
+<!-- <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css"> -->
 <script src="/res/core/page-webgrabber.js"></script>
-
-<style>
-	.k-grid .k-grid-content-locked {
-		height: auto !important;
-	}
-</style>
-
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
@@ -38,10 +31,38 @@
 	    	</button>
 		</nav>
 
+	    <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-4 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<input class="form-control input-sm" type="" name="" />
+		    	</div>
+		    </div>
+		    <div class="col-md-4 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Request Type
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<select name="requesttype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		    <div class="col-md-4 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Source Type
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<select name="sourcetype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		</nav>
+
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
+
 		    <div class="panel-body">
 		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
@@ -59,7 +80,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+		<div class="panel" id="panel-set-up" data-bind="visible: (app.mode() == 'editor')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
@@ -144,9 +165,9 @@
 		    			</div>
 		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == ''">
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 3, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
-		    				<button class="btn btn-sm btn-success" data-bind="visible: wg.modeSetting() == 3"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    				<button class="btn btn-sm btn-success" data-bind="visible: wg.modeSetting() == 2"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
 		    			</div>
 
 		    			<!-- Form Set Up -->
@@ -207,7 +228,7 @@
 												</td>
 												<td>
 													<div class="input-group input-group-sm" style="width:150px;">
-														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: RowSelector, attr: { 'name': 'selector-setting-value-' + $index() }" />
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: RowSelector, attr: { 'name': 'selector-setting-value-' + $index() }" disabled/>
 														<span class="input-group-btn">
 															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
@@ -265,9 +286,9 @@
 												</td>
 												<td>
 													<div class="input-group input-group-sm" style="width:130px;">
-														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: Selector, attr: { 'name': 'column-selector-value-' + $index() }" />
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: Selector, attr: { 'name': 'column-selector-value-' + $index() }" disabled />
 														<span class="input-group-btn">
-															<button class="btn btn-sm btn-info" type="button"><span class="glyphicon glyphicon-search"></span></button>
+															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-value-' + $index() }"></span>
 													</div>
@@ -340,19 +361,19 @@
 		    			</div>
 
 		    			<!-- Form Inspect Element -->
-		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElement'">
+		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-		    				<button class="btn btn-sm btn-success"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    				<button class="btn btn-sm btn-success" data-bind="click:function(){wg.saveSelectedElement(wg.tempIndexColumn())}"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
 		    			</div>
-		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElement'">
+		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
 		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-		    					<div id="inspectElement"></div>
+		    					<div id="inspectElement"><ul></ul></div>
 		    				</div>
 		    			</div>
 
 		    			<!-- Form Preview -->
-	    				<div class="col-md-12" data-bind="visible:wg.modeSetting() == 3"></div>
+	    				<!-- <div class="col-md-12" data-bind="visible:wg.modeSetting() == 3"></div> -->
 		    		</div>
 		    		<div class="col-md-8">
 		    			<iframe class="full-width" id="content-preview"></iframe>

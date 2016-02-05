@@ -7,10 +7,12 @@ wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
+wg.tempIndexSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
+wg.selectedItem = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	calltype: "GET",
@@ -116,6 +118,8 @@ wg.historyColumns = ko.observableArray([
 		].join(" ");
 	}, filterable: false }
 ]);
+wg.filterRequestTypes = ko.observable('');
+wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_Http", title: "HTTP / Web" },
 	{ value: "SourceType_Dbox", title: "Data File" },
@@ -264,26 +268,123 @@ wg.getURL = function () {
 		startofbody = bodyyo.indexOf(">");
 		bodyyo = bodyyo.substr(startofbody+1);
 		URLSource = $.parseHTML(bodyyo);
-		// console.log(URLSource);
-		// var editor = CodeMirror($("inspectElement"), {
-		//   mode: "text/html",
-		//   // styleActiveLine: true,
-		//   // lineNumbers: true,
-		//   // lineWrapping: true,
-		//   readOnly : true,
-		//   value: URLSource
-		// });
-	// console.log(bodyyo);
-		$("#inspectElement").replaceWith("<div id='inspectElement'></div>");
-		// $("#inspectElement").html(URLSource);
-		var editor = CodeMirror(document.getElementById("inspectElement"), {
-	        mode: "text/html",
-	        lineNumbers: true,
-			lineWrapping: true,
-	        readOnly : true,
-	        value: bodyyo
-	      });
+		$("#inspectElement").replaceWith("<div id='inspectElement'><ul></ul></div>");
+		// $('#panel-set-up').scrollTop = $('#panel-set-up').scrollHeight;
+		$(URLSource).each(function(i,e){
+			if($(this).html()!==undefined){
+				linenumber = wg.GetElement($(this),0,0,0,"body");
+			}
+		})
 	});
+};
+wg.getNodeElement = function(obj,classes,id){
+	var selector = "", nodeName = obj.get()[0].nodeName.toLowerCase();
+
+	if(id!=="" && id!==undefined)
+		selector+= nodeName+"#"+id.split(" ")[0];
+	else if(classes!=="" && classes!==undefined)
+		selector+= nodeName+"."+classes.split(" ")[0];
+	else
+		selector+= nodeName;
+
+	return {element: selector, id: id, classes: classes, node: nodeName };
+};
+wg.GetElement = function(obj,parent,linenumber,index,selector){
+	linenumber +=1;
+	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
+	if(id !== undefined && id !== "")
+		id = "id='"+id+"'";
+	else
+		id = "";
+	
+	if( classes !== undefined && classes !== "" )
+		classes = "class='"+classes+"'";
+	else
+		classes = "";
+
+	selector += " > " + nodeelement.element+":eq("+index+")";
+
+	$liElem = $("<li id='scw"+linenumber+"' class='selector'></li>");
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"')", "indexelem":index});
+	$liElem.appendTo($("#inspectElement>ul"));
+
+	$divSeqElem = $("<div></div>");
+	$divSeqElem.text(linenumber+". ");
+	$divSeqElem.css("display","inline");
+	$divSeqElem.appendTo($liElem);
+
+	$divContentElem = $("<div></div>");
+	$divContentElem.text("<"+nodeName+" "+id+" "+classes+"> "+obj.text().replace(/ /g,'').substring(0,20));
+	$divContentElem.css({'margin-left':parseFloat(parent)*10+"px", "display":"inline"});
+	$divContentElem.appendTo($liElem);
+
+	var idx = 0, tempIndex = 0, prevNode = new Array();
+	obj.children().each(function(i,e){
+		var nodeelement = wg.getNodeElement($(this), $(this).attr("class"), $(this).attr("id")), indexsearch = 0;
+
+		var searchElem = ko.utils.arrayFilter(prevNode,function (item,index) {
+			if (item.name === nodeelement.element){
+				indexsearch = index;
+				return item;
+			}
+        });
+        if (searchElem.length == 0){
+        	idx=0;
+        	prevNode.push({name:nodeelement.element, value: 0});
+        	if (nodeelement.element !== nodeelement.node){
+	        	var searchElem2 = ko.utils.arrayFilter(prevNode,function (item) {
+			        return item.name === nodeelement.node;
+			    });
+			    if (searchElem2.length == 0){
+			    	prevNode.push({name:nodeelement.node, value: 0});
+			    }
+			}
+        } else {
+        	if (nodeelement.element !== nodeelement.node){
+        		var indexsearch2=0, searchElem2 = ko.utils.arrayFilter(prevNode,function (item,index) {
+        			if (item.name === nodeelement.node){
+						indexsearch2 = index;
+						return item;
+					}
+			    });
+			    prevNode[indexsearch2].value += 1;
+        	}
+        	idx = prevNode[indexsearch].value + 1;
+        	prevNode[indexsearch].value = idx;
+        }
+		
+		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
+			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector);
+		}
+	})
+	return linenumber;
+};
+wg.GetCurrentSelector = function(id,selector){
+	$("*.selector").attr("class","selector");
+	$("#"+id).attr("class","selector active");
+	var existingStyle = $(wg.selectedItem(), $("#content-preview").contents()).attr("style");
+	
+	if(existingStyle!==undefined){
+		existingStyle = existingStyle.replace(";border:5px solid #FF9900","");
+		existingStyle = existingStyle.replace("border:5px solid #FF9900","");
+		$(wg.selectedItem(), $("#content-preview").contents()).attr("style",existingStyle);
+	}
+	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
+	
+	wg.selectedItem(selector);
+	existingStyle = "";
+	existingStyle = $(selector, $("#URLPreview").contents()).attr("style");
+	if(existingStyle!==undefined){
+		if(existingStyle[existingStyle.length-1]==";"){
+			existingStyle += existingStyle+"border:5px solid #FF9900";
+		}else{
+			existingStyle += existingStyle+";border:5px solid #FF9900";
+		}
+		
+	}else{
+		existingStyle = "border:5px solid #FF9900";
+	}
+	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
 };
 wg.saveNewScrapper = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
@@ -388,10 +489,26 @@ wg.removeColumnSetting = function(each){
 	wg.configSelector.SelectorSetting.ColumnSetting.remove(item);
 }
 wg.GetRowSelector = function(index){
-	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
-	wg.tempIndexColumn(index);
-	wg.modeSelector("editElement");
+	if (wg.modeSelector() === ''){
+		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+		wg.tempIndexColumn(index);
+		wg.modeSelector("editElementSelector")
+	} else {
+		wg.tempIndexSetting(index);
+		wg.modeSelector("editElementConfig");
+	}
+	wg.selectedItem('');
 };
+wg.saveSelectedElement = function(index){
+	if (wg.modeSelector() === 'editElementSelector'){
+		wg.selectorRowSetting()[index].RowSelector(wg.selectedItem());
+		wg.modeSelector("");
+	} else {
+		wg.configSelector.SelectorSetting.ColumnSetting()[wg.tempIndexSetting()].Selector(wg.selectedItem());
+		wg.modeSelector("edit");
+	}
+	wg.selectedItem('');
+}
 wg.viewData = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
