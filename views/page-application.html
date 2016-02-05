@@ -7,7 +7,7 @@
 		<h1>Application</h1>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click:getApplications">
+            <button class="btn btn-sm btn-primary navbar-btn" >
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: apl.createNewScrapper">
@@ -24,10 +24,10 @@
 		    </div>
 		</div>
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click:backToFront">
+			<button class="btn btn-sm btn-warning navbar-btn" >
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" >
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: apl.saveScrapper">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
 	    	<button class="btn btn-sm btn-success navbar-btn" >
@@ -37,29 +37,31 @@
 
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 600px;">
 			<div class="panel-heading">
-		        <h1 class="panel-title"><span data-bind="text: (apl.scrapperMode() == '') ? 'Create New' : 'Edit'"></span> Application
+		        <h1 class="panel-title"><span data-bind="text: (apl.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
 		        </h1>
 		    </div>
 		    <div class="panel-body">
-		    	<form class="form-horizontal form-datagrabber" id="form-add-scrapper" data-bind="with: configScrapper" novalidate>
+		    	<form class="form-horizontal form-application" id="form-add-scrapper" data-bind="with: configScrapper" novalidate>
 		    		<div class="col-md-12">
 			    		<div class="form-group">
 				    		<label class="col-md-4 filter-label">Application ID</label>
 				    		<div class="col-md-5">
 				    			<input class="form-control input-sm full-width" type="text" data-bind="value: _id, enable: (apl.scrapperMode() == '')"/>
-				    			<span class="k-invalid-msg" data-for="ID"></span>
 				    		</div>
 			    		</div>
 			    		<div class="form-group">
 				    		<label class="col-md-4 filter-label">Auto Start</label>
 				    		<div class="col-md-5">
-				    			<input type="checkbox" data-bind="checked: Enable"/>
+				    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
 				    		</div>
 			    		</div>
 			    		<div class="form-group">
 				    		<label class="col-md-4 filter-label">App Resources</label>
 				    		<div class="col-md-5">
-				    			<button class="btn btn-md btn-primary">Upload zip file here</button>
+				    			<!-- <button type="file" class="btn btn-md btn-primary" data-bind="click: apl.uploadScrapper">Upload zip file here</button> -->
+				    			<div class="k-content">
+				                    <input name="files" id="files" type="file" data-bind="value: AppPath" accept=".zip" />
+				                </div>
 				    		</div>
 			    		</div>
 		    		</div>
