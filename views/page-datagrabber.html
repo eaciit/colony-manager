@@ -15,6 +15,17 @@
 	    	</button>
 		</nav>
 
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-4">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8">
+		    		<input class="form-control input-sm" type="" name="" />
+		    	</div>
+		    </div>
+		</nav>
+
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Data Grabber</h1>
@@ -134,7 +145,65 @@
 				        	</div>
 				        </div>
 		        	</div>
-		        </div>
+		        </form>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'history')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'history')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	All History Grabber of
+		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.historyData, columns: dg.historyColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'log')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'log')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Log Grabber of
+		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
+		        	<span data-bind="text: dg.selectedLogDate"></span>
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="col-md-12">
+		    		<ul data-bind="html: dg.logData"></ul>
+		    	</div>
+		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'data')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'data')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Transformed Data Grabber of
+		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
+		        	<span data-bind="text: dg.selectedLogDate"></span>
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+	    		<div class="grid-transformed-data"></div>
 		    </div>
 		</div>
 	</div>

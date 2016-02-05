@@ -31,9 +31,28 @@
 	    	</button>
 		</nav>
 
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-4">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8">
+		    		<input class="form-control input-sm" type="" name="" />
+		    	</div>
+		    </div>
+		    <div class="col-md-4">
+		    	<label class="col-md-4 filter-label">
+		    		Driver
+		    	</label>
+		    	<div class="col-md-8">
+		    		<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: ds.filterDriver, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		</nav>
+
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">All Connections</h1>
+		    	<h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
 		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
@@ -154,6 +173,17 @@
 	    	</button>
 		</nav>
 
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-4">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8">
+		    		<input class="form-control input-sm" type="" name="" />
+		    	</div>
+		    </div>
+		</nav>
+
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editDataSource')">
             <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
@@ -263,6 +293,7 @@
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Meta Data</h1>
 		    </div>
+
 		    <div class="panel-body" data-bind="visible: (confDataSource.MetaData().length > 0)">
 		    	<div id="grid-metadata" data-bind="kendoGrid: { dataSource: ds.gridMetaDataSchema, data: confDataSource.MetaData, columns: ds.metadataColumns, pageable: false, resizable: false, filterable: false, sortable: true, editable: true, dataBound: gridMetaDataBound }"></div>
 		    	<label style="margin-top: 10px; margin-bottom: 0px; font-weight: normal;">

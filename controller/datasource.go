@@ -350,6 +350,33 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
+func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]string{"inputText":"mongo","inputDrop":""}
+	text := payload["inputText"]
+	pilih := payload["inputDrop"]
+
+	var query *dbox.Filter
+	if text != "" {
+		query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("Database",text),dbox.Eq("Driver",text),dbox.Eq("Host",text),dbox.Eq("UserName",text),dbox.Eq("Password",text))
+	}
+
+	if pilih != "" {
+		query = dbox.Eq(pilih,text)
+	}
+
+	data := []colonycore.Connection{}
+	cursor, err := colonycore.Find(new(colonycore.Connection), query)
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
+}
+//~ dbox.And(dbox.Eq("id","001"),dboxEq("nama","rizal"))
 func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -740,6 +767,26 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]string{"inputText":"200_eccolmag"}
+	text := payload["inputText"]
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("ConnectionID",text))
+
+	data := []colonycore.Connection{}
+	cursor, err := colonycore.Find(new(colonycore.Connection), query)
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
 }
