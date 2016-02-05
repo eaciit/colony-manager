@@ -7,6 +7,7 @@ wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
+wg.tempIndexSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
@@ -362,7 +363,6 @@ wg.GetCurrentSelector = function(id,selector){
 	$("*.selector").attr("class","selector");
 	$("#"+id).attr("class","selector active");
 	var existingStyle = $(wg.selectedItem(), $("#content-preview").contents()).attr("style");
-	console.log(existingStyle);
 	
 	if(existingStyle!==undefined){
 		existingStyle = existingStyle.replace(";border:5px solid #FF9900","");
@@ -489,11 +489,25 @@ wg.removeColumnSetting = function(each){
 	wg.configSelector.SelectorSetting.ColumnSetting.remove(item);
 }
 wg.GetRowSelector = function(index){
-	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
-	wg.tempIndexColumn(index);
+	if (wg.modeSelector() === ''){
+		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+		wg.tempIndexColumn(index);
+	} else {
+		wg.tempIndexSetting(index);
+	}
 	wg.modeSelector("editElement");
 	wg.selectedItem('');
 };
+wg.saveSelectedElement = function(index){
+	if (wg.modeSelector() === ''){
+		wg.selectorRowSetting()[index].RowSelector(wg.selectedItem());
+		wg.modeSelector("");
+	} else {
+		wg.configSelector.SelectorSetting.ColumnSetting()[wg.tempIndexSetting()].Selector(wg.selectedItem());
+		wg.modeSelector("edit");
+	}
+	wg.selectedItem('');
+}
 wg.viewData = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });

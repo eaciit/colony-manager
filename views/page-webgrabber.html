@@ -228,7 +228,7 @@
 												</td>
 												<td>
 													<div class="input-group input-group-sm" style="width:150px;">
-														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: RowSelector, attr: { 'name': 'selector-setting-value-' + $index() }" />
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: RowSelector, attr: { 'name': 'selector-setting-value-' + $index() }" disabled/>
 														<span class="input-group-btn">
 															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
@@ -286,9 +286,9 @@
 												</td>
 												<td>
 													<div class="input-group input-group-sm" style="width:130px;">
-														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: Selector, attr: { 'name': 'column-selector-value-' + $index() }" />
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: Selector, attr: { 'name': 'column-selector-value-' + $index() }" disabled />
 														<span class="input-group-btn">
-															<button class="btn btn-sm btn-info" type="button"><span class="glyphicon glyphicon-search"></span></button>
+															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-value-' + $index() }"></span>
 													</div>
@@ -363,7 +363,7 @@
 		    			<!-- Form Inspect Element -->
 		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElement'">
 		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-		    				<button class="btn btn-sm btn-success"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    				<button class="btn btn-sm btn-success" data-bind="click:function(){wg.saveSelectedElement(wg.tempIndexColumn())}"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
 		    			</div>
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElement'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
