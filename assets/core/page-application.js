@@ -80,6 +80,7 @@ apl.removeScrapper = function(_id) {
 	});
 };
 
+
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
