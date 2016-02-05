@@ -24,17 +24,32 @@ func CreateApplicationController(s *knot.Server) *ApplicationController {
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
+	// payload := map[string]interface{}{}
+	// err := r.GetPayload(&payload)
+	o := new(colonycore.Application)
+	err := r.GetPayload(&o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	o := new(colonycore.Application)
-	o.ID = "appSC"
-	o.Enable = false
+	// o.ID = "appSC"
+	// o.Enable = false
 	o.AppPath = fmt.Sprintf("%s", filepath.Join(AppBasePath, "config", "applications", "cast-master.zip"))
 	o.AppsName = "Standard Chartered"
+
+	/*fmt.Printf("AppPath:%v", o.AppPath)
+	file, handler, err := r.Request.FormFile(o.AppPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer file.Close()
+	fmt.Printf("handler:%v", handler.Header)
+	f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer f.Close()
+	io.Copy(f, file)*/
 
 	err = colonycore.Delete(o)
 
