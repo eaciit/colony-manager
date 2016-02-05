@@ -1,18 +1,11 @@
 <!-- core -->
-<script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/xml.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/javascript.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/active-line.js"></script>
-<script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script>
-<link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css">
+<!-- <script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/xml.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/javascript.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/active-line.js"></script> -->
+<!-- <script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script> -->
+<!-- <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css"> -->
 <script src="/res/core/page-webgrabber.js"></script>
-
-<style>
-	.k-grid .k-grid-content-locked {
-		height: auto !important;
-	}
-</style>
-
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
@@ -38,10 +31,38 @@
 	    	</button>
 		</nav>
 
+	    <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-4 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<input class="form-control input-sm" type="" name="" />
+		    	</div>
+		    </div>
+		    <div class="col-md-4 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Request Type
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<select name="requesttype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		    <div class="col-md-4 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Source Type
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<select name="sourcetype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		</nav>
+
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
+
 		    <div class="panel-body">
 		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
@@ -59,7 +80,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+		<div class="panel" id="panel-set-up" data-bind="visible: (app.mode() == 'editor')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
@@ -347,7 +368,7 @@
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElement'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
 		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-		    					<div id="inspectElement"></div>
+		    					<div id="inspectElement"><ul></ul></div>
 		    				</div>
 		    			</div>
 
