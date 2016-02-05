@@ -274,42 +274,23 @@ wg.getURL = function () {
 				linenumber = wg.GetElement($(this),0,0,0,"body");
 			}
 		})
-		// var editor = CodeMirror($("inspectElement"), {
-		//   mode: "text/html",
-		//   // styleActiveLine: true,
-		//   // lineNumbers: true,
-		//   // lineWrapping: true,
-		//   readOnly : true,
-		//   value: URLSource
-		// });
-	// console.log(bodyyo);
-		// $("#inspectElement").replaceWith("<textarea id='inspectElement'></textarea>");
-		// $("#inspectElement").html(URLSource);
-		// var editor = CodeMirror(document.getElementById("inspectElement"), {
-		// var editor = CodeMirror.fromTextArea(document.getElementById("inspectElement"), {
-	 //        mode: "text/html",
-	 //        lineNumbers: true,
-		// 	lineWrapping: true,
-	 //        readOnly : true,
-	        // value: bodyyo
-	      // });
 	});
 };
 wg.getNodeElement = function(obj,classes,id){
 	var selector = "", nodeName = obj.get()[0].nodeName.toLowerCase();
 
-	if(id!=="")
-		selector+=" > "+nodeName+"#"+obj.attr("id").split(" ")[0];
-	else if(classes!=="")
-		selector+=" > "+nodeName+"."+obj.attr("class").split(" ")[0];
+	if(id!=="" && id!==undefined)
+		selector+= nodeName+"#"+id.split(" ")[0];
+	else if(classes!=="" && classes!==undefined)
+		selector+= nodeName+"."+classes.split(" ")[0];
 	else
-		selector+=" > "+nodeName;
+		selector+= nodeName;
 
-	return {element: selector, id: id, classes: classes};
-}
+	return {element: selector, id: id, classes: classes, node: nodeName };
+};
 wg.GetElement = function(obj,parent,linenumber,index,selector){
 	linenumber +=1;
-	var classes = obj.attr("class"), id = obj.attr("id");
+	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
 	if(id !== undefined && id !== "")
 		id = "id='"+id+"'";
 	else
@@ -319,21 +300,11 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
 		classes = "class='"+classes+"'";
 	else
 		classes = "";
-	
-	var nodeName = obj.get()[0].nodeName.toLowerCase();
-	if(id!=="")
-		selector+=" > "+nodeName+"#"+obj.attr("id").split(" ")[0]+":eq("+index+")";
-	else if(classes!=="")
-		selector+=" > "+nodeName+"."+obj.attr("class").split(" ")[0]+":eq("+index+")";
-	else
-		selector+=" > "+nodeName+":eq("+index+")";
-	// var elemSelector = wg.getNodeElement(obj);
-	// selector += elemSelector.element+":eq("+index+")";
 
-	$("#inspectElement>ul").css({'list-style-type':'none', 'margin-left':'0px','padding-left':'0px'});
+	selector += " > " + nodeelement.element+":eq("+index+")";
 
 	$liElem = $("<li id='scw"+linenumber+"' class='selector'></li>");
-	$liElem.attr("onclick","wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"')");
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"')", "indexelem":index});
 	$liElem.appendTo($("#inspectElement>ul"));
 
 	$divSeqElem = $("<div></div>");
@@ -346,44 +317,58 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
 	$divContentElem.css({'margin-left':parseFloat(parent)*10+"px", "display":"inline"});
 	$divContentElem.appendTo($liElem);
 
-	var idx = 0, prevNode = new Array();
-	// var prevNode = "";
+	var idx = 0, tempIndex = 0, prevNode = new Array();
 	obj.children().each(function(i,e){
-		var node = $(this).get()[0].nodeName.toLowerCase();
-		// console.log(wg.getNodeElement($(this)));
-		var searchElem = ko.utils.arrayFilter(prevNode,function (item) {
-            return item === node;
+		var nodeelement = wg.getNodeElement($(this), $(this).attr("class"), $(this).attr("id")), indexsearch = 0;
+
+		var searchElem = ko.utils.arrayFilter(prevNode,function (item,index) {
+			if (item.name === nodeelement.element){
+				indexsearch = index;
+				return item;
+			}
         });
         if (searchElem.length == 0){
         	idx=0;
-        	prevNode.push(node);
-        } else
-        	idx++;
-
-        // console.log(selector);
-		// if (prevNode == node)
-		// 	idx=0;
+        	prevNode.push({name:nodeelement.element, value: 0});
+        	if (nodeelement.element !== nodeelement.node){
+	        	var searchElem2 = ko.utils.arrayFilter(prevNode,function (item) {
+			        return item.name === nodeelement.node;
+			    });
+			    if (searchElem2.length == 0){
+			    	prevNode.push({name:nodeelement.node, value: 0});
+			    }
+			}
+        } else {
+        	if (nodeelement.element !== nodeelement.node){
+        		var indexsearch2=0, searchElem2 = ko.utils.arrayFilter(prevNode,function (item,index) {
+        			if (item.name === nodeelement.node){
+						indexsearch2 = index;
+						return item;
+					}
+			    });
+			    prevNode[indexsearch2].value += 1;
+        	}
+        	idx = prevNode[indexsearch].value + 1;
+        	prevNode[indexsearch].value = idx;
+        }
 		
-		if($(this).html()!==undefined && node!== "link" && node !=="script" && node !=="br" && node !=="hr" ){
+		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
 			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector);
-			// idx++;
 		}
-		// prevNode = node;
 	})
 	return linenumber;
-}
+};
 wg.GetCurrentSelector = function(id,selector){
 	$("*.selector").attr("class","selector");
 	$("#"+id).attr("class","selector active");
-	var existingStyle = $(wg.selectedItem(), $("#URLPreview").contents()).attr("style");
+	var existingStyle = $(wg.selectedItem(), $("#content-preview").contents()).attr("style");
+	console.log(existingStyle);
 	
 	if(existingStyle!==undefined){
 		existingStyle = existingStyle.replace(";border:5px solid #FF9900","");
 		existingStyle = existingStyle.replace("border:5px solid #FF9900","");
-		$(wg.selectedItem(), $("#URLPreview").contents()).attr("style",existingStyle);
+		$(wg.selectedItem(), $("#content-preview").contents()).attr("style",existingStyle);
 	}
-	
-	console.log(selector);
 	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
 	
 	wg.selectedItem(selector);
@@ -400,7 +385,7 @@ wg.GetCurrentSelector = function(id,selector){
 		existingStyle = "border:5px solid #FF9900";
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
-}
+};
 wg.saveNewScrapper = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
@@ -507,6 +492,7 @@ wg.GetRowSelector = function(index){
 	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 	wg.tempIndexColumn(index);
 	wg.modeSelector("editElement");
+	wg.selectedItem('');
 };
 wg.viewData = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
