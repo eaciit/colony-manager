@@ -353,17 +353,24 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]string{"inputText":"mongo","inputDrop":""}
+	//~ payload := map[string]string{"inputText":"mon","inputDrop":""}
+	payload := map[string]interface{}{}
+
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 	text := payload["inputText"]
 	pilih := payload["inputDrop"]
 
+	// == bug, cant find if autocomplite, just full text can be get result
 	var query *dbox.Filter
 	if text != "" {
 		query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("Database",text),dbox.Eq("Driver",text),dbox.Eq("Host",text),dbox.Eq("UserName",text),dbox.Eq("Password",text))
 	}
 
 	if pilih != "" {
-		query = dbox.Eq(pilih,text)
+		query = dbox.And(query, dbox.Eq("Driver",pilih))
 	}
 
 	data := []colonycore.Connection{}
@@ -376,7 +383,7 @@ func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, data, "")
 }
-//~ dbox.And(dbox.Eq("id","001"),dboxEq("nama","rizal"))
+
 func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -773,19 +780,37 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 
 func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
 
-	payload := map[string]string{"inputText":"200_eccolmag"}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 	text := payload["inputText"]
 
+	// == bug, cant find if autocomplite, just full text can be get result
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("ConnectionID",text))
 
-	data := []colonycore.Connection{}
-	cursor, err := colonycore.Find(new(colonycore.Connection), query)
+	data := []colonycore.DataSource{}
+	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
 	cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	// == bug, i dont know what i can to do if find by database name.==
+	//~ if data == nil {
+		//~ query = dbox.Eq("Database",text)
+		//~ data := []colonycore.Connection{}
+		//~ cursor, err := colonycore.Find(new(colonycore.Connection), query)
+		//~ cursor.Fetch(&data, 0, false)
+		//~ if err != nil {
+			//~ return helper.CreateResult(false, nil, err.Error())
+		//~ }
+		//~ fmt.Printf("========asdasd=======%#v",data)
+	//~ }
+
 	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")

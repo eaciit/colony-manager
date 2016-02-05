@@ -101,6 +101,27 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 	return helper.CreateResult(true, payload, "")
 }
 
+func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]string{"inputText":"GRAB_TEST"}
+
+	text := payload["inputText"]
+
+	// == bug, cant find if autocomplite, just full text can be get result
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("DataSourceOrigin",text),dbox.Eq("DataSourceDestination",text),dbox.Eq("IntervalType",text),dbox.Eq("GrabInterval",text),dbox.Eq("TimeoutInterval",text))
+
+	data := []colonycore.DataGrabber{}
+	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
+}
+
 func (d *DataGrabberController) SelectDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
