@@ -492,14 +492,15 @@ wg.GetRowSelector = function(index){
 	if (wg.modeSelector() === ''){
 		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 		wg.tempIndexColumn(index);
+		wg.modeSelector("editElementSelector")
 	} else {
 		wg.tempIndexSetting(index);
+		wg.modeSelector("editElementConfig");
 	}
-	wg.modeSelector("editElement");
 	wg.selectedItem('');
 };
 wg.saveSelectedElement = function(index){
-	if (wg.modeSelector() === ''){
+	if (wg.modeSelector() === 'editElementSelector'){
 		wg.selectorRowSetting()[index].RowSelector(wg.selectedItem());
 		wg.modeSelector("");
 	} else {
