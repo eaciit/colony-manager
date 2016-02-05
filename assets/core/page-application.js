@@ -2,6 +2,13 @@ app.section('scrapper');
 
 viewModel.application = {}; var apl = viewModel.application;
 
+apl.templateConfigScrapper = {
+	_id: "",
+	Enable: false,
+	AppPath: ""
+};
+
+apl.configScrapper = ko.mapping.fromJS(apl.templateConfigScrapper);
 apl.scrapperMode = ko.observable('');
 apl.scrapperData = ko.observableArray([]);
 apl.scrapperColumns = ko.observableArray([
@@ -30,45 +37,45 @@ apl.getApplications = function() {
 };
 
 apl.editScrapper = function(_id) {
+	ko.mapping.fromJS(apl.templateConfigScrapper, apl.configScrapper);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
 		app.mode('editor');
-		apl.scrapperMode('edit');
-		console.log(res);
+		apl.scrapperMode('editor');
+		ko.mapping.fromJS(res.data, apl.configScrapper);
 	});
 };
 
-apl.removeScrapper = function(_id) {
-	swal({
-		title: "Are you sure?",
-		text: 'Application with id "' + _id + '" will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: false
-	},
-	function() {
-		setTimeout(function () {
-			app.ajaxPost("/application/deleteapps", { _id: _id }, function () {
-				if (!app.isFine) {
-					return;
-				}
+apl.createNewScrapper = function () {
+	//alert("masuk create");
+	app.mode("editor");
+	apl.scrapperMode('');
+	ko.mapping.fromJS(apl.templateConfigScrapper, apl.configScrapper);
+	//apl.addMap();
+};
 
-				apl.backToFront()
-				swal({title: "Application successfully deleted", type: "success"});
-			});
-		},1000);
+apl.saveScrapper = function(){
+	var data = ko.mapping.toJS(apl.configScrapper);
+	//console.log("======data"+JSON.stringfy(data));
+	app.ajaxPost("/application/saveapps", data, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
 	});
 };
 
 apl.backToFront = function () {
-	apl.getApplications();
+	app.mode("");
 };
+
+
+
 
 $(function () {
 	apl.getApplications();
+	$("#files").kendoUpload();
+    $("#files").closest(".k-upload").find("span").text("Upload zip file here");
+    $(".k-button.k-upload-button").addClass("btn btn-primary");
 });
