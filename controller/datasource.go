@@ -353,20 +353,20 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	//~ payload := map[string]string{"inputText":"mon","inputDrop":""}
+	//~ payload := map[string]string{"inputText":"tes","inputDrop":""}
 	payload := map[string]interface{}{}
 
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	text := payload["inputText"]
-	pilih := payload["inputDrop"]
+	text := payload["inputText"].(string)
+	pilih := payload["inputDrop"].(string)
 
-	// == bug, cant find if autocomplite, just full text can be get result
+	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
 	if text != "" {
-		query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("Database",text),dbox.Eq("Driver",text),dbox.Eq("Host",text),dbox.Eq("UserName",text),dbox.Eq("Password",text))
+		query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("Database",text),dbox.Contains("Driver",text),dbox.Contains("Host",text),dbox.Contains("UserName",text),dbox.Contains("Password",text))
 	}
 
 	if pilih != "" {
@@ -786,11 +786,11 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	text := payload["inputText"]
+	text := payload["inputText"].(string)
 
-	// == bug, cant find if autocomplite, just full text can be get result
+	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("ConnectionID",text))
+	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("ConnectionID",text))
 
 	data := []colonycore.DataSource{}
 	cursor, err := colonycore.Find(new(colonycore.DataSource), query)

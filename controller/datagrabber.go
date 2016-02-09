@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -103,13 +104,25 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 
 func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	payload := map[string]string{"inputText":"GRAB_TEST"}
 
-	text := payload["inputText"]
+	//~ payload := map[string]string{"inputText":"6"}
+	payload := map[string]interface{}{}
 
-	// == bug, cant find if autocomplite, just full text can be get result
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	text := payload["inputText"].(string)
+
+	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Eq("_id",text),dbox.Eq("DataSourceOrigin",text),dbox.Eq("DataSourceDestination",text),dbox.Eq("IntervalType",text),dbox.Eq("GrabInterval",text),dbox.Eq("TimeoutInterval",text))
+	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("DataSourceOrigin",text),dbox.Contains("DataSourceDestination",text),dbox.Contains("IntervalType",text))
+
+	// == try useing Eq for support integer
+	valueInt, errv := strconv.ParseInt(text,32,0)
+	if errv == nil {
+		query = dbox.Or(dbox.Eq("GrabInterval",valueInt),dbox.Eq("TimeoutInterval",valueInt))
+	}
 
 	data := []colonycore.DataGrabber{}
 	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)
