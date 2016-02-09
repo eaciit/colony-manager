@@ -116,12 +116,12 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("DataSourceOrigin",text),dbox.Contains("DataSourceDestination",text),dbox.Contains("IntervalType",text))
+	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("DataSourceOrigin", text), dbox.Contains("DataSourceDestination", text), dbox.Contains("IntervalType", text))
 
 	// == try useing Eq for support integer
-	valueInt, errv := strconv.ParseInt(text,32,0)
+	valueInt, errv := strconv.ParseInt(text, 32, 0)
 	if errv == nil {
-		query = dbox.Or(dbox.Eq("GrabInterval",valueInt),dbox.Eq("TimeoutInterval",valueInt))
+		query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
 	}
 
 	data := []colonycore.DataGrabber{}

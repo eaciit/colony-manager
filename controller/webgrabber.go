@@ -337,15 +337,15 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 	// 		},
 	// 	},
 	// }
-	wg.GrabConfiguration = toolkit.M{
-		"data": toolkit.M{
-			"Pu00231_Input.trade_date": 2.0151214e+07,
-			"Pu00231_Input.trade_type": 0,
-			"Pu00231_Input.variety":    "i",
-			"Submit":                   "Go",
-			"action":                   "Pu00231_result",
-		},
-	}
+	// wg.GrabConfiguration = toolkit.M{
+	// 	"data": toolkit.M{
+	// 		"Pu00231_Input.trade_date": 2.0151214e+07,
+	// 		"Pu00231_Input.trade_type": 0,
+	// 		"Pu00231_Input.variety":    "i",
+	// 		"Submit":                   "Go",
+	// 		"action":                   "Pu00231_result",
+	// 	},
+	// }
 	// wg.GrabInterval = 20
 	// wg.IntervalType = "seconds"
 	wg.LogConfiguration = &colonycore.LogConfiguration{
@@ -354,11 +354,15 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 		LogPath:     path.Join(AppBasePath, "config", "webgrabber", "log"),
 	}
 	// wg.ID = "irondcecomcn"
-	wg.IDBackup = "irondcecomcn"
+	// wg.IDBackup = "irondcecomcn"
 	// wg.SourceType = "SourceType_Http"
 	// wg.TimeoutInterval = 5
 	// wg.URL = "http://www.dce.com.cn/PublicWeb/MainServlet"
-	colonycore.Save(wg)
+	// colonycore.Save(wg)
+	err = colonycore.Save(wg)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	return helper.CreateResult(true, wg, "")
 }

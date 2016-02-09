@@ -361,4 +361,52 @@ body {
     width: 100%;
     height: 100%; } }
 
+.btn1{
+  margin-left: 27%;
+}
+
+.btn2{
+  margin-left: 15%;
+}
+.nav1{
+  padding-top: 3%;
+}
+
+.lbl{
+  margin-left: -9%;
+}
+
+th{
+  background-color: #428BCA;
+}
+
+.tab{
+  border: 1px solid #CCC;
+  height: 50%;
+}
+
+.intext{
+  width:100%;
+  height:350px;
+}
+
+td, th{
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.btn-save{
+  float: right;
+}
+
+.title{
+  color: #ffffff;
+  float: left;
+  margin-top: 5px;
+}
+
+th{
+  color: #ffffff;
+}
+
 /*# sourceMappingURL=style.css.map */
