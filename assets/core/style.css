@@ -149,6 +149,10 @@ a {
   margin: 15px 0;
   resize: none; }
 
+.inputcustom {
+  height: 25px;
+  margin-top: 2px; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
