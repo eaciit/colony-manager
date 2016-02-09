@@ -77,6 +77,7 @@ ds.connectionListColumns = ko.observableArray([
 		].join(" ");
 	} },
 ]);
+ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
 	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
