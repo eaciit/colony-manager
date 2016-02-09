@@ -1,4 +1,4 @@
-app.section('scrapper');
+app.section('application');
 
 viewModel.application = {}; var apl = viewModel.application;
 apl.templateConfigScrapper = {
