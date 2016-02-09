@@ -1,9 +1,20 @@
 <!-- core -->
 <script src="/res/core/page-application.js"></script>
+<script src="/res/core/page-server.js"></script>
+
+<!-- sidebar -->
+<div class="col-xs-6 col-sm-2" id="sidebar">
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'application') }, click: app.changeActiveSection('application')">Application<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'servers') }, click: app.changeActiveSection('servers')">Servers<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+		</ul>
+	</div>
+</div>
 
 <!-- main area -->
-<div class="col-xs-12 col-sm-12" id="content" data-bind="with: application">
-	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
+<div class="col-xs-12 col-sm-10" id="content">
+	<div class="col-md-12" data-bind="with: application, visible: (app.section() == 'application')">
 		<h1>Application</h1>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
@@ -68,5 +79,8 @@
 		    	</form>
 		    </div>
 		</div>
+	</div>
+	<div class="col-md-12" data-bind="visible: (app.section() == 'servers')">
+		{{template "page-servers.html"}}
 	</div>
 </div>
