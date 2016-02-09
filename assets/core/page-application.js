@@ -44,7 +44,6 @@ apl.editScrapper = function(_id) {
 
 		app.mode('editor');
 		apl.scrapperMode('edit');
-		apl.textFile('Upload zip file here');
 		ko.mapping.fromJS(res.data, apl.configScrapper);
 	});
 };
