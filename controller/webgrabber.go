@@ -4,7 +4,7 @@ import (
 	// "fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
-	// "github.com/eaciit/dbox"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	// "github.com/eaciit/sedotan/sedotan.v1"
 	// "fmt"
@@ -361,4 +361,43 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 	colonycore.Save(wg)
 
 	return helper.CreateResult(true, wg, "")
+}
+
+func (d *WebGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
+	//~ payload := map[string]interface{}{}
+
+	//~ err := r.GetPayload(&payload)
+	//~ if err != nil {
+	//~ return helper.CreateResult(false, nil, err.Error())
+	//~ }
+
+	text := payload["inputText"]
+	req := payload["inputRequest"]
+	tipe := payload["inputType"]
+
+	// == bug, cant find if autocomplite, just full text can be get result
+	var query *dbox.Filter
+	if text != "" {
+		query = dbox.Or(dbox.Eq("_id", text), dbox.Eq("calltype", text), dbox.Eq("sourcetype", text), dbox.Eq("intervaltype", text), dbox.Eq("grabinterval", text), dbox.Eq("timeoutinterval", text))
+	}
+
+	if req != "" {
+		query = dbox.And(query, dbox.Eq("calltype", req))
+	}
+
+	if tipe != "" {
+		query = dbox.And(query, dbox.Eq("sourcetype", tipe))
+	}
+
+	data := []colonycore.WebGrabber{}
+	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, payload, "")
 }
