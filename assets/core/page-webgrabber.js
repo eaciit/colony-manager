@@ -492,7 +492,7 @@ wg.GetRowSelector = function(index){
 	if (wg.modeSelector() === ''){
 		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 		wg.tempIndexColumn(index);
-		wg.modeSelector("editElementSelector")
+		wg.modeSelector("editElementSelector");
 	} else {
 		wg.tempIndexSetting(index);
 		wg.modeSelector("editElementConfig");

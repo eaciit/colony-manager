@@ -1,4 +1,4 @@
-app.section('scrapper');
+app.section('application');
 
 viewModel.application = {}; var apl = viewModel.application;
 apl.templateConfigScrapper = {
@@ -44,16 +44,36 @@ apl.editScrapper = function(_id) {
 
 		app.mode('editor');
 		apl.scrapperMode('edit');
-		ko.mapping.fromJS(res.data, apl.configScrapper)
-		console.log(res.data);
+		//apl.textFile('Upload zip file here');
+		ko.mapping.fromJS(res.data, apl.configScrapper);
 	});
 };
 
 apl.createNewScrapper = function () {
+	//alert("masuk create");
 	app.mode("editor");
 	apl.scrapperMode('');
 	ko.mapping.fromJS(apl.templateConfigScrapper, apl.configScrapper);
 	apl.addMap();
+};
+
+apl.saveScrapper = function() {
+	if (!app.isFormValid(".form-application")) {
+		return;
+	}
+	var filedata = new FormData($('#files')[0]);
+	// $.each($('#files')[0].files, function(i, file) {
+	//     filedata.append('file-'+i, file);
+	// });
+
+	var data = ko.mapping.toJS(apl.configScrapper);
+	console.log(data)
+	app.ajaxPost("/application/saveapps", data, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		apl.backToFront();
+	});
 };
 
 apl.removeScrapper = function(_id) {
@@ -80,12 +100,51 @@ apl.removeScrapper = function(_id) {
 	});
 };
 
+/*<<<<<<< HEAD
+=======*/
+apl.getUploadFile = function() {
+	$("#files").kendoUpload();
+    $("#files").closest(".k-upload").find("span").text("Upload zip file here");
+    $(".k-button.k-upload-button").addClass("btn btn-primary");
+};
+// >>>>>>> 6ffc4f86f573c9f8e28b7b3693577bc8e14d87c9
 
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
 };
 
+apl.getTreeview = function(){
+	 $("#treeview-sprites").kendoTreeView({
+        dataSource: [{
+            text: "My Documents", expanded: true, spriteCssClass: "rootfolder", items: [
+                {
+                    text: "Kendo UI Project", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "about.html", spriteCssClass: "html" },
+                        { text: "index.html", spriteCssClass: "html" },
+                        { text: "logo.png", spriteCssClass: "image" }
+                    ]
+                },
+                {
+                    text: "New Web Site", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "mockup.jpg", spriteCssClass: "image" },
+                        { text: "Research.pdf", spriteCssClass: "pdf" },
+                    ]
+                },
+                {
+                    text: "Reports", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "February.pdf", spriteCssClass: "pdf" },
+                        { text: "March.pdf", spriteCssClass: "pdf" },
+                        { text: "April.pdf", spriteCssClass: "pdf" }
+                    ]
+                }
+            ]
+        }]
+    });
+}
+
 $(function () {
 	apl.getApplications();
+	apl.getUploadFile();
+	apl.getTreeview();
 });
