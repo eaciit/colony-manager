@@ -14,20 +14,20 @@ wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
 wg.templateConfigScrapper = {
-	ID: "",
-	CallType: "GET",
-	IntervalType: "",
-	SourceType: "SourceType_Http",
-	GrabInterval: 0,
-	TimeoutInterval: 0,
-	URL: "http://www.shfe.com.cn/en/products/Gold/",
-	LogConfiguration: {
+	_id: "",
+	calltype: "GET",
+	intervaltype: "",
+	sourcetype: "SourceType_Http",
+	grabinterval: 0,
+	timeoutinterval: 0,
+	url: "http://www.shfe.com.cn/en/products/Gold/",
+	logconfiguration: {
 		FileName: "",
 		FilePattern: "",
 		LogPath: ""
 	},
-	GrabConfiguration: {},
-	DataSettings: []
+	grabconfiguration: {},
+	datasettings: []
 };
 // wg.templateDataSetting = {
 // 	rowselector: "",
@@ -52,26 +52,33 @@ wg.templateConfigScrapper = {
 // 	valuetype: ""
 // }
 wg.templateConfigSelector = {
-	Name: "",
-	RowSelector: "",
-	DestinationType: "Mongo",
-	ColumnSettings: [],
-	ConnectionInfo: {
-		FilterCond: "",
-		Host: "",
-		Database: "",
-		Collection: "",
-		FileName: "",
-		UseHeader: true,
-		Delimiter: ",",
-		UserName: "",
-		Password: ""
+	name: "",
+	rowselector: "",
+	rowdeletecond: {},
+	rowincludecond: {},
+	desttype: "mongo",
+	columnsettings: [],
+	connectioninfo: {
+		// filtercond: "",
+		// host: "",
+		// database: "",
+		// collection: "",
+		// filename: "",
+		// useheader: true,
+		// delimiter: ",",
+		// username: "",
+		// password: ""
+		host: "",
+		database: "",
+		username: "",
+		password: "",
+		collection: ""
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
-wg.templateDestinationType = ["Mongo", "CSV"];
+wg.templatedesttype = ["mongo", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
 	key: "",
@@ -139,7 +146,12 @@ wg.editScrapper = function (_id) {
 
 		app.mode('editor');
 		wg.scrapperMode('edit');
+		wg.modeSetting(1);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
+		// ko.mapping.fromJS(res.data.datasettings, wg.selectorRowSetting);
+		for (var key in res.data.datasettings){
+			wg.selectorRowSetting.push(ko.mapping.fromJS(res.data.datasettings[key], wg.selectedItem));
+		}
 		wg.isContentFetched(false);
 	});
 };
@@ -193,7 +205,7 @@ wg.backToHistory = function () {
 	app.mode('history')
 };
 wg.writeContent = function (html) {
-	var baseURL = wg.configScrapper.URL().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
+	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
 	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
 	
 	var contentDoc = $("#content-preview")[0].contentWindow.document;
@@ -469,8 +481,8 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 wg.showSelectorSetting = function(index,nameSelector){
-	if (wg.selectorRowSetting()[index].ColumnSettings().length == 0)
-		wg.selectorRowSetting()[index].ColumnSettings.push(ko.mapping.fromJS({Alias: "", ValueType: "", Selector: "", Index: 0}));
+	if (wg.selectorRowSetting()[index].columnsettings().length == 0)
+		wg.selectorRowSetting()[index].columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: 0}));
 
 	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 	wg.tempIndexColumn(index);
@@ -484,11 +496,11 @@ wg.saveSettingSelector = function() {
 	wg.modeSelector("");
 }
 wg.addColumnSetting = function() {
-	wg.configSelector.ColumnSettings.push(ko.mapping.fromJS({Alias: "", ValueType: "", Selector: "", Index: wg.configSelector.ColumnSettings().length - 1}));
+	wg.configSelector.columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: wg.configSelector.columnsettings().length - 1}));
 }
 wg.removeColumnSetting = function(each){
-	var item = wg.configSelector.ColumnSettings()[each];
-	wg.configSelector.ColumnSettings.remove(item);
+	var item = wg.configSelector.columnsettings()[each];
+	wg.configSelector.columnsettings.remove(item);
 }
 wg.GetRowSelector = function(index){
 	if (wg.modeSelector() === ''){
@@ -503,36 +515,35 @@ wg.GetRowSelector = function(index){
 };
 wg.saveSelectedElement = function(index){
 	if (wg.modeSelector() === 'editElementSelector'){
-		wg.selectorRowSetting()[index].RowSelector(wg.selectedItem());
+		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.ColumnSettings()[wg.tempIndexSetting()].Selector(wg.selectedItem());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItem());
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
 }
 wg.saveSelectorConf = function(){
 	var param = ko.mapping.toJS(wg.configScrapper);
-	param.DataSettings = ko.mapping.toJS(wg.selectorRowSetting);
-	for (var key in param.DataSettings){
-		if (param.DataSettings[key].DestinationType === 'Mongo'){
-			param.DataSettings[key].ConnectionInfo = {
-				Host: param.DataSettings[key].ConnectionInfo.Host,
-				Database: param.DataSettings[key].ConnectionInfo.Database,
-				Collection: param.DataSettings[key].ConnectionInfo.Collection,
-				UserName: param.DataSettings[key].ConnectionInfo.UserName,
-				Password: param.DataSettings[key].ConnectionInfo.Password,
-			}
-		} else {
-			param.DataSettings[key].ConnectionInfo = {
-				FilterCond: param.DataSettings[key].ConnectionInfo.FilterCond,
-				FileName: param.DataSettings[key].ConnectionInfo.FileName,
-				UseHeader: tparam.DataSettings[key].ConnectionInfo.UseHeader,
-				Delimiter: param.DataSettings[key].ConnectionInfo.Delimiter,
-			}
-		}
-	}
-	console.log(param);
+	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
+	// for (var key in param.DataSettings){
+	// 	if (param.datasettings[key].desttype === 'Mongo'){
+	// 		param.datasettings[key].connectioninfo = {
+	// 			Host: param.datasettings[key].connectioninfo.host,
+	// 			Database: param.datasettings[key].connectioninfo.database,
+	// 			Collection: param.datasettings[key].connectioninfo.collection,
+	// 			UserName: param.datasettings[key].connectioninfo.username,
+	// 			Password: param.datasettings[key].connectioninfo.password,
+	// 		}
+	// 	} else {
+	// 		param.datasettings[key].ConnectionInfo = {
+	// 			FilterCond: param.datasettings[key].connectioninfo.filtercond,
+	// 			FileName: param.datasettings[key].connectioninfo.filename,
+	// 			UseHeader: tparam.datasettings[key].connectioninfo.useheader,
+	// 			Delimiter: param.datasettings[key].connectioninfo.delimiter,
+	// 		}
+	// 	}
+	// }
 	app.ajaxPost("/webgrabber/insertsampledata", param, function (res) {
 		if(!app.isFine(res)) {
 			return;
