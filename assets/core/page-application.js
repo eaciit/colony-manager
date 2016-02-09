@@ -44,7 +44,6 @@ apl.editScrapper = function(_id) {
 
 		app.mode('editor');
 		apl.scrapperMode('edit');
-		//apl.textFile('Upload zip file here');
 		ko.mapping.fromJS(res.data, apl.configScrapper);
 	});
 };
@@ -54,26 +53,28 @@ apl.createNewScrapper = function () {
 	app.mode("editor");
 	apl.scrapperMode('');
 	ko.mapping.fromJS(apl.templateConfigScrapper, apl.configScrapper);
-	apl.addMap();
+	//apl.addMap();
 };
 
 apl.saveScrapper = function() {
 	if (!app.isFormValid(".form-application")) {
 		return;
 	}
-	var filedata = new FormData($('#files')[0]);
-	// $.each($('#files')[0].files, function(i, file) {
-	//     filedata.append('file-'+i, file);
-	// });
 
 	var data = ko.mapping.toJS(apl.configScrapper);
-	console.log(data)
-	app.ajaxPost("/application/saveapps", data, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		apl.backToFront();
+	var formData = new FormData();
+	
+	formData.append("Enable", data.Enable); 
+	formData.append("userfile", $('input[type=file]')[0].files[0]);
+	formData.append("id", data._id);
+	
+	var request = new XMLHttpRequest();
+	request.open("POST", "/application/saveapps");
+	request.send(formData);
+
+	swal({title: "Application successfully created", type: "success",closeOnConfirm: true
 	});
+	apl.backToFront()
 };
 
 apl.removeScrapper = function(_id) {
@@ -100,14 +101,11 @@ apl.removeScrapper = function(_id) {
 	});
 };
 
-/*<<<<<<< HEAD
-=======*/
 apl.getUploadFile = function() {
 	$("#files").kendoUpload();
     $("#files").closest(".k-upload").find("span").text("Upload zip file here");
     $(".k-button.k-upload-button").addClass("btn btn-primary");
 };
-// >>>>>>> 6ffc4f86f573c9f8e28b7b3693577bc8e14d87c9
 
 apl.backToFront = function () {
 	app.mode('');
@@ -142,6 +140,7 @@ apl.getTreeview = function(){
         }]
     });
 }
+
 
 $(function () {
 	apl.getApplications();
