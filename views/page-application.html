@@ -18,7 +18,7 @@
 		<h1>Application</h1>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-primary navbar-btn" >
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: apl.getApplications">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: apl.createNewScrapper">
@@ -35,7 +35,7 @@
 		    </div>
 		</div>
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-			<button class="btn btn-sm btn-warning navbar-btn" >
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: apl.saveScrapper">
