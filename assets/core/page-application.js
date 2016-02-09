@@ -61,18 +61,21 @@ apl.saveScrapper = function() {
 	if (!app.isFormValid(".form-application")) {
 		return;
 	}
-	var filedata = new FormData($('#files')[0]);
-	// $.each($('#files')[0].files, function(i, file) {
-	//     filedata.append('file-'+i, file);
-	// });
 
 	var data = ko.mapping.toJS(apl.configScrapper);
-	console.log(data)
-	app.ajaxPost("/application/saveapps", data, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+	var formData = new FormData();
+	
+	formData.append("Enable", data.Enable); 
+	formData.append("userfile", $('input[type=file]')[0].files[0]);
+	formData.append("id", data._id);
+	
+	var request = new XMLHttpRequest();
+	request.open("POST", "/application/saveapps");
+	request.send(formData);
+
+	swal({title: "Application successfully created", type: "success",closeOnConfirm: true
 	});
+	apl.backToFront()
 };
 
 apl.removeScrapper = function(_id) {
