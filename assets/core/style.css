@@ -136,14 +136,14 @@ a {
   height: 32px;
   background-color: #3A8BDF; }
 
-.pdTop5 {
-  padding-top: 5px; }
+.pdTop6 {
+  padding-top: 6px; }
 
 .bd1 {
   border: solid 1px; }
 
 .tvcustom {
-  margin: 20px 0 0 -20px; }
+  margin: 20px 0 0; }
 
 .tacustom {
   margin: 15px 0;
@@ -152,6 +152,18 @@ a {
 .inputcustom {
   height: 25px;
   margin-top: 2px; }
+
+.demo-section {
+  display: inline-block;
+  vertical-align: top;
+  text-align: left;
+  margin: 0 2em; }
+
+.headlogo, .headimage {
+  float: left; }
+
+.headimage {
+  margin-top: -17px; }
 
 /** structured stylesheet */
 body {

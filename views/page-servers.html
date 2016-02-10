@@ -120,7 +120,7 @@
 			    	<div class="col-md-12 bd1 headercustom">
 			            <div class="col-md-4">
 			    		    <div class="form-group">
-					    		<label class="col-md-3 pdTop5">Search :</label>
+					    		<label class="col-md-3 pdTop6">Search :</label>
 					    		<div class="col-md-6">
 					    			<input class="form-control input-sm inputcustom" type="text"/>
 					    		</div>
@@ -130,21 +130,15 @@
 				    		</div>
 					    </div>
 			    		<div class="col-md-8">
-			    			<label class="col-md-10 pdTop5" id=""></label>
-			            	<button class="btn btn-sm btn-primary navbar-btn col-md-2 bd0 mg0 bdcolornone" >Save</button>
+			    			<label class="col-md-11 pdTop6" id=""></label>
+			            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" >Save</button>
 			    		</div>
 			    	</div>
 			    	<div class="col-md-12 bd1">
 			            <div class="col-md-4">			    		
 			            	<div id="example">
-					            <div class="demo-section k-content">
-					                <h4>Inline data (default settings)</h4>
-					                <div id="treeview-left"></div>
-					            </div>
-
-					            <div class="demo-section k-content">
-					                <h4>Inline data</h4>
-					                <div id="treeview-right"></div>
+					            <div class="tvcustom">
+					                <div id="treeview-left" data-bind="value: (srv.treeView() == '')"></div>
 					            </div>
 					        </div>
 			    		</div>

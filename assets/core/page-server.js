@@ -38,19 +38,6 @@ srv.getApplications = function() {
 	// });
 };
 
-srv.createNewServer = function () {
-	app.mode("editor");
-	srv.ServerMode('');
-	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
-};
-
-srv.backToFront = function () {
-	app.mode('');
-	srv.getApplications();
-};
-
-srv.getApplications();
-
 srv.treeView = function () {
 	var inlineDefault = new kendo.data.HierarchicalDataSource({
         data: [
@@ -60,7 +47,10 @@ srv.treeView = function () {
                 { text: "Occasional Furniture" }
             ] },
             { text: "Decor", items: [
-                { text: "Bed Linen" },
+                { text: "Bed Linen", items:[
+                	{text: "Single"},
+                	{text: "Double"},
+                ] },
                 { text: "Curtains & Blinds" },
                 { text: "Carpets" }
             ] }
@@ -70,31 +60,17 @@ srv.treeView = function () {
     $("#treeview-left").kendoTreeView({
         dataSource: inlineDefault
     });
+};
 
-    var inline = new kendo.data.HierarchicalDataSource({
-        data: [
-            { categoryName: "Storage", subCategories: [
-                { subCategoryName: "Wall Shelving" },
-                { subCategoryName: "Floor Shelving" },
-                { subCategoryName: "Kids Storage" }
-            ] },
-            { categoryName: "Lights", subCategories: [
-                { subCategoryName: "Ceiling" },
-                { subCategoryName: "Table" },
-                { subCategoryName: "Floor" }
-            ] }
-        ],
-        schema: {
-            model: {
-                children: "subCategories"
-            }
-        }
-    });
+srv.createNewServer = function () {
+	app.mode("editor");
+	srv.ServerMode('');
+	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+};
 
-    $("#treeview-right").kendoTreeView({
-        dataSource: inline,
-        dataTextField: [ "categoryName", "subCategoryName" ]
-    });
+srv.backToFront = function () {
+	app.mode('');
+	srv.getApplications();
 };
 
 srv.codemirror = function(){
@@ -111,4 +87,6 @@ srv.codemirror = function(){
 
 $(document).ready(function() {  
     srv.codemirror();
+    srv.getApplications();
+    srv.treeView();
 });
