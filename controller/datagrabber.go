@@ -316,9 +316,9 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 	serviceHolder[dataGrabber.ID] = true
 
-	go func(flag bool) {
+	go func(dg *colonycore.DataGrabber) {
 		for true {
-			if !flag {
+			if flag, _ := serviceHolder[dg.ID]; !flag {
 				break
 			}
 
@@ -335,7 +335,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 			time.Sleep(interval)
 			yo()
 		}
-	}(serviceHolder[dataGrabber.ID])
+	}(dataGrabber)
 
 	return helper.CreateResult(true, nil, "")
 }
