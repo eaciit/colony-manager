@@ -8,7 +8,6 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	"github.com/robfig/cron"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,7 +17,7 @@ import (
 )
 
 var (
-	serviceHolder       = map[string]*cron.Cron{}
+	serviceHolder       = map[string]bool{}
 	logPath             = filepath.Join(AppBasePath, "config", "datagrabber", "log")
 	transformedDataPath = filepath.Join(AppBasePath, "config", "datagrabber", "data")
 	logAt               = ""
@@ -260,8 +259,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	logFileName = strings.Split(logAt, "-")[0]
 
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
-		process := serviceHolder[dataGrabber.ID]
-		process.Stop()
+		serviceHolder[dataGrabber.ID] = false
 		delete(serviceHolder, dataGrabber.ID)
 
 		message := fmt.Sprintf("===> Transformation stopped! %s -> %s", dataGrabber.DataSourceOrigin, dataGrabber.DataSourceDestination)
@@ -319,11 +317,28 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 	yo()
 
-	process := cron.New()
-	serviceHolder[dataGrabber.ID] = process
-	duration := fmt.Sprintf("%d%s", dataGrabber.GrabInterval, string(dataGrabber.IntervalType[0]))
-	process.AddFunc("@every "+duration, yo)
-	process.Start()
+	serviceHolder[dataGrabber.ID] = true
+
+	go func(flag bool) {
+		for true {
+			if !flag {
+				break
+			}
+
+			var interval time.Duration
+			switch dataGrabber.IntervalType {
+			case "seconds":
+				interval = time.Duration(dataGrabber.GrabInterval) * time.Second
+			case "minutes":
+				interval = time.Duration(dataGrabber.GrabInterval) * time.Minute
+			case "hours":
+				interval = time.Duration(dataGrabber.GrabInterval) * time.Hour
+			}
+
+			time.Sleep(interval)
+			yo()
+		}
+	}(serviceHolder[dataGrabber.ID])
 
 	return helper.CreateResult(true, nil, "")
 }
@@ -345,8 +360,7 @@ func (d *DataGrabberController) StopTransformation(r *knot.WebContext) interface
 	}
 
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
-		process := serviceHolder[dataGrabber.ID]
-		process.Stop()
+		serviceHolder[dataGrabber.ID] = false
 		delete(serviceHolder, dataGrabber.ID)
 
 		message := fmt.Sprintf("===> Transformation stopped! %s -> %s", dataGrabber.DataSourceOrigin, dataGrabber.DataSourceDestination)

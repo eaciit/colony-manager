@@ -372,7 +372,7 @@ func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	}
 
 	if pilih != "" {
-		query = dbox.And(query, dbox.Eq("Driver",pilih))
+		query = dbox.And(query, dbox.Eq("Driver", pilih))
 	}
 
 	data := []colonycore.Connection{}
@@ -789,7 +789,6 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
-
 	textLow := strings.ToLower(text)
 
 	// == try useing Contains for support autocomplite
@@ -805,14 +804,14 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 
 	// == bug, i dont know what i can to do if find by database name.==
 	//~ if data == nil {
-		//~ query = dbox.Eq("Database",text)
-		//~ data := []colonycore.Connection{}
-		//~ cursor, err := colonycore.Find(new(colonycore.Connection), query)
-		//~ cursor.Fetch(&data, 0, false)
-		//~ if err != nil {
-			//~ return helper.CreateResult(false, nil, err.Error())
-		//~ }
-		//~ fmt.Printf("========asdasd=======%#v",data)
+	//~ query = dbox.Eq("Database",text)
+	//~ data := []colonycore.Connection{}
+	//~ cursor, err := colonycore.Find(new(colonycore.Connection), query)
+	//~ cursor.Fetch(&data, 0, false)
+	//~ if err != nil {
+	//~ return helper.CreateResult(false, nil, err.Error())
+	//~ }
+	//~ fmt.Printf("========asdasd=======%#v",data)
 	//~ }
 
 	defer cursor.Close()
