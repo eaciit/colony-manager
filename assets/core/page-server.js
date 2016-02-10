@@ -45,9 +45,29 @@ srv.backToFront = function () {
 	srv.getServers();
 };
 
-$(function () {
-	srv.getServers();
-});
+srv.treeView = function () {
+    var inlineDefault = new kendo.data.HierarchicalDataSource({
+        data: [
+            { text: "Furniture", items: [
+                { text: "Tables & Chairs" },
+                { text: "Sofas" },
+                { text: "Occasional Furniture" }
+            ] },
+            { text: "Decor", items: [
+                { text: "Bed Linen", items:[
+                    {text: "Single"},
+                    {text: "Double"},
+                ] },
+                { text: "Curtains & Blinds" },
+                { text: "Carpets" }
+            ] }
+        ]
+    });
+
+    $("#treeview-left").kendoTreeView({
+        dataSource: inlineDefault
+    });
+};
 
 srv.codemirror = function(){
     var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
@@ -60,8 +80,10 @@ srv.codemirror = function(){
     $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
 }
-    srv.treeView();
 
-$(document).ready(function() {  
+srv.treeView();
+
+$(function () {
     srv.codemirror();
+    srv.getServers();
 });
