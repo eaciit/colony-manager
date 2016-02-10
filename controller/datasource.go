@@ -363,10 +363,12 @@ func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	text := payload["inputText"].(string)
 	pilih := payload["inputDrop"].(string)
 
+	textLow := strings.ToLower(text)
+
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
 	if text != "" {
-		query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("Database", text), dbox.Contains("Driver", text), dbox.Contains("Host", text), dbox.Contains("UserName", text), dbox.Contains("Password", text))
+		query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textLow),dbox.Contains("Database",text),dbox.Contains("Database",textLow),dbox.Contains("Driver",text),dbox.Contains("Driver",textLow),dbox.Contains("Host",text),dbox.Contains("Host",textLow),dbox.Contains("UserName",text),dbox.Contains("UserName",textLow),dbox.Contains("Password",text),dbox.Contains("Password",textLow))
 	}
 
 	if pilih != "" {
@@ -787,9 +789,11 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
+	textLow := strings.ToLower(text)
+
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("ConnectionID", text))
+	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textLow),dbox.Contains("ConnectionID",text),dbox.Contains("ConnectionID",textLow))
 
 	data := []colonycore.DataSource{}
 	cursor, err := colonycore.Find(new(colonycore.DataSource), query)

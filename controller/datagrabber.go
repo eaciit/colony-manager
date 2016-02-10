@@ -104,7 +104,7 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	//~ payload := map[string]string{"inputText":"6"}
+	//~ payload := map[string]string{"inputText":"test"}
 	payload := map[string]interface{}{}
 
 	err := r.GetPayload(&payload)
@@ -112,15 +112,18 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
+	textLow := strings.ToLower(text)
 
-	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("DataSourceOrigin", text), dbox.Contains("DataSourceDestination", text), dbox.Contains("IntervalType", text))
-
-	// == try useing Eq for support integer
-	valueInt, errv := strconv.ParseInt(text, 32, 0)
+	valueInt, errv := strconv.Atoi(text)
+	fmt.Printf("",valueInt)
+	fmt.Printf("",errv)
 	if errv == nil {
+		// == try useing Eq for support integer
 		query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
+	} else {
+		// == try useing Contains for support autocomplite
+		query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textLow),dbox.Contains("DataSourceOrigin", text),dbox.Contains("DataSourceOrigin", textLow),dbox.Contains("DataSourceDestination", text),dbox.Contains("DataSourceDestination", textLow),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textLow))
 	}
 
 	data := []colonycore.DataGrabber{}
