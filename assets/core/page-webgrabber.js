@@ -7,62 +7,65 @@ wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
 wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
+wg.tempIndexSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
 wg.templateConfigScrapper = {
-	_id: "",
-	calltype: "GET",
-	intervaltype: "",
-	sourcetype: "SourceType_Http",
-	grabinterval: 0,
-	timeoutinterval: 0,
-	url: "http://www.shfe.com.cn/en/products/Gold/",
-	logconf: {
-		filename: "",
-		filepattern: "",
-		logpath: ""
+	ID: "",
+	CallType: "GET",
+	IntervalType: "",
+	SourceType: "SourceType_Http",
+	GrabInterval: 0,
+	TimeoutInterval: 0,
+	URL: "http://www.shfe.com.cn/en/products/Gold/",
+	LogConfiguration: {
+		FileName: "",
+		FilePattern: "",
+		LogPath: ""
 	},
-	grabconf: {},
-	datasettings: []
+	GrabConfiguration: {},
+	DataSettings: []
 };
-wg.templateDataSetting = {
-	rowselector: "",
-	columnsettings: [],
-	rowdeletecond: {},
-	rowincludecond: {},
-	connectioninfo: {
-		host: "",
-		database: "",
-		username: "",
-		password: "",
-		settings: "",
-		collection: ""
-	},
-	desttype: "",
-	name: ""
-};
-wg.templateColumnSetting = {
-	alias: "",
-	index: "",
-	selector: "",
-	valuetype: ""
-}
+// wg.templateDataSetting = {
+// 	rowselector: "",
+// 	columnsettings: [],
+// 	rowdeletecond: {},
+// 	rowincludecond: {},
+// 	connectioninfo: {
+// 		host: "",
+// 		database: "",
+// 		username: "",
+// 		password: "",
+// 		settings: "",
+// 		collection: ""
+// 	},
+// 	desttype: "",
+// 	name: ""
+// };
+// wg.templateColumnSetting = {
+// 	alias: "",
+// 	index: "",
+// 	selector: "",
+// 	valuetype: ""
+// }
 wg.templateConfigSelector = {
-	SelectorName: "",
+	Name: "",
 	RowSelector: "",
-	SelectorSetting: {
-		ColumnSetting: [],
+	DestinationType: "Mongo",
+	ColumnSettings: [],
+	ConnectionInfo: {
 		FilterCond: "",
-		DestinationType: "Mongo",
 		Host: "",
 		Database: "",
 		Collection: "",
 		FileName: "",
 		UseHeader: true,
-		Delimiter: ","
+		Delimiter: ",",
+		UserName: "",
+		Password: ""
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
@@ -190,7 +193,7 @@ wg.backToHistory = function () {
 	app.mode('history')
 };
 wg.writeContent = function (html) {
-	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
+	var baseURL = wg.configScrapper.URL().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
 	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
 	
 	var contentDoc = $("#content-preview")[0].contentWindow.document;
@@ -362,7 +365,6 @@ wg.GetCurrentSelector = function(id,selector){
 	$("*.selector").attr("class","selector");
 	$("#"+id).attr("class","selector active");
 	var existingStyle = $(wg.selectedItem(), $("#content-preview").contents()).attr("style");
-	console.log(existingStyle);
 	
 	if(existingStyle!==undefined){
 		existingStyle = existingStyle.replace(";border:5px solid #FF9900","");
@@ -467,8 +469,8 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 wg.showSelectorSetting = function(index,nameSelector){
-	if (wg.selectorRowSetting()[index].SelectorSetting.ColumnSetting().length == 0)
-		wg.selectorRowSetting()[index].SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
+	if (wg.selectorRowSetting()[index].ColumnSettings().length == 0)
+		wg.selectorRowSetting()[index].ColumnSettings.push(ko.mapping.fromJS({Alias: "", ValueType: "", Selector: "", Index: 0}));
 
 	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 	wg.tempIndexColumn(index);
@@ -482,18 +484,65 @@ wg.saveSettingSelector = function() {
 	wg.modeSelector("");
 }
 wg.addColumnSetting = function() {
-	wg.configSelector.SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
+	wg.configSelector.ColumnSettings.push(ko.mapping.fromJS({Alias: "", ValueType: "", Selector: "", Index: wg.configSelector.ColumnSettings().length - 1}));
 }
 wg.removeColumnSetting = function(each){
-	var item = wg.configSelector.SelectorSetting.ColumnSetting()[each];
-	wg.configSelector.SelectorSetting.ColumnSetting.remove(item);
+	var item = wg.configSelector.ColumnSettings()[each];
+	wg.configSelector.ColumnSettings.remove(item);
 }
 wg.GetRowSelector = function(index){
-	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
-	wg.tempIndexColumn(index);
-	wg.modeSelector("editElement");
+	if (wg.modeSelector() === ''){
+		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+		wg.tempIndexColumn(index);
+		wg.modeSelector("editElementSelector");
+	} else {
+		wg.tempIndexSetting(index);
+		wg.modeSelector("editElementConfig");
+	}
 	wg.selectedItem('');
 };
+wg.saveSelectedElement = function(index){
+	if (wg.modeSelector() === 'editElementSelector'){
+		wg.selectorRowSetting()[index].RowSelector(wg.selectedItem());
+		wg.modeSelector("");
+	} else {
+		wg.configSelector.ColumnSettings()[wg.tempIndexSetting()].Selector(wg.selectedItem());
+		wg.modeSelector("edit");
+	}
+	wg.selectedItem('');
+}
+wg.saveSelectorConf = function(){
+	var param = ko.mapping.toJS(wg.configScrapper);
+	param.DataSettings = ko.mapping.toJS(wg.selectorRowSetting);
+	for (var key in param.DataSettings){
+		if (param.DataSettings[key].DestinationType === 'Mongo'){
+			param.DataSettings[key].ConnectionInfo = {
+				Host: param.DataSettings[key].ConnectionInfo.Host,
+				Database: param.DataSettings[key].ConnectionInfo.Database,
+				Collection: param.DataSettings[key].ConnectionInfo.Collection,
+				UserName: param.DataSettings[key].ConnectionInfo.UserName,
+				Password: param.DataSettings[key].ConnectionInfo.Password,
+			}
+		} else {
+			param.DataSettings[key].ConnectionInfo = {
+				FilterCond: param.DataSettings[key].ConnectionInfo.FilterCond,
+				FileName: param.DataSettings[key].ConnectionInfo.FileName,
+				UseHeader: tparam.DataSettings[key].ConnectionInfo.UseHeader,
+				Delimiter: param.DataSettings[key].ConnectionInfo.Delimiter,
+			}
+		}
+	}
+	console.log(param);
+	app.ajaxPost("/webgrabber/insertsampledata", param, function (res) {
+		if(!app.isFine(res)) {
+			return;
+		}
+		app.mode("");
+		wg.modeSetting(0);
+		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+		wg.selectorRowSetting([]);
+	});
+}
 wg.viewData = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
