@@ -1,4 +1,4 @@
-app.section('scrapper');
+app.section('application');
 
 viewModel.application = {}; var apl = viewModel.application;
 apl.templateConfigScrapper = {
@@ -44,7 +44,6 @@ apl.editScrapper = function(_id) {
 
 		app.mode('editor');
 		apl.scrapperMode('edit');
-		apl.textFile('Upload zip file here');
 		ko.mapping.fromJS(res.data, apl.configScrapper);
 	});
 };
@@ -61,18 +60,21 @@ apl.saveScrapper = function() {
 	if (!app.isFormValid(".form-application")) {
 		return;
 	}
-	var filedata = new FormData($('#files')[0]);
-	// $.each($('#files')[0].files, function(i, file) {
-	//     filedata.append('file-'+i, file);
-	// });
 
 	var data = ko.mapping.toJS(apl.configScrapper);
-	console.log(data)
-	app.ajaxPost("/application/saveapps", data, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+	var formData = new FormData();
+	
+	formData.append("Enable", data.Enable); 
+	formData.append("userfile", $('input[type=file]')[0].files[0]);
+	formData.append("id", data._id);
+	
+	var request = new XMLHttpRequest();
+	request.open("POST", "/application/saveapps");
+	request.send(formData);
+
+	swal({title: "Application successfully created", type: "success",closeOnConfirm: true
 	});
+	apl.backToFront()
 };
 
 apl.removeScrapper = function(_id) {
@@ -110,7 +112,38 @@ apl.backToFront = function () {
 	apl.getApplications();
 };
 
+apl.getTreeview = function(){
+	 $("#treeview-sprites").kendoTreeView({
+        dataSource: [{
+            text: "My Documents", expanded: true, spriteCssClass: "rootfolder", items: [
+                {
+                    text: "Kendo UI Project", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "about.html", spriteCssClass: "html" },
+                        { text: "index.html", spriteCssClass: "html" },
+                        { text: "logo.png", spriteCssClass: "image" }
+                    ]
+                },
+                {
+                    text: "New Web Site", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "mockup.jpg", spriteCssClass: "image" },
+                        { text: "Research.pdf", spriteCssClass: "pdf" },
+                    ]
+                },
+                {
+                    text: "Reports", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "February.pdf", spriteCssClass: "pdf" },
+                        { text: "March.pdf", spriteCssClass: "pdf" },
+                        { text: "April.pdf", spriteCssClass: "pdf" }
+                    ]
+                }
+            ]
+        }]
+    });
+}
+
+
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
+	apl.getTreeview();
 });

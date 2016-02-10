@@ -21,55 +21,64 @@ wg.templateConfigScrapper = {
 	grabinterval: 0,
 	timeoutinterval: 0,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
-	logconf: {
-		filename: "",
-		filepattern: "",
-		logpath: ""
+	logconfiguration: {
+		FileName: "",
+		FilePattern: "",
+		LogPath: ""
 	},
-	grabconf: {},
+	grabconfiguration: {},
 	datasettings: []
 };
-wg.templateDataSetting = {
+// wg.templateDataSetting = {
+// 	rowselector: "",
+// 	columnsettings: [],
+// 	rowdeletecond: {},
+// 	rowincludecond: {},
+// 	connectioninfo: {
+// 		host: "",
+// 		database: "",
+// 		username: "",
+// 		password: "",
+// 		settings: "",
+// 		collection: ""
+// 	},
+// 	desttype: "",
+// 	name: ""
+// };
+// wg.templateColumnSetting = {
+// 	alias: "",
+// 	index: "",
+// 	selector: "",
+// 	valuetype: ""
+// }
+wg.templateConfigSelector = {
+	name: "",
 	rowselector: "",
-	columnsettings: [],
 	rowdeletecond: {},
 	rowincludecond: {},
+	desttype: "mongo",
+	columnsettings: [],
 	connectioninfo: {
+		// filtercond: "",
+		// host: "",
+		// database: "",
+		// collection: "",
+		// filename: "",
+		// useheader: true,
+		// delimiter: ",",
+		// username: "",
+		// password: ""
 		host: "",
 		database: "",
 		username: "",
 		password: "",
-		settings: "",
 		collection: ""
-	},
-	desttype: "",
-	name: ""
-};
-wg.templateColumnSetting = {
-	alias: "",
-	index: "",
-	selector: "",
-	valuetype: ""
-}
-wg.templateConfigSelector = {
-	SelectorName: "",
-	RowSelector: "",
-	SelectorSetting: {
-		ColumnSetting: [],
-		FilterCond: "",
-		DestinationType: "Mongo",
-		Host: "",
-		Database: "",
-		Collection: "",
-		FileName: "",
-		UseHeader: true,
-		Delimiter: ","
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
-wg.templateDestinationType = ["Mongo", "CSV"];
+wg.templatedesttype = ["mongo", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
 	key: "",
@@ -137,7 +146,12 @@ wg.editScrapper = function (_id) {
 
 		app.mode('editor');
 		wg.scrapperMode('edit');
+		wg.modeSetting(1);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
+		// ko.mapping.fromJS(res.data.datasettings, wg.selectorRowSetting);
+		for (var key in res.data.datasettings){
+			wg.selectorRowSetting.push(ko.mapping.fromJS(res.data.datasettings[key], wg.selectedItem));
+		}
 		wg.isContentFetched(false);
 	});
 };
@@ -467,8 +481,8 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 wg.showSelectorSetting = function(index,nameSelector){
-	if (wg.selectorRowSetting()[index].SelectorSetting.ColumnSetting().length == 0)
-		wg.selectorRowSetting()[index].SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
+	if (wg.selectorRowSetting()[index].columnsettings().length == 0)
+		wg.selectorRowSetting()[index].columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: 0}));
 
 	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
 	wg.tempIndexColumn(index);
@@ -482,11 +496,11 @@ wg.saveSettingSelector = function() {
 	wg.modeSelector("");
 }
 wg.addColumnSetting = function() {
-	wg.configSelector.SelectorSetting.ColumnSetting.push(ko.mapping.fromJS({Alias: "", Type: "", Selector: ""}));
+	wg.configSelector.columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: wg.configSelector.columnsettings().length - 1}));
 }
 wg.removeColumnSetting = function(each){
-	var item = wg.configSelector.SelectorSetting.ColumnSetting()[each];
-	wg.configSelector.SelectorSetting.ColumnSetting.remove(item);
+	var item = wg.configSelector.columnsettings()[each];
+	wg.configSelector.columnsettings.remove(item);
 }
 wg.GetRowSelector = function(index){
 	if (wg.modeSelector() === ''){
@@ -501,13 +515,44 @@ wg.GetRowSelector = function(index){
 };
 wg.saveSelectedElement = function(index){
 	if (wg.modeSelector() === 'editElementSelector'){
-		wg.selectorRowSetting()[index].RowSelector(wg.selectedItem());
+		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.SelectorSetting.ColumnSetting()[wg.tempIndexSetting()].Selector(wg.selectedItem());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItem());
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
+}
+wg.saveSelectorConf = function(){
+	var param = ko.mapping.toJS(wg.configScrapper);
+	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
+	// for (var key in param.DataSettings){
+	// 	if (param.datasettings[key].desttype === 'Mongo'){
+	// 		param.datasettings[key].connectioninfo = {
+	// 			Host: param.datasettings[key].connectioninfo.host,
+	// 			Database: param.datasettings[key].connectioninfo.database,
+	// 			Collection: param.datasettings[key].connectioninfo.collection,
+	// 			UserName: param.datasettings[key].connectioninfo.username,
+	// 			Password: param.datasettings[key].connectioninfo.password,
+	// 		}
+	// 	} else {
+	// 		param.datasettings[key].ConnectionInfo = {
+	// 			FilterCond: param.datasettings[key].connectioninfo.filtercond,
+	// 			FileName: param.datasettings[key].connectioninfo.filename,
+	// 			UseHeader: tparam.datasettings[key].connectioninfo.useheader,
+	// 			Delimiter: param.datasettings[key].connectioninfo.delimiter,
+	// 		}
+	// 	}
+	// }
+	app.ajaxPost("/webgrabber/insertsampledata", param, function (res) {
+		if(!app.isFine(res)) {
+			return;
+		}
+		app.mode("");
+		wg.modeSetting(0);
+		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+		wg.selectorRowSetting([]);
+	});
 }
 wg.viewData = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
