@@ -328,7 +328,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 				interval = time.Duration(dataGrabber.GrabInterval) * time.Second
 			case "minutes":
 				interval = time.Duration(dataGrabber.GrabInterval) * time.Minute
-			case "hour":
+			case "hours":
 				interval = time.Duration(dataGrabber.GrabInterval) * time.Hour
 			}
 
