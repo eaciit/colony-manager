@@ -84,9 +84,9 @@ srv.codemirror = function(){
     $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
 }
+    srv.treeView();
 
 $(document).ready(function() {  
     srv.codemirror();
     srv.getApplications();
-    srv.treeView();
 });
