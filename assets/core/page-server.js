@@ -38,6 +38,30 @@ srv.getApplications = function() {
 	// });
 };
 
+srv.treeView = function () {
+	var inlineDefault = new kendo.data.HierarchicalDataSource({
+        data: [
+            { text: "Furniture", items: [
+                { text: "Tables & Chairs" },
+                { text: "Sofas" },
+                { text: "Occasional Furniture" }
+            ] },
+            { text: "Decor", items: [
+                { text: "Bed Linen", items:[
+                	{text: "Single"},
+                	{text: "Double"},
+                ] },
+                { text: "Curtains & Blinds" },
+                { text: "Carpets" }
+            ] }
+        ]
+    });
+
+    $("#treeview-left").kendoTreeView({
+        dataSource: inlineDefault
+    });
+};
+
 srv.createNewServer = function () {
 	app.mode("editor");
 	srv.ServerMode('');
@@ -50,49 +74,4 @@ srv.backToFront = function () {
 };
 
 srv.getApplications();
-
-srv.treeView = function () {
-	var inlineDefault = new kendo.data.HierarchicalDataSource({
-        data: [
-            { text: "Furniture", items: [
-                { text: "Tables & Chairs" },
-                { text: "Sofas" },
-                { text: "Occasional Furniture" }
-            ] },
-            { text: "Decor", items: [
-                { text: "Bed Linen" },
-                { text: "Curtains & Blinds" },
-                { text: "Carpets" }
-            ] }
-        ]
-    });
-
-    $("#treeview-left").kendoTreeView({
-        dataSource: inlineDefault
-    });
-
-    var inline = new kendo.data.HierarchicalDataSource({
-        data: [
-            { categoryName: "Storage", subCategories: [
-                { subCategoryName: "Wall Shelving" },
-                { subCategoryName: "Floor Shelving" },
-                { subCategoryName: "Kids Storage" }
-            ] },
-            { categoryName: "Lights", subCategories: [
-                { subCategoryName: "Ceiling" },
-                { subCategoryName: "Table" },
-                { subCategoryName: "Floor" }
-            ] }
-        ],
-        schema: {
-            model: {
-                children: "subCategories"
-            }
-        }
-    });
-
-    $("#treeview-right").kendoTreeView({
-        dataSource: inline,
-        dataTextField: [ "categoryName", "subCategoryName" ]
-    });
-};
+srv.treeView();
