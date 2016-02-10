@@ -318,9 +318,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 	go func(dg *colonycore.DataGrabber) {
 		for true {
-			fmt.Printf("=== %#v --- %#v\n", serviceHolder, dg.ID)
 			if flag, _ := serviceHolder[dg.ID]; !flag {
-				fmt.Printf("==asdfasdfasdfs= %#v\n", flag)
 				break
 			}
 
