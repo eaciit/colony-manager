@@ -19,37 +19,40 @@
 		<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
     		<span class="glyphicon glyphicon-chevron-left"></span> Back
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveServer">
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveNewServer">
     		<span class="glyphicon glyphicon-save"></span> Save
     	</button>
 	</nav>
 
-	<div class="panel col-md-12" data-bind="visible: (app.mode() == 'editor')">
+	<div class="panel col-md-8" data-bind="visible: (app.mode() == 'editor')">
 		<div class="panel-heading">
 	        <h1 class="panel-title"><span data-bind="text: (srv.ServerMode() == '') ? 'Create New' : 'Edit'"></span>
 	        </h1>
 	    </div>
 	    <div class="panel-body">
-	    	<form class="form-horizontal form-application" id="form-add-Server" novalidate>
-		    	<div class="col-md-8">
+	    	<form class="form-horizontal form-server" id="form-add-Server" novalidate>
+		    	<div class="col-md-12">
 		    		<div class="col-md-12">
 			    		<div class="col-md-6">
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">ID</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="">
+									<span class="k-invalid-msg" data-for="ID"></span>					    			
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="type" placeholder="Type the Server Type Here" data-bind="">
+									<span class="k-invalid-msg" data-for="type"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Folder</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="folder" placeholder="Type the Folder Name Here" data-bind="">
+									<span class="k-invalid-msg" data-for="folder"></span>
 					    		</div>
 				    		</div>
 			    		</div>
@@ -69,6 +72,9 @@
 					    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
 					    		</div>
 				    		</div>
+				    		<button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-3" >
+				            	<span class="glyphicon glyphicon-upload"></span> Upload
+				            </button>
 			    		</div>
 			    	</div>
 			    	<div class="col-md-12">
@@ -79,74 +85,36 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="type-ssh" placeholder="Type the SSH Type Here" data-bind="">
+									<span class="k-invalid-msg" data-for="type-ssh"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">File</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="file" placeholder="Type the File Name Here" data-bind="">
+									<span class="k-invalid-msg" data-for="file"></span>
 					    		</div>
 				    		</div>
 			    		</div>
 			    		<div class="col-md-6">
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">User</label>
-					    		<div class="col-md-6">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    		<div class="col-md-7">
+					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="">
+									<span class="k-invalid-msg" data-for="user"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Pass</label>
-					    		<div class="col-md-6">
-					    			<input class="form-control input-sm full-width" type="password"/>
+					    		<div class="col-md-7">
+					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="">
+									<span class="k-invalid-msg" data-for="password"></span>
 					    		</div>
 				    		</div>
 			    		</div>
 			    	</div>
 			    </div>
-		    	<div class="col-md-12">
-		            <button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-1" >
-		            	<span class="glyphicon glyphicon-upload"></span> Upload
-		            </button>
-		            <button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-2" >
-		            	<span class="glyphicon glyphicon-plus"></span> New File
-		            </button>
-		            <button class="btn btn-sm btn-danger navbar-btn btnsrvcustom col-md-offset-2" >
-		            	<span class="glyphicon glyphicon-remove"></span> Delete
-		            </button>
-		        </div>
-		    	<div class="col-md-12">
-			    	<div class="col-md-12 bd1 headercustom">
-			            <div class="col-md-4">
-			    		    <div class="form-group">
-					    		<label class="col-md-3 pdTop6">Search :</label>
-					    		<div class="col-md-6">
-					    			<input class="form-control input-sm inputcustom" type="text"/>
-					    		</div>
-					    		<div class="col-md-3">
-			            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
-					    		</div>
-				    		</div>
-					    </div>
-			    		<div class="col-md-8">
-			    			<label class="col-md-11 pdTop6" id=""></label>
-			            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" >Save</button>
-			    		</div>
-			    	</div>
-			    	<div class="col-md-12 bd1">
-			            <div class="col-md-4">			    		
-			            	<div id="example">
-					            <div class="tvcustom">
-					                <div id="treeview-left" data-bind="value: (srv.treeView() == '')"></div>
-					            </div>
-					        </div>
-			    		</div>
-			    		<div class="col-md-8">			    		
-			    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
-			    		</div>
-		    		</div>
-		        </div>
 	    	</form>
 	    </div>
 	</div>
