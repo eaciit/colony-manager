@@ -3,7 +3,7 @@
         <button class="btn btn-sm btn-primary navbar-btn" >
     		<span class="glyphicon glyphicon-refresh"></span> Refresh
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewScrapper">
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
     		<span class="glyphicon glyphicon-plus"></span> Create
     	</button>
 	</nav>
@@ -12,25 +12,25 @@
 	        <h1 class="panel-title">Servers</h1>
 	    </div>
 	    <div class="panel-body">
-	    	<!-- <div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.scrapperData, columns: srv.scrapperColumns, filterfable: false, pageable: true, dataBound: srv.gridBoundTooltipster('.grid-data-application') }"></div> -->
+	    	<div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
 	    </div>
 	</div>
 	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 		<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
     		<span class="glyphicon glyphicon-chevron-left"></span> Back
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveScrapper">
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveServer">
     		<span class="glyphicon glyphicon-save"></span> Save
     	</button>
 	</nav>
 
-	<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 1200px;">
+	<div class="panel col-md-12" data-bind="visible: (app.mode() == 'editor')">
 		<div class="panel-heading">
-	        <h1 class="panel-title"><span data-bind="text: (srv.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+	        <h1 class="panel-title"><span data-bind="text: (srv.ServerMode() == '') ? 'Create New' : 'Edit'"></span>
 	        </h1>
 	    </div>
 	    <div class="panel-body">
-	    	<form class="form-horizontal form-application" id="form-add-scrapper" novalidate>
+	    	<form class="form-horizontal form-application" id="form-add-Server" novalidate>
 		    	<div class="col-md-8">
 		    		<div class="col-md-12">
 			    		<div class="col-md-7">
@@ -130,7 +130,7 @@
 				    		</div>
 					    </div>
 			    		<div class="col-md-8">
-			    			<label class="col-md-10 pdTop5" id="">ini ceritanya labelnya ini ceritanya labelnya</label>
+			    			<label class="col-md-10 pdTop5" id=""></label>
 			            	<button class="btn btn-sm btn-primary navbar-btn col-md-2 bd0 mg0 bdcolornone" >Save</button>
 			    		</div>
 			    	</div>
