@@ -1,19 +1,19 @@
 package controller
 
 import (
+	_ "fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	// "github.com/eaciit/sedotan/sedotan.v1"
-	// "fmt"
 	"github.com/eaciit/sedotan/sedotan.v1/webapps/modules"
 	"github.com/eaciit/toolkit"
 	"path"
 	f "path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
-	// "strconv"
 	// "time"
 )
 
@@ -365,32 +365,41 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 	return helper.CreateResult(true, wg, "")
 }
 
-func (d *WebGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
+func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
-	//~ payload := map[string]interface{}{}
+	//~ payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
+	payload := map[string]interface{}{}
 
-	//~ err := r.GetPayload(&payload)
-	//~ if err != nil {
-	//~ return helper.CreateResult(false, nil, err.Error())
-	//~ }
+	err := r.GetPayload(&payload)
+	if err != nil {
+	return helper.CreateResult(false, nil, err.Error())
+	}
 
-	text := payload["inputText"]
-	req := payload["inputRequest"]
-	tipe := payload["inputType"]
+	text := payload["inputText"].(string)
+	req := payload["inputRequest"].(string)
+	tipe := payload["inputType"].(string)
+
+	textLow := strings.ToLower(text)
 
 	// == bug, cant find if autocomplite, just full text can be get result
 	var query *dbox.Filter
 	if text != "" {
-		query = dbox.Or(dbox.Eq("_id", text), dbox.Eq("calltype", text), dbox.Eq("sourcetype", text), dbox.Eq("intervaltype", text), dbox.Eq("grabinterval", text), dbox.Eq("timeoutinterval", text))
+		valueInt, errv := strconv.Atoi(text)
+		if errv == nil {
+			// == try useing Eq for support integer
+			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
+		} else {
+			// == try useing Contains for support autocomplite
+			query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textLow),dbox.Contains("Calltype", text),dbox.Contains("Calltype", textLow),dbox.Contains("SourceType", text),dbox.Contains("SourceType", textLow),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textLow))
+		}
 	}
 
 	if req != "" {
-		query = dbox.And(query, dbox.Eq("calltype", req))
+		query = dbox.And(query, dbox.Eq("Calltype", req))
 	}
 
 	if tipe != "" {
-		query = dbox.And(query, dbox.Eq("sourcetype", tipe))
+		query = dbox.And(query, dbox.Eq("SourceType", tipe))
 	}
 
 	data := []colonycore.WebGrabber{}
