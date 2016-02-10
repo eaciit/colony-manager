@@ -10,7 +10,10 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 80 },
-	{ field: "AppsName", title: "Server Name", width: 130},
+	{ field: "AppsName", title: "Type", width: 80},
+	{ field: "os", title: "OS", width: 80},
+	{ field: "folder", title: "Folder", width: 80},
+	{ field: "enable", title: "Enable", width: 80},
 	{ title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='srv.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
@@ -22,9 +25,9 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getApplications = function() {
 	srv.ServerData([
-		{_id:"x097",AppsName:"Server 20338"},
-		{_id:"x098",AppsName:"Server 20339"},
-		{_id:"x099",AppsName:"Server 20340"}
+		{_id:"x097",AppsName:"Server 20338",os:"MAC",folder:"folder",enable:"TRUE"},
+		{_id:"x098",AppsName:"Server 20339",os:"WINDOWS",folder:"folder",enable:"FALSE"},
+		{_id:"x099",AppsName:"Server 20340",os:"LINUX",folder:"folder",enable:"TRUE"},
 	]);
 	// app.ajaxPost("/servers/getsrvs", {}, function (res) {
 	// 	if (!app.isFine(res)) {
@@ -47,3 +50,49 @@ srv.backToFront = function () {
 };
 
 srv.getApplications();
+
+srv.treeView = function () {
+	var inlineDefault = new kendo.data.HierarchicalDataSource({
+        data: [
+            { text: "Furniture", items: [
+                { text: "Tables & Chairs" },
+                { text: "Sofas" },
+                { text: "Occasional Furniture" }
+            ] },
+            { text: "Decor", items: [
+                { text: "Bed Linen" },
+                { text: "Curtains & Blinds" },
+                { text: "Carpets" }
+            ] }
+        ]
+    });
+
+    $("#treeview-left").kendoTreeView({
+        dataSource: inlineDefault
+    });
+
+    var inline = new kendo.data.HierarchicalDataSource({
+        data: [
+            { categoryName: "Storage", subCategories: [
+                { subCategoryName: "Wall Shelving" },
+                { subCategoryName: "Floor Shelving" },
+                { subCategoryName: "Kids Storage" }
+            ] },
+            { categoryName: "Lights", subCategories: [
+                { subCategoryName: "Ceiling" },
+                { subCategoryName: "Table" },
+                { subCategoryName: "Floor" }
+            ] }
+        ],
+        schema: {
+            model: {
+                children: "subCategories"
+            }
+        }
+    });
+
+    $("#treeview-right").kendoTreeView({
+        dataSource: inline,
+        dataTextField: [ "categoryName", "subCategoryName" ]
+    });
+};
