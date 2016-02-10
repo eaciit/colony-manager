@@ -380,10 +380,7 @@ func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
 	req := payload["inputRequest"].(string)
 	tipe := payload["inputType"].(string)
 
-	textUpp := toolkit.StrToUpper(text)
-	textLow := toolkit.StrToLower(text)
-	textUcF := toolkit.UcFirst(text)
-	textUcW := toolkit.UcWords(text)
+	textLow := strings.ToLower(text)
 
 	// == bug, cant find if autocomplite, just full text can be get result
 	var query *dbox.Filter
@@ -394,7 +391,7 @@ func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
 			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
 		} else {
 			// == try useing Contains for support autocomplite
-			query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textUpp),dbox.Contains("_id", textLow),dbox.Contains("_id", textUcF),dbox.Contains("_id", textUcW),dbox.Contains("Calltype", text),dbox.Contains("Calltype", textUpp),dbox.Contains("Calltype", textLow),dbox.Contains("Calltype", textUcF),dbox.Contains("Calltype", textUcW),dbox.Contains("SourceType", text),dbox.Contains("SourceType", textUpp),dbox.Contains("SourceType", textLow),dbox.Contains("SourceType", textUcF),dbox.Contains("SourceType", textUcW),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textUpp),dbox.Contains("IntervalType", textLow),dbox.Contains("IntervalType", textUcF),dbox.Contains("IntervalType", textUcW))
+			query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textLow),dbox.Contains("Calltype", text),dbox.Contains("Calltype", textLow),dbox.Contains("SourceType", text),dbox.Contains("SourceType", textLow),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textLow))
 		}
 	}
 

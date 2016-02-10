@@ -113,10 +113,7 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
-	textUpp := toolkit.StrToUpper(text)
-	textLow := toolkit.StrToLower(text)
-	textUcF := toolkit.UcFirst(text)
-	textUcW := toolkit.UcWords(text)
+	textLow := strings.ToLower(text)
 
 	var query *dbox.Filter
 	valueInt, errv := strconv.Atoi(text)
@@ -127,7 +124,7 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 		query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
 	} else {
 		// == try useing Contains for support autocomplite
-		query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textUpp),dbox.Contains("_id", textLow),dbox.Contains("_id", textUcF),dbox.Contains("_id", textUcW),dbox.Contains("DataSourceOrigin", text),dbox.Contains("DataSourceOrigin", textUpp),dbox.Contains("DataSourceOrigin", textLow),dbox.Contains("DataSourceOrigin", textUcF),dbox.Contains("DataSourceOrigin", textUcW),dbox.Contains("DataSourceDestination", text),dbox.Contains("DataSourceDestination", textUpp),dbox.Contains("DataSourceDestination", textLow),dbox.Contains("DataSourceDestination", textUcF),dbox.Contains("DataSourceDestination", textUcW),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textUpp),dbox.Contains("IntervalType", textLow),dbox.Contains("IntervalType", textUcF),dbox.Contains("IntervalType", textUcW))
+		query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textLow),dbox.Contains("DataSourceOrigin", text),dbox.Contains("DataSourceOrigin", textLow),dbox.Contains("DataSourceDestination", text),dbox.Contains("DataSourceDestination", textLow),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textLow))
 	}
 
 	data := []colonycore.DataGrabber{}

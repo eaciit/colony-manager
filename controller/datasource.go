@@ -363,15 +363,12 @@ func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	text := payload["inputText"].(string)
 	pilih := payload["inputDrop"].(string)
 
-	textUpp := toolkit.StrToUpper(text)
-	textLow := toolkit.StrToLower(text)
-	textUcF := toolkit.UcFirst(text)
-	textUcW := toolkit.UcWords(text)
+	textLow := strings.ToLower(text)
 
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
 	if text != "" {
-		query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textUpp),dbox.Contains("_id",textLow),dbox.Contains("_id",textUcF),dbox.Contains("_id",textUcW),dbox.Contains("Database",text),dbox.Contains("Database",textUpp),dbox.Contains("Database",textLow),dbox.Contains("Database",textUcF),dbox.Contains("Database",textUcW),dbox.Contains("Driver",text),dbox.Contains("Driver",textUpp),dbox.Contains("Driver",textLow),dbox.Contains("Driver",textUcF),dbox.Contains("Driver",textUcW),dbox.Contains("Host",text),dbox.Contains("Host",textUpp),dbox.Contains("Host",textLow),dbox.Contains("Host",textUcF),dbox.Contains("Host",textUcW),dbox.Contains("UserName",text),dbox.Contains("UserName",textUpp),dbox.Contains("UserName",textLow),dbox.Contains("UserName",textUcF),dbox.Contains("UserName",textUcW),dbox.Contains("Password",text),dbox.Contains("Password",textUpp),dbox.Contains("Password",textLow),dbox.Contains("Password",textUcF),dbox.Contains("Password",textUcW))
+		query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textLow),dbox.Contains("Database",text),dbox.Contains("Database",textLow),dbox.Contains("Driver",text),dbox.Contains("Driver",textLow),dbox.Contains("Host",text),dbox.Contains("Host",textLow),dbox.Contains("UserName",text),dbox.Contains("UserName",textLow),dbox.Contains("Password",text),dbox.Contains("Password",textLow))
 	}
 
 	if pilih != "" {
@@ -793,14 +790,11 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 	}
 	text := payload["inputText"].(string)
 
-	textUpp := toolkit.StrToUpper(text)
-	textLow := toolkit.StrToLower(text)
-	textUcF := toolkit.UcFirst(text)
-	textUcW := toolkit.UcWords(text)
+	textLow := strings.ToLower(text)
 
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textUpp),dbox.Contains("_id",textLow),dbox.Contains("_id",textUcF),dbox.Contains("_id",textUcW),dbox.Contains("ConnectionID",text),dbox.Contains("ConnectionID",textUpp),dbox.Contains("ConnectionID",textLow),dbox.Contains("ConnectionID",textUcF),dbox.Contains("ConnectionID",textUcW))
+	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textLow),dbox.Contains("ConnectionID",text),dbox.Contains("ConnectionID",textLow))
 
 	data := []colonycore.DataSource{}
 	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
