@@ -8,9 +8,9 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"io"
 	"io/ioutil"
-	// "net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -44,39 +44,6 @@ func deleteDirectory(scanDir string, delDir string, dirName string) error {
 	}
 	return nil
 }
-
-// func uploadHandler(w http.ResponseWriter, r *http.Request) {
-
-// 	// the FormFile function takes in the POST input id file
-// 	file, header, err := r.FormFile("files")
-// 	fmt.Println("nama file : ", file)
-
-// 	if err != nil {
-// 		fmt.Println("Error : ", err)
-// 		return
-// 	}
-
-// 	defer file.Close()
-
-// 	// out, err := os.Create("/tmp/uploadedfile")
-// 	out, err := os.Create(dest)
-// 	if err != nil {
-// 		fmt.Println("Error : ", err)
-// 		return
-// 	}
-
-// 	defer out.Close()
-
-// 	// write the content from POST to the file
-// 	_, err = io.Copy(out, file)
-// 	if err != nil {
-// 		fmt.Println("Error : ", err)
-// 		return
-// 	}
-
-// 	fmt.Println("File uploaded successfully")
-// 	fmt.Println("Filename : ", header.Filename)
-// }
 
 func Unzip(src string, newDirName string) error {
 	r, err := zip.OpenReader(src)
@@ -164,23 +131,29 @@ func Unzip(src string, newDirName string) error {
 }
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	// uploadHandler(r.Writer, r.Request)
-
-	o := new(colonycore.Application)
-	err := r.GetPayload(&o)
+	// upload handler
+	file, handler, err := r.Request.FormFile("userfile")
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	defer file.Close()
+	dstSource := fmt.Sprintf("%s", filepath.Join(AppBasePath, "config", "applications", handler.Filename))
+	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer f.Close()
+	io.Copy(f, file)
 
-	// o := new(colonycore.Application)
-	// o.ID = payload["_id"].(string)
-	// o.Enable = payload["Enable"].(bool)
-	o.AppPath = fmt.Sprintf("%s", filepath.Join(AppBasePath, "config", "applications", o.AppPath))
-	o.AppsName = strings.TrimPrefix(o.ID, "app") + " application"
+	o := new(colonycore.Application)
+	o.ID = r.Request.FormValue("id")
+	enable, err := strconv.ParseBool(r.Request.FormValue("Enable"))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	o.Enable = enable
 
 	err = colonycore.Delete(o)
-
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -190,8 +163,8 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if o.AppPath != "" {
-		Unzip(o.AppPath, o.ID)
+	if dstSource != "" {
+		Unzip(dstSource, o.ID)
 	}
 
 	return helper.CreateResult(true, nil, "")

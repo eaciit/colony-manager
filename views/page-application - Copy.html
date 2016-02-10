@@ -18,18 +18,12 @@
 		<h1>Application</h1>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<div class="form-group row nav1">
-				<div class="col-sm-10">
-					<label class="col-sm-2 filter-label lbl">Search</label>
-					<div class="col-sm-4">
-		               <input type="text" class="input-sm form-control" placeholder="Search">
-		            </div>
-		        </div>
-		        <button class="btn btn-sm btn-success" data-bind="click: apl.createNewScrapper">
-		    		<span class="glyphicon glyphicon-plus"></span> Add
-		    	</button>
-		    	<button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-	    	</div>
+            <button class="btn btn-sm btn-primary navbar-btn" >
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: apl.createNewScrapper">
+	    		<span class="glyphicon glyphicon-plus"></span> Create
+	    	</button>
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == '')">
@@ -44,9 +38,15 @@
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: apl.saveScrapper">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-success navbar-btn" >
+	    		 Download Template
+	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 600px;">
 			<div class="panel-heading">
 		        <h1 class="panel-title"><span data-bind="text: (apl.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
 		        </h1>
@@ -54,42 +54,36 @@
 		    <div class="panel-body">
 		    	<form class="form-horizontal form-application" id="form-add-scrapper" data-bind="with: configScrapper" novalidate>
 		    		<div class="col-md-12">
-			    		<div class="form-group row">
-				    		<label class="col-md-3 filter-label">ID</label>
-				    		<div class="col-md-3">
-				    			<input class="form-control input-sm " type="text" data-bind="value: _id, enable: (apl.scrapperMode() == '')"/>
-				    		</div>
-				    		<label class="col-md-2 filter-label">Enable</label>
-				    		<div class="col-md-2">
-				    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
+			    		<div class="form-group">
+				    		<label class="col-md-4 filter-label">Application ID</label>
+				    		<div class="col-md-5">
+				    			<input class="form-control input-sm full-width" type="text" data-bind="value: _id, enable: (apl.scrapperMode() == '')"/>
 				    		</div>
 			    		</div>
 			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">Name</label>
-				    		<div class="col-md-3">
-				    			<input class="form-control input-sm" type="text" data-bind="value: AppsName" />
+				    		<label class="col-md-4 filter-label">Application Name</label>
+				    		<div class="col-md-5">
+				    			<input class="form-control input-sm full-width" type="text" data-bind="value: AppsName" />
 				    		</div>
 			    		</div>
-			    		<div class="form-group row">
-			    			<button class="btn btn-sm btn-primary btn1" ><span class="glyphicon glyphicon-save"></span>Save</button> <button class="btn btn-sm btn-primary" ><span class="glyphicon glyphicon-upload"></span>Upload</button> 
-			    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> <button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span>Delete</button> 
+			    		<div class="form-group">
+				    		<label class="col-md-4 filter-label">Auto Start</label>
+				    		<div class="col-md-5">
+				    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
+				    		</div>
+			    		</div>
+			    		
+			    		<div class="form-group">
+				    		<label class="col-md-4 filter-label">App Resources</label>
+				    		<div class="col-md-5">
+				    			<!-- <button type="file" class="btn btn-md btn-primary" data-bind="click: apl.uploadScrapper">Upload zip file here</button> -->
+				    			<div class="k-content">
+				                    <input name="files" id="files" type="file" data-bind="value: AppPath" accept=".zip" />
+				                </div>
+				    		</div>
 			    		</div>
 		    		</div>
 		    	</form>
-		    	<table width="100%" class="tab">
-		    		<head class="head">
-		    			<th>
-		    				<label>Search :</label>
-		    				<input type="text">
-		    				<button class="btn btn-sm btn-primary">Refresh</button>
-		    			</th>
-		    			<th><span class="title">scmm/application.go</span><button class="btn btn-sm btn-primary btn-save">Save</button></th>
-		    		</head>
-		    		<tr>
-		    			<td width="34%" valign="top"><div id="treeview-sprites"></div></td>
-		    			<td><textarea class="intext"></textarea></td>
-		    		</tr>
-		    	</table>
 		    </div>
 		</div>
 	</div>

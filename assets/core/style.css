@@ -110,6 +110,49 @@ a {
   border: 1px solid #3A8BDF;
   cursor: pointer; }
 
+#inspectElement > ul {
+  list-style-type: "none";
+  margin-left: 0px;
+  padding-left: 0px; }
+
+.pcustom {
+  font-weight: bold;
+  font-size: 15px; }
+
+.btnsrvcustom {
+  width: 120px;
+  border-radius: 0px; }
+
+.bd0 {
+  border-radius: 0px; }
+
+.mg0 {
+  margin: 0px !important; }
+
+.bdcolornone {
+  border-color: transparent !important; }
+
+.headercustom {
+  height: 32px;
+  background-color: #3A8BDF; }
+
+.pdTop5 {
+  padding-top: 5px; }
+
+.bd1 {
+  border: solid 1px; }
+
+.tvcustom {
+  margin: 20px 0 0 -20px; }
+
+.tacustom {
+  margin: 15px 0;
+  resize: none; }
+
+.inputcustom {
+  height: 25px;
+  margin-top: 2px; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
@@ -317,5 +360,53 @@ body {
     border: 8px solid white;
     width: 100%;
     height: 100%; } }
+
+.btn1{
+  margin-left: 27%;
+}
+
+.btn2{
+  margin-left: 15%;
+}
+.nav1{
+  padding-top: 3%;
+}
+
+.lbl{
+  margin-left: -9%;
+}
+
+th{
+  background-color: #428BCA;
+}
+
+.tab{
+  border: 1px solid #CCC;
+  height: 50%;
+}
+
+.intext{
+  width:100%;
+  height:350px;
+}
+
+td, th{
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.btn-save{
+  float: right;
+}
+
+.title{
+  color: #ffffff;
+  float: left;
+  margin-top: 5px;
+}
+
+th{
+  color: #ffffff;
+}
 
 /*# sourceMappingURL=style.css.map */
