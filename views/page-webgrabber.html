@@ -93,20 +93,20 @@
 						<div class="form-group">
 				        	<label class="col-md-2 filter-label">Source Type</label>
 				        	<div class="col-md-3">
-				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: SourceType, dataValueField: 'value', dataTextField: 'title' }"></select>
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: sourcetype, dataValueField: 'value', dataTextField: 'title' }"></select>
 								<span class="k-invalid-msg" data-for="source-type"></span>
 				        	</div>
 
 				        	<label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
 				        	<div class="col-md-3">
-				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: CallType, dataValueField: 'value', dataTextField: 'title' }"></select>
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
 								<span class="k-invalid-msg" data-for="source-type"></span>
 					        </div>
 				        </div>
 						<div class="form-group">
 				        	<label class="col-md-2 filter-label">URL</label>
 				        	<div class="col-md-10">
-				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: URL">
+				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: url">
 								<span class="k-invalid-msg" data-for="URL"></span>
 				        	</div>
 				        </div>
@@ -175,28 +175,28 @@
 	    					<div class="row">
 					        	<label class="col-md-6 filter-label">ID</label>
 					        	<div class="col-md-6">
-					        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: ID">
+					        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
 									<span class="k-invalid-msg" data-for="ID"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Interval Type</label>
 					        	<div class="col-md-6">
-									<select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: IntervalType, optionLabel: 'Select one'}"></select>
+									<select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: intervaltype, optionLabel: 'Select one'}"></select>
 									<span class="k-invalid-msg" data-for="IntervalType"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Grap Interval</label>
 					        	<div class="col-md-6">
-					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: GrabInterval, placeholder: 'Example: 2' }" />
+					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: grabinterval, placeholder: 'Example: 2' }" />
 									<span class="k-invalid-msg" data-for="GrabInterval"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Timeout Interval</label>
 					        	<div class="col-md-6">
-					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: TimeoutInterval, placeholder: 'Example: 2' }" />
+					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: timeoutinterval, placeholder: 'Example: 2' }" />
 									<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
 					        	</div>
 					        </div>
@@ -223,12 +223,12 @@
 										<tbody data-bind="foreach: wg.selectorRowSetting">
 											<tr>
 												<td>
-													<input class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: Name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+													<input class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 												</td>
 												<td>
 													<div class="input-group input-group-sm" style="width:150px;">
-														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: RowSelector, attr: { 'name': 'selector-setting-value-' + $index() }" disabled/>
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: rowselector, attr: { 'name': 'selector-setting-value-' + $index() }" disabled/>
 														<span class="input-group-btn">
 															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
@@ -274,19 +274,19 @@
 												<th>&nbsp;</th>
 											</tr>
 										</thead>
-										<tbody data-bind="foreach: ColumnSettings">
+										<tbody data-bind="foreach: columnsettings">
 											<tr>
 												<td>
-													<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: Alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
+													<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
 													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
 												</td>
 												<td>
-													<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: ValueType, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
+													<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
 													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
 												</td>
 												<td>
 													<div class="input-group input-group-sm" style="width:130px;">
-														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: Selector, attr: { 'name': 'column-selector-value-' + $index() }" disabled />
+														<input class="form-control input-sm" type="text" data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'column-selector-value-' + $index() }" disabled />
 														<span class="input-group-btn">
 															<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 														</span>
@@ -306,56 +306,56 @@
 	    							<div class="row">
 		    							<label class="col-md-4 filter-label">Filter Cond.</label>
 			    						<div class="col-md-8">
-			    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: ConnectionInfo.FilterCond, optionLabel: 'Select one'}"></select>
+			    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: connectioninfo.filtercond, optionLabel: 'Select one'}"></select>
 			    						</div>
 			    					</div>
 		    						<div class="row">
 		    							<label class="col-md-4 filter-label">Destination Type</label>
 			    						<div class="col-md-8">
-			    							<select data-bind="kendoDropDownList: { data: wg.templateDestinationType, value: DestinationType}"></select>
+			    							<select data-bind="kendoDropDownList: { data: wg.templatedesttype, value: desttype}"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'Mongo'">
+		    						<div class="row" data-bind="visible: desttype() == 'mongo'">
 		    							<label class="col-md-4 filter-label">Host</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Host" placeholder="Type Host here" data-bind="value: ConnectionInfo.Host"/>
+			    							<input required type="text" class="form-control input-sm" name="Host" placeholder="Type Host here" data-bind="value: connectioninfo.host"/>
 											<span class="k-invalid-msg" data-for="Host"></span>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'Mongo'">
+		    						<div class="row" data-bind="visible: desttype() == 'mongo'">
 		    							<label class="col-md-4 filter-label">Database</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: ConnectionInfo.Database"/>
+			    							<input required type="text" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
 											<span class="k-invalid-msg" data-for="Database"></span>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'Mongo'">
+		    						<div class="row" data-bind="visible: desttype() == 'mongo'">
 		    							<label class="col-md-4 filter-label">Collection</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Collection" placeholder="Type Collection here" data-bind="value: ConnectionInfo.Collection"/>
+			    							<input required type="text" class="form-control input-sm" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>
 											<span class="k-invalid-msg" data-for="Collection"></span>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'CSV'">
+		    						<!-- <div class="row" data-bind="visible: desttype() == 'CSV'">
 		    							<label class="col-md-4 filter-label">FileName</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="FileName" placeholder="Type FileName here" data-bind="value: ConnectionInfo.FileName"/>
+			    							<input required type="text" class="form-control input-sm" name="FileName" placeholder="Type FileName here" data-bind="value: connectioninfo.filename"/>
 											<span class="k-invalid-msg" data-for="FileName"></span>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'CSV'">
+		    						<div class="row" data-bind="visible: desttype() == 'CSV'">
 		    							<label class="col-md-4 filter-label">Use Header</label>
 			    						<div class="col-md-8">
-			    							<select data-bind="kendoDropDownList: { data: ['true','false'], value: ConnectionInfo.UseHeader}"></select>
+			    							<select data-bind="kendoDropDownList: { data: ['true','false'], value: connectioninfo.useheader}"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'CSV'">
+		    						<div class="row" data-bind="visible: desttype() == 'CSV'">
 		    							<label class="col-md-4 filter-label">Delimiter</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Delimiter" placeholder="Type Delimiter here" data-bind="value: ConnectionInfo.Delimiter"/>
+			    							<input required type="text" class="form-control input-sm" name="Delimiter" placeholder="Type Delimiter here" data-bind="value: connectioninfo.delimiter"/>
 											<span class="k-invalid-msg" data-for="Delimiter"></span>
 			    						</div>
-		    						</div>
+		    						</div> -->
 	    						</div>
 
 		    				</div>
