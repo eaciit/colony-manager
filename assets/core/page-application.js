@@ -164,7 +164,7 @@ apl.codemirror = function(){
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
 }
 
-apl.treeView();
+// apl.treeView();
 
 
 $(function () {
