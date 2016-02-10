@@ -48,15 +48,14 @@ func deleteDirectory(scanDir string, delDir string, dirName string) error {
 func Unzip(src string, newDirName string) error {
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		fmt.Println("Error : ", err)
 		return err
 	}
-	defer func() {
+	/*defer func() {
 		if err := r.Close(); err != nil {
-			fmt.Println("Error : ", err)
+			fmt.Println("Error 56: ", err)
 			return
 		}
-	}()
+	}()*/
 
 	os.MkdirAll(dest, 0755)
 	var basePath string
@@ -64,7 +63,6 @@ func Unzip(src string, newDirName string) error {
 	extractAndWriteFile := func(i int, f *zip.File) error {
 		rc, err := f.Open()
 		if err != nil {
-			fmt.Println("Error : ", err)
 			return err
 		}
 		defer func() {
@@ -81,7 +79,6 @@ func Unzip(src string, newDirName string) error {
 		} else {
 			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
-				fmt.Println("Error : ", err)
 				return err
 			}
 			defer func() {
@@ -93,7 +90,6 @@ func Unzip(src string, newDirName string) error {
 
 			_, err = io.Copy(f, rc)
 			if err != nil {
-				fmt.Println("Error : ", err)
 				return err
 			}
 		}
@@ -107,7 +103,6 @@ func Unzip(src string, newDirName string) error {
 	for i, f := range r.File {
 		err := extractAndWriteFile(i, f)
 		if err != nil {
-			fmt.Println("Error : ", err)
 			return err
 		}
 	}
@@ -117,14 +112,24 @@ func Unzip(src string, newDirName string) error {
 
 	err = deleteDirectory(dest, newname, newDirName)
 	if err != nil {
-		fmt.Println("Error : ", err)
 		return err
 	}
 
 	err = os.Rename(basePath, newname)
 	if err != nil {
-		fmt.Println("Error : ", err)
 		return err
+	}
+
+	if _, err := os.Stat(src); !os.IsNotExist(err) {
+		err = r.Close()
+		if err != nil {
+			return err
+		}
+
+		err = os.Remove(src)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -132,18 +137,10 @@ func Unzip(src string, newDirName string) error {
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	// upload handler
-	file, handler, err := r.Request.FormFile("userfile")
+	err, fileName := helper.UploadHandler(r, "userfile", dest)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	defer file.Close()
-	dstSource := fmt.Sprintf("%s", filepath.Join(AppBasePath, "config", "applications", handler.Filename))
-	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer f.Close()
-	io.Copy(f, file)
 
 	o := new(colonycore.Application)
 	o.ID = r.Request.FormValue("id")
@@ -163,8 +160,9 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if dstSource != "" {
-		Unzip(dstSource, o.ID)
+	err = Unzip(dest+"\\"+fileName, o.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, nil, "")
