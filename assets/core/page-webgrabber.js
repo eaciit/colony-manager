@@ -17,18 +17,18 @@ wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
 	calltype: "GET",
-	intervaltype: "",
 	sourcetype: "SourceType_Http",
+	intervaltype: "",
 	grabinterval: 0,
 	timeoutinterval: 0,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
 	logconf: {
-		filename: "",
-		filepattern: "",
-		logpath: ""
+		filename: "asd",
+		filepattern: "asd",
+		logpath: "asd"
 	},
+	datasettings: [],
 	grabconf: {},
-	datasettings: []
 };
 // wg.templateDataSetting = {
 // 	rowselector: "",
@@ -546,7 +546,7 @@ wg.saveSelectorConf = function(){
 	// 		}
 	// 	}
 	// }
-	app.ajaxPost("/webgrabber/insertsampledata", param, function (res) {
+	app.ajaxPost("/webgrabber/savescrapperdata", param, function (res) {
 		if(!app.isFine(res)) {
 			return;
 		}

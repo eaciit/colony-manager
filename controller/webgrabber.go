@@ -1,7 +1,6 @@
 package controller
 
 import (
-	// "fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -76,7 +75,6 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
 	err = colonycore.Delete(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
