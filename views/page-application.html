@@ -1,4 +1,9 @@
 <!-- core -->
+<link rel="stylesheet" href="/res/js/codemirror/codemirror.css">
+<script src="/res/js/codemirror/codemirror.js"></script>
+<script src="/res/js/codemirror/xml.js"></script>
+<script src="/res/js/codemirror/active-line.js"></script>
+
 <script src="/res/core/page-application.js"></script>
 <script src="/res/core/page-server.js"></script>
 
@@ -93,7 +98,7 @@
 		    </div>
 		</div>
 	</div>
-	<div class="col-md-12" data-bind="visible: (app.section() == 'servers')">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'servers'), with: servers">
 		{{template "page-servers.html"}}
 	</div>
 </div>
