@@ -366,11 +366,11 @@ func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
 	if text != "" {
-		query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("Database",text),dbox.Contains("Driver",text),dbox.Contains("Host",text),dbox.Contains("UserName",text),dbox.Contains("Password",text))
+		query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("Database", text), dbox.Contains("Driver", text), dbox.Contains("Host", text), dbox.Contains("UserName", text), dbox.Contains("Password", text))
 	}
 
 	if pilih != "" {
-		query = dbox.And(query, dbox.Eq("Driver",pilih))
+		query = dbox.And(query, dbox.Eq("Driver", pilih))
 	}
 
 	data := []colonycore.Connection{}
@@ -787,10 +787,9 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
-
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("ConnectionID",text))
+	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("ConnectionID", text))
 
 	data := []colonycore.DataSource{}
 	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
@@ -801,14 +800,14 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 
 	// == bug, i dont know what i can to do if find by database name.==
 	//~ if data == nil {
-		//~ query = dbox.Eq("Database",text)
-		//~ data := []colonycore.Connection{}
-		//~ cursor, err := colonycore.Find(new(colonycore.Connection), query)
-		//~ cursor.Fetch(&data, 0, false)
-		//~ if err != nil {
-			//~ return helper.CreateResult(false, nil, err.Error())
-		//~ }
-		//~ fmt.Printf("========asdasd=======%#v",data)
+	//~ query = dbox.Eq("Database",text)
+	//~ data := []colonycore.Connection{}
+	//~ cursor, err := colonycore.Find(new(colonycore.Connection), query)
+	//~ cursor.Fetch(&data, 0, false)
+	//~ if err != nil {
+	//~ return helper.CreateResult(false, nil, err.Error())
+	//~ }
+	//~ fmt.Printf("========asdasd=======%#v",data)
 	//~ }
 
 	defer cursor.Close()

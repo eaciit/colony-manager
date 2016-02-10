@@ -22,6 +22,7 @@ dg.templateIntervalType = [
 	{ value: "minutes", title: "Minutes" }, 
 	{ value: "hours", title: "Hours" }
 ];
+dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
 dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
@@ -340,7 +341,15 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
-
+function filterDataGrabber(event) {
+	app.ajaxPost("/datagrabber/finddatagrabber", {inputText : dg.valDataGrabberFilter()}, function (res) 
+	{
+		if (!app.isFine(res)) {
+			return;
+		}
+		dg.scrapperData(res.data);
+	});
+}
 $(function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
