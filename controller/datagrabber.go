@@ -316,9 +316,11 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 
 	serviceHolder[dataGrabber.ID] = true
 
-	go func(flag bool) {
+	go func(dg *colonycore.DataGrabber) {
 		for true {
-			if !flag {
+			fmt.Printf("=== %#v --- %#v\n", serviceHolder, dg.ID)
+			if flag, _ := serviceHolder[dg.ID]; !flag {
+				fmt.Printf("==asdfasdfasdfs= %#v\n", flag)
 				break
 			}
 
@@ -335,7 +337,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 			time.Sleep(interval)
 			yo()
 		}
-	}(serviceHolder[dataGrabber.ID])
+	}(dataGrabber)
 
 	return helper.CreateResult(true, nil, "")
 }
