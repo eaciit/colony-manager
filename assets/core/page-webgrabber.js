@@ -13,6 +13,9 @@ wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
+wg.valWebGrabberFilter = ko.observable('');
+wg.requestType = ko.observable();
+wg.sourceType = ko.observable();
 wg.templateConfigScrapper = {
 	ID: "",
 	CallType: "GET",
@@ -634,6 +637,19 @@ wg.viewLog = function (date) {
 	});
 };
 
+function filterWebGrabber(event) {
+	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		console.log(res.data);
+		wg.scrapperData(res.data);
+	});
+}
+
+// model.WPN().Site.subscribe(function(){
+//         genDatatempsite();
+//     });
 $(function () {
 	wg.getScrapperData();
 });

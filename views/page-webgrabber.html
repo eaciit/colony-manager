@@ -37,7 +37,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<input class="form-control input-sm" type="" name="" />
+		    		<input class="form-control input-sm" type="text" data-bind="value: wg.valWebGrabberFilter, valueUpdate: 'afterkeydown', 'input', event: {'keyup': filterWebGrabber}" />
 		    	</div>
 		    </div>
 		    <div class="col-md-4 no-padding">
@@ -45,7 +45,7 @@
 		    		Request Type
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<select name="requesttype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
+		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		    <div class="col-md-4 no-padding">
@@ -53,7 +53,7 @@
 		    		Source Type
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<select name="sourcetype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
+		    		<select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		</nav>

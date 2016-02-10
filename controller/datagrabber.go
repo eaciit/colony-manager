@@ -105,7 +105,7 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	//~ payload := map[string]string{"inputText":"6"}
+	//~ payload := map[string]string{"inputText":"test"}
 	payload := map[string]interface{}{}
 
 	err := r.GetPayload(&payload)
@@ -113,15 +113,21 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
+	textUpp := toolkit.StrToUpper(text)
+	textLow := toolkit.StrToLower(text)
+	textUcF := toolkit.UcFirst(text)
+	textUcW := toolkit.UcWords(text)
 
-	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("DataSourceOrigin",text),dbox.Contains("DataSourceDestination",text),dbox.Contains("IntervalType",text))
-
-	// == try useing Eq for support integer
-	valueInt, errv := strconv.ParseInt(text,32,0)
+	valueInt, errv := strconv.Atoi(text)
+	fmt.Printf("", valueInt)
+	fmt.Printf("", errv)
 	if errv == nil {
-		query = dbox.Or(dbox.Eq("GrabInterval",valueInt),dbox.Eq("TimeoutInterval",valueInt))
+		// == try useing Eq for support integer
+		query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
+	} else {
+		// == try useing Contains for support autocomplite
+		query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textUpp), dbox.Contains("_id", textLow), dbox.Contains("_id", textUcF), dbox.Contains("_id", textUcW), dbox.Contains("DataSourceOrigin", text), dbox.Contains("DataSourceOrigin", textUpp), dbox.Contains("DataSourceOrigin", textLow), dbox.Contains("DataSourceOrigin", textUcF), dbox.Contains("DataSourceOrigin", textUcW), dbox.Contains("DataSourceDestination", text), dbox.Contains("DataSourceDestination", textUpp), dbox.Contains("DataSourceDestination", textLow), dbox.Contains("DataSourceDestination", textUcF), dbox.Contains("DataSourceDestination", textUcW), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textUpp), dbox.Contains("IntervalType", textLow), dbox.Contains("IntervalType", textUcF), dbox.Contains("IntervalType", textUcW))
 	}
 
 	data := []colonycore.DataGrabber{}
