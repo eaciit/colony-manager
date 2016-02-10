@@ -15,18 +15,19 @@ wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
+	nameid: "",
 	calltype: "GET",
 	intervaltype: "",
 	sourcetype: "SourceType_Http",
 	grabinterval: 0,
 	timeoutinterval: 0,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
-	logconfiguration: {
-		FileName: "",
-		FilePattern: "",
-		LogPath: ""
+	logconf: {
+		filename: "",
+		filepattern: "",
+		logpath: ""
 	},
-	grabconfiguration: {},
+	grabconf: {},
 	datasettings: []
 };
 // wg.templateDataSetting = {
@@ -54,8 +55,8 @@ wg.templateConfigScrapper = {
 wg.templateConfigSelector = {
 	name: "",
 	rowselector: "",
-	rowdeletecond: {},
-	rowincludecond: {},
+	// rowdeletecond: {},
+	// rowincludecond: {},
 	desttype: "mongo",
 	columnsettings: [],
 	connectioninfo: {
@@ -526,6 +527,7 @@ wg.saveSelectedElement = function(index){
 wg.saveSelectorConf = function(){
 	var param = ko.mapping.toJS(wg.configScrapper);
 	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
+	param.nameid = param._id;
 	// for (var key in param.DataSettings){
 	// 	if (param.datasettings[key].desttype === 'Mongo'){
 	// 		param.datasettings[key].connectioninfo = {
