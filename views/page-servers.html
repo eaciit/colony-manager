@@ -1,6 +1,6 @@
 <h1>Servers</h1>
 	<nav class="navbar" data-bind="visible: (app.mode() == '')">
-        <button class="btn btn-sm btn-primary navbar-btn" >
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
     		<span class="glyphicon glyphicon-refresh"></span> Refresh
     	</button>
         <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">

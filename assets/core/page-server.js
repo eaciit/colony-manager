@@ -10,7 +10,7 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 80 },
-	{ field: "AppsName", title: "Type", width: 80},
+	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
 	{ field: "enable", title: "Enable", width: 80},
@@ -23,19 +23,15 @@ srv.ServerColumns = ko.observableArray([
 	} },	
 ]);
 
-srv.getApplications = function() {
-	srv.ServerData([
-		{_id:"x097",AppsName:"Server 20338",os:"MAC",folder:"folder",enable:"TRUE"},
-		{_id:"x098",AppsName:"Server 20339",os:"WINDOWS",folder:"folder",enable:"FALSE"},
-		{_id:"x099",AppsName:"Server 20340",os:"LINUX",folder:"folder",enable:"TRUE"},
-	]);
-	// app.ajaxPost("/servers/getsrvs", {}, function (res) {
-	// 	if (!app.isFine(res)) {
-	// 		return;
-	// 	}
+srv.getServers = function() {
+	srv.ServerData([]);
+	app.ajaxPost("/server/getservers", {}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
 
-	// 	srv.ServerData(res.data);
-	// });
+		srv.ServerData(res.data);
+	});
 };
 
 srv.createNewServer = function () {
@@ -49,7 +45,9 @@ srv.backToFront = function () {
 	srv.getApplications();
 };
 
-srv.getApplications();
+$(function () {
+	srv.getServers();
+});
 
 srv.treeView = function () {
 	var inlineDefault = new kendo.data.HierarchicalDataSource({

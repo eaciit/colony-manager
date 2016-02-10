@@ -71,7 +71,10 @@
 				    		</div>
 			    		</div>
 			    		<div class="form-group row">
-			    			<button class="btn btn-sm btn-primary btn1" ><span class="glyphicon glyphicon-save"></span>Save</button> <button class="btn btn-sm btn-primary" ><span class="glyphicon glyphicon-upload"></span>Upload</button> 
+			    			<button class="btn btn-sm btn-primary btn1" data-bind="click: apl.saveScrapper"><span class="glyphicon glyphicon-save"></span>Save</button>
+			    			<div class="col-sm-5"> 
+				    			<input name="files" id="files" type="file" data-bind="fileSrc: AppPath" accept=".zip" />
+				    		</div>
 			    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> <button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span>Delete</button> 
 			    		</div>
 		    		</div>
