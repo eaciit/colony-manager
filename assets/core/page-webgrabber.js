@@ -77,7 +77,7 @@ wg.templateConfigSelector = {
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
-wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
+wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
 wg.templatedesttype = ["mongo", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
