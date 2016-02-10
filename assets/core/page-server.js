@@ -42,15 +42,11 @@ srv.createNewServer = function () {
 
 srv.backToFront = function () {
 	app.mode('');
-	srv.getApplications();
+	srv.getServers();
 };
 
-$(function () {
-	srv.getServers();
-});
-
 srv.treeView = function () {
-	var inlineDefault = new kendo.data.HierarchicalDataSource({
+    var inlineDefault = new kendo.data.HierarchicalDataSource({
         data: [
             { text: "Furniture", items: [
                 { text: "Tables & Chairs" },
@@ -58,7 +54,10 @@ srv.treeView = function () {
                 { text: "Occasional Furniture" }
             ] },
             { text: "Decor", items: [
-                { text: "Bed Linen" },
+                { text: "Bed Linen", items:[
+                    {text: "Single"},
+                    {text: "Double"},
+                ] },
                 { text: "Curtains & Blinds" },
                 { text: "Carpets" }
             ] }
@@ -68,29 +67,23 @@ srv.treeView = function () {
     $("#treeview-left").kendoTreeView({
         dataSource: inlineDefault
     });
-
-    var inline = new kendo.data.HierarchicalDataSource({
-        data: [
-            { categoryName: "Storage", subCategories: [
-                { subCategoryName: "Wall Shelving" },
-                { subCategoryName: "Floor Shelving" },
-                { subCategoryName: "Kids Storage" }
-            ] },
-            { categoryName: "Lights", subCategories: [
-                { subCategoryName: "Ceiling" },
-                { subCategoryName: "Table" },
-                { subCategoryName: "Floor" }
-            ] }
-        ],
-        schema: {
-            model: {
-                children: "subCategories"
-            }
-        }
-    });
-
-    $("#treeview-right").kendoTreeView({
-        dataSource: inline,
-        dataTextField: [ "categoryName", "subCategoryName" ]
-    });
 };
+
+srv.codemirror = function(){
+    var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
+        mode: "text/html",
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+    });
+    editor.setValue('<html></html>');
+    $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
+    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
+}
+
+srv.treeView();
+
+$(function () {
+    srv.codemirror();
+    srv.getServers();
+});
