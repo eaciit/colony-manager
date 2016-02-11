@@ -281,3 +281,21 @@ func GetBetterType(src interface{}) (string, interface{}) {
 func ForceAsString(data toolkit.M, which string) string {
 	return strings.Replace(fmt.Sprintf("%v", data[which]), "<nil>", "", -1)
 }
+
+func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string) {
+	file, handler, err := r.Request.FormFile(filename)
+	if err != nil {
+		return err, ""
+	}
+	defer file.Close()
+
+	dstSource := dstpath + "\\" + handler.Filename
+	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return err, ""
+	}
+	defer f.Close()
+	io.Copy(f, file)
+
+	return nil, handler.Filename
+}
