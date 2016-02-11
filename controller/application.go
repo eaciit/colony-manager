@@ -261,7 +261,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	if fileName != "" {
 		zipFile = fmt.Sprintf("%s", filepath.Join(zipSource, fileName))
 	}
-	
+
 	if zipFile != "" && o.ID != "" {
 		newDirName = o.ID
 		directoryTree, _ := Unzip(zipFile)
@@ -382,7 +382,7 @@ func (a *ApplicationController) SearchApps(r *knot.WebContext) interface{} {
 func (a *ApplicationController) GetDirApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	filepath.Walk(dest+"\\a", VisitFile)
+	// filepath.Walk(dest+"\\a", VisitFile)
 	/*files, _ := ioutil.ReadDir(dest + "\\a")
 	for _, f := range files {
 		if f.IsDir() {
