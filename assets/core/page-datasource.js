@@ -48,6 +48,8 @@ ds.templateLookup = {
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.connectionListMode = ko.observable('');
 ds.dataSourceMode = ko.observable('');
+ds.valDataSourceFilter = ko.observable('');
+ds.valConnectionFilter = ko.observable('');
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confDataSourceConnectionInfo = ko.mapping.fromJS(ds.templateConfig);
 ds.confLookup = ko.mapping.fromJS(ds.templateLookup);
@@ -645,7 +647,31 @@ ds.showLookupData = function (lookupID, lookupData) {
 		$("#grid-lookup-data").kendoGrid(gridConfig);
 	});
 };
+function filterDataSource(event) {
+	var fdatasource = ds.valDataSourceFilter();
+	app.ajaxPost("/datasource/finddatasource", {inputText : fdatasource}, function (res) 
+	{
+		if (!app.isFine(res)) {
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		ds.dataSourcesData(res.data);
+	});
+}
 
+function filterConnection(event) {
+	// var fconnection = ds.valConnectionFilter();
+	// app.ajaxPost("/datasource/findconnection", {inputText : fconnection}, function (res)
+	// {
+	// 	if (!app.isFine(res)) {
+	// 		return;
+	// 	}
+	// 	ds.connectionListData(res.data);
+	// });
+console.log(ds.valConnectionFilter());
+}
 $(function () {
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
