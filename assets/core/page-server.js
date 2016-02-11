@@ -18,6 +18,7 @@ srv.templateConfigServer = {
 	copy: "",
 	dir: ""
 };
+srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
@@ -68,7 +69,8 @@ srv.saveServer = function(){
 	// if (!qr.validateQuery()) {
 	// 	return;
 	// }
-	app.ajaxPost("/server/saveservers", {}, function (res) {
+	var data = ko.mapping.toJS(srv.configServer);
+	app.ajaxPost("/server/saveservers", data, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -99,7 +101,8 @@ srv.editServer = function (_id) {
 }
 
 srv.removeServer = function(_id) {
-	if ($('#servercheck').is(':checked') == false) {
+	_id = "lagi"
+	if ($('#servercheck').is(':checked') == true) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -112,7 +115,7 @@ srv.removeServer = function(_id) {
 		swal({
 			title: "Are you sure?",
 			// text: 'Application with id "' + _id + '" will be deleted',
-			text: 'Application(s) with will be deleted',
+			text: 'Application(s) with id "' + _id + '" will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -121,7 +124,7 @@ srv.removeServer = function(_id) {
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/server/deleteserver", { _id: _id }, function () {
+				app.ajaxPost("/server/deleteservers", { _id: _id }, function () {
 					if (!app.isFine) {
 						return;
 					}
@@ -141,6 +144,20 @@ srv.getUploadFile = function() {
 	     $("#nama").text(filename)
 	 });
 };
+
+function ServerFilter(event){
+	app.ajaxPost("/server/serversfilter", {inputText : srv.filterValue()}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		srv.ServerData(res.data);
+	});
+}
 
 srv.backToFront = function () {
 	app.mode('');
