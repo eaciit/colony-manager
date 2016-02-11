@@ -60,10 +60,11 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">OS</label>
 					    		<div class="col-md-6">
-					    			<select id="os" data-required-msg="OS cannot be empty" name="OS" data-placeholder="Select OS" class="form-control" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
+					    			<select id="os" data-required-msg="OS cannot be empty" name="os" data-placeholder="Select OS" class="form-control" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
 							            <!-- <option>Windows</option>
 							            <option>Linux</option> -->
 							        </select>
+							        <span class="k-invalid-msg" data-for="os"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">

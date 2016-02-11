@@ -13,10 +13,10 @@ srv.templateConfigServer = {
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
-	extract: "",
-	newfile: "",
-	copy: "",
-	dir: ""
+	cmdextract: "",
+	cmdnewfile: "",
+	cmdcopy: "",
+	cmddir: ""
 };
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.ServerMode = ko.observable('');
@@ -115,6 +115,30 @@ srv.editServer = function (_id) {
 		app.mode('editor');
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
+	});
+}
+
+srv.removeServer = function (_id) {
+	swal({
+		title: "Are you sure?",
+		text: 'Server with id "' + _id + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: false
+	},
+	function() {
+		setTimeout(function () {
+			app.ajaxPost("/server/deleteservers", { _id: _id }, function () {
+				if (!app.isFine) {
+					return;
+				}
+
+				srv.backToFront()
+				swal({title: "Server successfully deleted", type: "success"});
+			});
+		},1000);
 	});
 }
 

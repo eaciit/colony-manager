@@ -4,7 +4,7 @@ import (
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
-	. "github.com/eaciit/toolkit"
+	// . "github.com/eaciit/toolkit"
 )
 
 type ServerController struct {
@@ -54,6 +54,10 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	data.SSHFile = "knot-server"
 	data.SSHUser = "knot"
 	data.SSHPass = "knotpass"
+	data.CmdExtract = "unzip anz.zip"
+	data.CmdNewFile = "touch test.go"
+	data.CmdCopy = "scp anz.zip user@192.168.0.100:/home/user"
+	data.CmdDirectory = "mkdir /home/user/ANZ"
 
 	err := colonycore.Delete(data)
 	if err != nil {
@@ -82,6 +86,23 @@ func (s *ServerController) SelectServers(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	Printf("data:%v\n", payload)
+
 	return helper.CreateResult(true, payload, "")
+}
+
+func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.Server)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Delete(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
 }
