@@ -46,6 +46,8 @@ ds.templateLookup = {
 };
 
 ds.config = ko.mapping.fromJS(ds.templateConfig);
+ds.showDataSource = ko.observable(true);
+ds.showConnection = ko.observable(true);
 ds.connectionListMode = ko.observable('');
 ds.dataSourceMode = ko.observable('');
 ds.valDataSourceFilter = ko.observable('');
@@ -65,6 +67,11 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
+	{ title: "", width:25, template: function (d) {
+		return [
+			"<input type='checkbox' id='connectioncheck' class='connectioncheck' data-bind='checked: ' />"
+		].join(" ");
+	} },
 	{ field: "_id", title: "Connection ID" },
 	{ field: "Driver", title: "Driver" },
 	{ field: "Host", title: "Host" },
@@ -74,24 +81,29 @@ ds.connectionListColumns = ko.observableArray([
 	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Connection' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Connection' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
+			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Connection' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Connection' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
 		].join(" ");
 	} },
 ]);
 ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
+	{ title: "", width:25, template: function (d) {
+		return [
+			"<input type='checkbox' id='datasourcecheck' class='datasourcecheck' data-bind='checked: ' />"
+		].join(" ");
+	} },
 	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
 		return "test"
 	} },
-	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Source' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Source' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
-		].join(" ");
-	} },
+	// { title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
+	// 	return [
+	// 		"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Source' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+	// 		"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Source' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
+	// 	].join(" ");
+	// } },
 ]);
 ds.settingsColumns = ko.observableArray([
 	{ field: "key", title: "Key", template: function (d) {
@@ -185,6 +197,7 @@ ds.openConnectionForm = function () {
 	app.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
+	ds.showConnection(false);
 };
 ds.addSettings = function () {
 	var setting = $.extend(true, {}, ds.templateConfigSetting);
@@ -274,6 +287,14 @@ ds.testConnection = function () {
 		timeout: 10000
 	});
 };
+
+ds.selectGridConnection = function(e){
+	var grid = $(".grid-connection").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	ds.editConnection(selectedItem._id);
+	ds.showConnection(true);
+};
+
 ds.editConnection = function (_id) {
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 
@@ -287,52 +308,85 @@ ds.editConnection = function (_id) {
 		app.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
 		ds.addSettings();
+		ds.showConnection(true);		
 	});
 };
 ds.removeConnection = function (_id) {
-	swal({
-	    title: "Are you sure?",
-	    text: 'Data connection with id "' + _id + '" will be deleted',
-	    type: "warning",
-	    showCancelButton: true,
-	    confirmButtonColor: "#DD6B55",
-	    confirmButtonText: "Delete",
-	    closeOnConfirm: true
-	}, function() {
-	    setTimeout(function () {
-	    	app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
-				if (!app.isFine(res)) {
-					return;
-				}
+	if ($('#connectioncheck').is(':checked') == false) {
+		swal({
+			title: "",
+			text: 'You havent choose any connection to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
+	}else{
+		swal({
+		    title: "Are you sure?",
+		    // text: 'Data connection with id "' + _id + '" will be deleted',
+		    text: 'Data connection(s) will be deleted',
+		    type: "warning",
+		    showCancelButton: true,
+		    confirmButtonColor: "#DD6B55",
+		    confirmButtonText: "Delete",
+		    closeOnConfirm: true
+		}, function() {
+		    setTimeout(function () {
+		    	app.ajaxPost("/datasource/removeconnection", { _id: _id }, function (res) {
+					if (!app.isFine(res)) {
+						return;
+					}
 
-				ds.backToFrontPage();
-				swal({ title: "Data successfully deleted", type: "success" });
-			});
-	    }, 1000);
-	});
+					ds.backToFrontPage();
+					swal({ title: "Data connection(s) successfully deleted", type: "success" });
+				});
+		    }, 1000);
+		});
+	}
 };
 ds.removeDataSource = function (_id) {
-	swal({
-	    title: "Are you sure?",
-	    text: 'Data source with id "' + _id + '" will be deleted',
-	    type: "warning",
-	    showCancelButton: true,
-	    confirmButtonColor: "#DD6B55",
-	    confirmButtonText: "Delete",
-	    closeOnConfirm: true
-	}, function() {
-		setTimeout(function () {
-			app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
-				if (!app.isFine(res)) {
-					return;
-				}
+	if ($('#datasourcecheck').is(':checked') == false) {
+		swal({
+			title: "",
+			text: 'You havent choose any datasource to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
+	}else{
+		swal({
+		    title: "Are you sure?",
+		    // text: 'Data source with id "' + _id + '" will be deleted',
+		    text: 'Data source(s) will be deleted',
+		    type: "warning",
+		    showCancelButton: true,
+		    confirmButtonColor: "#DD6B55",
+		    confirmButtonText: "Delete",
+		    closeOnConfirm: true
+		}, function() {
+			setTimeout(function () {
+				app.ajaxPost("/datasource/removedatasource", { _id: _id }, function (res) {
+					if (!app.isFine(res)) {
+						return;
+					}
 
-				ds.backToFrontPage();
-				swal({ title: "Data successfully deleted", type: "success" });
-			});
-		}, 1000);
-	});
-}
+					ds.backToFrontPage();
+					swal({ title: "Data source(s) successfully deleted", type: "success" });
+				});
+			}, 1000);
+		});
+	}
+};
+
+ds.selectGridDataSource = function(e){
+	var grid = $(".grid-datasource").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	ds.editDataSource(selectedItem._id);
+	ds.showDataSource(true);
+};
+
 ds.editDataSource = function (_id) {
 	ds.dataSourceMode('edit');
 	app.resetValidation(".form-datasource");
@@ -341,6 +395,7 @@ ds.editDataSource = function (_id) {
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
+	ds.showDataSource(true);
 	qr.clearQuery();
 
 	$('a[data-target="#ds-tab-1"]').tab('show');
@@ -359,7 +414,7 @@ ds.editDataSource = function (_id) {
 			$("select.data-connection").data("kendoComboBox").trigger("change");
 		}, 200);
 	});
-}
+};
 ds.getParamForSavingDataSource = function () {
 	var param = ko.mapping.toJS(ds.confDataSource);
 	param.MetaData = JSON.stringify(param.MetaData);
@@ -406,6 +461,7 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
+	ds.showDataSource(false);
 };
 ds.forceFetchDataSourceMetaData = function () {
 	ds.saveDataSource(function (res) {

@@ -25,6 +25,9 @@
         <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
     		<span class="glyphicon glyphicon-save"></span> Save
     	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
+    	</button>
 	</nav>
 
 	<div class="panel col-md-8" data-bind="visible: (app.mode() == 'editor')">
