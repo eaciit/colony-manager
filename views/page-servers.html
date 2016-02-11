@@ -1,31 +1,21 @@
 <h1>Servers</h1>
 	<nav class="navbar" data-bind="visible: (app.mode() == '')">
-	    <div class="nav1">
-	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
-	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-	    	</button>
-	        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
-	    		<span class="glyphicon glyphicon-plus"></span> Add
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: srv.removeServer">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
-	    </div>
-    	<div class="form-group row nav2">
-			<div class="col-sm-10">
-				<label class="col-sm-2 filter-label lbl">Search</label>
-				<div class="col-sm-4">
-	               <input type="text" class="input-sm form-control" placeholder="Search">
-	            </div>
-	        </div>
-    	</div>
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
+    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+    	</button>
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
+    		<span class="glyphicon glyphicon-plus"></span> Add
+    	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: srv.removeServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
+    	</button>
 	</nav>
 	<div class="panel" data-bind="visible: (app.mode() == '')">
 	    <div class="panel-heading">
 	        <h1 class="panel-title">Servers</h1>
 	    </div>
 	    <div class="panel-body">
-	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: srv.ServerColumns, filterfable: false, pageable: true, selectable: 'multiple, row', change: srv.editServer}"></div>
+	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
 	    </div>
 	</div>
 	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -34,6 +24,9 @@
     	</button>
         <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
     		<span class="glyphicon glyphicon-save"></span> Save
+    	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
     	</button>
 	</nav>
 

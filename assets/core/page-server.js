@@ -19,16 +19,17 @@ srv.templateConfigServer = {
 	dir: ""
 };
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
+srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
 	{ title: "", width:10, template: function (d) {
 		return [
 			"<input type='checkbox' id='servercheck' class='servercheck' data-bind='checked: ' />"
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	} },
-	{ field: "_id", title: "ID", width: 80}, //, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]}
+	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
+	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
@@ -56,8 +57,8 @@ srv.createNewServer = function () {
 	app.mode("editor");
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+	srv.showServer(false);
 };
-
 
 srv.saveServer = function(){
 	if (!app.isFormValid(".form-server")) {
@@ -77,6 +78,13 @@ srv.saveServer = function(){
 	srv.backToFront()
 };
 
+srv.selectGridServer = function(e){
+	var grid = $(".grid-server").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	srv.editServer(selectedItem._id);
+	srv.showServer(true);
+};
+
 srv.editServer = function (_id) {
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	app.ajaxPost("/server/selectservers", { _id: _id }, function(res) {
@@ -90,17 +98,8 @@ srv.editServer = function (_id) {
 	});
 }
 
-srv.selectGridServer = function () {
-	
-}
-
-srv.backToFront = function () {
-	app.mode('');
-	srv.getServers();
-};
-
 srv.removeServer = function(_id) {
-	if ($('#servercheck').is(':checked') ===false) {
+	if ($('#servercheck').is(':checked') == false) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -113,7 +112,7 @@ srv.removeServer = function(_id) {
 		swal({
 			title: "Are you sure?",
 			// text: 'Application with id "' + _id + '" will be deleted',
-			text: 'Server(s) with will be deleted',
+			text: 'Application(s) with will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -128,7 +127,7 @@ srv.removeServer = function(_id) {
 					}
 
 					srv.backToFront()
-					swal({title: "Server(s) successfully deleted", type: "success"});
+					swal({title: "Server successfully deleted", type: "success"});
 				});
 			},1000);
 		});
@@ -141,6 +140,11 @@ srv.getUploadFile = function() {
 	     $('#file-name').val(filename);
 	     $("#nama").text(filename)
 	 });
+};
+
+srv.backToFront = function () {
+	app.mode('');
+	srv.getServers();
 };
 
 $(function () {
