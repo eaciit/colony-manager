@@ -1,15 +1,28 @@
 viewModel.servers = {}; var srv = viewModel.servers;
+srv.templateOS = ko.observableArray([
+	{ value: "windows", text: "Windows" },
+	{ value: "linux", text: "Linux" }
+]);
 srv.templateConfigServer = {
 	_id: "",
-	AppsName: "",
-	Enable: false,
-	AppPath: ""
+	type: "",
+	folder: "",
+	os: "",
+	enable: false,
+	sshtype: "",
+	sshfile: "",
+	sshuser: "",
+	sshpass:  "",
+	extract: "",
+	newfile: "",
+	copy: "",
+	dir: ""
 };
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 80 },
+	{ field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
@@ -67,9 +80,17 @@ srv.saveNewServer = function(){
 		return;
 	}
 
-	if (!qr.validateQuery()) {
-		return;
-	}
+	// if (!qr.validateQuery()) {
+	// 	return;
+	// }
+	app.ajaxPost("/server/saveservers", {}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+	});
+	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
+	});
+	srv.backToFront()
 
 	// var _id = srv.confServer._id();
 	// srv.saveServer(function (res) {
@@ -83,6 +104,19 @@ srv.saveNewServer = function(){
 	// 	}
 	// });
 };
+
+srv.editServer = function (_id) {
+	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+	app.ajaxPost("/server/selectservers", { _id: _id }, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		console.log(res)
+		app.mode('editor');
+		srv.ServerMode('edit');
+		ko.mapping.fromJS(res.data, srv.configServer);
+	});
+}
 
 srv.backToFront = function () {
 	app.mode('');
