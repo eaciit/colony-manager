@@ -30,28 +30,28 @@
 	        </h1>
 	    </div>
 	    <div class="panel-body">
-	    	<form class="form-horizontal form-server" id="form-add-Server" novalidate>
+	    	<form class="form-horizontal form-server" id="form-add-Server" data-bind="with: configServer" novalidate>
 		    	<div class="col-md-12">
 		    		<div class="col-md-12">
 			    		<div class="col-md-6">
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">ID</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="">
+					    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
 									<span class="k-invalid-msg" data-for="ID"></span>					    			
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="type" placeholder="Type the Server Type Here" data-bind="">
+					    			<input required type="text" class="form-control input-sm" name="type" placeholder="Type the Server Type Here" data-bind="value: type">
 									<span class="k-invalid-msg" data-for="type"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Folder</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="folder" placeholder="Type the Folder Name Here" data-bind="">
+					    			<input required type="text" class="form-control input-sm" name="folder" placeholder="Type the Folder Name Here" data-bind="value: folder">
 									<span class="k-invalid-msg" data-for="folder"></span>
 					    		</div>
 				    		</div>
@@ -60,16 +60,16 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">OS</label>
 					    		<div class="col-md-6">
-					    			<select id="os" data-placeholder="Select OS" class="form-control">
-							            <option>Windows</option>
-							            <option>Linux</option>
+					    			<select id="os" data-required-msg="OS cannot be empty" name="OS" data-placeholder="Select OS" class="form-control" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
+							            <!-- <option>Windows</option>
+							            <option>Linux</option> -->
 							        </select>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Enable</label>
 					    		<div class="col-md-6">
-					    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
+					    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
 					    		</div>
 				    		</div>
 				    		<button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-3" >
@@ -85,14 +85,14 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="type-ssh" placeholder="Type the SSH Type Here" data-bind="">
+					    			<input required type="text" class="form-control input-sm" name="type-ssh" placeholder="Type the SSH Type Here" data-bind="value: sshtype">
 									<span class="k-invalid-msg" data-for="type-ssh"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">File</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="file" placeholder="Type the File Name Here" data-bind="">
+					    			<input required type="text" class="form-control input-sm" name="file" placeholder="Type the File Name Here" data-bind="value: sshfile">
 									<span class="k-invalid-msg" data-for="file"></span>
 					    		</div>
 				    		</div>
@@ -101,14 +101,14 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">User</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="">
+					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
 									<span class="k-invalid-msg" data-for="user"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Pass</label>
 					    		<div class="col-md-7">
-					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="">
+					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
 									<span class="k-invalid-msg" data-for="password"></span>
 					    		</div>
 				    		</div>
