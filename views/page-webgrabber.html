@@ -315,25 +315,16 @@
 			    							<select data-bind="kendoDropDownList: { data: wg.templateDestinationType, value: DestinationType}"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'Mongo'">
-		    							<label class="col-md-4 filter-label">Host</label>
+		    						<div class="row" data-bind="visible: DestinationType() == 'Database'">
+		    							<label class="col-md-4 filter-label">Host ID</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Host" placeholder="Type Host here" data-bind="value: ConnectionInfo.Host"/>
-											<span class="k-invalid-msg" data-for="Host"></span>
+			    							<select required data-required-msg="Data Source Origin cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.hostId }"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'Mongo'">
-		    							<label class="col-md-4 filter-label">Database</label>
-			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: ConnectionInfo.Database"/>
-											<span class="k-invalid-msg" data-for="Database"></span>
-			    						</div>
-		    						</div>
-		    						<div class="row" data-bind="visible: DestinationType() == 'Mongo'">
+		    						<div class="row" data-bind="visible: wg.collectionInput">
 		    							<label class="col-md-4 filter-label">Collection</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Collection" placeholder="Type Collection here" data-bind="value: ConnectionInfo.Collection"/>
-											<span class="k-invalid-msg" data-for="Collection"></span>
+			    							<input required type="text" class="form-control input-sm"/></span>
 			    						</div>
 		    						</div>
 		    						<div class="row" data-bind="visible: DestinationType() == 'CSV'">

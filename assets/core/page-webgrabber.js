@@ -16,6 +16,11 @@ wg.selectedItem = ko.observable('');
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
+wg.connectionListData = ko.observableArray([]);
+wg.connListData = ko.observableArray([]);
+wg.hostId = ko.observable('');
+wg.collectionInput = ko.observable();
+
 wg.templateConfigScrapper = {
 	ID: "",
 	CallType: "GET",
@@ -44,6 +49,7 @@ wg.templateConfigScrapper = {
 // 		password: "",
 // 		settings: "",
 // 		collection: ""
+//		connectionifd: ""
 // 	},
 // 	desttype: "",
 // 	name: ""
@@ -57,7 +63,7 @@ wg.templateConfigScrapper = {
 wg.templateConfigSelector = {
 	Name: "",
 	RowSelector: "",
-	DestinationType: "Mongo",
+	DestinationType: "Database",
 	ColumnSettings: [],
 	ConnectionInfo: {
 		FilterCond: "",
@@ -68,13 +74,14 @@ wg.templateConfigSelector = {
 		UseHeader: true,
 		Delimiter: ",",
 		UserName: "",
-		Password: ""
+		Password: "",
+		ConnectionId: ""
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
-wg.templateDestinationType = ["Mongo", "CSV"];
+wg.templateDestinationType = ["Database", "CSV"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
 	key: "",
@@ -133,6 +140,18 @@ wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
 	{ value: "POST", title: "POST" },
 ]);
+
+wg.templateConfigConnection = {
+	_id: "",
+	Driver: "",
+	Host: "",
+	Database: "",
+	UserName: "",
+	Password: "",
+	Settings: []
+};
+
+wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
 wg.editScrapper = function (_id) {
 	app.ajaxPost("/webgrabber/selectscrapperdata", { _id: _id }, function (res) {
@@ -518,7 +537,7 @@ wg.saveSelectorConf = function(){
 	var param = ko.mapping.toJS(wg.configScrapper);
 	param.DataSettings = ko.mapping.toJS(wg.selectorRowSetting);
 	for (var key in param.DataSettings){
-		if (param.DataSettings[key].DestinationType === 'Mongo'){
+		if (param.DataSettings[key].DestinationType === 'Database'){
 			param.DataSettings[key].ConnectionInfo = {
 				Host: param.DataSettings[key].ConnectionInfo.Host,
 				Database: param.DataSettings[key].ConnectionInfo.Database,
@@ -563,7 +582,7 @@ wg.viewData = function (id) {
 		var baseSetting = base.datasettings[0];
 		param.Driver = baseSetting.desttype;
 
-		if (param.Driver == "mongo") {
+		if (param.Driver == "Database") {
 			param.Host = baseSetting.Host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
@@ -646,10 +665,43 @@ function filterWebGrabber(event) {
 		wg.scrapperData(res.data);
 	});
 }
+wg.getConnection = function () {
+	var param = ko.mapping.toJS(wg.configConnection);
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		wg.connectionListData(res.data);
+	});
+};
+wg.hostId.subscribe(function () {
+	var fconnection = wg.hostId();
+	if (fconnection) {
+		app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+		console.log(res.data[0].Driver);
+			if(res.data[0].Driver != 'mongo') {
+				wg.collectionInput(false);
+			} else {
+				wg.collectionInput(true);
+			}
+		});
+	}
+});
+// var a = ko.utils.arrayFilter(wg.connectionListData(res.data), function(res) {
+//             return res.data == 'mongo';
+//     });
+// 	if (a.length > 0){
+// 		wg.collectionInput(true);
+// 	}
+	
 
 // model.WPN().Site.subscribe(function(){
 //         genDatatempsite();
 //     });
 $(function () {
+	wg.getConnection();
 	wg.getScrapperData();
 });
