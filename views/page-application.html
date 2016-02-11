@@ -24,7 +24,7 @@
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
 			<div class="nav1">
-				 <button class="btn btn-sm btn-success" data-bind="click: apl.createNewScrapper">
+				 <button class="btn btn-sm btn-success" data-bind="click: apl.createNewApplication">
 			    		<span class="glyphicon glyphicon-plus"></span> Add
 			    </button>
 		    	<button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
@@ -44,7 +44,7 @@
 		        <h1 class="panel-title">Application</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.scrapperData, columns: apl.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
+		    	<div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: apl.ApplicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
 		    </div>
 		</div>
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -58,7 +58,7 @@
 
 		    </div>
 			<div class="panel-heading">
-		        <h1 class="panel-title"><span data-bind="text: (apl.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+		        <h1 class="panel-title"><span data-bind="text: (apl.applicationMode() == '') ? 'Create New' : 'Edit'"></span>
 		        </h1>
 		    </div>
 		    <ul id="myTab" class="nav nav-tabs">
@@ -68,16 +68,16 @@
 		    <div class="panel-body">
 			    <div id="myTabContent" class="tab-content">
 			    	<div class="tab-pane fade in active" id="Form">
-			    		<form class="form-horizontal form-application" id="form-add-scrapper" data-bind="with: configScrapper" novalidate>
+			    		<form class="form-horizontal form-application" id="form-add-Application" data-bind="with: configApplication" novalidate>
 				    		<div class="col-md-12">
 					    		<div class="form-group row">
 						    		<label class="col-md-3 filter-label">ID</label>
 						    		<div class="col-md-3">
-						    			<input class="form-control input-sm " type="text" data-bind="value: _id, enable: (apl.scrapperMode() == '')"/>
+						    			<input class="form-control input-sm " type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')"/>
 						    		</div>
 						    		<label class="col-md-2 filter-label">Enable</label>
 						    		<div class="col-md-2">
-						    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
+						    			<input type="checkbox" id="Enable" data-bind="checked: Enable" />
 						    		</div>
 					    		</div>
 					    		<div class="form-group">
@@ -87,7 +87,7 @@
 						    		</div>
 					    		</div>
 					    		<div class="form-group row">
-					    			<button class="btn btn-sm btn-primary btn1" data-bind="click: apl.saveScrapper" ><span class="glyphicon glyphicon-save"></span>Save</button> 
+					    			<button class="btn btn-sm btn-primary btn1" data-bind="click: apl.saveApplication" ><span class="glyphicon glyphicon-save"></span>Save</button> 
 					    			<span class="btn btn-sm btn-success btn-file">
 									    <span class="glyphicon glyphicon-upload"></span>Upload <input id="files" name="files" type="file" accept=".zip">
 									</span>
@@ -100,12 +100,16 @@
 			    	</div>
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
+				    		<div class="col-md-12 action-button">
+				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-file"></span> New File</button>
+				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
+				    		</div>
 					    	<div class="col-md-12 bd1 headercustom">
 					            <div class="col-md-4">
 					    		    <div class="form-group">
 							    		<label class="col-md-3 pdTop6">Search :</label>
 							    		<div class="col-md-6">
-							    			<input class="form-control input-sm inputcustom" type="text"/>
+							    			<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 							    		</div>
 							    		<div class="col-md-3">
 					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
