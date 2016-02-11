@@ -1,7 +1,13 @@
-app.section('scrapper');
+app.section('application');
 
 viewModel.application = {}; var apl = viewModel.application;
-
+apl.templateConfigScrapper = {
+	_id: "",
+	AppsName: "",
+	Enable: false,
+	AppPath: ""
+};
+apl.configScrapper = ko.mapping.fromJS(apl.templateConfigScrapper);
 apl.scrapperMode = ko.observable('');
 apl.scrapperData = ko.observableArray([]);
 apl.scrapperColumns = ko.observableArray([
@@ -30,6 +36,7 @@ apl.getApplications = function() {
 };
 
 apl.editScrapper = function(_id) {
+	ko.mapping.fromJS(apl.templateConfigScrapper, apl.configScrapper);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
 			return;
@@ -37,8 +44,37 @@ apl.editScrapper = function(_id) {
 
 		app.mode('editor');
 		apl.scrapperMode('edit');
-		console.log(res);
+		ko.mapping.fromJS(res.data, apl.configScrapper);
 	});
+};
+
+apl.createNewScrapper = function () {
+	//alert("masuk create");
+	app.mode("editor");
+	apl.scrapperMode('');
+	ko.mapping.fromJS(apl.templateConfigScrapper, apl.configScrapper);
+	//apl.addMap();
+};
+
+apl.saveScrapper = function() {
+	if (!app.isFormValid(".form-application")) {
+		return;
+	}
+
+	var data = ko.mapping.toJS(apl.configScrapper);
+	var formData = new FormData();
+	
+	formData.append("Enable", data.Enable); 
+	formData.append("userfile", $('input[type=file]')[0].files[0]);
+	formData.append("id", data._id);
+	
+	var request = new XMLHttpRequest();
+	request.open("POST", "/application/saveapps");
+	request.send(formData);
+
+	swal({title: "Application successfully created", type: "success",closeOnConfirm: true
+	});
+	apl.backToFront()
 };
 
 apl.removeScrapper = function(_id) {
@@ -65,10 +101,49 @@ apl.removeScrapper = function(_id) {
 	});
 };
 
+apl.getUploadFile = function() {
+	$("#files").kendoUpload();
+    $("#files").closest(".k-upload").find("span").text("Upload zip file here");
+    $(".k-button.k-upload-button").addClass("btn btn-primary");
+};
+
 apl.backToFront = function () {
+	app.mode('');
 	apl.getApplications();
 };
 
+apl.getTreeview = function(){
+	 $("#treeview-sprites").kendoTreeView({
+        dataSource: [{
+            text: "My Documents", expanded: true, spriteCssClass: "rootfolder", items: [
+                {
+                    text: "Kendo UI Project", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "about.html", spriteCssClass: "html" },
+                        { text: "index.html", spriteCssClass: "html" },
+                        { text: "logo.png", spriteCssClass: "image" }
+                    ]
+                },
+                {
+                    text: "New Web Site", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "mockup.jpg", spriteCssClass: "image" },
+                        { text: "Research.pdf", spriteCssClass: "pdf" },
+                    ]
+                },
+                {
+                    text: "Reports", expanded: true, spriteCssClass: "folder", items: [
+                        { text: "February.pdf", spriteCssClass: "pdf" },
+                        { text: "March.pdf", spriteCssClass: "pdf" },
+                        { text: "April.pdf", spriteCssClass: "pdf" }
+                    ]
+                }
+            ]
+        }]
+    });
+}
+
+
 $(function () {
 	apl.getApplications();
+	apl.getUploadFile();
+	apl.getTreeview();
 });

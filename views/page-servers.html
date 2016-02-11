@@ -1,0 +1,183 @@
+<h1>Servers</h1>
+	<nav class="navbar" data-bind="visible: (app.mode() == '')">
+        <button class="btn btn-sm btn-primary navbar-btn" >
+    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+    	</button>
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewScrapper">
+    		<span class="glyphicon glyphicon-plus"></span> Create
+    	</button>
+	</nav>
+	<div class="panel" data-bind="visible: (app.mode() == '')">
+	    <div class="panel-heading">
+	        <h1 class="panel-title">Servers</h1>
+	    </div>
+	    <div class="panel-body">
+	    	<!-- <div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.scrapperData, columns: srv.scrapperColumns, filterfable: false, pageable: true, dataBound: srv.gridBoundTooltipster('.grid-data-application') }"></div> -->
+	    </div>
+	</div>
+	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+		<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
+    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+    	</button>
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveScrapper">
+    		<span class="glyphicon glyphicon-save"></span> Save
+    	</button>
+	</nav>
+
+	<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 1200px;">
+		<div class="panel-heading">
+	        <h1 class="panel-title"><span data-bind="text: (srv.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+	        </h1>
+	    </div>
+	    <div class="panel-body">
+	    	<form class="form-horizontal form-application" id="form-add-scrapper" novalidate>
+		    	<div class="col-md-8">
+		    		<div class="col-md-12">
+			    		<div class="col-md-7">
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">ID</label>
+					    		<div class="col-md-7">
+					    			<input class="form-control input-sm full-width" type="text"/>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Type</label>
+					    		<div class="col-md-7">
+					    			<input class="form-control input-sm full-width" type="text"/>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Folder</label>
+					    		<div class="col-md-7">
+					    			<input class="form-control input-sm full-width" type="text"/>
+					    		</div>
+				    		</div>
+			    		</div>
+			    		<div class="col-md-5">
+				    		<div class="form-group">
+					    		<label class="col-md-3 filter-label">OS</label>
+					    		<div class="col-md-6">
+					    			<select id="os" data-placeholder="Select OS" class="form-control">
+							            <option>Windows</option>
+							            <option>Linux</option>
+							        </select>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 filter-label">Enable</label>
+					    		<div class="col-md-6">
+					    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
+					    		</div>
+				    		</div>
+			    		</div>
+			    	</div>
+			    	<div class="col-md-12">
+			    		<div class="col-md-12">
+			    			<p class="pcustom">SSH Access</p>
+			    		</div>
+			    		<div class="col-md-7">
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Type</label>
+					    		<div class="col-md-7">
+					    			<input class="form-control input-sm full-width" type="text"/>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">File</label>
+					    		<div class="col-md-7">
+					    			<input class="form-control input-sm full-width" type="text"/>
+					    		</div>
+				    		</div>
+			    		</div>
+			    		<div class="col-md-5">
+				    		<div class="form-group">
+					    		<label class="col-md-3 filter-label">User</label>
+					    		<div class="col-md-6">
+					    			<input class="form-control input-sm full-width" type="text"/>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 filter-label">Pass</label>
+					    		<div class="col-md-6">
+					    			<input class="form-control input-sm full-width" type="password"/>
+					    		</div>
+				    		</div>
+			    		</div>
+			    	</div>
+			    </div>
+		    	<div class="col-md-12">
+		            <button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-1" >
+		            	<span class="glyphicon glyphicon-upload"></span> Upload
+		            </button>
+		            <button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-2" >
+		            	<span class="glyphicon glyphicon-plus"></span> New File
+		            </button>
+		            <button class="btn btn-sm btn-danger navbar-btn btnsrvcustom col-md-offset-2" >
+		            	<span class="glyphicon glyphicon-remove"></span> Delete
+		            </button>
+		        </div>
+		    	<div class="col-md-12">
+			    	<div class="col-md-12 bd1 headercustom">
+			            <div class="col-md-4">
+			    		    <div class="form-group">
+					    		<label class="col-md-3 pdTop5">Search :</label>
+					    		<div class="col-md-6">
+					    			<input class="form-control input-sm inputcustom" type="text"/>
+					    		</div>
+					    		<div class="col-md-2">
+			            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
+					    		</div>
+				    		</div>
+					    </div>
+			    		<div class="col-md-8">
+			    			<label class="col-md-10 pdTop5" id="">ini ceritanya labelnya ini ceritanya labelnya</label>
+			            	<button class="btn btn-sm btn-primary navbar-btn col-md-2 bd0 mg0 bdcolornone" >Save</button>
+			    		</div>
+			    	</div>
+			    	<div class="col-md-12 bd1">
+			            <div class="col-md-4">			    		
+			            	<div id="example">
+					            <div class="tvcustom">
+					                <ul id="treeview">
+					                    <li data-expanded="true">
+					                        My Web Site
+					                        <ul>
+					                            <li data-expanded="true">
+					                                images
+					                                <ul>
+					                                    <li>logo.png</li>
+					                                    <li>body-back.png</li>
+					                                    <li>my-photo.jpg</li>
+					                                </ul>
+					                            </li>
+					                            <li data-expanded="true">
+					                                resources
+					                                <ul>
+					                                    <li data-expanded="true">
+					                                        pdf
+					                                        <ul>
+					                                            <li>brochure.pdf</li>
+					                                            <li>prices.pdf</li>
+					                                        </ul>
+					                                    </li>
+					                                    <li>zip</li>
+					                                </ul>
+					                            </li>
+					                            <li>about.html</li>
+					                            <li>contacts.html</li>
+					                            <li>index.html</li>
+					                            <li>portfolio.html</li>
+					                        </ul>
+					                    </li>
+					                </ul>
+					            </div>
+					        </div>
+			    		</div>
+			    		<div class="col-md-8">			    		
+			    			<textarea class="form-control tacustom" rows="13"></textarea>
+			    		</div>
+		    		</div>
+		        </div>
+	    	</form>
+	    </div>
+	</div>
