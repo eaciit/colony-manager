@@ -16,6 +16,9 @@ wg.selectedItem = ko.observable('');
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
+wg.connectionListData = ko.observableArray([]);
+wg.connListData = ko.observableArray([]);
+wg.hostId = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
@@ -33,6 +36,7 @@ wg.templateConfigScrapper = {
 	datasettings: [],
 	grabconf: {},
 };
+
 // wg.templateDataSetting = {
 // 	rowselector: "",
 // 	columnsettings: [],
@@ -60,7 +64,7 @@ wg.templateConfigSelector = {
 	rowselector: "",
 	// rowdeletecond: {},
 	// rowincludecond: {},
-	desttype: "mongo",
+	desttype: "Database",
 	columnsettings: [],
 	connectioninfo: {
 		// filtercond: "",
@@ -82,7 +86,7 @@ wg.templateConfigSelector = {
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
-wg.templatedesttype = ["mongo", "csv"];
+wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
 	key: "",
@@ -141,6 +145,18 @@ wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
 	{ value: "POST", title: "POST" },
 ]);
+
+wg.templateConfigConnection = {
+	_id: "",
+	Driver: "",
+	Host: "",
+	Database: "",
+	UserName: "",
+	Password: "",
+	Settings: []
+};
+
+wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
 wg.editScrapper = function (_id) {
 	app.ajaxPost("/webgrabber/selectscrapperdata", { _id: _id }, function (res) {
@@ -576,7 +592,7 @@ wg.viewData = function (id) {
 		var baseSetting = base.datasettings[0];
 		param.Driver = baseSetting.desttype;
 
-		if (param.Driver == "mongo") {
+		if (param.Driver == "database") {
 			param.Host = baseSetting.Host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
@@ -660,9 +676,36 @@ function filterWebGrabber(event) {
 	});
 }
 
+wg.getConnection = function () {
+	var param = ko.mapping.toJS(wg.configConnection);
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		wg.connectionListData(res.data);
+	});
+};
+
+wg.hostId.subscribe(function () {
+	var fconnection = wg.hostId();
+	if (fconnection) {
+		app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+		console.log(res.data[0].Driver);
+			if(res.data[0].Driver != 'mongo') {
+				wg.collectionInput(false);
+			} else {
+				wg.collectionInput(true);
+			}
+		});
+	}
+});
 // model.WPN().Site.subscribe(function(){
 //         genDatatempsite();
 //     });
 $(function () {
+	wg.getConnection();
 	wg.getScrapperData();
 });
