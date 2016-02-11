@@ -368,7 +368,7 @@ func (d *DataSourceController) FindConnection(r *knot.WebContext) interface{} {
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
 	if text != "" {
-		query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textLow),dbox.Contains("Database",text),dbox.Contains("Database",textLow),dbox.Contains("Driver",text),dbox.Contains("Driver",textLow),dbox.Contains("Host",text),dbox.Contains("Host",textLow),dbox.Contains("UserName",text),dbox.Contains("UserName",textLow),dbox.Contains("Password",text),dbox.Contains("Password",textLow))
+		query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("Database", text), dbox.Contains("Database", textLow), dbox.Contains("Driver", text), dbox.Contains("Driver", textLow), dbox.Contains("Host", text), dbox.Contains("Host", textLow), dbox.Contains("UserName", text), dbox.Contains("UserName", textLow), dbox.Contains("Password", text), dbox.Contains("Password", textLow))
 	}
 
 	if pilih != "" {
@@ -793,7 +793,7 @@ func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
 
 	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id",text),dbox.Contains("_id",textLow),dbox.Contains("ConnectionID",text),dbox.Contains("ConnectionID",textLow))
+	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("ConnectionID", text), dbox.Contains("ConnectionID", textLow))
 
 	data := []colonycore.DataSource{}
 	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
@@ -846,6 +846,73 @@ func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} 
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func (d *DataSourceController) RemoveMultipleDataSource(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		dg := new(colonycore.DataGrabber)
+		filter := dbox.Or(dbox.Eq("DataSourceOrigin", id.(string)), dbox.Eq("DataSourceDestination", id.(string)))
+		cursor, err := colonycore.Find(dg, filter)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer cursor.Close()
+
+		if cursor.Count() > 0 {
+			return helper.CreateResult(false, nil, "Cannot delete data source because used on data grabber")
+		}
+
+		o := new(colonycore.DataSource)
+		o.ID = id.(string)
+		err = colonycore.Delete(o)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func (d *DataSourceController) RemoveMultipleConnection(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		ds := new(colonycore.DataSource)
+		cursor, err := colonycore.Find(ds, dbox.Eq("ConnectionID", id.(string)))
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer cursor.Close()
+
+		if cursor.Count() > 0 {
+			return helper.CreateResult(false, nil, "Cannot delete connection because used on data source")
+		}
+
+		o := new(colonycore.Connection)
+		o.ID = id.(string)
+		err = colonycore.Delete(o)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	return helper.CreateResult(true, nil, "")
