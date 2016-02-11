@@ -101,14 +101,15 @@
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
 				    		<div class="col-md-12 action-button">
-				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
+				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-file"></span> New File</button>
+				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
 				    		</div>
 					    	<div class="col-md-12 bd1 headercustom">
 					            <div class="col-md-4">
 					    		    <div class="form-group">
 							    		<label class="col-md-3 pdTop6">Search :</label>
 							    		<div class="col-md-6">
-							    			<input class="form-control input-sm inputcustom" type="text"/>
+							    			<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 							    		</div>
 							    		<div class="col-md-3">
 					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
