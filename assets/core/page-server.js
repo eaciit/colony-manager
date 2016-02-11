@@ -28,7 +28,7 @@ srv.ServerColumns = ko.observableArray([
 			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	} },
-	{ field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
+	{ field: "_id", title: "ID", width: 80}, //, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]}
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
@@ -90,6 +90,10 @@ srv.editServer = function (_id) {
 	});
 }
 
+srv.selectGridServer = function () {
+	
+}
+
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
@@ -109,7 +113,7 @@ srv.removeServer = function(_id) {
 		swal({
 			title: "Are you sure?",
 			// text: 'Application with id "' + _id + '" will be deleted',
-			text: 'Application(s) with will be deleted',
+			text: 'Server(s) with will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -124,7 +128,7 @@ srv.removeServer = function(_id) {
 					}
 
 					srv.backToFront()
-					swal({title: "Server successfully deleted", type: "success"});
+					swal({title: "Server(s) successfully deleted", type: "success"});
 				});
 			},1000);
 		});
@@ -140,8 +144,5 @@ srv.getUploadFile = function() {
 };
 
 $(function () {
-	$('.grid-server').on('click','table>tbody>tr', function(){
-		console.log('asd');
-	});
     srv.getServers();
 });
