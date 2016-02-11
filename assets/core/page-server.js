@@ -140,5 +140,8 @@ srv.getUploadFile = function() {
 };
 
 $(function () {
+	$('.grid-server').on('click','table>tbody>tr', function(){
+		console.log('asd');
+	});
     srv.getServers();
 });
