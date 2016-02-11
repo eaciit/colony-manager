@@ -292,6 +292,29 @@ func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
+func (w *WebGrabberController) RemoveMultipleGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		o := new(colonycore.WebGrabber)
+		o.ID = id.(string)
+		err = colonycore.Delete(o)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
 func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -372,7 +395,7 @@ func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
 
 	err := r.GetPayload(&payload)
 	if err != nil {
-	return helper.CreateResult(false, nil, err.Error())
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	text := payload["inputText"].(string)
@@ -390,7 +413,7 @@ func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
 			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
 		} else {
 			// == try useing Contains for support autocomplite
-			query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textLow),dbox.Contains("Calltype", text),dbox.Contains("Calltype", textLow),dbox.Contains("SourceType", text),dbox.Contains("SourceType", textLow),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textLow))
+			query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("Calltype", text), dbox.Contains("Calltype", textLow), dbox.Contains("SourceType", text), dbox.Contains("SourceType", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
 		}
 	}
 
