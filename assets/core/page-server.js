@@ -28,7 +28,8 @@ srv.ServerColumns = ko.observableArray([
 			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	} },
-	{ field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
+	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
+	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
@@ -172,10 +173,12 @@ srv.getUploadFile = function() {
 	     $("#nama").text(filename)
 	 });
 };
+srv.selectGridServer = function(e){
+	var grid = $(".grid-server").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	srv.editServer(selectedItem._id);
+};
 
 $(function () {
-	$('.grid-server').on('click','table>tbody>tr', function(){
-		console.log('asd');
-	});
     srv.getServers();
 });

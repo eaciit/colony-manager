@@ -15,7 +15,7 @@
 	        <h1 class="panel-title">Servers</h1>
 	    </div>
 	    <div class="panel-body">
-	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
+	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
 	    </div>
 	</div>
 	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
