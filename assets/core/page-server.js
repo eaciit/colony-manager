@@ -58,28 +58,6 @@ srv.createNewServer = function () {
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 };
 
-// ds.getParamForSavingServer = function () {
-// 	var param = ko.mapping.toJS(ds.confDataSource);
-// 	param.MetaData = JSON.stringify(param.MetaData);
-// 	param.QueryInfo = JSON.stringify(qr.getQuery());
-// 	return param;
-// };
-
-// srv.saveServer = function (c) {
-// 	if (!app.isFormValid(".form-server")) {
-// 		return;
-// 	}
-
-// 	var param = srv.getParamForSavingServer();
-// 	app.ajaxPost("/server/saveserver", param, function (res) {
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
-
-// 		ko.mapping.fromJS(res.data, srv.confDataSource);
-// 		if (typeof c !== "undefined") c(res);
-// 	});
-// };
 
 srv.saveServer = function(){
 	if (!app.isFormValid(".form-server")) {
@@ -97,18 +75,6 @@ srv.saveServer = function(){
 	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
 	});
 	srv.backToFront()
-
-	// var _id = srv.confServer._id();
-	// srv.saveServer(function (res) {
-	// 	ko.mapping.fromJS(res.data.data, srv.confServer);
-
-	// 	if (_id == "") {
-	// 		var queryInfo = ko.mapping.toJS(srv.confServer).QueryInfo;
-	// 		if (queryInfo.hasOwnProperty("from")) {
-	// 			ds.fetchServerMetaData(queryInfo.from);
-	// 		}
-	// 	}
-	// });
 };
 
 srv.editServer = function (_id) {
