@@ -10,6 +10,7 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
+	// "github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
 	"os"
@@ -244,6 +245,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	o.Enable = enable
+	o.AppsName = r.Request.FormValue("AppsName")
 
 	err = colonycore.Delete(o)
 	if err != nil {
@@ -375,4 +377,48 @@ func (a *ApplicationController) SearchApps(r *knot.WebContext) interface{} {
 	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
+}
+
+func (a *ApplicationController) GetDirApps(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	filepath.Walk(dest+"\\a", VisitFile)
+	/*files, _ := ioutil.ReadDir(dest + "\\a")
+	for _, f := range files {
+		if f.IsDir() {
+
+		}
+		toolkit.Printf("filepath.Walk() returned %v\n", f.IsDir())
+	}*/
+
+	// fileList := []string{}
+	// filepath.Walk(dest, func(path string, f os.FileInfo, err error) error {
+	// 	toolkit.Printf("filepath.Walk() returned %v\n", path)
+	// 	fileList = append(fileList, path)
+	// 	return nil
+	// })
+	// toolkit.Printf("filepath.Walk() returned %v\n", fileList)
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func VisitFile(fp string, fi os.FileInfo, err error) error {
+	if err != nil {
+		fmt.Println(err) // can't walk here,
+		return nil       // but continue walking elsewhere
+	}
+	if fi.IsDir() {
+		fmt.Println("iki folder", fi.Name())
+		//return nil // not a file.  ignore.
+	}
+	matched, err := filepath.Match("*.*", fi.Name())
+	if err != nil {
+		fmt.Println(err) // malformed pattern
+		return err       // this is fatal.
+	}
+	if matched {
+		fmt.Println(fp)
+		fmt.Println(fi.Name())
+	}
+	return nil
 }
