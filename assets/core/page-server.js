@@ -5,21 +5,22 @@ srv.templateConfigServer = {
 	Enable: false,
 	AppPath: ""
 };
+
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 80 },
+	{ title: "", width:10, template: function (d) {
+		return [
+			"<input type='checkbox' id='servercheck' class='servercheck' data-bind='checked: ' />"
+			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+		].join(" ");
+	} },
+	{ field: "_id", title: "ID", width: 80},
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
 	{ field: "enable", title: "Enable", width: 80},
-	{ title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Server' onclick='srv.removeServer(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
-		].join(" ");
-	} },	
 ]);
 
 srv.getServers = function() {
@@ -33,36 +34,63 @@ srv.getServers = function() {
 	});
 };
 
+
 srv.createNewServer = function () {
 	app.mode("editor");
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 };
 
-// ds.getParamForSavingServer = function () {
-// 	var param = ko.mapping.toJS(ds.confDataSource);
-// 	param.MetaData = JSON.stringify(param.MetaData);
-// 	param.QueryInfo = JSON.stringify(qr.getQuery());
-// 	return param;
-// };
+srv.editServer = function(_id) {
+	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+	app.ajaxPost("/server/selectserver", { _id: _id }, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
 
-// srv.saveServer = function (c) {
-// 	if (!app.isFormValid(".form-server")) {
-// 		return;
-// 	}
+		app.mode('editor');
+		server.serverMode('edit');
+		ko.mapping.fromJS(res.data, srv.configServer);
+	});
+};
 
-// 	var param = srv.getParamForSavingServer();
-// 	app.ajaxPost("/server/saveserver", param, function (res) {
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
+srv.removeServer = function(_id) {
+	if ($('#servercheck').is(':checked') ===false) {
+		swal({
+			title: "",
+			text: 'You havent choose any server to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
+	}else{
+		swal({
+			title: "Are you sure?",
+			// text: 'Application with id "' + _id + '" will be deleted',
+			text: 'Application(s) with will be deleted',
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Delete",
+			closeOnConfirm: false
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/server/deleteserver", { _id: _id }, function () {
+					if (!app.isFine) {
+						return;
+					}
 
-// 		ko.mapping.fromJS(res.data, srv.confDataSource);
-// 		if (typeof c !== "undefined") c(res);
-// 	});
-// };
+					srv.backToFront()
+					swal({title: "Server successfully deleted", type: "success"});
+				});
+			},1000);
+		});
+	};	
+};
 
-srv.saveNewServer = function(){
+srv.saveServer = function(){
 	if (!app.isFormValid(".form-server")) {
 		return;
 	}
@@ -71,17 +99,27 @@ srv.saveNewServer = function(){
 		return;
 	}
 
-	// var _id = srv.confServer._id();
-	// srv.saveServer(function (res) {
-	// 	ko.mapping.fromJS(res.data.data, srv.confServer);
+	var data = ko.mapping.toJS(srv.configServer);
+	var formData = new FormData();
+	
+	formData.append("Enable", data.Enable); 
+	formData.append("userfile", $('input[type=file]')[0].files[0]);
+	formData.append("id", data._id);
+	
+	var request = new XMLHttpRequest();
+	request.open("POST", "/Server/saveServer");
+	request.send(formData);
 
-	// 	if (_id == "") {
-	// 		var queryInfo = ko.mapping.toJS(srv.confServer).QueryInfo;
-	// 		if (queryInfo.hasOwnProperty("from")) {
-	// 			ds.fetchServerMetaData(queryInfo.from);
-	// 		}
-	// 	}
-	// });
+	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
+	});
+	srv.backToFront()};
+
+srv.getUploadFile = function() {
+	$('#fileserver').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $('#file-name').val(filename);
+	     $("#nama").text(filename)
+	 });
 };
 
 srv.backToFront = function () {
@@ -89,7 +127,7 @@ srv.backToFront = function () {
 	srv.getServers();
 };
 
-
 $(function () {
     srv.getServers();
+    srv.getUploadFile();
 });
