@@ -15,19 +15,20 @@ wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
+	nameid: "",
 	calltype: "GET",
-	intervaltype: "",
 	sourcetype: "SourceType_Http",
+	intervaltype: "",
 	grabinterval: 0,
 	timeoutinterval: 0,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
-	logconfiguration: {
-		FileName: "",
-		FilePattern: "",
-		LogPath: ""
+	logconf: {
+		filename: "asd",
+		filepattern: "asd",
+		logpath: "asd"
 	},
-	grabconfiguration: {},
-	datasettings: []
+	datasettings: [],
+	grabconf: {},
 };
 // wg.templateDataSetting = {
 // 	rowselector: "",
@@ -54,8 +55,8 @@ wg.templateConfigScrapper = {
 wg.templateConfigSelector = {
 	name: "",
 	rowselector: "",
-	rowdeletecond: {},
-	rowincludecond: {},
+	// rowdeletecond: {},
+	// rowincludecond: {},
 	desttype: "mongo",
 	columnsettings: [],
 	connectioninfo: {
@@ -76,7 +77,7 @@ wg.templateConfigSelector = {
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
-wg.templateIntervalType = [{key:"s",value:"seconds"},{key:"m",value:"minutes"},{key:"h",value:"hours"}];
+wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
 wg.templatedesttype = ["mongo", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
@@ -526,6 +527,7 @@ wg.saveSelectedElement = function(index){
 wg.saveSelectorConf = function(){
 	var param = ko.mapping.toJS(wg.configScrapper);
 	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
+	param.nameid = param._id;
 	// for (var key in param.DataSettings){
 	// 	if (param.datasettings[key].desttype === 'Mongo'){
 	// 		param.datasettings[key].connectioninfo = {
@@ -544,7 +546,7 @@ wg.saveSelectorConf = function(){
 	// 		}
 	// 	}
 	// }
-	app.ajaxPost("/webgrabber/insertsampledata", param, function (res) {
+	app.ajaxPost("/webgrabber/savescrapperdata", param, function (res) {
 		if(!app.isFine(res)) {
 			return;
 		}

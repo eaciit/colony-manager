@@ -1,4 +1,9 @@
 <!-- core -->
+<link rel="stylesheet" href="/res/js/codemirror/codemirror.css">
+<script src="/res/js/codemirror/codemirror.js"></script>
+<script src="/res/js/codemirror/xml.js"></script>
+<script src="/res/js/codemirror/active-line.js"></script>
+
 <script src="/res/core/page-application.js"></script>
 <script src="/res/core/page-server.js"></script>
 
@@ -71,7 +76,10 @@
 				    		</div>
 			    		</div>
 			    		<div class="form-group row">
-			    			<button class="btn btn-sm btn-primary btn1" ><span class="glyphicon glyphicon-save"></span>Save</button> <button class="btn btn-sm btn-primary" ><span class="glyphicon glyphicon-upload"></span>Upload</button> 
+			    			<button class="btn btn-sm btn-primary btn1" data-bind="click: apl.saveScrapper"><span class="glyphicon glyphicon-save"></span>Save</button>
+			    			<div class="col-sm-5"> 
+				    			<input name="files" id="files" type="file" data-bind="fileSrc: AppPath" accept=".zip" />
+				    		</div>
 			    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> <button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span>Delete</button> 
 			    		</div>
 		    		</div>
@@ -93,7 +101,7 @@
 		    </div>
 		</div>
 	</div>
-	<div class="col-md-12" data-bind="visible: (app.section() == 'servers')">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'servers'), with: servers">
 		{{template "page-servers.html"}}
 	</div>
 </div>
