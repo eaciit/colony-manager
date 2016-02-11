@@ -714,18 +714,19 @@ function filterDataSource(event) {
 			res.data = [];
 		}
 		ds.dataSourcesData(res.data);
+
 	});
 }
 
 function filterConnection(event) {
-	// var fconnection = ds.valConnectionFilter();
-	// app.ajaxPost("/datasource/findconnection", {inputText : fconnection}, function (res)
-	// {
-	// 	if (!app.isFine(res)) {
-	// 		return;
-	// 	}
-	// 	ds.connectionListData(res.data);
-	// });
+	var fconnection = ds.valConnectionFilter();
+	app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res)
+	{
+	if (!app.isFine(res)) {
+ 		return;
+	}
+	 	ds.connectionListData(res.data);
+	 });
 console.log(ds.valConnectionFilter());
 }
 $(function () {
