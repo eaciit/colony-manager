@@ -64,7 +64,8 @@ apl.saveScrapper = function() {
 	var data = ko.mapping.toJS(apl.configScrapper);
 	var formData = new FormData();
 	
-	formData.append("Enable", data.Enable); 
+	formData.append("Enable", data.Enable);
+	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
 	
