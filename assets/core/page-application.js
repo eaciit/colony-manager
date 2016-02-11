@@ -130,31 +130,26 @@ apl.getTab = function(){
 }
 
 apl.treeView = function () {
+    var inlineDefault = new kendo.data.HierarchicalDataSource({
+        data: [
+            { text: "Furniture", items: [
+                { text: "Tables & Chairs" },
+                { text: "Sofas" },
+                { text: "Occasional Furniture" }
+            ] },
+            { text: "Decor", items: [
+                { text: "Bed Linen", items:[
+                    {text: "Single"},
+                    {text: "Double"},
+                ] },
+                { text: "Curtains & Blinds" },
+                { text: "Carpets" }
+            ] }
+        ]
+    });
+
     $("#treeview-left").kendoTreeView({
-		animation: {
-			collapse: false
-		},
-		template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
-		dataSource: [{ 
-			text: "assets", 
-			iconclass: "glyphicon glyphicon-folder-open",
-			items: [{ 
-				iconclass: "glyphicon glyphicon-folder-open",
-				text: "core" ,
-				items: [{
-					iconclass: "glyphicon glyphicon-file",
-					text: "page-application.js" ,
-				}]
-			}] 
-		}, {
-			text: "controller", 
-			expanded: true,
-			iconclass: "glyphicon glyphicon-folder-open",
-			items: [{ 
-				iconclass: "glyphicon glyphicon-file",
-				text: "application.go",
-			}] 
-		}]
+        dataSource: inlineDefault
     });
 };
 
@@ -170,11 +165,13 @@ apl.codemirror = function(){
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
 }
 
+// apl.treeView();
+
+
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.getTab()
+	apl.treeView();
 	apl.codemirror();
 });
-
-apl.treeView();
