@@ -24,11 +24,11 @@ srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ title: "", width:10, template: function (d) {
+	{title: "<center><input type='checkbox' id='allservercheck' class='allservercheck' data-bind='srv.allServerCheck'/></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='servercheck' class='servercheck' data-bind='checked: ' />"
 		].join(" ");
-	} },
+	}},
 	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
@@ -101,8 +101,8 @@ srv.editServer = function (_id) {
 }
 
 srv.removeServer = function(_id) {
-	_id = "lagi"
-	if ($('#servercheck').is(':checked') == true) {
+	// _id = "lagi"
+	if ($('#servercheck').is(':checked') == false) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -115,7 +115,7 @@ srv.removeServer = function(_id) {
 		swal({
 			title: "Are you sure?",
 			// text: 'Application with id "' + _id + '" will be deleted',
-			text: 'Application(s) with id "' + _id + '" will be deleted',
+			text: 'Server(s) will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -145,6 +145,15 @@ srv.getUploadFile = function() {
 	 });
 };
 
+srv.allServerCheck = function() {
+	if ($('.allservercheck').is(':checked') == true) {
+		$('.servercheck').prop('checked',true);
+	};
+	if ($('.allservercheck').is(':checked') == false){
+		$('.servercheck').removeAttr('checked');
+	};
+};
+
 function ServerFilter(event){
 	app.ajaxPost("/server/serversfilter", {inputText : srv.filterValue()}, function(res){
 		if(!app.isFine(res)){
@@ -166,4 +175,5 @@ srv.backToFront = function () {
 
 $(function () {
     srv.getServers();
+    srv.allServerCheck();
 });

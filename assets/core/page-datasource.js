@@ -67,7 +67,7 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
-	{ title: "", width:25, template: function (d) {
+	{ title: "<center><input type='checkbox' class='allconnectioncheck'/></center>", width:25, template: function (d) {
 		return [
 			"<input type='checkbox' id='connectioncheck' class='connectioncheck' data-bind='checked: ' />"
 		].join(" ");
@@ -88,7 +88,7 @@ ds.connectionListColumns = ko.observableArray([
 ]);
 ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
-	{ title: "", width:25, template: function (d) {
+	{ title: "<center><input type='checkbox' class='alldatasourcecheck'/></center>", width:25, template: function (d) {
 		return [
 			"<input type='checkbox' id='datasourcecheck' class='datasourcecheck' data-bind='checked: ' />"
 		].join(" ");
