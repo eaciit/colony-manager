@@ -69,9 +69,9 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
-	{ title: "", width:25, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='connectioncheckall' onclick=\"ds.checkDeleteData(this, 'connectionall', 'all')\"/>", width:25, template: function (d) {
 		return [
-			"<input type='checkbox' id='connectioncheck' class='connectioncheck' onclick=\"ds.checkDeleteData(this, 'connection', '"+d._id+"')\" />"
+			"<input type='checkbox' class='connectioncheck' idcheck='"+d._id+"' onclick=\"ds.checkDeleteData(this, 'connection')\" />"
 		].join(" ");
 	} },
 	{ field: "_id", title: "Connection ID" },
@@ -92,7 +92,7 @@ ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
 	{ title: "", width:25, template: function (d) {
 		return [
-			"<input type='checkbox' id='datasourcecheck' class='datasourcecheck' onclick=\"ds.checkDeleteData(this, 'datasource', '"+d._id+"')\" />"
+			"<input type='checkbox' class='datasourcecheck' idcheck='"+d._id+"' onclick=\"ds.checkDeleteData(this, 'datasource')\" />"
 		].join(" ");
 	} },
 	{ field: "_id", title: "Data Source ID" },
@@ -719,18 +719,34 @@ function filterDataSource(event) {
 
 	});
 }
-ds.checkDeleteData = function(elem, e,id){
+ds.checkDeleteData = function(elem, e){
 	if (e === 'connection'){
 		if ($(elem).prop('checked') === true){
-			ds.tempCheckIdConnection.push(id);
+			ds.tempCheckIdConnection.push($(elem).attr('idcheck'));
 		} else {
-			ds.tempCheckIdConnection.remove( function (item) { return item === id; } )
+			ds.tempCheckIdConnection.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
-	} else {
+	} if (e === 'connectionall'){
 		if ($(elem).prop('checked') === true){
-			ds.tempCheckIdDataSource.push(id);
+			$('.connectioncheck').each(function(index) {
+				$(this).prop("checked", true);
+				ds.tempCheckIdConnection.push($(this).attr('idcheck'));
+			});
 		} else {
-			ds.tempCheckIdDataSource.remove( function (item) { return item === id; } )
+			var idtemp = '';
+			$('.connectioncheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				ds.tempCheckIdConnection.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	} else if (e === 'connectionall'){
+		
+	}else {
+		if ($(elem).prop('checked') === true){
+			ds.tempCheckIdDataSource.push($(elem).attr('idcheck'));
+		} else {
+			ds.tempCheckIdDataSource.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
 }
