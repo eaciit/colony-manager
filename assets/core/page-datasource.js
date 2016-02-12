@@ -4,7 +4,7 @@ viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
 	{ value: "weblink", text: "Weblink" },
 	{ value: "mongo", text: "MongoDb" },
-	{ value: "mssql", text: "SQLServer" },
+	{ value: "mssql", text: "SQLconnection" },
 	{ value: "mysql", text: "MySQL" },
 	{ value: "oracle", text: "Oracle" },
 	{ value: "erp", text: "ERP" }
@@ -69,7 +69,7 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
-	{ title: "<center><input type='checkbox' class='allconnectioncheck'/></center>", width:25, template: function (d) {
+	{ title: "<center><input type='checkbox' class='allConnectionCheck' id='allConnectionCheck'/></center>", width:25, template: function (d) {
 		return [
 			"<input type='checkbox' id='connectioncheck' class='connectioncheck' onclick=\"ds.checkDeleteData(this, 'connection', '"+d._id+"')\" />"
 		].join(" ");
@@ -90,7 +90,7 @@ ds.connectionListColumns = ko.observableArray([
 ]);
 ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
-	{ title: "<center><input type='checkbox' class='alldatasourcecheck'/></center>", width:25, template: function (d) {
+	{ title: "<center><input type='checkbox' class='alldatasourcecheck' id='allDataSourceCheck' onclick='ds.allDataSourceCheck()'/></center>", width:25, template: function (d) {
 		return [
 			"<input type='checkbox' id='datasourcecheck' class='datasourcecheck' onclick=\"ds.checkDeleteData(this, 'datasource', '"+d._id+"')\" />"
 		].join(" ");
@@ -313,6 +313,21 @@ ds.editConnection = function (_id) {
 		ds.showConnection(true);		
 	});
 };
+
+// ds.allDataSourceCheck = function() {
+// 	if ($('#allDataSourceCheck').is(':checked') === true) {
+// 		$('.datasourcecheck').prop('checked',true);
+// 		var chkcArray = ko.observableArray([]);
+// 		$(".datasourcecheck:checked").each(function() {
+// 			chkcArray.push($(this).val());
+// 		});
+// 		var selected = chkcArray.join(',');
+// 	};
+// 	if ($('.allDataSourceCheck').is(':checked') === false){
+// 		$('.datasourcecheck').removeAttr('checked');
+// 	};
+// };
+
 ds.removeConnection = function (_id) {
 	if (ds.tempCheckIdConnection().length === 0) {
 		swal({
@@ -327,7 +342,7 @@ ds.removeConnection = function (_id) {
 		swal({
 		    title: "Are you sure?",
 		    // text: 'Data connection with id "' + _id + '" will be deleted',
-		    text: 'Data connection(s) '+ds.tempCheckIdConnection().toString()+' will be deleted',
+		    text: 'Data connection(s) with id '+ds.tempCheckIdConnection().toString()+' will be deleted',
 		    type: "warning",
 		    showCancelButton: true,
 		    confirmButtonColor: "#DD6B55",
@@ -361,7 +376,7 @@ ds.removeDataSource = function (_id) {
 		swal({
 		    title: "Are you sure?",
 		    // text: 'Data source with id "' + _id + '" will be deleted',
-		    text: 'Data source(s) '+ds.tempCheckIdDataSource().toString()+' will be deleted',
+		    text: 'Data source(s) with id '+ds.tempCheckIdDataSource().toString()+' will be deleted',
 		    type: "warning",
 		    showCancelButton: true,
 		    confirmButtonColor: "#DD6B55",
