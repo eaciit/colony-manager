@@ -31,6 +31,7 @@ srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
+srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:25, template: function (d) {
 		return [
@@ -141,7 +142,7 @@ srv.checkDeleteServer = function(elem, e){
 
 var vals = [];
 srv.removeServer = function(){
-	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+	if (srv.tempCheckIdServer().length === 0) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -151,13 +152,12 @@ srv.removeServer = function(){
 			closeOnConfirm: true
 		});
 	} else {
-		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-		return this.value;
-		}).get();
-
+		// vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+		// return this.value;
+		// }).get();
 		swal({
 			title: "Are you sure?",
-			text: 'Server with id "' + vals + '" will be deleted',
+			text: 'Server with id "' + srv.tempCheckIdServer().toString() + '" will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -166,7 +166,7 @@ srv.removeServer = function(){
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/server/deleteservers", vals, function () {
+				app.ajaxPost("/server/deleteservers", srv.tempCheckIdServer(), function () {
 					if (!app.isFine) {
 						return;
 					}
