@@ -311,16 +311,14 @@ func (a *ApplicationController) DeleteApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.Application)
-	err := r.GetPayload(payload)
+	var data []string
+	err := r.GetPayload(&data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	ids := payload.ID
-
-	if strings.Contains(ids, ",") { /*multi delete*/
-		idList := strings.Split(ids, ",")
-		for _, val := range idList {
+	for _, val := range data {
+		if val != "" {
 			payload.ID = val
 			err = colonycore.Delete(payload)
 			if err != nil {
@@ -334,21 +332,9 @@ func (a *ApplicationController) DeleteApps(r *knot.WebContext) interface{} {
 				return err
 			}
 		}
-	} else {
-		err = colonycore.Delete(payload)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		delPath := filepath.Join(unzipDest, payload.ID)
-		err = deleteDirectory(unzipDest, delPath, payload.ID)
-		if err != nil {
-			fmt.Println("Error : ", err)
-			return err
-		}
 	}
 
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, data, "")
 }
 
 func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
@@ -376,7 +362,6 @@ func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
 
 	data := []colonycore.Application{}
 	err = cursor.Fetch(&data, 0, false)
-	fmt.Println("data pencarian : ", data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
