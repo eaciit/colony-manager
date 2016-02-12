@@ -342,10 +342,12 @@ dg.viewData = function (date) {
 	});
 };
 function filterDataGrabber(event) {
-	app.ajaxPost("/datagrabber/finddatagrabber", {inputText : dg.valDataGrabberFilter()}, function (res) 
-	{
+	app.ajaxPost("/datagrabber/finddatagrabber", {inputText : dg.valDataGrabberFilter()}, function (res) {
 		if (!app.isFine(res)) {
 			return;
+		}
+		if (!res.data) {
+			res.data = [];
 		}
 		dg.scrapperData(res.data);
 	});

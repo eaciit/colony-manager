@@ -4,7 +4,7 @@ viewModel.application = {}; var apl = viewModel.application;
 apl.templateConfigScrapper = {
 	_id: "",
 	AppsName: "",
-	Enable: false,
+	Enable: ko.observable(false),
 	AppPath: ""
 };
 apl.configScrapper = ko.mapping.fromJS(apl.templateConfigScrapper);
@@ -12,7 +12,8 @@ apl.scrapperMode = ko.observable('');
 apl.scrapperData = ko.observableArray([]);
 apl.scrapperColumns = ko.observableArray([
 	{ field: "_id", title: "ID", width: 80 },
-	{ field: "AppsName", title: "Application Name", width: 130},
+	{ field: "AppsName", title: "Name", width: 130},
+	{ field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
@@ -64,10 +65,12 @@ apl.saveScrapper = function() {
 	var data = ko.mapping.toJS(apl.configScrapper);
 	var formData = new FormData();
 	
-	formData.append("Enable", data.Enable); 
+	formData.append("Enable", data.Enable);
+	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
-	
+	formData.append("AppsName", data.AppsName);
+	console.log("======= data"+JSON.stringify(data));
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
 	request.send(formData);
@@ -102,9 +105,11 @@ apl.removeScrapper = function(_id) {
 };
 
 apl.getUploadFile = function() {
-	$("#files").kendoUpload();
-    $("#files").closest(".k-upload").find("span").text("Upload zip file here");
-    $(".k-button.k-upload-button").addClass("btn btn-primary");
+	$('#files').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $('#file-name').val(filename);
+	     $("#nama").text(filename)
+	 });
 };
 
 apl.backToFront = function () {
@@ -112,38 +117,61 @@ apl.backToFront = function () {
 	apl.getApplications();
 };
 
-apl.getTreeview = function(){
-	 $("#treeview-sprites").kendoTreeView({
-        dataSource: [{
-            text: "My Documents", expanded: true, spriteCssClass: "rootfolder", items: [
-                {
-                    text: "Kendo UI Project", expanded: true, spriteCssClass: "folder", items: [
-                        { text: "about.html", spriteCssClass: "html" },
-                        { text: "index.html", spriteCssClass: "html" },
-                        { text: "logo.png", spriteCssClass: "image" }
-                    ]
-                },
-                {
-                    text: "New Web Site", expanded: true, spriteCssClass: "folder", items: [
-                        { text: "mockup.jpg", spriteCssClass: "image" },
-                        { text: "Research.pdf", spriteCssClass: "pdf" },
-                    ]
-                },
-                {
-                    text: "Reports", expanded: true, spriteCssClass: "folder", items: [
-                        { text: "February.pdf", spriteCssClass: "pdf" },
-                        { text: "March.pdf", spriteCssClass: "pdf" },
-                        { text: "April.pdf", spriteCssClass: "pdf" }
-                    ]
-                }
-            ]
-        }]
-    });
+apl.getTab = function(){
+	$('#myTab a').click(function (e) {
+	    if($(this).parent('li').hasClass('active')){
+	        $( $(this).attr('href') ).hide();
+	    }
+	    else {
+	        e.preventDefault();
+	        $(this).tab('show');
+	    }
+	});
 }
+
+apl.treeView = function () {
+    var inlineDefault = new kendo.data.HierarchicalDataSource({
+        data: [
+            { text: "Furniture", items: [
+                { text: "Tables & Chairs" },
+                { text: "Sofas" },
+                { text: "Occasional Furniture" }
+            ] },
+            { text: "Decor", items: [
+                { text: "Bed Linen", items:[
+                    {text: "Single"},
+                    {text: "Double"},
+                ] },
+                { text: "Curtains & Blinds" },
+                { text: "Carpets" }
+            ] }
+        ]
+    });
+
+    $("#treeview-left").kendoTreeView({
+        dataSource: inlineDefault
+    });
+};
+
+apl.codemirror = function(){
+    var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
+        mode: "text/html",
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+    });
+    editor.setValue('<html></html>');
+    $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
+    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
+}
+
+// apl.treeView();
 
 
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
-	apl.getTreeview();
+	apl.getTab()
+	apl.treeView();
+	apl.codemirror();
 });

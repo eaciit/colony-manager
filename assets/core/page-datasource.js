@@ -654,6 +654,9 @@ function filterDataSource(event) {
 		if (!app.isFine(res)) {
 			return;
 		}
+		if (!res.data) {
+			res.data = [];
+		}
 		ds.dataSourcesData(res.data);
 	});
 }
