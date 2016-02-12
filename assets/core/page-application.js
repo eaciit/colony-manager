@@ -109,6 +109,12 @@ apl.getUploadFile = function() {
 	});
 };
 
+apl.selectApps = function(e){
+	var tab = $(".grid-application").data("kendoGrid");
+	var data = tab.dataItem(tab.select());
+	apl.editApplication(data._id)
+}
+
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
@@ -280,7 +286,6 @@ apl.OnRemove = function(){
  	} 
  
 }
-
 
 $(function () {
 	apl.getApplications();
