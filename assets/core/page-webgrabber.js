@@ -2,6 +2,7 @@ app.section('scrapper');
 
 viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 
+
 wg.logData = ko.observable('');
 wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
@@ -16,6 +17,10 @@ wg.selectedItem = ko.observable('');
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
+wg.connectionListData = ko.observableArray([]);
+wg.connListData = ko.observableArray([]);
+wg.collectionInput = ko.observable();
+wg.hostId = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
@@ -33,6 +38,7 @@ wg.templateConfigScrapper = {
 	datasettings: [],
 	grabconf: {},
 };
+
 // wg.templateDataSetting = {
 // 	rowselector: "",
 // 	columnsettings: [],
@@ -60,7 +66,7 @@ wg.templateConfigSelector = {
 	rowselector: "",
 	// rowdeletecond: {},
 	// rowincludecond: {},
-	desttype: "mongo",
+	desttype: "database",
 	columnsettings: [],
 	connectioninfo: {
 		// filtercond: "",
@@ -76,13 +82,14 @@ wg.templateConfigSelector = {
 		database: "",
 		username: "",
 		password: "",
-		collection: ""
+		collection: "",
+		connectionid: ""
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
 wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
-wg.templatedesttype = ["mongo", "csv"];
+wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
 	key: "",
@@ -142,17 +149,28 @@ wg.dataRequestTypes = ko.observableArray([
 	{ value: "POST", title: "POST" },
 ]);
 
+wg.templateConfigConnection = {
+	_id: "",
+	Driver: "",
+	Host: "",
+	Database: "",
+	UserName: "",
+	Password: "",
+	Settings: []
+};
+
+wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
+
 wg.editScrapper = function (_id) {
 	app.ajaxPost("/webgrabber/selectscrapperdata", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
 		app.mode('editor');
 		wg.scrapperMode('edit');
 		wg.modeSetting(1);
+		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
-		// ko.mapping.fromJS(res.data.datasettings, wg.selectorRowSetting);
 		for (var key in res.data.datasettings){
 			wg.selectorRowSetting.push(ko.mapping.fromJS(res.data.datasettings[key], wg.selectedItem));
 		}
@@ -187,7 +205,6 @@ wg.getScrapperData = function () {
 		if (!app.isFine(res)) {
 			return;
 		}
-
 		wg.scrapperData(res.data);
 		wg.runBotStats();
 	});
@@ -195,12 +212,12 @@ wg.getScrapperData = function () {
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	wg.scrapperMode('');
-	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 	wg.isContentFetched(false);
 	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
 };
 wg.backToFront = function () {
+	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 	app.mode("");
 	wg.selectedID('');
 	wg.getScrapperData();
@@ -268,8 +285,6 @@ wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
 	}
-	
-	// wg.encodePayload();
 	var param = ko.mapping.toJS(wg.configScrapper);
 	app.ajaxPost("/webgrabber/fetchcontent", param, function (res) {
 		if (!app.isFine(res)) {
@@ -287,7 +302,6 @@ wg.getURL = function () {
 		bodyyo = bodyyo.substr(startofbody+1);
 		URLSource = $.parseHTML(bodyyo);
 		$("#inspectElement").replaceWith("<div id='inspectElement'><ul></ul></div>");
-		// $('#panel-set-up').scrollTop = $('#panel-set-up').scrollHeight;
 		$(URLSource).each(function(i,e){
 			if($(this).html()!==undefined){
 				linenumber = wg.GetElement($(this),0,0,0,"body");
@@ -550,6 +564,8 @@ wg.saveSelectorConf = function(){
 	// 	}
 	// }
 	app.ajaxPost("/webgrabber/savescrapperdata", param, function (res) {
+		// console.log(param);
+		// console.log(res);
 		if(!app.isFine(res)) {
 			return;
 		}
@@ -557,6 +573,7 @@ wg.saveSelectorConf = function(){
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 		wg.selectorRowSetting([]);
+		// console.log(wg.selectorRowSetting([]));
 	});
 }
 wg.viewData = function (id) {
@@ -576,7 +593,7 @@ wg.viewData = function (id) {
 		var baseSetting = base.datasettings[0];
 		param.Driver = baseSetting.desttype;
 
-		if (param.Driver == "mongo") {
+		if (param.Driver == "database") {
 			param.Host = baseSetting.Host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
@@ -660,9 +677,37 @@ function filterWebGrabber(event) {
 	});
 }
 
-// model.WPN().Site.subscribe(function(){
-//         genDatatempsite();
-//     });
+wg.getConnection = function () {
+
+	var param = ko.mapping.toJS(wg.configConnection);
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		wg.connectionListData(res.data);
+	});
+};
+
+wg.configSelector.connectioninfo.connectionid.subscribe(function (e) {
+	var fconnection = e;
+	if (fconnection) {
+		app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+			if(res.data[0].Driver != 'mongo') {
+				wg.collectionInput(false);
+			} else {
+				wg.collectionInput(true);
+			}
+			
+			wg.configSelector.connectioninfo.database(res.data[0].Database);
+		});
+		wg.configSelector.connectioninfo.connectionid(fconnection);
+	}
+});
+
 $(function () {
+	wg.getConnection();
 	wg.getScrapperData();
 });
