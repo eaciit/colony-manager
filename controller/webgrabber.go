@@ -1,7 +1,7 @@
 package controller
 
 import (
-	_ "fmt"
+	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -72,6 +72,9 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 
 	payload := new(colonycore.WebGrabber)
 	err := r.GetPayload(payload)
+	fmt.Printf("\n=============\n")
+	fmt.Printf("%#v", payload)
+	fmt.Printf("\n=============\n")
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -84,6 +87,10 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	fmt.Printf("\n=============\n")
+	fmt.Printf("%#v", payload)
+	fmt.Printf("\n=============\n")
 
 	return helper.CreateResult(true, payload, "")
 }
