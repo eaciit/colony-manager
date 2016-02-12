@@ -116,14 +116,14 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 
 	var query *dbox.Filter
 	valueInt, errv := strconv.Atoi(text)
-	fmt.Printf("",valueInt)
-	fmt.Printf("",errv)
+	fmt.Printf("", valueInt)
+	fmt.Printf("", errv)
 	if errv == nil {
 		// == try useing Eq for support integer
 		query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
 	} else {
 		// == try useing Contains for support autocomplite
-		query = dbox.Or(dbox.Contains("_id", text),dbox.Contains("_id", textLow),dbox.Contains("DataSourceOrigin", text),dbox.Contains("DataSourceOrigin", textLow),dbox.Contains("DataSourceDestination", text),dbox.Contains("DataSourceDestination", textLow),dbox.Contains("IntervalType", text),dbox.Contains("IntervalType", textLow))
+		query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("DataSourceOrigin", text), dbox.Contains("DataSourceOrigin", textLow), dbox.Contains("DataSourceDestination", text), dbox.Contains("DataSourceDestination", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
 	}
 
 	data := []colonycore.DataGrabber{}
@@ -236,6 +236,28 @@ func (d *DataGrabberController) RemoveDataGrabber(r *knot.WebContext) interface{
 	err = colonycore.Delete(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func (d *DataGrabberController) RemoveMultipleDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		o := new(colonycore.DataGrabber)
+		o.ID = id.(string)
+		err = colonycore.Delete(o)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	return helper.CreateResult(true, nil, "")

@@ -18,14 +18,15 @@ srv.templateConfigServer = {
 	cmdcopy: "",
 	cmddir: ""
 };
+srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
+srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
 	{ title: "", width:10, template: function (d) {
 		return [
 			"<input type='checkbox' id='servercheck' class='servercheck' data-bind='checked: ' />"
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	} },
 	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
@@ -44,6 +45,13 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
+	var grid = $(".grid-server").data("kendoGrid");
+	$(grid.tbody).on("mouseenter", "tr", function (e) {
+	    $(this).addClass("k-state-hover");
+	});
+	$(grid.tbody).on("mouseleave", "tr", function (e) {
+	    $(this).removeClass("k-state-hover");
+	});
 	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -57,30 +65,8 @@ srv.createNewServer = function () {
 	app.mode("editor");
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+	srv.showServer(false);
 };
-
-// ds.getParamForSavingServer = function () {
-// 	var param = ko.mapping.toJS(ds.confDataSource);
-// 	param.MetaData = JSON.stringify(param.MetaData);
-// 	param.QueryInfo = JSON.stringify(qr.getQuery());
-// 	return param;
-// };
-
-// srv.saveServer = function (c) {
-// 	if (!app.isFormValid(".form-server")) {
-// 		return;
-// 	}
-
-// 	var param = srv.getParamForSavingServer();
-// 	app.ajaxPost("/server/saveserver", param, function (res) {
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
-
-// 		ko.mapping.fromJS(res.data, srv.confDataSource);
-// 		if (typeof c !== "undefined") c(res);
-// 	});
-// };
 
 srv.saveServer = function(){
 	if (!app.isFormValid(".form-server")) {
@@ -90,7 +76,8 @@ srv.saveServer = function(){
 	// if (!qr.validateQuery()) {
 	// 	return;
 	// }
-	app.ajaxPost("/server/saveservers", {}, function (res) {
+	var data = ko.mapping.toJS(srv.configServer);
+	app.ajaxPost("/server/saveservers", data, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -98,18 +85,13 @@ srv.saveServer = function(){
 	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
 	});
 	srv.backToFront()
+};
 
-	// var _id = srv.confServer._id();
-	// srv.saveServer(function (res) {
-	// 	ko.mapping.fromJS(res.data.data, srv.confServer);
-
-	// 	if (_id == "") {
-	// 		var queryInfo = ko.mapping.toJS(srv.confServer).QueryInfo;
-	// 		if (queryInfo.hasOwnProperty("from")) {
-	// 			ds.fetchServerMetaData(queryInfo.from);
-	// 		}
-	// 	}
-	// });
+srv.selectGridServer = function(e){
+	var grid = $(".grid-server").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	srv.editServer(selectedItem._id);
+	srv.showServer(true);
 };
 
 srv.editServer = function (_id) {
@@ -125,37 +107,9 @@ srv.editServer = function (_id) {
 	});
 }
 
-srv.removeServer = function (_id) {
-	swal({
-		title: "Are you sure?",
-		text: 'Server with id "' + _id + '" will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: false
-	},
-	function() {
-		setTimeout(function () {
-			app.ajaxPost("/server/deleteservers", { _id: _id }, function () {
-				if (!app.isFine) {
-					return;
-				}
-
-				srv.backToFront()
-				swal({title: "Server successfully deleted", type: "success"});
-			});
-		},1000);
-	});
-}
-
-srv.backToFront = function () {
-	app.mode('');
-	srv.getServers();
-};
-
 srv.removeServer = function(_id) {
-	if ($('#servercheck').is(':checked') ===false) {
+	_id = "lagi"
+	if ($('#servercheck').is(':checked') == true) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -168,7 +122,7 @@ srv.removeServer = function(_id) {
 		swal({
 			title: "Are you sure?",
 			// text: 'Application with id "' + _id + '" will be deleted',
-			text: 'Application(s) with will be deleted',
+			text: 'Application(s) with id "' + _id + '" will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -177,7 +131,7 @@ srv.removeServer = function(_id) {
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/server/deleteserver", { _id: _id }, function () {
+				app.ajaxPost("/server/deleteservers", { _id: _id }, function () {
 					if (!app.isFine) {
 						return;
 					}
@@ -197,10 +151,24 @@ srv.getUploadFile = function() {
 	     $("#nama").text(filename)
 	 });
 };
-srv.selectGridServer = function(e){
-	var grid = $(".grid-server").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	srv.editServer(selectedItem._id);
+
+function ServerFilter(event){
+	app.ajaxPost("/server/serversfilter", {inputText : srv.filterValue()}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		srv.ServerData(res.data);
+	});
+}
+
+srv.backToFront = function () {
+	app.mode('');
+	srv.getServers();
 };
 
 $(function () {

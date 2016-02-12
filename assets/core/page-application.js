@@ -7,25 +7,36 @@ apl.templateConfigApplication = {
 	Enable: ko.observable(false),
 	AppPath: ""
 };
+apl.filterValue = ko.observable('');
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.applicationColumns = ko.observableArray([
+	{title: "<center><input type='checkbox'/></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' data-bind='value: _id, checked: apl.appsChecked'/>"
+		].join(" ");
+	}},
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "AppsName", title: "Name", width: 130},
 	{ field: "Enable", title: "Enable", width: 50},
-	{ title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Application' onclick='apl.editApplication(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Application' onclick='apl.removeApplication(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+			//"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Application' onclick='apl.editApplication(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			//"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Application' onclick='apl.removeApplication(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 		].join(" ");
 	} },
-	{ title: "Status", width: 80, attributes: { class:'Application-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" }
-	
+	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
+	{title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<a href='#'>Browse</a>"
+		].join(" ");
+	}}
 ]);
+
 
 apl.getApplications = function() {
 	apl.applicationData([]);
@@ -228,6 +239,20 @@ apl.codemirror = function(){
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
     // editor.focus();
     $('#scriptarea').data('CodeMirrorInstance', editor);
+}
+
+function ApplicationFilter(event){
+	app.ajaxPost("/application/appsfilter", {inputText : apl.filterValue()}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		apl.applicationData(res.data);
+	});
 }
 
 $(function () {

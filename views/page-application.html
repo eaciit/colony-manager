@@ -32,7 +32,7 @@
 					<div class="col-sm-10">
 						<label class="col-sm-2 filter-label lbl">Search</label>
 						<div class="col-sm-4">
-			               <input type="text" class="input-sm form-control" placeholder="Search">
+			               <input type="text" class="input-sm form-control" data-bind="value: apl.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ApplicationFilter}">
 			            </div>
 			        </div>
 		    	</div>
@@ -44,12 +44,18 @@
 		        <h1 class="panel-title">Application</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: apl.ApplicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
+		    	<div class="grid grid-data-application grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
 		    </div>
 		</div>
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+	    	<button class="btn btn-sm btn-primary" data-bind="click: apl.saveApplication" >
+	    		<span class="glyphicon glyphicon-save"></span>Save
+	    	</button>
+	    	<button class="btn btn-sm btn-danger" data-bind="visible: (apl.applicationMode() != '')">
+	    		<span class="glyphicon glyphicon-remove"></span>Delete
 	    	</button>
 		</nav>
 
@@ -80,20 +86,21 @@
 						    			<input type="checkbox" id="Enable" data-bind="checked: Enable" />
 						    		</div>
 					    		</div>
-					    		<div class="form-group">
+					    		<div class="form-group row">
 						    		<label class="col-md-3 filter-label">Name</label>
 						    		<div class="col-md-3">
 						    			<input class="form-control input-sm" type="text" data-bind="value: AppsName" />
 						    		</div>
+						    		<div class="col-sm-4 btn-upload">
+							    		<span class="btn btn-sm btn-success btn-file">
+										    <span class="glyphicon glyphicon-upload"></span>Upload <input id="files" name="files" type="file" accept=".zip">
+										</span>
+										<span id="nama" data-bind="value:AppPath"></span>
+									</div>
 					    		</div>
-					    		<div class="form-group row">
-					    			<button class="btn btn-sm btn-primary btn1" data-bind="click: apl.saveApplication" ><span class="glyphicon glyphicon-save"></span>Save</button> 
-					    			<span class="btn btn-sm btn-success btn-file">
-									    <span class="glyphicon glyphicon-upload"></span>Upload <input id="files" name="files" type="file" accept=".zip">
-									</span>
-									<span id="nama" data-bind="value:AppPath"></span>
-					    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> <button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span>Delete</button> 
-					    		</div>
+					    		<!-- <div class="form-group row"> 
+					    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> 
+					    		</div> -->
 
 				    		</div>
 				    	</form>
