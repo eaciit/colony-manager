@@ -13,10 +13,10 @@ srv.templateConfigServer = {
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
-	extract: "",
-	newfile: "",
-	copy: "",
-	dir: ""
+	cmdextract: "",
+	cmdnewfile: "",
+	cmdcopy: "",
+	cmddir: ""
 };
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
@@ -45,6 +45,13 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
+	var grid = $(".grid-server").data("kendoGrid");
+	$(grid.tbody).on("mouseenter", "tr", function (e) {
+	    $(this).addClass("k-state-hover");
+	});
+	$(grid.tbody).on("mouseleave", "tr", function (e) {
+	    $(this).removeClass("k-state-hover");
+	});
 	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
