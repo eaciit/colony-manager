@@ -1,1 +1,1 @@
-[{"ConnectionName":"200_eccolmag","Database":"eccolmag","Driver":"mongo","Host":"192.168.0.200","Password":"","Settings":{},"UserName":"","_id":"200_eccolmag"}]
+[{"ConnectionName":"200_eccolmag","Database":"eccolmag","Driver":"mongo","Host":"192.168.0.200","Password":"","Settings":{},"UserName":"","_id":"200_eccolmag"},{"Database":"myproject","Driver":"mysql","Host":"192.100.10.1","Password":"","Settings":{},"UserName":"root","_id":"002_mysql"},{"Database":"eccolmag","Driver":"mongo","Host":"localhost","Password":"","Settings":{},"UserName":"root","_id":"gg"}]
