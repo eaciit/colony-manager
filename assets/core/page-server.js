@@ -13,21 +13,20 @@ srv.templateConfigServer = {
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
-	extract: "",
-	newfile: "",
-	copy: "",
-	dir: ""
+	cmdextract: "",
+	cmdnewfile: "",
+	cmdcopy: "",
+	cmddir: ""
 };
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
-srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='allservercheck' class='allservercheck' onclick='srv.allServerCheck()'/></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall' databind='click:srv.checkall'/></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='servercheck' class='servercheck' data-bind='checked: ' onclick=\"srv.checkDeleteServer(this, 'server', '"+d._id+"')\" />"
+			"<input type='checkbox' id='select' name='select[]' value= " + d._id + ">"
 		].join(" ");
 	}},
 	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
@@ -46,6 +45,13 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
+	var grid = $(".grid-server").data("kendoGrid");
+	$(grid.tbody).on("mouseenter", "tr", function (e) {
+	    $(this).addClass("k-state-hover");
+	});
+	$(grid.tbody).on("mouseleave", "tr", function (e) {
+	    $(this).removeClass("k-state-hover");
+	});
 	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -101,18 +107,9 @@ srv.editServer = function (_id) {
 	});
 }
 
-srv.checkDeleteServer = function(elem, e,id){
-	if (e === 'server'){
-		if ($(elem).prop('checked') === true){
-			srv.tempCheckIdServer.push(id);
-		} else {
-			srv.tempCheckIdServer.remove( function (item) { return item === id; } )
-		}
-	}
-}
-
-srv.removeServer = function (_id) {
-	if (srv.tempCheckIdServer().length === 0) {
+var vals = [];
+srv.removeServer = function(){
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -121,30 +118,36 @@ srv.removeServer = function (_id) {
 			confirmButtonText: "OK",
 			closeOnConfirm: true
 		});
-	}else{
+	} else {
+		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+		return this.value;
+		}).get();
+
 		swal({
-		    title: "Are you sure?",
-		    // text: 'Data connection with id "' + _id + '" will be deleted',
-		    text: 'Server(s) with id '+srv.tempCheckIdServer().toString()+' will be deleted',
-		    type: "warning",
-		    showCancelButton: true,
-		    confirmButtonColor: "#DD6B55",
-		    confirmButtonText: "Delete",
-		    closeOnConfirm: true
-		}, function() {
-		    setTimeout(function () {
-		    	app.ajaxPost("/datasource/removemultipleconnection", { _id: srv.tempCheckIdServer() }, function (res) {
-					if (!app.isFine(res)) {
+			title: "Are you sure?",
+			text: 'Server with id "' + vals + '" will be deleted',
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Delete",
+			closeOnConfirm: false
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/server/deleteservers", vals, function () {
+					if (!app.isFine) {
 						return;
 					}
 
-					srv.backToFrontPage();
-					swal({ title: "Server(s) successfully deleted", type: "success" });
+					srv.backToFront();
+					swal({title: "Server successfully deleted", type: "success"});
 				});
-		    }, 1000);
+			},1000);
+
 		});
-	}
-};
+	} 
+	
+}
 
 srv.getUploadFile = function() {
 	$('#fileserver').change(function(){
@@ -152,21 +155,6 @@ srv.getUploadFile = function() {
 	     $('#file-name').val(filename);
 	     $("#nama").text(filename)
 	 });
-};
-
-srv.allServerCheck = function() {
-	if ($('#allservercheck').is(':checked') === true) {
-		$('.servercheck').prop('checked',true);
-		var chkArray = [];
-		$(".servercheck:checked").each(function() {
-			chkArray.push($(this).val());
-		});
-		var selected;
-		selected = chkArray.join(',') + ",";
-	};
-	if ($('.allservercheck').is(':checked') === false){
-		$('.servercheck').removeAttr('checked');
-	};
 };
 
 function ServerFilter(event){
@@ -190,5 +178,4 @@ srv.backToFront = function () {
 
 $(function () {
     srv.getServers();
-    srv.allServerCheck();
 });
