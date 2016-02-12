@@ -24,11 +24,11 @@ srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ title: "", width:10, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall' databind='click:srv.checkall'/></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='servercheck' class='servercheck' data-bind='checked: ' />"
+			"<input type='checkbox' id='select' name='select[]' value= " + d._id + ">"
 		].join(" ");
-	} },
+	}},
 	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
@@ -107,9 +107,9 @@ srv.editServer = function (_id) {
 	});
 }
 
-srv.removeServer = function(_id) {
-	_id = "lagi"
-	if ($('#servercheck').is(':checked') == true) {
+var vals = [];
+srv.removeServer = function(){
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -118,11 +118,14 @@ srv.removeServer = function(_id) {
 			confirmButtonText: "OK",
 			closeOnConfirm: true
 		});
-	}else{
+	} else {
+		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+		return this.value;
+		}).get();
+
 		swal({
 			title: "Are you sure?",
-			// text: 'Application with id "' + _id + '" will be deleted',
-			text: 'Application(s) with id "' + _id + '" will be deleted',
+			text: 'Server with id "' + vals + '" will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -131,18 +134,20 @@ srv.removeServer = function(_id) {
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/server/deleteservers", { _id: _id }, function () {
+				app.ajaxPost("/server/deleteservers", vals, function () {
 					if (!app.isFine) {
 						return;
 					}
 
-					srv.backToFront()
+					srv.backToFront();
 					swal({title: "Server successfully deleted", type: "success"});
 				});
 			},1000);
+
 		});
-	};	
-};
+	} 
+	
+}
 
 srv.getUploadFile = function() {
 	$('#fileserver').change(function(){

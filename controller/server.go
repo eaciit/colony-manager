@@ -1,13 +1,14 @@
 package controller
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	"strings"
+	// . "github.com/eaciit/toolkit"
+	// "strings"
 )
 
 type ServerController struct {
@@ -77,37 +78,37 @@ func (s *ServerController) SelectServers(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
-func (a *ServerController) DeleteServers(r *knot.WebContext) interface{} {
+func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.Server)
-	err := r.GetPayload(payload)
+	var data []string
+	err := r.GetPayload(&data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	ids := payload.ID
-
-	if strings.Contains(ids, ",") { /*multi delete*/
-		idList := strings.Split(ids, ",")
-		for _, val := range idList {
+	for _, val := range data {
+		if val != "" {
 			payload.ID = val
 			err = colonycore.Delete(payload)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
-		}
-	} else {
-		err = colonycore.Delete(payload)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
+
+			// delPath := filepath.Join(unzipDest, payload.ID)
+			// err = deleteDirectory(unzipDest, delPath, payload.ID)
+			// if err != nil {
+			// 	fmt.Println("Error : ", err)
+			// 	return err
+			// }
 		}
 	}
 
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, data, "")
 }
 
-func (a *ServerController) ServersFilter(r *knot.WebContext) interface{} {
+func (s *ServerController) ServersFilter(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
@@ -134,7 +135,6 @@ func (a *ServerController) ServersFilter(r *knot.WebContext) interface{} {
 
 	data := []colonycore.Server{}
 	err = cursor.Fetch(&data, 0, false)
-	fmt.Println("data pencarian : ", data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
