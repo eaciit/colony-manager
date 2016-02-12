@@ -7,6 +7,7 @@ apl.templateConfigApplication = {
 	Enable: ko.observable(false),
 	AppPath: ""
 };
+apl.selectable = ko.observableArray([]);
 apl.filterValue = ko.observable('');
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');
@@ -14,19 +15,17 @@ apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox'/></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' data-bind='value: _id, checked: apl.appsChecked'/>"
+			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "AppsName", title: "Name", width: 130},
 	{ field: "Enable", title: "Enable", width: 50},
-	{ title: "", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
-			//"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Application' onclick='apl.editApplication(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			//"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Application' onclick='apl.removeApplication(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
 		].join(" ");
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
@@ -37,6 +36,11 @@ apl.applicationColumns = ko.observableArray([
 	}}
 ]);
 
+apl.selectApps = function(e){
+	var tab = $(".grid-application").data("kendoGrid");
+	var data = tab.dataItem(tab.select());
+	apl.editApplication(data._id)
+}
 
 apl.getApplications = function() {
 	apl.applicationData([]);
@@ -57,7 +61,7 @@ apl.editApplication = function(_id) {
 		}
 
 		app.mode('editor');
-		apl.ApplicationMode('edit');
+		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
 	});
 };
@@ -93,36 +97,16 @@ apl.saveApplication = function() {
 	apl.backToFront()
 };
 
-apl.removeApplication = function(_id) {
-	swal({
-		title: "Are you sure?",
-		text: 'Application with id "' + _id + '" will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: false
-	},
-	function() {
-		setTimeout(function () {
-			app.ajaxPost("/application/deleteapps", { _id: _id }, function () {
-				if (!app.isFine) {
-					return;
-				}
-
-				apl.backToFront()
-				swal({title: "Application successfully deleted", type: "success"});
-			});
-		},1000);
-	});
-};
-
 apl.getUploadFile = function() {
 	$('#files').change(function(){
 		var filename = $(this).val().replace(/^.*[\\\/]/, '');
 	     $('#file-name').val(filename);
 	     $("#nama").text(filename)
 	 });
+
+	$("#selectall").change(function () {
+	    $("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
+	});
 };
 
 apl.backToFront = function () {
@@ -254,6 +238,49 @@ function ApplicationFilter(event){
 		apl.applicationData(res.data);
 	});
 }
+
+var vals = [];
+apl.OnRemove = function(){
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+		swal({
+		title: "",
+		text: 'You havent choose any application to delete',
+		type: "warning",
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "OK",
+		closeOnConfirm: true
+		});
+	} else {
+		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+		return this.value;
+		}).get();
+
+		swal({
+		title: "Are you sure?",
+		text: 'Application with id "' + vals + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: false
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/application/deleteapps", vals, function () {
+					if (!app.isFine) {
+						return;
+					}
+
+				 apl.backToFront();
+				 swal({title: "Application successfully deleted", type: "success"});
+				});
+			},1000);
+
+		});
+ 	} 
+ 
+}
+
 
 $(function () {
 	apl.getApplications();
