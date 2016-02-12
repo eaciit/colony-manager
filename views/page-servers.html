@@ -4,7 +4,10 @@
     		<span class="glyphicon glyphicon-refresh"></span> Refresh
     	</button>
         <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
-    		<span class="glyphicon glyphicon-plus"></span> Create
+    		<span class="glyphicon glyphicon-plus"></span> Add
+    	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: srv.removeServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
     	</button>
 	</nav>
 	<div class="panel" data-bind="visible: (app.mode() == '')">
@@ -12,14 +15,14 @@
 	        <h1 class="panel-title">Servers</h1>
 	    </div>
 	    <div class="panel-body">
-	    	<div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
+	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
 	    </div>
 	</div>
 	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 		<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
     		<span class="glyphicon glyphicon-chevron-left"></span> Back
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveNewServer">
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
     		<span class="glyphicon glyphicon-save"></span> Save
     	</button>
 	</nav>
@@ -73,9 +76,9 @@
 					    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
 					    		</div>
 				    		</div>
-				    		<button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-3" >
-				            	<span class="glyphicon glyphicon-upload"></span> Upload
-				            </button>
+				    		<span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
+							    <span class="glyphicon glyphicon-upload"></span> Upload <input id="fileserver" name="fileserver" type="file" accept=".zip">
+							</span>
 			    		</div>
 			    	</div>
 			    	<div class="col-md-12">
@@ -114,6 +117,41 @@
 					    		</div>
 				    		</div>
 			    		</div>
+			    	</div>
+			    	<div class="col-md-12">
+				    	<div class="col-md-12">
+			    			<p class="pcustom">Command</p>
+			    		</div>
+				    	<div class="col-md-12">
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Extract</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="">
+									<span class="k-invalid-msg" data-for="extract"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">New File</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="new-file" placeholder="Type New File Here" data-bind="">
+									<span class="k-invalid-msg" data-for="new-file"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Copy</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="copy" placeholder="Type Copy Here" data-bind="">
+									<span class="k-invalid-msg" data-for="copy"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Make Directory</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="m-directory" placeholder="Make a Directory Here" data-bind="">
+									<span class="k-invalid-msg" data-for="m-directory"></span>
+					    		</div>
+				    		</div>
+				    	</div>
 			    	</div>
 			    </div>
 	    	</form>
