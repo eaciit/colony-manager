@@ -58,9 +58,14 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
+					    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
+							        </select>
+							        <span class="k-invalid-msg" data-for="type"></span>
+					    		</div>
+					    		<!-- <div class="col-md-7">
 					    			<input required type="text" class="form-control input-sm" name="type" placeholder="Type the Server Type Here" data-bind="value: type">
 									<span class="k-invalid-msg" data-for="type"></span>
-					    		</div>
+					    		</div> -->
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Folder</label>
@@ -100,9 +105,14 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
+					    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
+							        </select>
+							        <span class="k-invalid-msg" data-for="type-ssh"></span>
+					    		</div>
+					    		<!-- <div class="col-md-7">
 					    			<input required type="text" class="form-control input-sm" name="type-ssh" placeholder="Type the SSH Type Here" data-bind="value: sshtype">
 									<span class="k-invalid-msg" data-for="type-ssh"></span>
-					    		</div>
+					    		</div> -->
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">File</label>

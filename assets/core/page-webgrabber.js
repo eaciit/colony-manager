@@ -18,9 +18,7 @@ wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
 wg.connectionListData = ko.observableArray([]);
-wg.connListData = ko.observableArray([]);
 wg.collectionInput = ko.observable();
-wg.hostId = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
@@ -166,8 +164,10 @@ wg.editScrapper = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
+		wg.selectorRowSetting([]);
 		app.mode('editor');
 		wg.scrapperMode('edit');
+		wg.modeSelector('');
 		wg.modeSetting(1);
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
@@ -215,12 +215,17 @@ wg.createNewScrapper = function () {
 	wg.isContentFetched(false);
 	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
+	wg.selectorRowSetting([]);
+	wg.modeSetting(0);
 };
 wg.backToFront = function () {
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+	wg.selectorRowSetting([]);
+	wg.modeSetting(0);
 	app.mode("");
 	wg.selectedID('');
 	wg.getScrapperData();
+	wg.modeSelector("");
 };
 wg.backToHistory = function () {
 	app.mode('history')
@@ -573,7 +578,8 @@ wg.saveSelectorConf = function(){
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 		wg.selectorRowSetting([]);
-		// console.log(wg.selectorRowSetting([]));
+		wg.getScrapperData();
+		wg.modeSelector("");
 	});
 }
 wg.viewData = function (id) {
@@ -678,7 +684,6 @@ function filterWebGrabber(event) {
 }
 
 wg.getConnection = function () {
-
 	var param = ko.mapping.toJS(wg.configConnection);
 	app.ajaxPost("/datasource/getconnections", param, function (res) {
 		if (!app.isFine(res)) {

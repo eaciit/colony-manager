@@ -18,17 +18,25 @@ srv.templateConfigServer = {
 	cmdcopy: "",
 	cmddir: ""
 };
+srv.templatetype = ko.observableArray([
+	{ value: "Local", text: "Local" },
+	{ value: "Remote", text: "Remote" }
+]);
+srv.templatetypeSSH = ko.observableArray([
+	{ value: "Credentials", text: "Credentials" },
+	{ value: "File", text: "File" }
+]);
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall' databind='click:srv.checkall'/></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:25, template: function (d) {
 		return [
-			"<input type='checkbox' id='select' name='select[]' value= " + d._id + ">"
+			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"srv.checkDeleteServer(this, 'server')\" />"
 		].join(" ");
-	}},
+	} },
 	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
@@ -45,19 +53,19 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
-	var grid = $(".grid-server").data("kendoGrid");
-	$(grid.tbody).on("mouseenter", "tr", function (e) {
-	    $(this).addClass("k-state-hover");
-	});
-	$(grid.tbody).on("mouseleave", "tr", function (e) {
-	    $(this).removeClass("k-state-hover");
-	});
 	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		srv.ServerData(res.data);
+		var grid = $(".grid-server").data("kendoGrid");
+		$(grid.tbody).on("mouseenter", "tr", function (e) {
+		    $(this).addClass("k-state-hover");
+		});
+		$(grid.tbody).on("mouseleave", "tr", function (e) {
+		    $(this).removeClass("k-state-hover");
+		});
 	});
 };
 
@@ -105,6 +113,30 @@ srv.editServer = function (_id) {
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
 	});
+}
+
+srv.checkDeleteServer = function(elem, e){
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", true);
+				srv.tempCheckIdServer.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				srv.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			srv.tempCheckIdServer.push($(elem).attr('idcheck'));
+		} else {
+			srv.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
+		}
+	}
 }
 
 var vals = [];
@@ -171,11 +203,19 @@ function ServerFilter(event){
 	});
 }
 
+srv.checkall = function() {
+	$("#selectall").change(function() {
+		$("input:checkbox").prop('checked', $(this).prop("checked"));
+	});
+}
+
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
+	$("#selectall").attr("checked",false)
 };
 
 $(function () {
+	srv.checkall()
     srv.getServers();
 });
