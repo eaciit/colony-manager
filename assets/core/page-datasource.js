@@ -90,7 +90,7 @@ ds.connectionListColumns = ko.observableArray([
 ]);
 ds.filterDriver = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
-	{ title: "", width:25, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='datasourcecheckall' onclick=\"ds.checkDeleteData(this, 'datasourceall', 'all')\"/>", width:25, template: function (d) {
 		return [
 			"<input type='checkbox' class='datasourcecheck' idcheck='"+d._id+"' onclick=\"ds.checkDeleteData(this, 'datasource')\" />"
 		].join(" ");
@@ -740,8 +740,20 @@ ds.checkDeleteData = function(elem, e){
 				ds.tempCheckIdConnection.remove( function (item) { return item === idtemp; } );
 			});
 		}
-	} else if (e === 'connectionall'){
-		
+	} else if (e === 'datasourceall'){
+		if ($(elem).prop('checked') === true){
+			$('.datasourcecheck').each(function(index) {
+				$(this).prop("checked", true);
+				ds.tempCheckIdDataSource.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.datasourcecheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				ds.tempCheckIdDataSource.remove( function (item) { return item === idtemp; } );
+			});
+		}
 	}else {
 		if ($(elem).prop('checked') === true){
 			ds.tempCheckIdDataSource.push($(elem).attr('idcheck'));
