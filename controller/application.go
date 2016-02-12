@@ -70,7 +70,7 @@ func createJson(object *TreeSource) {
 	}
 	jsonString := string(jsonData)
 
-	filename := "DirectoryTree.json"
+	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, "DirectoryTree.json"))
 
 	fmt.Println("writing: " + filename)
 	f, err := os.Create(filename)
@@ -180,7 +180,6 @@ func Unzip(src string) (result *TreeSource, err error) {
 	}()*/
 
 	os.MkdirAll(unzipDest, 0755)
-	var basePath string
 
 	for i, f := range r.File {
 		err := extractAndWriteFile(i, f)
@@ -200,8 +199,7 @@ func Unzip(src string) (result *TreeSource, err error) {
 		}
 	}
 
-	base := filepath.Base(basePath)
-	newname := filepath.Join(unzipDest, strings.Replace(base, base, newDirName, 1))
+	newname := filepath.Join(unzipDest, newDirName)
 
 	err = deleteDirectory(unzipDest, newname, newDirName) /*delete existing directory*/
 	if err != nil {
@@ -313,16 +311,14 @@ func (a *ApplicationController) DeleteApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.Application)
-	err := r.GetPayload(payload)
+	var data []string
+	err := r.GetPayload(&data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	ids := payload.ID
-
-	if strings.Contains(ids, ",") {
-		idList := strings.Split(ids, ",")
-		for _, val := range idList {
+	for _, val := range data {
+		if val != "" {
 			payload.ID = val
 			err = colonycore.Delete(payload)
 			if err != nil {
@@ -336,31 +332,27 @@ func (a *ApplicationController) DeleteApps(r *knot.WebContext) interface{} {
 				return err
 			}
 		}
-	} else {
-		err = colonycore.Delete(payload)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		delPath := filepath.Join(unzipDest, payload.ID)
-		err = deleteDirectory(unzipDest, delPath, payload.ID)
-		if err != nil {
-			fmt.Println("Error : ", err)
-			return err
-		}
 	}
 
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, data, "")
 }
 
-func (a *ApplicationController) SearchApps(r *knot.WebContext) interface{} {
+func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	text := "Mandiri"
+	payload := map[string]interface{}{}
+
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	text := payload["inputText"].(string)
 	var query *dbox.Filter
+
 	if text != "" {
-		// query = dbox.Or(dbox.Eq("AppsName", text), dbox.Eq("ID", text))
-		query = dbox.Eq("AppsName", text)
+		query = dbox.Or(dbox.Contains("_id", text),
+			dbox.Contains("AppsName", text))
 	}
 
 	cursor, err := colonycore.Find(new(colonycore.Application), query)
@@ -370,7 +362,6 @@ func (a *ApplicationController) SearchApps(r *knot.WebContext) interface{} {
 
 	data := []colonycore.Application{}
 	err = cursor.Fetch(&data, 0, false)
-	fmt.Println("data pencarian : ", data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
