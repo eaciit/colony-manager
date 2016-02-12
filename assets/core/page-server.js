@@ -45,19 +45,19 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
-	var grid = $(".grid-server").data("kendoGrid");
-	$(grid.tbody).on("mouseenter", "tr", function (e) {
-	    $(this).addClass("k-state-hover");
-	});
-	$(grid.tbody).on("mouseleave", "tr", function (e) {
-	    $(this).removeClass("k-state-hover");
-	});
 	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		srv.ServerData(res.data);
+		var grid = $(".grid-server").data("kendoGrid");
+		$(grid.tbody).on("mouseenter", "tr", function (e) {
+		    $(this).addClass("k-state-hover");
+		});
+		$(grid.tbody).on("mouseleave", "tr", function (e) {
+		    $(this).removeClass("k-state-hover");
+		});
 	});
 };
 
@@ -171,11 +171,19 @@ function ServerFilter(event){
 	});
 }
 
+srv.checkall = function() {
+	$("#selectall").change(function() {
+		$("input:checkbox").prop('checked', $(this).prop("checked"));
+	});
+}
+
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
+	$("#selectall").attr("checked",false)
 };
 
 $(function () {
+	srv.checkall()
     srv.getServers();
 });
