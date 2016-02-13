@@ -2,6 +2,7 @@ app.section('scrapper');
 
 viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 
+
 wg.logData = ko.observable('');
 wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
@@ -17,8 +18,7 @@ wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
 wg.connectionListData = ko.observableArray([]);
-wg.connListData = ko.observableArray([]);
-wg.hostId = ko.observable('');
+wg.collectionInput = ko.observable();
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
@@ -64,7 +64,7 @@ wg.templateConfigSelector = {
 	rowselector: "",
 	// rowdeletecond: {},
 	// rowincludecond: {},
-	desttype: "Database",
+	desttype: "database",
 	columnsettings: [],
 	connectioninfo: {
 		// filtercond: "",
@@ -80,7 +80,8 @@ wg.templateConfigSelector = {
 		database: "",
 		username: "",
 		password: "",
-		collection: ""
+		collection: "",
+		connectionid: ""
 	}
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
@@ -163,12 +164,13 @@ wg.editScrapper = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		wg.selectorRowSetting([]);
 		app.mode('editor');
 		wg.scrapperMode('edit');
+		wg.modeSelector('');
 		wg.modeSetting(1);
+		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
-		// ko.mapping.fromJS(res.data.datasettings, wg.selectorRowSetting);
 		for (var key in res.data.datasettings){
 			wg.selectorRowSetting.push(ko.mapping.fromJS(res.data.datasettings[key], wg.selectedItem));
 		}
@@ -203,7 +205,6 @@ wg.getScrapperData = function () {
 		if (!app.isFine(res)) {
 			return;
 		}
-
 		wg.scrapperData(res.data);
 		wg.runBotStats();
 	});
@@ -211,15 +212,20 @@ wg.getScrapperData = function () {
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	wg.scrapperMode('');
-	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 	wg.isContentFetched(false);
 	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
+	wg.selectorRowSetting([]);
+	wg.modeSetting(0);
 };
 wg.backToFront = function () {
+	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+	wg.selectorRowSetting([]);
+	wg.modeSetting(0);
 	app.mode("");
 	wg.selectedID('');
 	wg.getScrapperData();
+	wg.modeSelector("");
 };
 wg.backToHistory = function () {
 	app.mode('history')
@@ -284,8 +290,6 @@ wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
 	}
-	
-	// wg.encodePayload();
 	var param = ko.mapping.toJS(wg.configScrapper);
 	app.ajaxPost("/webgrabber/fetchcontent", param, function (res) {
 		if (!app.isFine(res)) {
@@ -303,7 +307,6 @@ wg.getURL = function () {
 		bodyyo = bodyyo.substr(startofbody+1);
 		URLSource = $.parseHTML(bodyyo);
 		$("#inspectElement").replaceWith("<div id='inspectElement'><ul></ul></div>");
-		// $('#panel-set-up').scrollTop = $('#panel-set-up').scrollHeight;
 		$(URLSource).each(function(i,e){
 			if($(this).html()!==undefined){
 				linenumber = wg.GetElement($(this),0,0,0,"body");
@@ -566,6 +569,8 @@ wg.saveSelectorConf = function(){
 	// 	}
 	// }
 	app.ajaxPost("/webgrabber/savescrapperdata", param, function (res) {
+		// console.log(param);
+		// console.log(res);
 		if(!app.isFine(res)) {
 			return;
 		}
@@ -573,6 +578,8 @@ wg.saveSelectorConf = function(){
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 		wg.selectorRowSetting([]);
+		wg.getScrapperData();
+		wg.modeSelector("");
 	});
 }
 wg.viewData = function (id) {
@@ -686,25 +693,25 @@ wg.getConnection = function () {
 	});
 };
 
-wg.hostId.subscribe(function () {
-	var fconnection = wg.hostId();
+wg.configSelector.connectioninfo.connectionid.subscribe(function (e) {
+	var fconnection = e;
 	if (fconnection) {
 		app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res) {
 			if (!app.isFine(res)) {
 				return;
 			}
-		console.log(res.data[0].Driver);
 			if(res.data[0].Driver != 'mongo') {
 				wg.collectionInput(false);
 			} else {
 				wg.collectionInput(true);
 			}
+			
+			wg.configSelector.connectioninfo.database(res.data[0].Database);
 		});
+		wg.configSelector.connectioninfo.connectionid(fconnection);
 	}
 });
-// model.WPN().Site.subscribe(function(){
-//         genDatatempsite();
-//     });
+
 $(function () {
 	wg.getConnection();
 	wg.getScrapperData();

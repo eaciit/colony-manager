@@ -13,6 +13,9 @@
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: dg.createNewScrapper">
 	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Grabber
 	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeDataGrabber" data-bind="click: dg.removeScrapper">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
 		</nav>
 
 		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
@@ -31,7 +34,7 @@
 		        <h1 class="panel-title">All Data Grabber</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
+		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
 		</div>
 
@@ -44,6 +47,9 @@
 	    	</button>
 	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: runTransformation(configScrapper._id())">
 	    		<span class="glyphicon glyphicon-play"></span> Execute Transformation
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataGrabber" data-bind="visible: dg.showDataGrabber">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
 

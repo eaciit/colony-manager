@@ -27,7 +27,7 @@
 				 <button class="btn btn-sm btn-success" data-bind="click: apl.createNewApplication">
 			    		<span class="glyphicon glyphicon-plus"></span> Add
 			    </button>
-		    	<button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+		    	<button class="btn btn-sm btn-danger" data-bind="click: apl.OnRemove"><span class="glyphicon glyphicon-remove"></span> Delete</button>
 				<div class="form-group row nav2">
 					<div class="col-sm-10">
 						<label class="col-sm-2 filter-label lbl">Search</label>
@@ -44,7 +44,7 @@
 		        <h1 class="panel-title">Application</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-data-application grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
+		    	<div class="grid grid-data-application grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, selectable: 'multiple, row', change: apl.selectApps, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
 		    </div>
 		</div>
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -58,7 +58,6 @@
 	    		<span class="glyphicon glyphicon-remove"></span>Delete
 	    	</button>
 		</nav>
-
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
 		    <div id="myTabContent" class="tab-content">
 

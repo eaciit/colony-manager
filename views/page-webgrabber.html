@@ -1,10 +1,4 @@
 <!-- core -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/xml.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/javascript.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/active-line.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script> -->
-<!-- <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css"> -->
 <script src="/res/core/page-webgrabber.js"></script>
 
 <!-- sidebar -->
@@ -318,17 +312,17 @@
 		    						<div class="row" data-bind="visible: desttype() == 'database'">
 		    							<label class="col-md-4 filter-label">Host ID</label>
 			    						<div class="col-md-8">
-			    							<select required data-required-msg="Data Source Origin cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.hostId }"></select>
+			    							<select name="ConnectionId" required data-required-msg="Data Source Origin cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.configSelector.connectioninfo.connectionid }"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: desttype() == 'database'">
+		    						<div class="row">
 		    							<label class="col-md-4 filter-label">Database</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
+			    							<input required type="text" readonly="read" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
 											<span class="k-invalid-msg" data-for="Database"></span>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: desttype() == 'database'">
+		    						<div class="row" data-bind="visible: wg.collectionInput">
 		    							<label class="col-md-4 filter-label">Collection</label>
 			    						<div class="col-md-8">
 			    							<input required type="text" class="form-control input-sm" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>
