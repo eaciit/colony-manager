@@ -165,7 +165,12 @@ wg.templateConfigConnection = {
 	Password: "",
 	Settings: []
 };
-
+wg.replaceEqWithNthChild = function (s) {
+	return s.replace(/eq\(([^)]+)\)/g, function (e) {
+		var i = parseInt(e.split("(").reverse()[0].split(")")[0]) + 1;
+		return "nth-child(" + i + ")";
+	});
+}
 wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
 wg.editScrapper = function (_id) {
@@ -665,6 +670,12 @@ wg.parseGrabConf = function () {
 		if (typeof item.connectioninfo.useheader == "string") {
 			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
 		}
+
+		item.rowselector = wg.replaceEqWithNthChild(item.rowselector);
+		item.columnsettings = item.columnsettings.map(function (c) {
+			c.selector = wg.replaceEqWithNthChild(c.selector);
+			return c;
+		});
 		
 		return item;
 	});

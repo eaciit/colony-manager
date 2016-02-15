@@ -80,6 +80,16 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	payload.LogConfiguration.LogPath = f.Join(AppBasePath, "config", "webgrabber", "log") + toolkit.PathSeparator
 	payload.LogConfiguration.FilePattern = "20060102"
 
+	for i, each := range payload.DataSettings {
+		if each.DestinationType == "csv" {
+			payload.DataSettings[i].ConnectionInfo.Host = path.Join(AppBasePath, "config", "webgrabber", "output", each.ConnectionInfo.FileName)
+			payload.DataSettings[i].ConnectionInfo.Settings = toolkit.M{
+				"delimiter": each.ConnectionInfo.Delimiter,
+				"useheader": each.ConnectionInfo.UseHeader,
+			}
+		}
+	}
+
 	if err := colonycore.Delete(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -329,69 +339,64 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 	r.Config.OutputType = knot.OutputJson
 
 	wg := new(colonycore.WebGrabber)
-	err := r.GetPayload(wg)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	wg.CallType = "POST"
+	wg.DataSettings = []*colonycore.DataSetting{
+		&colonycore.DataSetting{
+			ColumnSettings: []*colonycore.ColumnSetting{
+				&colonycore.ColumnSetting{Alias: "Contract", Index: 0, Selector: "td:nth-child(1)"},
+				&colonycore.ColumnSetting{Alias: "Open", Index: 0, Selector: "td:nth-child(2)"},
+				&colonycore.ColumnSetting{Alias: "High", Index: 0, Selector: "td:nth-child(3)"},
+				&colonycore.ColumnSetting{Alias: "Low", Index: 0, Selector: "td:nth-child(4)"},
+				&colonycore.ColumnSetting{Alias: "Close", Index: 0, Selector: "td:nth-child(5)"},
+				&colonycore.ColumnSetting{Alias: "Prev Settle", Index: 0, Selector: "td:nth-child(6)"},
+				&colonycore.ColumnSetting{Alias: "Prev Settle", Index: 0, Selector: "td:nth-child(7)"},
+				&colonycore.ColumnSetting{Alias: "Settle", Index: 0, Selector: "td:nth-child(8)"},
+				&colonycore.ColumnSetting{Alias: "Chg", Index: 0, Selector: "td:nth-child(9)"},
+				&colonycore.ColumnSetting{Alias: "Volume", Index: 0, Selector: "td:nth-child(10)"},
+				&colonycore.ColumnSetting{Alias: "OI", Index: 0, Selector: "td:nth-child(11)"},
+				&colonycore.ColumnSetting{Alias: "OI Chg", Index: 0, Selector: "td:nth-child(12)"},
+				&colonycore.ColumnSetting{Alias: "Turnover", Index: 0, Selector: "td:nth-child(13)"},
+			},
+			ConnectionInfo: &colonycore.ConnectionInfo{
+				Collection: "irondcecom",
+				Database:   "valegrab",
+				Host:       "localhost:27017",
+			},
+			DestinationType: "mongo",
+			Name:            "GoldTab01",
+			RowSelector:     "table .table tbody tr",
+			RowDeleteCondition: toolkit.M{
+				"$or": []toolkit.M{
+					toolkit.M{"Contract": "Contract"},
+					toolkit.M{"Contract": "Iron Ore Subtotal"},
+					toolkit.M{"Contract": "Total"},
+				},
+			},
+		},
 	}
-	// wg.CallType = "POST"
-	// wg.DataSettings = []*colonycore.DataSetting{
-	// 	&colonycore.DataSetting{
-	// 		ColumnSettings: []*colonycore.ColumnSetting{
-	// 			&colonycore.ColumnSetting{Alias: "Contract", Index: 0, Selector: "td:nth-child(1)"},
-	// 			&colonycore.ColumnSetting{Alias: "Open", Index: 0, Selector: "td:nth-child(2)"},
-	// 			&colonycore.ColumnSetting{Alias: "High", Index: 0, Selector: "td:nth-child(3)"},
-	// 			&colonycore.ColumnSetting{Alias: "Low", Index: 0, Selector: "td:nth-child(4)"},
-	// 			&colonycore.ColumnSetting{Alias: "Close", Index: 0, Selector: "td:nth-child(5)"},
-	// 			&colonycore.ColumnSetting{Alias: "Prev Settle", Index: 0, Selector: "td:nth-child(6)"},
-	// 			&colonycore.ColumnSetting{Alias: "Prev Settle", Index: 0, Selector: "td:nth-child(7)"},
-	// 			&colonycore.ColumnSetting{Alias: "Settle", Index: 0, Selector: "td:nth-child(8)"},
-	// 			&colonycore.ColumnSetting{Alias: "Chg", Index: 0, Selector: "td:nth-child(9)"},
-	// 			&colonycore.ColumnSetting{Alias: "Volume", Index: 0, Selector: "td:nth-child(10)"},
-	// 			&colonycore.ColumnSetting{Alias: "OI", Index: 0, Selector: "td:nth-child(11)"},
-	// 			&colonycore.ColumnSetting{Alias: "OI Chg", Index: 0, Selector: "td:nth-child(12)"},
-	// 			&colonycore.ColumnSetting{Alias: "Turnover", Index: 0, Selector: "td:nth-child(13)"},
-	// 		},
-	// 		ConnectionInfo: &colonycore.ConnectionInfo{
-	// 			Collection: "irondcecom",
-	// 			Database:   "valegrab",
-	// 			Host:       "localhost:27017",
-	// 		},
-	// 		DestinationType: "mongo",
-	// 		Name:            "GoldTab01",
-	// 		RowSelector:     "table .table tbody tr",
-	// 		RowDeleteCondition: toolkit.M{
-	// 			"$or": []toolkit.M{
-	// 				toolkit.M{"Contract": "Contract"},
-	// 				toolkit.M{"Contract": "Iron Ore Subtotal"},
-	// 				toolkit.M{"Contract": "Total"},
-	// 			},
-	// 		},
-	// 	},
-	// }
-	// wg.GrabConfiguration = toolkit.M{
-	// 	"data": toolkit.M{
-	// 		"Pu00231_Input.trade_date": 2.0151214e+07,
-	// 		"Pu00231_Input.trade_type": 0,
-	// 		"Pu00231_Input.variety":    "i",
-	// 		"Submit":                   "Go",
-	// 		"action":                   "Pu00231_result",
-	// 	},
-	// }
-	// wg.GrabInterval = 20
-	// wg.IntervalType = "seconds"
+	wg.GrabConfiguration = toolkit.M{
+		"data": toolkit.M{
+			"Pu00231_Input.trade_date": 2.0151214e+07,
+			"Pu00231_Input.trade_type": 0,
+			"Pu00231_Input.variety":    "i",
+			"Submit":                   "Go",
+			"action":                   "Pu00231_result",
+		},
+	}
+	wg.GrabInterval = 20
+	wg.IntervalType = "seconds"
 	wg.LogConfiguration = &colonycore.LogConfiguration{
 		FileName:    "LOG-GRABDCE",
 		FilePattern: "20060102",
 		LogPath:     path.Join(AppBasePath, "config", "webgrabber", "log"),
 	}
-	// wg.ID = "irondcecomcn"
-	// wg.IDBackup = "irondcecomcn"
-	// wg.SourceType = "SourceType_Http"
-	// wg.TimeoutInterval = 5
-	// wg.URL = "http://www.dce.com.cn/PublicWeb/MainServlet"
-	// colonycore.Save(wg)
-	err = colonycore.Save(wg)
-	if err != nil {
+	wg.ID = "irondcecomcn"
+	wg.IDBackup = "irondcecomcn"
+	wg.SourceType = "SourceType_Http"
+	wg.TimeoutInterval = 5
+	wg.URL = "http://www.dce.com.cn/PublicWeb/MainServlet"
+
+	if err := colonycore.Save(wg); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
