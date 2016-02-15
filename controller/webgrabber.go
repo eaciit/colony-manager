@@ -302,7 +302,7 @@ func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
-func (w *WebGrabberController) RemoveMultipleGrabber(r *knot.WebContext) interface{} {
+func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	w.PrepareHistoryPath()
 

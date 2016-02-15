@@ -23,6 +23,9 @@
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: wg.createNewScrapper">
 	    		<span class="glyphicon glyphicon-plus"></span> Create New Web Grabber
 	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: wg.removeScrapper">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
 		</nav>
 
 	    <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
@@ -31,7 +34,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<input class="form-control input-sm" type="text" data-bind="value: wg.valWebGrabberFilter, valueUpdate: 'afterkeydown', 'input', event: {'keyup': filterWebGrabber}" />
+		    		<input class="form-control input-sm" type="text"  />
 		    	</div>
 		    </div>
 		    <div class="col-md-4 no-padding">
@@ -58,7 +61,7 @@
 		    </div>
 
 		    <div class="panel-body">
-		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
+		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
 		</div>
 

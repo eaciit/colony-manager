@@ -26,6 +26,9 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
+selectedSSH = ko.observable();
+srv.showFile = ko.observable(true);
+srv.showUserPass = ko.observable(true);
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
@@ -75,6 +78,7 @@ srv.createNewServer = function () {
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
+    srv.showFileUserPass();
 };
 
 srv.saveServer = function(){
@@ -109,7 +113,7 @@ srv.editServer = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		console.log(res)
+		
 		app.mode('editor');
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
@@ -182,9 +186,9 @@ srv.removeServer = function(){
 }
 
 srv.getUploadFile = function() {
-	$('#fileserver').change(function(){
+	$('#uploadserver').change(function(){
 		var filename = $(this).val().replace(/^.*[\\\/]/, '');
-	     $('#file-name').val(filename);
+	     $('#upload-name').val(filename);
 	     $("#nama").text(filename)
 	 });
 };
@@ -203,19 +207,30 @@ function ServerFilter(event){
 	});
 }
 
-srv.checkall = function() {
-	$("#selectall").change(function() {
-		$("input:checkbox").prop('checked', $(this).prop("checked"));
-	});
-}
-
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
 };
 
+srv.getServerFile = function() {
+	$('#fileserver').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $('#file-name').val(filename);
+	     $("#nama").text(filename)
+	 });
+};
+
+srv.showFileUserPass = function (){	
+	if ($("#type-ssh").val() === 'Credentials') {
+		srv.showFile(false);
+		srv.showUserPass(true);
+	}else{
+		srv.showFile(true);
+		srv.showUserPass(false);
+	};
+}
+
 $(function () {
-	srv.checkall()
     srv.getServers();
 });
