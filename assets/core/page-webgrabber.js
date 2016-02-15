@@ -24,9 +24,9 @@ wg.templateConfigScrapper = {
 	nameid: "",
 	calltype: "GET",
 	sourcetype: "SourceType_Http",
-	intervaltype: "",
-	grabinterval: 0,
-	timeoutinterval: 0,
+	intervaltype: "seconds",
+	grabinterval: 20,
+	timeoutinterval: 20,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
 	logconf: {
 		filename: "asd",
@@ -64,18 +64,14 @@ wg.templateConfigSelector = {
 	rowselector: "",
 	// rowdeletecond: {},
 	// rowincludecond: {},
-	desttype: "database",
+	destoutputtype: "database",
+	desttype: "mongo",
 	columnsettings: [],
 	connectioninfo: {
-		// filtercond: "",
-		// host: "",
-		// database: "",
-		// collection: "",
-		// filename: "",
-		// useheader: true,
-		// delimiter: ",",
-		// username: "",
-		// password: ""
+		filename: "",
+		useheader: true,
+		delimiter: ",",
+
 		host: "",
 		database: "",
 		username: "",
@@ -488,11 +484,17 @@ wg.viewHistory = function (_id) {
 	});
 }
 wg.nextSetting = function() {
+	if (!app.isFormValid(".form-row-1")) {
+		return;
+	}
+
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
 		wg.addSelectorSetting();
 };
 wg.backSetting = function() {
+	app.resetValidation(".form-row-selector");
+	app.resetValidation(".form-row-column-selector");
 	wg.modeSetting(wg.modeSetting()-1);
 };
 wg.addSelectorSetting = function() {
@@ -504,6 +506,9 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 wg.showSelectorSetting = function(index,nameSelector){
+	if (!app.isFormValid(".form-row-selector")) {
+		return;
+	}
 	if (wg.selectorRowSetting()[index].columnsettings().length == 0)
 		wg.selectorRowSetting()[index].columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: 0}));
 
@@ -515,6 +520,9 @@ wg.backSettingSelector = function() {
 	wg.modeSelector("");
 }
 wg.saveSettingSelector = function() {
+	if (!app.isFormValid(".form-row-column-selector")) {
+		return;
+	}
 	ko.mapping.fromJS(wg.configSelector,wg.selectorRowSetting()[wg.tempIndexColumn()]);
 	wg.modeSelector("");
 }
@@ -537,6 +545,7 @@ wg.GetRowSelector = function(index){
 	wg.selectedItem('');
 };
 wg.saveSelectedElement = function(index){
+	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
 		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
 		wg.modeSelector("");
@@ -547,6 +556,12 @@ wg.saveSelectedElement = function(index){
 	wg.selectedItem('');
 }
 wg.saveSelectorConf = function(){
+	if (!app.isFormValid(".form-row-selector")) {
+		return;
+	}
+	if (!app.isFormValid(".form-row-column-selector")) {
+		return;
+	}
 	var param = ko.mapping.toJS(wg.configScrapper);
 	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
 	param.nameid = param._id;
@@ -597,9 +612,9 @@ wg.viewData = function (id) {
 
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
-		param.Driver = baseSetting.desttype;
+		param.Driver = baseSetting.destoutputtype;
 
-		if (param.Driver == "database") {
+		if (baseSetting.desttype == "database") {
 			param.Host = baseSetting.Host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
@@ -693,24 +708,32 @@ wg.getConnection = function () {
 	});
 };
 
-wg.configSelector.connectioninfo.connectionid.subscribe(function (e) {
-	var fconnection = e;
-	if (fconnection) {
-		app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-			if(res.data[0].Driver != 'mongo') {
-				wg.collectionInput(false);
-			} else {
-				wg.collectionInput(true);
-			}
-			
-			wg.configSelector.connectioninfo.database(res.data[0].Database);
-		});
-		wg.configSelector.connectioninfo.connectionid(fconnection);
-	}
-});
+wg.changeConnectionID = function (e) {
+	var _id = this.value();
+	app.ajaxPost("/datasource/selectconnection", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (res.data.Driver != 'mongo') {
+			wg.collectionInput(false);
+			swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
+			return;
+		} else {
+			wg.collectionInput(true);
+		}
+		
+		wg.configSelector.desttype(res.data.Driver);
+		var connInfo = wg.configSelector.connectioninfo;
+		connInfo.connectionid(_id);
+		connInfo.host(res.data.Host);
+		connInfo.database(res.data.Database);
+		connInfo.username(res.data.UserName);
+		connInfo.password(res.data.Password);
+	});
+
+	return true;
+};
 
 $(function () {
 	wg.getConnection();
