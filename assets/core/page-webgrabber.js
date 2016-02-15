@@ -14,6 +14,7 @@ wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
+wg.selectedItemNode = ko.observable('');
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
@@ -55,6 +56,8 @@ wg.useHeaderOptions = ko.observableArray([
 wg.templateConfigSelector = {
 	name: "",
 	rowselector: "",
+	filtercond: "",
+	conditionlist: [],
 	// rowdeletecond: {},
 	// rowincludecond: {},
 	destoutputtype: "database",
@@ -75,9 +78,19 @@ wg.templateConfigSelector = {
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
-wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
+wg.templateFilterCond = ["AND", "OR", "NAND", "NOR"];
 wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
+wg.operationcondList = ko.observableArray([
+	{Id:"$eq",Title:"EQ ( == )"},
+	{Id:"$ne",Title:"NE ( != )"},
+	{Id:"$gt",Title:"GT ( > )"},
+	{Id:"$gte",Title:"GTE ( >= )"},
+	{Id:"$lt",Title:"LT ( < )"},
+	{Id:"$lte",Title:"LTE ( <= )"},
+	{Id:"$regex",Title:"Contains"},
+	{Id:"$notcontains",Title:"Not Contains"},
+]),
 wg.templateScrapperPayload = {
 	format: "",
 	key: "",
@@ -340,10 +353,10 @@ wg.getURL = function () {
 		startofbody = bodyyo.indexOf(">");
 		bodyyo = bodyyo.substr(startofbody+1);
 		URLSource = $.parseHTML(bodyyo);
-		$("#inspectElement").replaceWith("<div id='inspectElement'><ul></ul></div>");
+		$("#inspectElement>ul").replaceWith("<ul></ul>");
 		$(URLSource).each(function(i,e){
 			if($(this).html()!==undefined){
-				linenumber = wg.GetElement($(this),0,0,0,"body");
+				linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
 			}
 		})
 	});
@@ -360,7 +373,7 @@ wg.getNodeElement = function(obj,classes,id){
 
 	return {element: selector, id: id, classes: classes, node: nodeName };
 };
-wg.GetElement = function(obj,parent,linenumber,index,selector){
+wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 	linenumber +=1;
 	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
 	if(id !== undefined && id !== "")
@@ -373,11 +386,14 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
 	else
 		classes = "";
 
-	selector += " > " + nodeelement.element+":eq("+index+")";
+	if (contentid === '#inspectElement2' && linenumber > 1)
+		selector += " > " + nodeelement.element+":eq("+index+")";
+	else if (contentid === '#inspectElement')
+		selector += " > " + nodeelement.element+":eq("+index+")";
 
-	$liElem = $("<li id='scw"+linenumber+"' class='selector'></li>");
-	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"')", "indexelem":index});
-	$liElem.appendTo($("#inspectElement>ul"));
+	$liElem = $("<li id='scw"+linenumber+"' class='selector' parentid='scw"+parent+"'></li>");
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	$liElem.appendTo($(contentid+">ul"));
 
 	$divSeqElem = $("<div></div>");
 	$divSeqElem.text(linenumber+". ");
@@ -388,6 +404,10 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
 	$divContentElem.text("<"+nodeName+" "+id+" "+classes+"> "+obj.text().replace(/ /g,'').substring(0,20));
 	$divContentElem.css({'margin-left':parseFloat(parent)*10+"px", "display":"inline"});
 	$divContentElem.appendTo($liElem);
+
+	if (contentid === '#inspectElement2' && linenumber == 1){
+		$liElem.css('display','none');
+	}
 
 	var idx = 0, tempIndex = 0, prevNode = new Array();
 	obj.children().each(function(i,e){
@@ -425,12 +445,12 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
         }
 		
 		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
-			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector);
+			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector, contentid);
 		}
 	})
 	return linenumber;
 };
-wg.GetCurrentSelector = function(id,selector){
+wg.GetCurrentSelector = function(id,selector, node){
 	$("*.selector").attr("class","selector");
 	$("#"+id).attr("class","selector active");
 	var existingStyle = $(wg.selectedItem(), $("#content-preview").contents()).attr("style");
@@ -443,6 +463,7 @@ wg.GetCurrentSelector = function(id,selector){
 	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
 	
 	wg.selectedItem(selector);
+	wg.selectedItemNode(node);
 	existingStyle = "";
 	existingStyle = $(selector, $("#URLPreview").contents()).attr("style");
 	if(existingStyle!==undefined){
@@ -456,6 +477,18 @@ wg.GetCurrentSelector = function(id,selector){
 		existingStyle = "border:5px solid #FF9900";
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
+	if (wg.modeSelector() == 'editElementSelector')
+		wg.CreateElementChild(selector);
+};
+wg.CreateElementChild = function(selectorParent){
+	$("#inspectElement2>ul").replaceWith("<ul></ul>");
+	var childElem = $(selectorParent, $("#content-preview").contents()), idx = 0;
+	$(childElem).each(function(i,e){
+		console.log($(this).html());
+		if($(this).html()!==undefined){
+			linenumber = wg.GetElement($(this),0,0,0,selectorParent, "#inspectElement2");
+		}
+	})
 };
 wg.addScrapperPayload = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, wg.templateScrapperPayload));
@@ -542,7 +575,12 @@ wg.showSelectorSetting = function(index,nameSelector){
 	wg.modeSelector("edit");
 }
 wg.backSettingSelector = function() {
-	wg.modeSelector("");
+	if (wg.modeSelector() === 'editElementSelector')
+		wg.modeSelector("");
+	else if(wg.modeSelector() === 'edit')
+		wg.modeSelector("");
+	else if (wg.modeSelector() === 'editElementConfig')
+		wg.modeSelector("edit");
 }
 wg.saveSettingSelector = function() {
 	if (!app.isFormValid(".form-row-column-selector")) {
@@ -614,7 +652,7 @@ wg.saveSelectedElement = function(index){
 		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItem());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItemNode());
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
