@@ -1,10 +1,4 @@
 <!-- core -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/xml.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/javascript.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/active-line.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script> -->
-<!-- <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css"> -->
 <script src="/res/core/page-webgrabber.js"></script>
 
 <!-- sidebar -->
@@ -81,7 +75,7 @@
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewScrapper, visible: wg.isContentFetched">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditWebGrabber" data-bind="visible: showWebGrabber">
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditWebGrabber" data-bind="visible: wg.showWebGrabber">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>

@@ -10,19 +10,17 @@ wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
 wg.tempIndexSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
-wg.showWebGrabber = ko.observable(true);
 wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
-wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
 wg.connectionListData = ko.observableArray([]);
-wg.connListData = ko.observableArray([]);
 wg.collectionInput = ko.observable();
-wg.hostId = ko.observable('');
+wg.showWebGrabber = ko.observable(true);
+wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
@@ -168,13 +166,6 @@ wg.templateConfigConnection = {
 
 wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
-wg.selectGridWebGrabber = function(e){
-	var grid = $(".grid-web-grabber").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	wg.editScrapper(selectedItem._id);
-	wg.showWebGrabber(true);
-};
-
 wg.editScrapper = function (_id) {
 	wg.scrapperMode('edit');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -183,8 +174,10 @@ wg.editScrapper = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
+		wg.selectorRowSetting([]);
 		app.mode('editor');
 		wg.scrapperMode('edit');
+		wg.modeSelector('');
 		wg.modeSetting(1);
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
@@ -219,13 +212,14 @@ wg.removeScrapper = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					wg.backToFront();
 					swal({ title: "Data successfully deleted", type: "success" });
 				});
-		    }, 1000);
-		});
-	}
+	    }, 1000);
+	});
+}
+
+
 };
 wg.getScrapperData = function () {
 	wg.scrapperData([]);
@@ -243,13 +237,18 @@ wg.createNewScrapper = function () {
 	wg.isContentFetched(false);
 	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
-	wg.showWebGrabber(false);
+	wg.selectorRowSetting([]);
+	wg.modeSetting(0);
 };
 wg.backToFront = function () {
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+	wg.selectorRowSetting([]);
+	wg.modeSetting(0);
 	app.mode("");
 	wg.selectedID('');
 	wg.getScrapperData();
+	wg.modeSelector("");
+	wg.showWebGrabber(false);
 };
 wg.backToHistory = function () {
 	app.mode('history')
@@ -602,7 +601,8 @@ wg.saveSelectorConf = function(){
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 		wg.selectorRowSetting([]);
-		// console.log(wg.selectorRowSetting([]));
+		wg.getScrapperData();
+		wg.modeSelector("");
 	});
 }
 wg.viewData = function (id) {
@@ -696,6 +696,33 @@ wg.viewLog = function (date) {
 	});
 };
 
+function filterWebGrabber(event) {
+	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		console.log(res.data);
+		wg.scrapperData(res.data);
+	});
+}
+
+wg.getConnection = function () {
+	var param = ko.mapping.toJS(wg.configConnection);
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		wg.connectionListData(res.data);
+	});
+};
+
+wg.selectGridWebGrabber = function(e){
+	var grid = $(".grid-web-grabber").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	wg.editScrapper(selectedItem._id);
+	wg.showWebGrabber(true);
+};
+
 wg.checkDeleteWebGrabber = function(elem, e){
 	if (e === 'webgrabberall'){
 		if ($(elem).prop('checked') === true){
@@ -720,26 +747,6 @@ wg.checkDeleteWebGrabber = function(elem, e){
 	}
 }
 
-function filterWebGrabber(event) {
-	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		console.log(res.data);
-		wg.scrapperData(res.data);
-	});
-}
-
-wg.getConnection = function () {
-
-	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/datasource/getconnections", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		wg.connectionListData(res.data);
-	});
-};
 
 wg.configSelector.connectioninfo.connectionid.subscribe(function (e) {
 	var fconnection = e;

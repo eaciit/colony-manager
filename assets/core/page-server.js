@@ -34,6 +34,7 @@ srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
+srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:25, template: function (d) {
 		return [
@@ -56,19 +57,19 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
-	var grid = $(".grid-server").data("kendoGrid");
-	$(grid.tbody).on("mouseenter", "tr", function (e) {
-	    $(this).addClass("k-state-hover");
-	});
-	$(grid.tbody).on("mouseleave", "tr", function (e) {
-	    $(this).removeClass("k-state-hover");
-	});
 	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		srv.ServerData(res.data);
+		var grid = $(".grid-server").data("kendoGrid");
+		$(grid.tbody).on("mouseenter", "tr", function (e) {
+		    $(this).addClass("k-state-hover");
+		});
+		$(grid.tbody).on("mouseleave", "tr", function (e) {
+		    $(this).removeClass("k-state-hover");
+		});
 	});
 };
 
@@ -112,7 +113,7 @@ srv.editServer = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		console.log(res)
+		
 		app.mode('editor');
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
@@ -145,7 +146,7 @@ srv.checkDeleteServer = function(elem, e){
 
 var vals = [];
 srv.removeServer = function(){
-	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+	if (srv.tempCheckIdServer().length === 0) {
 		swal({
 			title: "",
 			text: 'You havent choose any server to delete',
@@ -155,13 +156,12 @@ srv.removeServer = function(){
 			closeOnConfirm: true
 		});
 	} else {
-		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-		return this.value;
-		}).get();
-
+		// vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+		// return this.value;
+		// }).get();
 		swal({
 			title: "Are you sure?",
-			text: 'Server with id "' + vals + '" will be deleted',
+			text: 'Server with id "' + srv.tempCheckIdServer().toString() + '" will be deleted',
 			type: "warning",
 			showCancelButton: true,
 			confirmButtonColor: "#DD6B55",
@@ -170,7 +170,7 @@ srv.removeServer = function(){
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/server/deleteservers", vals, function () {
+				app.ajaxPost("/server/deleteservers", srv.tempCheckIdServer(), function () {
 					if (!app.isFine) {
 						return;
 					}
@@ -210,6 +210,7 @@ function ServerFilter(event){
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
+	$("#selectall").attr("checked",false)
 };
 
 srv.getServerFile = function() {
