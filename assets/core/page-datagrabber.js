@@ -193,7 +193,7 @@ dg.removeScrapper = function (_id) {
 			closeOnConfirm: true
 		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/datagrabber/removedatagrabber", { _id: _id }, function (res) {
+				app.ajaxPost("/datagrabber/removemultipledatagrabber", { _id: dg.tempCheckIdDataGrabber() }, function (res) {
 					if (!app.isFine(res)) {
 						return;
 					}
