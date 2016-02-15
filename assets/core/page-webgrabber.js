@@ -22,43 +22,31 @@ wg.collectionInput = ko.observable();
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
-	calltype: "GET",
+	calltype: "POST",
 	sourcetype: "SourceType_Http",
 	intervaltype: "seconds",
 	grabinterval: 20,
 	timeoutinterval: 20,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
 	logconf: {
-		filename: "asd",
-		filepattern: "asd",
-		logpath: "asd"
+		"filename": "LOG-GRABDCE",
+		"filepattern": "",
+		"logpath": ""
 	},
 	datasettings: [],
-	grabconf: {},
+	grabconf: {
+		data: {}
+	},
+	temp: {
+		parameters: [],
+	}
 };
+wg.parametersPattern = ko.observableArray([
+	{ value: "", title: "-" },
+	{ value: "time.Now()", title: "Now" },
+	{ value: "time.Now()+1", title: "Now + 1" }
+]);
 
-// wg.templateDataSetting = {
-// 	rowselector: "",
-// 	columnsettings: [],
-// 	rowdeletecond: {},
-// 	rowincludecond: {},
-// 	connectioninfo: {
-// 		host: "",
-// 		database: "",
-// 		username: "",
-// 		password: "",
-// 		settings: "",
-// 		collection: ""
-// 	},
-// 	desttype: "",
-// 	name: ""
-// };
-// wg.templateColumnSetting = {
-// 	alias: "",
-// 	index: "",
-// 	selector: "",
-// 	valuetype: ""
-// }
 wg.templateConfigSelector = {
 	name: "",
 	rowselector: "",
@@ -86,8 +74,10 @@ wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
 wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.templateScrapperPayload = {
+	format: "",
 	key: "",
-	value: ""
+	pattern: "",
+	value: "",
 };
 wg.scrapperPayloads = ko.observableArray([]);
 wg.selectorRowSetting = ko.observableArray([]);
@@ -160,17 +150,20 @@ wg.editScrapper = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		wg.selectorRowSetting([]);
 		app.mode('editor');
 		wg.scrapperMode('edit');
 		wg.modeSelector('');
 		wg.modeSetting(1);
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
-		for (var key in res.data.datasettings){
-			wg.selectorRowSetting.push(ko.mapping.fromJS(res.data.datasettings[key], wg.selectedItem));
-		}
-		wg.isContentFetched(false);
+
+		wg.selectorRowSetting([]);
+		res.data.datasettings.forEach(function (item) {
+			wg.selectorRowSetting.push(ko.mapping.fromJS(item, wg.selectedItem));
+		});
+
+		wg.getURL();
+		wg.addScrapperPayload();
 	});
 };
 wg.removeScrapper = function (_id) {
@@ -207,9 +200,10 @@ wg.getScrapperData = function () {
 };
 wg.createNewScrapper = function () {
 	app.mode("editor");
+	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
+	ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
-	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
@@ -282,11 +276,28 @@ wg.runBotStats = function () {
 		checkStat();
 	});
 };
+wg.parsePayload = function () {
+	var parameters = {};
+	ko.mapping.toJS(wg.configScrapper).temp.parameters.forEach(function (each) {
+		if (each.key == "" || each.value == "") {
+			return;
+		}
+
+		parameters[each.key] = each.value;
+	});
+
+	return (wg.configScrapper.calltype() == "GET") ? null : parameters;
+};
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
 	}
-	var param = ko.mapping.toJS(wg.configScrapper);
+	var param = {
+		URL: wg.configScrapper.url(),
+		Method: wg.configScrapper.calltype(),
+		Payloads: wg.parsePayload()
+	};
+
 	app.ajaxPost("/webgrabber/fetchcontent", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -419,40 +430,24 @@ wg.GetCurrentSelector = function(id,selector){
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
 };
-wg.saveNewScrapper = function () {
-	if (!app.isFormValid(".form-scrapper-top")) {
-		return;
-	}
-	
-};
 wg.addScrapperPayload = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, wg.templateScrapperPayload));
-	wg.scrapperPayloads.push(item);
+	wg.configScrapper.temp.parameters.push(item);
 };
 wg.removeScrapperPayload = function (index) {
 	return function () {
-		var item = wg.scrapperPayloads()[index];
-		wg.scrapperPayloads.remove(item);
+		var item = wg.configScrapper.temp.parameters()[index];
+		wg.configScrapper.temp.parameters.remove(item);
 	};
 };
 wg.encodePayload = function () {
 	wg.configScrapper.Parameter({});
 
 	var p = {};
-	wg.scrapperPayloads().forEach(function (e) {
+	wg.configScrapper.temp.parameters().forEach(function (e) {
 		p[e.key()] = app.couldBeNumber(e.value());
 	});
 	wg.configScrapper.Parameter(p);
-};
-wg.decodePayload = function () {
-	wg.scrapperPayloads([]);
-
-	var param = wg.configScrapper.Parameter();
-	for (var key in param) {
-		if (param.hasOwnProperty(key)) {
-			wg.scrapperPayloads.push({ key: key, value: param[key] });
-		}
-	}
 };
 wg.startScrapper = function (_id) {
 	app.ajaxPost("/webgrabber/startservice", { _id: _id }, function (res) {
@@ -554,41 +549,42 @@ wg.saveSelectedElement = function(index){
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
-}
+};
+wg.parseGrabConf = function () {
+	var config = ko.mapping.toJS(wg.configScrapper);
+	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
+	config.nameid = config._id;
+
+	var parameters = {};
+	ko.mapping.toJS(wg.configScrapper).temp.parameters.forEach(function (each) {
+		if (each.key == "" || each.value == "") {
+			return;
+		}
+
+		if ($.trim(each.pattern) != "") {
+			parameters[each.key] = "Date2String(" + each.pattern + ",'" + each.format + "')";
+		} else {
+			parameters[each.key] = String(each.value);
+		}
+	});
+
+	config.grabconf.data = parameters;
+	return config;
+};
 wg.saveSelectorConf = function(){
+	if (!app.isFormValid(".form-scrapper-top")) {
+		return;
+	}
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
 	}
-	if (!app.isFormValid(".form-row-column-selector")) {
-		return;
-	}
-	var param = ko.mapping.toJS(wg.configScrapper);
-	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
-	param.nameid = param._id;
-	// for (var key in param.DataSettings){
-	// 	if (param.datasettings[key].desttype === 'Mongo'){
-	// 		param.datasettings[key].connectioninfo = {
-	// 			Host: param.datasettings[key].connectioninfo.host,
-	// 			Database: param.datasettings[key].connectioninfo.database,
-	// 			Collection: param.datasettings[key].connectioninfo.collection,
-	// 			UserName: param.datasettings[key].connectioninfo.username,
-	// 			Password: param.datasettings[key].connectioninfo.password,
-	// 		}
-	// 	} else {
-	// 		param.datasettings[key].ConnectionInfo = {
-	// 			FilterCond: param.datasettings[key].connectioninfo.filtercond,
-	// 			FileName: param.datasettings[key].connectioninfo.filename,
-	// 			UseHeader: tparam.datasettings[key].connectioninfo.useheader,
-	// 			Delimiter: param.datasettings[key].connectioninfo.delimiter,
-	// 		}
-	// 	}
-	// }
-	app.ajaxPost("/webgrabber/savescrapperdata", param, function (res) {
-		// console.log(param);
-		// console.log(res);
+
+	var config = wg.parseGrabConf();
+	app.ajaxPost("/webgrabber/savescrapperdata", config, function (res) {
 		if(!app.isFine(res)) {
 			return;
 		}
+		
 		app.mode("");
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);

@@ -22,6 +22,7 @@ type WebGrabberController struct {
 }
 
 func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
+	fmt.Println("")
 	var controller = new(WebGrabberController)
 	controller.Server = s
 	return controller
@@ -71,26 +72,21 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.WebGrabber)
-	err := r.GetPayload(payload)
-	fmt.Printf("\n=============\n")
-	fmt.Printf("%#v", payload)
-	fmt.Printf("\n=============\n")
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	err = colonycore.Delete(payload)
-	if err != nil {
+	if err := r.GetPayload(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	err = colonycore.Save(payload)
-	if err != nil {
+	payload.LogConfiguration.FileName = "LOG-" + payload.ID
+	payload.LogConfiguration.LogPath = f.Join(AppBasePath, "config", "webgrabber", "log") + toolkit.PathSeparator
+	payload.LogConfiguration.FilePattern = "20060102"
+
+	if err := colonycore.Delete(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	fmt.Printf("\n=============\n")
-	fmt.Printf("%#v", payload)
-	fmt.Printf("\n=============\n")
+	if err := colonycore.Save(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	return helper.CreateResult(true, payload, "")
 }
@@ -98,14 +94,17 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 func (w *WebGrabberController) FetchContent(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := new(colonycore.WebGrabber)
-	err := r.GetPayload(payload)
+	payload := struct {
+		URL      string
+		Method   string
+		Payloads toolkit.M
+	}{}
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	param := toolkit.M{} //.Set("formvalues", payload.Parameter)
-	res, err := toolkit.HttpCall(payload.URL, payload.CallType, nil, param)
+	res, err := toolkit.HttpCall(payload.URL, payload.Method, nil, payload.Payloads)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

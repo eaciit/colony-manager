@@ -69,9 +69,6 @@
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getURL">
 	    		<span class="glyphicon glyphicon-refresh"></span> Fetch Content
 	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewScrapper, visible: wg.isContentFetched">
-	    		<span class="glyphicon glyphicon-save"></span> Save
-	    	</button>
 		</nav>
 
 		<div class="panel" id="panel-set-up" data-bind="visible: (app.mode() == 'editor')">
@@ -111,16 +108,24 @@
 				        			<span class="glyphicon glyphicon-plus"></span> Add more
 				        		</button>
 				        	</div>
-				        	<div class="col-md-8">
+				        	<div class="clearfix"></div>
+				        	<div class="col-md-10 col-md-offset-2">
 								<table class="table">
+									<col width="24%">
+									<col width="24%">
+									<col width="24%">
+									<col width="24%">
+
 									<thead>
 										<tr>
 											<th>Key</th>
 											<th>Value</th>
+											<th>Pattern</th>
+											<th>Format</th>
 											<th>&nbsp;</th>
 										</tr>
 									</thead>
-									<tbody data-bind="foreach: wg.scrapperPayloads">
+									<tbody data-bind="foreach: wg.configScrapper.temp.parameters">
 										<tr>
 											<td>
 												<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
@@ -129,6 +134,12 @@
 											<td>
 												<input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
 												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
+											</td>
+											<td>
+												<select style="width: 100%;" data-bind="kendoDropDownList: { data: wg.parametersPattern, dataValueField: 'value', dataTextField: 'title', value: pattern}"></select>
+											</td>
+											<td>
+												<input class="form-control input-sm full-width" type="text" data-bind="value: format" placeholder="Type format here" />
 											</td>
 											<td>
 												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeScrapperPayload($index())">
