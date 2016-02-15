@@ -58,18 +58,15 @@
 	    		<span class="glyphicon glyphicon-remove"></span>Delete
 	    	</button>
 		</nav>
+		<ul id="myTab" class="nav nav-tabs">
+	      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
+	      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
+	    </ul>
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
-		    <div id="myTabContent" class="tab-content">
-
-		    </div>
 			<div class="panel-heading">
 		        <h1 class="panel-title"><span data-bind="text: (apl.applicationMode() == '') ? 'Create New' : 'Edit'"></span>
 		        </h1>
 		    </div>
-		    <ul id="myTab" class="nav nav-tabs">
-		      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
-		      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
-		    </ul>
 		    <div class="panel-body">
 			    <div id="myTabContent" class="tab-content">
 			    	<div class="tab-pane fade in active" id="Form">
