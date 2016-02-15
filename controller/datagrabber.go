@@ -8,7 +8,6 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	"github.com/robfig/cron"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,7 +17,7 @@ import (
 )
 
 var (
-	serviceHolder       = map[string]*cron.Cron{}
+	serviceHolder       = map[string]bool{}
 	logPath             = filepath.Join(AppBasePath, "config", "datagrabber", "log")
 	transformedDataPath = filepath.Join(AppBasePath, "config", "datagrabber", "data")
 	logAt               = ""
@@ -105,7 +104,7 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	//~ payload := map[string]string{"inputText":"6"}
+	//~ payload := map[string]string{"inputText":"test"}
 	payload := map[string]interface{}{}
 
 	err := r.GetPayload(&payload)
@@ -113,15 +112,18 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	text := payload["inputText"].(string)
+	textLow := strings.ToLower(text)
 
-	// == try useing Contains for support autocomplite
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("DataSourceOrigin", text), dbox.Contains("DataSourceDestination", text), dbox.Contains("IntervalType", text))
-
-	// == try useing Eq for support integer
-	valueInt, errv := strconv.ParseInt(text, 32, 0)
+	valueInt, errv := strconv.Atoi(text)
+	fmt.Printf("", valueInt)
+	fmt.Printf("", errv)
 	if errv == nil {
+		// == try useing Eq for support integer
 		query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
+	} else {
+		// == try useing Contains for support autocomplite
+		query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("DataSourceOrigin", text), dbox.Contains("DataSourceOrigin", textLow), dbox.Contains("DataSourceDestination", text), dbox.Contains("DataSourceDestination", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
 	}
 
 	data := []colonycore.DataGrabber{}
@@ -239,6 +241,28 @@ func (d *DataGrabberController) RemoveDataGrabber(r *knot.WebContext) interface{
 	return helper.CreateResult(true, nil, "")
 }
 
+func (d *DataGrabberController) RemoveMultipleDataGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		o := new(colonycore.DataGrabber)
+		o.ID = id.(string)
+		err = colonycore.Delete(o)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
 func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -257,8 +281,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	logFileName = strings.Split(logAt, "-")[0]
 
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
-		process := serviceHolder[dataGrabber.ID]
-		process.Stop()
+		serviceHolder[dataGrabber.ID] = false
 		delete(serviceHolder, dataGrabber.ID)
 
 		message := fmt.Sprintf("===> Transformation stopped! %s -> %s", dataGrabber.DataSourceOrigin, dataGrabber.DataSourceDestination)
@@ -316,11 +339,28 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 	yo()
 
-	process := cron.New()
-	serviceHolder[dataGrabber.ID] = process
-	duration := fmt.Sprintf("%d%s", dataGrabber.GrabInterval, string(dataGrabber.IntervalType[0]))
-	process.AddFunc("@every "+duration, yo)
-	process.Start()
+	serviceHolder[dataGrabber.ID] = true
+
+	go func(dg *colonycore.DataGrabber) {
+		for true {
+			if flag, _ := serviceHolder[dg.ID]; !flag {
+				break
+			}
+
+			var interval time.Duration
+			switch dataGrabber.IntervalType {
+			case "seconds":
+				interval = time.Duration(dataGrabber.GrabInterval) * time.Second
+			case "minutes":
+				interval = time.Duration(dataGrabber.GrabInterval) * time.Minute
+			case "hours":
+				interval = time.Duration(dataGrabber.GrabInterval) * time.Hour
+			}
+
+			time.Sleep(interval)
+			yo()
+		}
+	}(dataGrabber)
 
 	return helper.CreateResult(true, nil, "")
 }
@@ -342,8 +382,7 @@ func (d *DataGrabberController) StopTransformation(r *knot.WebContext) interface
 	}
 
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
-		process := serviceHolder[dataGrabber.ID]
-		process.Stop()
+		serviceHolder[dataGrabber.ID] = false
 		delete(serviceHolder, dataGrabber.ID)
 
 		message := fmt.Sprintf("===> Transformation stopped! %s -> %s", dataGrabber.DataSourceOrigin, dataGrabber.DataSourceDestination)

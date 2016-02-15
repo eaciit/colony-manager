@@ -37,7 +37,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<input class="form-control input-sm" type="" name="" />
+		    		<input class="form-control input-sm" type="text" data-bind="value: wg.valWebGrabberFilter, valueUpdate: 'afterkeydown', 'input', event: {'keyup': filterWebGrabber}" />
 		    	</div>
 		    </div>
 		    <div class="col-md-4 no-padding">
@@ -45,7 +45,7 @@
 		    		Request Type
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<select name="requesttype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
+		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		    <div class="col-md-4 no-padding">
@@ -53,7 +53,7 @@
 		    		Source Type
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<select name="sourcetype" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
+		    		<select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		</nav>
@@ -315,21 +315,20 @@
 			    							<select data-bind="kendoDropDownList: { data: wg.templatedesttype, value: desttype}"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: desttype() == 'mongo'">
-		    							<label class="col-md-4 filter-label">Host</label>
+		    						<div class="row" data-bind="visible: desttype() == 'database'">
+		    							<label class="col-md-4 filter-label">Host ID</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Host" placeholder="Type Host here" data-bind="value: connectioninfo.host"/>
-											<span class="k-invalid-msg" data-for="Host"></span>
+			    							<select name="ConnectionId" required data-required-msg="Data Source Origin cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.configSelector.connectioninfo.connectionid }"></select>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: desttype() == 'mongo'">
+		    						<div class="row">
 		    							<label class="col-md-4 filter-label">Database</label>
 			    						<div class="col-md-8">
-			    							<input required type="text" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
+			    							<input required type="text" readonly="read" class="form-control input-sm" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
 											<span class="k-invalid-msg" data-for="Database"></span>
 			    						</div>
 		    						</div>
-		    						<div class="row" data-bind="visible: desttype() == 'mongo'">
+		    						<div class="row" data-bind="visible: wg.collectionInput">
 		    							<label class="col-md-4 filter-label">Collection</label>
 			    						<div class="col-md-8">
 			    							<input required type="text" class="form-control input-sm" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>

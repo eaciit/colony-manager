@@ -1,183 +1,170 @@
 <h1>Servers</h1>
 	<nav class="navbar" data-bind="visible: (app.mode() == '')">
-        <button class="btn btn-sm btn-primary navbar-btn" >
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
     		<span class="glyphicon glyphicon-refresh"></span> Refresh
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewScrapper">
-    		<span class="glyphicon glyphicon-plus"></span> Create
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
+    		<span class="glyphicon glyphicon-plus"></span> Add
     	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: srv.removeServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
+    	</button>
+    	<div class="form-group row nav2">
+			<div class="col-sm-10">
+				<label class="col-sm-2 filter-label lbl">Search</label>
+				<div class="col-sm-4">
+			        <input type="text" class="input-sm form-control" data-bind="value: srv.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ServerFilter}">
+			    </div>
+			</div>
+		 </div>
 	</nav>
 	<div class="panel" data-bind="visible: (app.mode() == '')">
 	    <div class="panel-heading">
 	        <h1 class="panel-title">Servers</h1>
 	    </div>
 	    <div class="panel-body">
-	    	<!-- <div class="grid grid-data-application grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.scrapperData, columns: srv.scrapperColumns, filterfable: false, pageable: true, dataBound: srv.gridBoundTooltipster('.grid-data-application') }"></div> -->
+	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
 	    </div>
 	</div>
 	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 		<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
     		<span class="glyphicon glyphicon-chevron-left"></span> Back
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.saveScrapper">
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
     		<span class="glyphicon glyphicon-save"></span> Save
+    	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
     	</button>
 	</nav>
 
-	<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 1200px;">
+	<div class="panel col-md-8" data-bind="visible: (app.mode() == 'editor')">
 		<div class="panel-heading">
-	        <h1 class="panel-title"><span data-bind="text: (srv.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+	        <h1 class="panel-title"><span data-bind="text: (srv.ServerMode() == '') ? 'Create New' : 'Edit'"></span>
 	        </h1>
 	    </div>
 	    <div class="panel-body">
-	    	<form class="form-horizontal form-application" id="form-add-scrapper" novalidate>
-		    	<div class="col-md-8">
+	    	<form class="form-horizontal form-server" id="form-add-Server" data-bind="with: configServer" novalidate>
+		    	<div class="col-md-12">
 		    		<div class="col-md-12">
-			    		<div class="col-md-7">
+			    		<div class="col-md-6">
 				    		<div class="form-group">
-					    		<label class="col-md-2 filter-label">ID</label>
+					    		<label class="col-md-3 filter-label">ID</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
+									<span class="k-invalid-msg" data-for="ID"></span>					    			
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
-					    		<label class="col-md-2 filter-label">Type</label>
+					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="type" placeholder="Type the Server Type Here" data-bind="value: type">
+									<span class="k-invalid-msg" data-for="type"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
-					    		<label class="col-md-2 filter-label">Folder</label>
+					    		<label class="col-md-3 filter-label">Folder</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="folder" placeholder="Type the Folder Name Here" data-bind="value: folder">
+									<span class="k-invalid-msg" data-for="folder"></span>
 					    		</div>
 				    		</div>
 			    		</div>
-			    		<div class="col-md-5">
+			    		<div class="col-md-6">
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">OS</label>
 					    		<div class="col-md-6">
-					    			<select id="os" data-placeholder="Select OS" class="form-control">
-							            <option>Windows</option>
-							            <option>Linux</option>
+					    			<select id="os" data-required-msg="OS cannot be empty" name="os" data-placeholder="Select OS" class="form-control" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
+							            <!-- <option>Windows</option>
+							            <option>Linux</option> -->
 							        </select>
+							        <span class="k-invalid-msg" data-for="os"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Enable</label>
 					    		<div class="col-md-6">
-					    			<input type="checkbox" id="Enable" data-bind="value: Enable" />
+					    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
 					    		</div>
 				    		</div>
+				    		<span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
+							    <span class="glyphicon glyphicon-upload"></span> Upload <input id="fileserver" name="fileserver" type="file" accept=".zip">
+							</span>
 			    		</div>
 			    	</div>
 			    	<div class="col-md-12">
 			    		<div class="col-md-12">
 			    			<p class="pcustom">SSH Access</p>
 			    		</div>
-			    		<div class="col-md-7">
+			    		<div class="col-md-6">
 				    		<div class="form-group">
-					    		<label class="col-md-2 filter-label">Type</label>
+					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="type-ssh" placeholder="Type the SSH Type Here" data-bind="value: sshtype">
+									<span class="k-invalid-msg" data-for="type-ssh"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
-					    		<label class="col-md-2 filter-label">File</label>
+					    		<label class="col-md-3 filter-label">File</label>
 					    		<div class="col-md-7">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    			<input required type="text" class="form-control input-sm" name="file" placeholder="Type the File Name Here" data-bind="value: sshfile">
+									<span class="k-invalid-msg" data-for="file"></span>
 					    		</div>
 				    		</div>
 			    		</div>
-			    		<div class="col-md-5">
+			    		<div class="col-md-6">
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">User</label>
-					    		<div class="col-md-6">
-					    			<input class="form-control input-sm full-width" type="text"/>
+					    		<div class="col-md-7">
+					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
+									<span class="k-invalid-msg" data-for="user"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Pass</label>
-					    		<div class="col-md-6">
-					    			<input class="form-control input-sm full-width" type="password"/>
+					    		<div class="col-md-7">
+					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
+									<span class="k-invalid-msg" data-for="password"></span>
 					    		</div>
 				    		</div>
 			    		</div>
+			    	</div>
+			    	<div class="col-md-12">
+				    	<div class="col-md-12">
+			    			<p class="pcustom">Command</p>
+			    		</div>
+				    	<div class="col-md-12">
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Extract</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract">
+									<span class="k-invalid-msg" data-for="extract"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">New File</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="new-file" placeholder="Type New File Here" data-bind="value: cmdnewfile">
+									<span class="k-invalid-msg" data-for="new-file"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Copy</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="copy" placeholder="Type Copy Here" data-bind="value: cmdcopy">
+									<span class="k-invalid-msg" data-for="copy"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-2 filter-label">Make Directory</label>
+					    		<div class="col-md-9">
+					    			<input required type="text" class="form-control input-sm" name="m-directory" placeholder="Make a Directory Here" data-bind="value: cmddir">
+									<span class="k-invalid-msg" data-for="m-directory"></span>
+					    		</div>
+				    		</div>
+				    	</div>
 			    	</div>
 			    </div>
-		    	<div class="col-md-12">
-		            <button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-1" >
-		            	<span class="glyphicon glyphicon-upload"></span> Upload
-		            </button>
-		            <button class="btn btn-sm btn-primary navbar-btn btnsrvcustom col-md-offset-2" >
-		            	<span class="glyphicon glyphicon-plus"></span> New File
-		            </button>
-		            <button class="btn btn-sm btn-danger navbar-btn btnsrvcustom col-md-offset-2" >
-		            	<span class="glyphicon glyphicon-remove"></span> Delete
-		            </button>
-		        </div>
-		    	<div class="col-md-12">
-			    	<div class="col-md-12 bd1 headercustom">
-			            <div class="col-md-4">
-			    		    <div class="form-group">
-					    		<label class="col-md-3 pdTop5">Search :</label>
-					    		<div class="col-md-6">
-					    			<input class="form-control input-sm inputcustom" type="text"/>
-					    		</div>
-					    		<div class="col-md-2">
-			            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
-					    		</div>
-				    		</div>
-					    </div>
-			    		<div class="col-md-8">
-			    			<label class="col-md-10 pdTop5" id="">ini ceritanya labelnya ini ceritanya labelnya</label>
-			            	<button class="btn btn-sm btn-primary navbar-btn col-md-2 bd0 mg0 bdcolornone" >Save</button>
-			    		</div>
-			    	</div>
-			    	<div class="col-md-12 bd1">
-			            <div class="col-md-4">			    		
-			            	<div id="example">
-					            <div class="tvcustom">
-					                <ul id="treeview">
-					                    <li data-expanded="true">
-					                        My Web Site
-					                        <ul>
-					                            <li data-expanded="true">
-					                                images
-					                                <ul>
-					                                    <li>logo.png</li>
-					                                    <li>body-back.png</li>
-					                                    <li>my-photo.jpg</li>
-					                                </ul>
-					                            </li>
-					                            <li data-expanded="true">
-					                                resources
-					                                <ul>
-					                                    <li data-expanded="true">
-					                                        pdf
-					                                        <ul>
-					                                            <li>brochure.pdf</li>
-					                                            <li>prices.pdf</li>
-					                                        </ul>
-					                                    </li>
-					                                    <li>zip</li>
-					                                </ul>
-					                            </li>
-					                            <li>about.html</li>
-					                            <li>contacts.html</li>
-					                            <li>index.html</li>
-					                            <li>portfolio.html</li>
-					                        </ul>
-					                    </li>
-					                </ul>
-					            </div>
-					        </div>
-			    		</div>
-			    		<div class="col-md-8">			    		
-			    			<textarea class="form-control tacustom" rows="13"></textarea>
-			    		</div>
-		    		</div>
-		        </div>
 	    	</form>
 	    </div>
 	</div>

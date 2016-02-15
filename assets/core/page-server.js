@@ -1,43 +1,181 @@
 viewModel.servers = {}; var srv = viewModel.servers;
-srv.templateConfigScrapper = {
+srv.templateOS = ko.observableArray([
+	{ value: "windows", text: "Windows" },
+	{ value: "linux", text: "Linux" }
+]);
+srv.templateConfigServer = {
 	_id: "",
-	AppsName: "",
-	Enable: false,
-	AppPath: ""
+	type: "",
+	folder: "",
+	os: "",
+	enable: false,
+	sshtype: "",
+	sshfile: "",
+	sshuser: "",
+	sshpass:  "",
+	cmdextract: "",
+	cmdnewfile: "",
+	cmdcopy: "",
+	cmddir: ""
 };
-srv.configScrapper = ko.mapping.fromJS(srv.templateConfigScrapper);
-srv.scrapperMode = ko.observable('');
-srv.scrapperData = ko.observableArray([]);
-srv.scrapperColumns = ko.observableArray([
-	{ field: "_id", title: "ID", width: 80 },
-	{ field: "srvName", title: "Server Name", width: 130},
-	{ title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
+srv.filterValue = ko.observable('');
+srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
+srv.showServer = ko.observable(true);
+srv.ServerMode = ko.observable('');
+srv.ServerData = ko.observableArray([]);
+srv.ServerColumns = ko.observableArray([
+	{title: "<center><input type='checkbox' id='selectall' databind='click:srv.checkall'/></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='srv.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Server' onclick='srv.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+			"<input type='checkbox' id='select' name='select[]' value= " + d._id + ">"
 		].join(" ");
-	} },	
+	}},
+	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
+	{ field: "_id", title: "ID", width: 80 },
+	{ field: "type", title: "Type", width: 80},
+	{ field: "os", title: "OS", width: 80},
+	{ field: "folder", title: "Folder", width: 80},
+	{ field: "enable", title: "Enable", width: 80},
+	// { title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
+	// 	return [
+	// 		"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+	// 		"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Server' onclick='srv.removeServer(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+	// 	].join(" ");
+	// } },	
 ]);
 
-srv.getApplications = function() {
-	srv.scrapperData([]);
-	app.ajaxPost("/servers/getsrvs", {}, function (res) {
+srv.getServers = function() {
+	srv.ServerData([]);
+	var grid = $(".grid-server").data("kendoGrid");
+	$(grid.tbody).on("mouseenter", "tr", function (e) {
+	    $(this).addClass("k-state-hover");
+	});
+	$(grid.tbody).on("mouseleave", "tr", function (e) {
+	    $(this).removeClass("k-state-hover");
+	});
+	app.ajaxPost("/server/getservers", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
-		srv.scrapperData(res.data);
+		srv.ServerData(res.data);
 	});
 };
 
-srv.createNewScrapper = function () {
+srv.createNewServer = function () {
 	app.mode("editor");
-	srv.scrapperMode('');
-	ko.mapping.fromJS(srv.templateConfigScrapper, srv.configScrapper);
+	srv.ServerMode('');
+	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+	srv.showServer(false);
 };
+
+srv.saveServer = function(){
+	if (!app.isFormValid(".form-server")) {
+		return;
+	}
+
+	// if (!qr.validateQuery()) {
+	// 	return;
+	// }
+	var data = ko.mapping.toJS(srv.configServer);
+	app.ajaxPost("/server/saveservers", data, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+	});
+	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
+	});
+	srv.backToFront()
+};
+
+srv.selectGridServer = function(e){
+	var grid = $(".grid-server").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	srv.editServer(selectedItem._id);
+	srv.showServer(true);
+};
+
+srv.editServer = function (_id) {
+	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
+	app.ajaxPost("/server/selectservers", { _id: _id }, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		console.log(res)
+		app.mode('editor');
+		srv.ServerMode('edit');
+		ko.mapping.fromJS(res.data, srv.configServer);
+	});
+}
+
+var vals = [];
+srv.removeServer = function(){
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+		swal({
+			title: "",
+			text: 'You havent choose any server to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
+	} else {
+		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+		return this.value;
+		}).get();
+
+		swal({
+			title: "Are you sure?",
+			text: 'Server with id "' + vals + '" will be deleted',
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Delete",
+			closeOnConfirm: false
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/server/deleteservers", vals, function () {
+					if (!app.isFine) {
+						return;
+					}
+
+					srv.backToFront();
+					swal({title: "Server successfully deleted", type: "success"});
+				});
+			},1000);
+
+		});
+	} 
+	
+}
+
+srv.getUploadFile = function() {
+	$('#fileserver').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $('#file-name').val(filename);
+	     $("#nama").text(filename)
+	 });
+};
+
+function ServerFilter(event){
+	app.ajaxPost("/server/serversfilter", {inputText : srv.filterValue()}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		srv.ServerData(res.data);
+	});
+}
 
 srv.backToFront = function () {
 	app.mode('');
-	srv.getApplications();
+	srv.getServers();
 };
+
+$(function () {
+    srv.getServers();
+});
