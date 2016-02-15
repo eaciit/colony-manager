@@ -44,6 +44,14 @@ apl.selectApps = function(e){
 
 apl.getApplications = function() {
 	apl.applicationData([]);
+
+	var ongrid = $(".grid-application").data("kendoGrid");
+	$(ongrid.tbody).on("mouseenter", "tr", function (e) {
+	    $(this).addClass("k-state-hover");
+	});
+	$(ongrid.tbody).on("mouseleave", "tr", function (e) {
+	    $(this).removeClass("k-state-hover");
+	});
 	app.ajaxPost("/application/getapps", {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -70,6 +78,8 @@ apl.createNewApplication = function () {
 	//alert("masuk create");
 	app.mode("editor");
 	apl.applicationMode('');
+	$("#files").val('');
+	$('#nama').text('');
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	//apl.addMap();
 };
