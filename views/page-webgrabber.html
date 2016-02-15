@@ -303,12 +303,20 @@
 									</table>
 	    						</div>
 	    						<div class="col-md-12 form-row vv-padding-right vv-padding-left">
-	    							<div class="row">
+	    							<!-- <div class="row">
 		    							<label class="col-md-4 filter-label">Filter Cond.</label>
 			    						<div class="col-md-8">
-			    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: connectioninfo.filtercond, optionLabel: 'Select one'}"></select>
+			    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: filtercond, optionLabel: 'Select one'}"></select>
+			    							<button class="btn btn-sm btn-primary" data-bind="visible:filtercond() != ''">
+							        			<span class="glyphicon glyphicon-plus"></span>
+							        		</button>
 			    						</div>
-			    					</div>
+			    					</div> -->
+			    					<!-- <div class="row">
+			    						<div class="col-md-12 vv-padding-right vv-padding-left">
+			    							wg.configSelector.columnsettings()
+			    						</div>
+			    					</div> -->
 		    						<div class="row">
 		    							<label class="col-md-4 filter-label">Destination Type</label>
 			    						<div class="col-md-8">
@@ -368,7 +376,8 @@
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
 		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-		    					<div id="inspectElement"><ul></ul></div>
+		    					<div id="inspectElement" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementSelector'"><ul></ul></div>
+		    					<div id="inspectElement2" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementConfig'"><ul></ul></div>
 		    				</div>
 		    			</div>
 
