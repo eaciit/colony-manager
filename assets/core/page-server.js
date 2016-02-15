@@ -109,7 +109,7 @@ srv.editServer = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		console.log(res)
+		
 		app.mode('editor');
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
@@ -203,12 +203,6 @@ function ServerFilter(event){
 	});
 }
 
-srv.checkall = function() {
-	$("#selectall").change(function() {
-		$("input:checkbox").prop('checked', $(this).prop("checked"));
-	});
-}
-
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
@@ -216,6 +210,5 @@ srv.backToFront = function () {
 };
 
 $(function () {
-	srv.checkall()
     srv.getServers();
 });
