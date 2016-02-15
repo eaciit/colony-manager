@@ -258,7 +258,7 @@ apl.OnRemove = function(){
 		});
 	} else {
 		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-		return this.value;
+			return this.value;
 		}).get();
 
 		swal({
