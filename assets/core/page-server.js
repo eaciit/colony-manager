@@ -26,6 +26,9 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
+selectedSSH = ko.observable();
+srv.showFile = ko.observable(true);
+srv.showUserPass = ko.observable(true);
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
@@ -74,6 +77,7 @@ srv.createNewServer = function () {
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
+    srv.showFileUserPass();
 };
 
 srv.saveServer = function(){
@@ -182,9 +186,9 @@ srv.removeServer = function(){
 }
 
 srv.getUploadFile = function() {
-	$('#fileserver').change(function(){
+	$('#uploadserver').change(function(){
 		var filename = $(this).val().replace(/^.*[\\\/]/, '');
-	     $('#file-name').val(filename);
+	     $('#upload-name').val(filename);
 	     $("#nama").text(filename)
 	 });
 };
@@ -207,6 +211,24 @@ srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
 };
+
+srv.getServerFile = function() {
+	$('#fileserver').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $('#file-name').val(filename);
+	     $("#nama").text(filename)
+	 });
+};
+
+srv.showFileUserPass = function (){	
+	if ($("#type-ssh").val() === 'Credentials') {
+		srv.showFile(false);
+		srv.showUserPass(true);
+	}else{
+		srv.showFile(true);
+		srv.showUserPass(false);
+	};
+}
 
 $(function () {
     srv.getServers();
