@@ -247,12 +247,15 @@ wg.runBotStats = function () {
 				if (res.success) {
 					var $grid = $(".grid-web-grabber").data("kendoGrid");
 					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
-					var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-					if (res.data.isRun) {
-						$tr.addClass("started");
-					} else {
-						$tr.removeClass("started");
+					if (row != undefined) {
+						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+
+						if (res.data.isRun) {
+							$tr.addClass("started");
+						} else {
+							$tr.removeClass("started");
+						}
 					}
 				}
 
