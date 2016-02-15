@@ -46,7 +46,10 @@ wg.parametersPattern = ko.observableArray([
 	{ value: "time.Now()", title: "Now" },
 	{ value: "time.Now()+1", title: "Now + 1" }
 ]);
-
+wg.useHeaderOptions = ko.observableArray([
+	{ value: true, title: 'YES' }, 
+	{ value: false, title: 'NO' }
+]);
 wg.templateConfigSelector = {
 	name: "",
 	rowselector: "",
@@ -159,7 +162,7 @@ wg.editScrapper = function (_id) {
 
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item) {
-			wg.selectorRowSetting.push(ko.mapping.fromJS(item, wg.selectedItem));
+			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
 		wg.getURL();
@@ -493,7 +496,7 @@ wg.backSetting = function() {
 	wg.modeSetting(wg.modeSetting()-1);
 };
 wg.addSelectorSetting = function() {
-	wg.selectorRowSetting.push(ko.mapping.fromJS(wg.templateConfigSelector));
+	wg.selectorRowSetting.push(ko.mapping.fromJS($.extend(true, {}, wg.templateConfigSelector)));
 }
 wg.removeSelectorSetting = function(each){
 	// console.log(ko.mapping.toJS(each));
@@ -504,10 +507,13 @@ wg.showSelectorSetting = function(index,nameSelector){
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
 	}
-	if (wg.selectorRowSetting()[index].columnsettings().length == 0)
-		wg.selectorRowSetting()[index].columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: 0}));
 
-	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+	var selector = ko.mapping.toJS(wg.selectorRowSetting()[index]);
+	if (selector.columnsettings.length == 0) {
+		selector.columnsettings.push({alias: "", valuetype: "", selector: "", index: 0});
+	}
+	ko.mapping.fromJS(selector, wg.configSelector);
+
 	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
 }
@@ -516,13 +522,52 @@ wg.backSettingSelector = function() {
 }
 wg.saveSettingSelector = function() {
 	if (!app.isFormValid(".form-row-column-selector")) {
-		return;
+		var type = ko.mapping.toJS(wg.configSelector).destoutputtype;
+		var totalAllowedForCSV = 0, totalAllowedForDB = 0;
+		var errors = $(".form-row-column-selector").data("kendoValidator").errors();
+
+		errors.forEach(function (item) {
+			if (type == "csv") {
+				if (item.indexOf("FileName") > -1 || item.indexOf("Delimiter") > -1) {
+					totalAllowedForCSV++;
+				}
+			} else {
+				if (item.indexOf("ConnectionId") > -1 || item.indexOf("Collection") > -1) {
+					totalAllowedForDB++;
+				}
+			}
+		});
+
+		if (type == "csv") {
+			if (errors.length >= 0 && totalAllowedForCSV == 0) {
+
+			} else {
+				return;
+			}
+		} else {
+			if (errors.length >= 0 && totalAllowedForDB == 0) {
+
+			} else {
+				return;
+			}
+		}
 	}
-	ko.mapping.fromJS(wg.configSelector,wg.selectorRowSetting()[wg.tempIndexColumn()]);
+
+	var selector = ko.mapping.toJS(wg.configSelector);
+	wg.selectorRowSetting.replace(wg.selectorRowSetting()[wg.tempIndexColumn()], selector);
+
 	wg.modeSelector("");
 }
 wg.addColumnSetting = function() {
-	wg.configSelector.columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: wg.configSelector.columnsettings().length - 1}));
+	var selector = $.extend(true, {}, ko.mapping.toJS(wg.configSelector));
+	selector.columnsettings.push({
+		alias: "", 
+		valuetype: "", 
+		selector: "", 
+		index: wg.configSelector.columnsettings().length - 1
+	});
+
+	ko.mapping.fromJS(selector, wg.configSelector);
 }
 wg.removeColumnSetting = function(each){
 	var item = wg.configSelector.columnsettings()[each];
@@ -551,24 +596,37 @@ wg.saveSelectedElement = function(index){
 	wg.selectedItem('');
 };
 wg.parseGrabConf = function () {
+	wg.configSelector.desttype(wg.configSelector.destoutputtype());
+
 	var config = ko.mapping.toJS(wg.configScrapper);
-	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
+	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting).map(function (item) {
+		if (typeof item.connectioninfo.useheader == "string") {
+			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
+		}
+		
+		return item;
+	});
 	config.nameid = config._id;
 
-	var parameters = {};
-	ko.mapping.toJS(wg.configScrapper).temp.parameters.forEach(function (each) {
+	var grabConfData = {};
+	var tempParameters = [];
+	config.temp.parameters.forEach(function (each) {
 		if (each.key == "" || each.value == "") {
 			return;
 		}
 
+		tempParameters.push(each);
+
 		if ($.trim(each.pattern) != "") {
-			parameters[each.key] = "Date2String(" + each.pattern + ",'" + each.format + "')";
+			grabConfData[each.key] = "Date2String(" + each.pattern + ",'" + each.format + "')";
 		} else {
-			parameters[each.key] = String(each.value);
+			grabConfData[each.key] = String(each.value);
 		}
 	});
 
-	config.grabconf.data = parameters;
+	config.grabconf.data = grabConfData;
+	config.temp.parameters = tempParameters;
+
 	return config;
 };
 wg.saveSelectorConf = function(){
@@ -584,7 +642,7 @@ wg.saveSelectorConf = function(){
 		if(!app.isFine(res)) {
 			return;
 		}
-		
+
 		app.mode("");
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -616,6 +674,10 @@ wg.viewData = function (id) {
 			param.Collection = baseSetting.connectioninfo.collection;
 			param.Username = baseSetting.connectioninfo.username;
 			param.Password = baseSetting.connectioninfo.password;
+		} else {
+			param.FileName = baseSetting.connectioninfo.filename;
+			param.UseHeader = baseSetting.connectioninfo.useheader;
+			param.Delimiter = baseSetting.connectioninfo.delimiter;
 		}
 	}
 
@@ -705,6 +767,8 @@ wg.getConnection = function () {
 };
 
 wg.changeConnectionID = function (e) {
+	app.resetValidation(".form-row-column-selector");
+
 	var _id = this.value();
 	app.ajaxPost("/datasource/selectconnection", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {

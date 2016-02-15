@@ -226,6 +226,10 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 		Collection string
 		Username   string
 		Password   string
+
+		FileName  string
+		UseHeader bool
+		Delimiter string
 	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
@@ -235,7 +239,7 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	var data []toolkit.M
 
 	if payload.Driver == "csv" {
-		config := toolkit.M{"useheader": true, "delimiter": ","}
+		config := toolkit.M{"useheader": payload.UseHeader, "delimiter": payload.Delimiter}
 		query := helper.Query("csv", payload.Host, "", "", "", config)
 		data, err = query.SelectAll("")
 	} else {
