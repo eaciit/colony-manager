@@ -249,7 +249,7 @@ wg.runBotStats = function () {
 				if (res.success) {
 					var $grid = $(".grid-web-grabber").data("kendoGrid");
 					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
-					var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+					var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row._id + "']");
 
 					if (res.data.isRun) {
 						$tr.addClass("started");
@@ -695,13 +695,16 @@ wg.configSelector.connectioninfo.connectionid.subscribe(function (e) {
 			if (!app.isFine(res)) {
 				return;
 			}
-			if(res.data[0].Driver != 'mongo') {
-				wg.collectionInput(false);
+			if(res.data != undefined) {
+				if(res.data[0].Driver != 'mongo') {
+					wg.collectionInput(false);
+				} else {
+					wg.collectionInput(true);
+				}
+				wg.configSelector.connectioninfo.database(res.data[0].Database);
 			} else {
-				wg.collectionInput(true);
+				return;
 			}
-			
-			wg.configSelector.connectioninfo.database(res.data[0].Database);
 		});
 		wg.configSelector.connectioninfo.connectionid(fconnection);
 	}
