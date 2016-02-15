@@ -10,10 +10,12 @@ wg.modeSelector = ko.observable("");
 wg.tempIndexColumn = ko.observable(0);
 wg.tempIndexSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
+wg.showWebGrabber = ko.observable(true);
 wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
+wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
@@ -100,6 +102,11 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
+	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:25, template: function (d) {
+		return [
+			"<input type='checkbox' class='webgrabbercheck' idcheck='"+d._id+"' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabber')\" />"
+		].join(" ");
+	} },
 	{ field: "_id", title: "Web Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -107,8 +114,8 @@ wg.scrapperColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
+			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
+			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
 		].join(" ");
 	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
@@ -161,7 +168,17 @@ wg.templateConfigConnection = {
 
 wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
+wg.selectGridWebGrabber = function(e){
+	var grid = $(".grid-web-grabber").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	wg.editScrapper(selectedItem._id);
+	wg.showWebGrabber(true);
+};
+
 wg.editScrapper = function (_id) {
+	wg.scrapperMode('edit');
+	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+
 	app.ajaxPost("/webgrabber/selectscrapperdata", { _id: _id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -178,26 +195,37 @@ wg.editScrapper = function (_id) {
 	});
 };
 wg.removeScrapper = function (_id) {
-	swal({
-	    title: "Are you sure?",
-	    text: 'Data connection with id "' + _id + '" will be deleted',
-	    type: "warning",
-	    showCancelButton: true,
-	    confirmButtonColor: "#DD6B55",
-	    confirmButtonText: "Delete",
-	    closeOnConfirm: true
-	}, function() {
-	    setTimeout(function () {
-			app.ajaxPost("/webgrabber/removegrabber", { _id: _id }, function (res) {
-				if (!app.isFine(res)) {
-					return;
-				}
+	if (wg.tempCheckIdWebGrabber().length === 0) {
+		swal({
+			title: "",
+			text: 'You havent choose any webgrabber to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
+	}else{
+		swal({
+		    title: "Are you sure?",
+		    text: 'Web Grabber with id  '+wg.tempCheckIdWebGrabber().toString()+' will be deleted',
+		    type: "warning",
+		    showCancelButton: true,
+		    confirmButtonColor: "#DD6B55",
+		    confirmButtonText: "Delete",
+		    closeOnConfirm: true
+		}, function() {
+		    setTimeout(function () {
+				app.ajaxPost("/webgrabber/removemultiplewebgrabber", { _id:  wg.tempCheckIdWebGrabber() }, function (res) {
+					if (!app.isFine(res)) {
+						return;
+					}
 
-				wg.backToFront();
-				swal({ title: "Data successfully deleted", type: "success" });
-			});
-	    }, 1000);
-	});
+					wg.backToFront();
+					swal({ title: "Data successfully deleted", type: "success" });
+				});
+		    }, 1000);
+		});
+	}
 };
 wg.getScrapperData = function () {
 	wg.scrapperData([]);
@@ -215,6 +243,7 @@ wg.createNewScrapper = function () {
 	wg.isContentFetched(false);
 	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
+	wg.showWebGrabber(false);
 };
 wg.backToFront = function () {
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -666,6 +695,30 @@ wg.viewLog = function (date) {
 		}
 	});
 };
+
+wg.checkDeleteWebGrabber = function(elem, e){
+	if (e === 'webgrabberall'){
+		if ($(elem).prop('checked') === true){
+			$('.webgrabbercheck').each(function(index) {
+				$(this).prop("checked", true);
+				wg.tempCheckIdWebGrabber.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.webgrabbercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				wg.tempCheckIdWebGrabber.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			wg.tempCheckIdWebGrabber.push($(elem).attr('idcheck'));
+		} else {
+			wg.tempCheckIdWebGrabber.remove( function (item) { return item === $(elem).attr('idcheck'); } );
+		}
+	}
+}
 
 function filterWebGrabber(event) {
 	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
