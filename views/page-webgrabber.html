@@ -394,7 +394,8 @@
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
 		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-		    					<div id="inspectElement"><ul></ul></div>
+		    					<div id="inspectElement" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementSelector'"><ul></ul></div>
+		    					<div id="inspectElement2" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementConfig'"><ul></ul></div>
 		    				</div>
 		    			</div>
 
