@@ -698,26 +698,30 @@ wg.parseGrabConf = function () {
 		
 		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
 		condition[item.filtercond] = [];
-		for (var key in conditionlist){
-			var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
-			obj[col] = {};
-			var format = ko.utils.arrayFilter(columnsettings,function (item) {
-		        return item.alias == col;
-		    });
-			switch (format[0]){
-				case "integer":
-					obj[col][operation] = parseInt(val);
-					break;
-				case "float":
-					obj[col][operation] = parseFloat(val);
-					break;
-				default:
-					obj[col][operation] = val;
-					break;
+		if (item.filtercond != ''){
+			for (var key in conditionlist){
+				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
+				obj[col] = {};
+				var format = ko.utils.arrayFilter(columnsettings,function (item) {
+			        return item.alias == col;
+			    });
+				switch (format[0]){
+					case "integer":
+						obj[col][operation] = parseInt(val);
+						break;
+					case "float":
+						obj[col][operation] = parseFloat(val);
+						break;
+					default:
+						obj[col][operation] = val;
+						break;
+				}
+				condition[item.filtercond].push(obj);
 			}
-			condition[item.filtercond].push(obj);
+			item.filtercond = condition;
+		} else {
+			item.filtercond = {};
 		}
-		item.filtercond = condition;
 		delete item["conditionlist"];
 
 		return item;
