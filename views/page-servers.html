@@ -13,7 +13,7 @@
 			<div class="col-sm-10">
 				<label class="col-sm-2 filter-label lbl">Search</label>
 				<div class="col-sm-4">
-			        <input type="text" class="input-sm form-control" data-bind="value: srv.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ServerFilter}">
+			        <input type="text" class="input-sm form-control" >
 			    </div>
 			</div>
 		 </div>
@@ -62,10 +62,6 @@
 							        </select>
 							        <span class="k-invalid-msg" data-for="type"></span>
 					    		</div>
-					    		<!-- <div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="type" placeholder="Type the Server Type Here" data-bind="value: type">
-									<span class="k-invalid-msg" data-for="type"></span>
-					    		</div> -->
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 filter-label">Folder</label>
@@ -80,8 +76,6 @@
 					    		<label class="col-md-3 filter-label">OS</label>
 					    		<div class="col-md-6">
 					    			<select id="os" data-required-msg="OS cannot be empty" name="os" data-placeholder="Select OS" class="form-control" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
-							            <!-- <option>Windows</option>
-							            <option>Linux</option> -->
 							        </select>
 							        <span class="k-invalid-msg" data-for="os"></span>
 					    		</div>
@@ -93,7 +87,7 @@
 					    		</div>
 				    		</div>
 				    		<span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
-							    <span class="glyphicon glyphicon-upload"></span> Upload <input id="fileserver" name="fileserver" type="file" accept=".zip">
+							    <span class="glyphicon glyphicon-upload"></span> Upload <input id="uploadserver" name="uploadserver" type="file" accept=".zip"> <!-- srv.getUploadFile -->
 							</span>
 			    		</div>
 			    	</div>
@@ -102,41 +96,47 @@
 			    			<p class="pcustom">SSH Access</p>
 			    		</div>
 			    		<div class="col-md-6">
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">Type</label>
+			    			<div class="form-group">
+						    	<label class="col-md-3 filter-label">Host</label>
 					    		<div class="col-md-7">
-					    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
-							        </select>
-							        <span class="k-invalid-msg" data-for="type-ssh"></span>
+					    			<input required type="text" class="form-control input-sm" name="host" placeholder="Type Host Here" data-bind="value: host">
+									<span class="k-invalid-msg" data-for="host"></span>
 					    		</div>
-					    		<!-- <div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="type-ssh" placeholder="Type the SSH Type Here" data-bind="value: sshtype">
-									<span class="k-invalid-msg" data-for="type-ssh"></span>
-					    		</div> -->
 				    		</div>
-				    		<div class="form-group">
+				    		<div class="form-group" data-bind="visible: srv.showFile">
 					    		<label class="col-md-3 filter-label">File</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="file" placeholder="Type the File Name Here" data-bind="value: sshfile">
-									<span class="k-invalid-msg" data-for="file"></span>
+					    			<span class="btn btn-sm btn-success btn-file btnsrvcustom">
+									    <span class="glyphicon glyphicon-upload"></span> Upload <input id="fileserver" name="fileserver" type="file" accept=".zip"> <!-- srv.getServerFile -->
+									</span>
 					    		</div>
 				    		</div>
 			    		</div>
-			    		<div class="col-md-6">
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">User</label>
+			    		<div class="col-md-6">				    		
+					    	<div class="form-group">
+					    		<label class="col-md-3 filter-label">Type</label>
 					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
-									<span class="k-invalid-msg" data-for="user"></span>
+					    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.selectedSSH}, event:{ change: srv.showFileUserPass}">
+							        </select>
+							        <span class="k-invalid-msg" data-for="type-ssh"></span>
 					    		</div>
 				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">Pass</label>
-					    		<div class="col-md-7">
-					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
-									<span class="k-invalid-msg" data-for="password"></span>
+				    		<div class="col-md-12" data-bind="visible: srv.showUserPass">
+					    		<div class="form-group">
+						    		<label class="col-md-3 filter-label">User</label>
+						    		<div class="col-md-7">
+						    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
+										<span class="k-invalid-msg" data-for="user"></span>
+						    		</div>
 					    		</div>
-				    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-3 filter-label">Pass</label>
+						    		<div class="col-md-7">
+						    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
+										<span class="k-invalid-msg" data-for="password"></span>
+						    		</div>
+					    		</div>
+					    	</div>
 			    		</div>
 			    	</div>
 			    	<div class="col-md-12">

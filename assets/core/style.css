@@ -53,6 +53,13 @@ a {
   .btn-text-danger:hover {
     color: #c9302c; }
 
+.form-control.disabled, fieldset.disabled .form-control {
+  cursor: not-allowed; }
+
+.form-control.disabled, .form-control.readonly, fieldset.disabled .form-control {
+  background-color: #eee;
+  opacity: 1; }
+
 .align-right {
   text-align: right; }
 
@@ -95,22 +102,22 @@ a {
     position: absolute;
     right: 5px; }
 
-#inspectElement > ul li.active {
+.inspectElement > ul li.active {
   background: #EAFFF9;
   padding-left: 0px;
   border: 1px solid #00C3EF;
   cursor: pointer; }
 
-#inspectElement {
+.inspectElement {
   overflow-y: scroll;
   height: 400px; }
 
-#inspectElement > ul li:hover {
+.inspectElement > ul li:hover {
   padding-left: 0px;
   border: 1px solid #3A8BDF;
   cursor: pointer; }
 
-#inspectElement > ul {
+.inspectElement > ul {
   list-style-type: "none";
   margin-left: 0px;
   padding-left: 0px; }
@@ -173,10 +180,10 @@ a {
   margin-left: 15%; }
 
 .nav1 {
-  padding-top: 3%; }
+  padding-top: 1%; }
 
 .lbl {
-  margin-left: -9%; }
+  margin-left: -12%; }
 
 .intext {
   width: 100%;
@@ -209,6 +216,9 @@ a {
 
 .col-100 {
   width: 100%; }
+
+#myTab {
+  margin-bottom: 2%; }
 
 /** structured stylesheet */
 body {

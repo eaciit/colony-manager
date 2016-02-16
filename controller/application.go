@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	. "github.com/eaciit/sshclient"
 )
 
 var unzipDest = fmt.Sprintf("%s", filepath.Join(AppBasePath, "..", "colony-app", "apps"))
@@ -244,7 +245,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	}
 	o.Enable = enable
 	o.AppsName = r.Request.FormValue("AppsName")
-
+	//a.SendFile(host,user,pass,filepath,destination,pem)
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -368,4 +369,29 @@ func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
 	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
+}
+
+
+
+func (a *ApplicationController) SendFile(host string, user string, pass string , filepath string ,destination string , pem string) interface{} {
+	//r.Config.OutputType = knot.OutputJson
+	
+	var SshClient SshSetting
+	SshClient.SSHAuthType = SSHAuthType_Password
+	SshClient.SSHHost = host //"192.168.56.102:22" //r.Request.FormValue("SSHHost")
+	if(pem==""){
+		SshClient.SSHUser = user //"eaciit1" //r.Request.FormValue("SSHUser")
+		SshClient.SSHPassword = pass //"12345" //r.Request.FormValue("SSHPassword")
+	}else{
+		SshClient.SSHKeyLocation = pem
+	}
+	// filepath := "E:\\a.jpg"  //r.Request.FormValue("filepath")
+	// destination := "/home/eaciit1"  //r.Request.FormValue("destination")
+
+	e := SshClient.CopyFileSsh(filepath, destination)
+	if e != nil {
+		return helper.CreateResult(true, e , "")
+	} else {
+		return helper.CreateResult(true, "sukses", "")
+	}
 }

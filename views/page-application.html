@@ -31,8 +31,8 @@
 				<div class="form-group row nav2">
 					<div class="col-sm-10">
 						<label class="col-sm-2 filter-label lbl">Search</label>
-						<div class="col-sm-4">
-			               <input type="text" class="input-sm form-control" data-bind="value: apl.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ApplicationFilter}">
+						<div class="col-sm-3">
+			               <input type="text" class="input-sm form-control" > <!-- data-bind="value: apl.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ApplicationFilter}" -->
 			            </div>
 			        </div>
 		    	</div>
@@ -58,18 +58,15 @@
 	    		<span class="glyphicon glyphicon-remove"></span>Delete
 	    	</button>
 		</nav>
+		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
+	      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
+	      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
+	    </ul>
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
-		    <div id="myTabContent" class="tab-content">
-
-		    </div>
 			<div class="panel-heading">
 		        <h1 class="panel-title"><span data-bind="text: (apl.applicationMode() == '') ? 'Create New' : 'Edit'"></span>
 		        </h1>
 		    </div>
-		    <ul id="myTab" class="nav nav-tabs">
-		      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
-		      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
-		    </ul>
 		    <div class="panel-body">
 			    <div id="myTabContent" class="tab-content">
 			    	<div class="tab-pane fade in active" id="Form">
@@ -78,22 +75,26 @@
 					    		<div class="form-group row">
 						    		<label class="col-md-3 filter-label">ID</label>
 						    		<div class="col-md-3">
-						    			<input class="form-control input-sm " type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')"/>
+						    			<input required class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')"/>
+						    			<span class="k-invalid-msg" data-for="ID"></span>
 						    		</div>
 						    		<label class="col-md-2 filter-label">Enable</label>
 						    		<div class="col-md-2">
-						    			<input type="checkbox" id="Enable" data-bind="checked: Enable" />
+						    			<input required type="checkbox" id="Enable" data-bind="checked: Enable" />
+						    			<span class="k-invalid-msg" data-for="Enable"></span>
 						    		</div>
 					    		</div>
 					    		<div class="form-group row">
 						    		<label class="col-md-3 filter-label">Name</label>
 						    		<div class="col-md-3">
-						    			<input class="form-control input-sm" type="text" data-bind="value: AppsName" />
+						    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" />
+						    			<span class="k-invalid-msg" data-for="name"></span>
 						    		</div>
 						    		<div class="col-sm-4 btn-upload">
 							    		<span class="btn btn-sm btn-success btn-file">
-										    <span class="glyphicon glyphicon-upload"></span>Upload <input id="files" name="files" type="file" accept=".zip">
+										    <span class="glyphicon glyphicon-upload"></span>Upload <input required id="files" name="files" type="file" accept=".zip">
 										</span>
+										 <span class="k-invalid-msg" data-for="files"></span>
 										<span id="nama" data-bind="value:AppPath"></span>
 									</div>
 					    		</div>
