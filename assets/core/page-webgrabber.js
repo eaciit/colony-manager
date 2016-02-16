@@ -671,10 +671,10 @@ wg.GetRowSelector = function(index){
 wg.saveSelectedElement = function(index){
 	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
-		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
+		wg.selectorRowSetting()[index].rowselector(wg.replaceEqWithNthChild(wg.selectedItem()));
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItemNode());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.replaceEqWithNthChild(wg.selectedItemNode()));
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
