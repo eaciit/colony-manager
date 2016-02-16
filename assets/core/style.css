@@ -89,7 +89,7 @@ a {
 
 .filter-label {
   line-height: 25px;
-  text-align: right; }
+  text-align: left; }
   .filter-label:after {
     content: ":";
     position: absolute;
