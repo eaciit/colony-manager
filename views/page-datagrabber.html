@@ -73,7 +73,7 @@
 						<div class="form-group">
 				        	<label class="col-md-4 filter-label">Data Source Origin</label>
 				        	<div class="col-md-5">
-				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one' }"></select>
+				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceOrigin }"></select>
 								<span class="k-invalid-msg" data-for="data-source-origin"></span>
 				        	</div>
 				        </div>
@@ -117,6 +117,12 @@
 				        		<button class="btn btn-sm btn-primary" data-bind="click: dg.addMap">
 				        			<span class="glyphicon glyphicon-plus"></span> Add more
 				        		</button>
+				        	</div>
+				        </div>
+
+				        <div class="form-group">
+				        	<div class="col-md-12">
+				        		<div class="fields-origin"></div>
 				        	</div>
 				        </div>
 
