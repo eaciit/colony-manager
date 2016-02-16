@@ -25,12 +25,13 @@ wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
-	calltype: "POST",
+	calltype: "GET",
 	sourcetype: "SourceType_Http",
 	intervaltype: "seconds",
 	grabinterval: 20,
 	timeoutinterval: 20,
-	url: "http://www.shfe.com.cn/en/products/Gold/",
+	// url: "http://www.shfe.com.cn/en/products/Gold/",
+	url: "http://www.google.com",
 	logconf: {
 		"filename": "LOG-GRABDCE",
 		"filepattern": "",
@@ -385,7 +386,7 @@ wg.getNodeElement = function(obj,classes,id){
 };
 wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 	linenumber +=1;
-	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
+	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id), parentselector = selector;
 	if(id !== undefined && id !== "")
 		id = "id='"+id+"'";
 	else
@@ -397,12 +398,19 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		classes = "";
 
 	if (contentid === '#inspectElement2' && linenumber > 1)
-		selector += " > " + nodeelement.element+":eq("+index+")";
+		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
 	else if (contentid === '#inspectElement')
-		selector += " > " + nodeelement.element+":eq("+index+")";
+		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
+
+	var indexTemp = $("#content-preview").contents().find(selector2).index()+1;
+	if (contentid === '#inspectElement2' && linenumber > 1)
+		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
+	else if (contentid === '#inspectElement')
+		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
 
 	$liElem = $("<li id='scw"+linenumber+"' class='selector' parentid='scw"+parent+"'></li>");
-	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	// $liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":nth-child("+indexTemp+")')", "indexelem":index});
 	$liElem.appendTo($(contentid+">ul"));
 
 	$divSeqElem = $("<div></div>");
@@ -471,7 +479,7 @@ wg.GetCurrentSelector = function(id,selector, node){
 		$(wg.selectedItem(), $("#content-preview").contents()).attr("style",existingStyle);
 	}
 	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
-	
+
 	wg.selectedItem(selector);
 	wg.selectedItemNode(node);
 	existingStyle = "";
