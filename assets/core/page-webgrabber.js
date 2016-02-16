@@ -14,6 +14,7 @@ wg.historyData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
+wg.selectedItemNode = ko.observable('');
 wg.valWebGrabberFilter = ko.observable('');
 wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
@@ -24,60 +25,49 @@ wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
-	calltype: "GET",
+	calltype: "POST",
 	sourcetype: "SourceType_Http",
-	intervaltype: "",
-	grabinterval: 0,
-	timeoutinterval: 0,
+	intervaltype: "seconds",
+	grabinterval: 20,
+	timeoutinterval: 20,
 	url: "http://www.shfe.com.cn/en/products/Gold/",
 	logconf: {
-		filename: "asd",
-		filepattern: "asd",
-		logpath: "asd"
+		"filename": "LOG-GRABDCE",
+		"filepattern": "",
+		"logpath": ""
 	},
 	datasettings: [],
-	grabconf: {},
+	grabconf: {
+		data: {}
+	},
+	temp: {
+		parameters: [],
+	}
 };
-
-// wg.templateDataSetting = {
-// 	rowselector: "",
-// 	columnsettings: [],
-// 	rowdeletecond: {},
-// 	rowincludecond: {},
-// 	connectioninfo: {
-// 		host: "",
-// 		database: "",
-// 		username: "",
-// 		password: "",
-// 		settings: "",
-// 		collection: ""
-// 	},
-// 	desttype: "",
-// 	name: ""
-// };
-// wg.templateColumnSetting = {
-// 	alias: "",
-// 	index: "",
-// 	selector: "",
-// 	valuetype: ""
-// }
+wg.parametersPattern = ko.observableArray([
+	{ value: "", title: "-" },
+	{ value: "time.Now()", title: "Now" },
+	{ value: "time.Now()+1", title: "Now + 1" }
+]);
+wg.useHeaderOptions = ko.observableArray([
+	{ value: true, title: 'YES' }, 
+	{ value: false, title: 'NO' }
+]);
 wg.templateConfigSelector = {
 	name: "",
 	rowselector: "",
+	filtercond: "",
+	conditionlist: [],
 	// rowdeletecond: {},
 	// rowincludecond: {},
-	desttype: "database",
+	destoutputtype: "database",
+	desttype: "mongo",
 	columnsettings: [],
 	connectioninfo: {
-		// filtercond: "",
-		// host: "",
-		// database: "",
-		// collection: "",
-		// filename: "",
-		// useheader: true,
-		// delimiter: ",",
-		// username: "",
-		// password: ""
+		filename: "",
+		useheader: true,
+		delimiter: ",",
+
 		host: "",
 		database: "",
 		username: "",
@@ -88,12 +78,24 @@ wg.templateConfigSelector = {
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
-wg.templateFilterCond = ["Add", "OR", "NAND", "NOR"];
+wg.templateFilterCond = ["AND", "OR", "NAND", "NOR"];
 wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
+wg.operationcondList = ko.observableArray([
+	{Id:"$eq",Title:"EQ ( == )"},
+	{Id:"$ne",Title:"NE ( != )"},
+	{Id:"$gt",Title:"GT ( > )"},
+	{Id:"$gte",Title:"GTE ( >= )"},
+	{Id:"$lt",Title:"LT ( < )"},
+	{Id:"$lte",Title:"LTE ( <= )"},
+	{Id:"$regex",Title:"Contains"},
+	{Id:"$notcontains",Title:"Not Contains"},
+]),
 wg.templateScrapperPayload = {
+	format: "",
 	key: "",
-	value: ""
+	pattern: "",
+	value: "",
 };
 wg.scrapperPayloads = ko.observableArray([]);
 wg.selectorRowSetting = ko.observableArray([]);
@@ -172,17 +174,20 @@ wg.editScrapper = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		wg.selectorRowSetting([]);
 		app.mode('editor');
 		wg.scrapperMode('edit');
 		wg.modeSelector('');
 		wg.modeSetting(1);
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
-		for (var key in res.data.datasettings){
-			wg.selectorRowSetting.push(ko.mapping.fromJS(res.data.datasettings[key], wg.selectedItem));
-		}
-		wg.isContentFetched(false);
+
+		wg.selectorRowSetting([]);
+		res.data.datasettings.forEach(function (item) {
+			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
+		});
+
+		wg.getURL();
+		wg.addScrapperPayload();
 	});
 };
 wg.removeScrapper = function (_id) {
@@ -213,11 +218,9 @@ wg.removeScrapper = function (_id) {
 					wg.backToFront();
 					swal({ title: "Data successfully deleted", type: "success" });
 				});
-	    }, 1000);
-	});
-}
-
-
+		    }, 1000);
+		});
+	}
 };
 wg.getScrapperData = function () {
 	wg.scrapperData([]);
@@ -231,9 +234,10 @@ wg.getScrapperData = function () {
 };
 wg.createNewScrapper = function () {
 	app.mode("editor");
+	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
+	ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
-	wg.scrapperPayloads([]);
 	wg.addScrapperPayload();
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
@@ -275,12 +279,15 @@ wg.runBotStats = function () {
 				if (res.success) {
 					var $grid = $(".grid-web-grabber").data("kendoGrid");
 					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
-					var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-					if (res.data.isRun) {
-						$tr.addClass("started");
-					} else {
-						$tr.removeClass("started");
+					if (row != undefined) {
+						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+
+						if (res.data.isRun) {
+							$tr.addClass("started");
+						} else {
+							$tr.removeClass("started");
+						}
 					}
 				}
 
@@ -307,11 +314,28 @@ wg.runBotStats = function () {
 		checkStat();
 	});
 };
+wg.parsePayload = function () {
+	var parameters = {};
+	ko.mapping.toJS(wg.configScrapper).temp.parameters.forEach(function (each) {
+		if (each.key == "" || each.value == "") {
+			return;
+		}
+
+		parameters[each.key] = each.value;
+	});
+
+	return (wg.configScrapper.calltype() == "GET") ? null : parameters;
+};
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
 	}
-	var param = ko.mapping.toJS(wg.configScrapper);
+	var param = {
+		URL: wg.configScrapper.url(),
+		Method: wg.configScrapper.calltype(),
+		Payloads: wg.parsePayload()
+	};
+
 	app.ajaxPost("/webgrabber/fetchcontent", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -327,10 +351,10 @@ wg.getURL = function () {
 		startofbody = bodyyo.indexOf(">");
 		bodyyo = bodyyo.substr(startofbody+1);
 		URLSource = $.parseHTML(bodyyo);
-		$("#inspectElement").replaceWith("<div id='inspectElement'><ul></ul></div>");
+		$("#inspectElement>ul").replaceWith("<ul></ul>");
 		$(URLSource).each(function(i,e){
 			if($(this).html()!==undefined){
-				linenumber = wg.GetElement($(this),0,0,0,"body");
+				linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
 			}
 		})
 	});
@@ -347,7 +371,7 @@ wg.getNodeElement = function(obj,classes,id){
 
 	return {element: selector, id: id, classes: classes, node: nodeName };
 };
-wg.GetElement = function(obj,parent,linenumber,index,selector){
+wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 	linenumber +=1;
 	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
 	if(id !== undefined && id !== "")
@@ -360,11 +384,14 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
 	else
 		classes = "";
 
-	selector += " > " + nodeelement.element+":eq("+index+")";
+	if (contentid === '#inspectElement2' && linenumber > 1)
+		selector += " > " + nodeelement.element+":eq("+index+")";
+	else if (contentid === '#inspectElement')
+		selector += " > " + nodeelement.element+":eq("+index+")";
 
-	$liElem = $("<li id='scw"+linenumber+"' class='selector'></li>");
-	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"')", "indexelem":index});
-	$liElem.appendTo($("#inspectElement>ul"));
+	$liElem = $("<li id='scw"+linenumber+"' class='selector' parentid='scw"+parent+"'></li>");
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	$liElem.appendTo($(contentid+">ul"));
 
 	$divSeqElem = $("<div></div>");
 	$divSeqElem.text(linenumber+". ");
@@ -375,6 +402,10 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
 	$divContentElem.text("<"+nodeName+" "+id+" "+classes+"> "+obj.text().replace(/ /g,'').substring(0,20));
 	$divContentElem.css({'margin-left':parseFloat(parent)*10+"px", "display":"inline"});
 	$divContentElem.appendTo($liElem);
+
+	if (contentid === '#inspectElement2' && linenumber == 1){
+		$liElem.css('display','none');
+	}
 
 	var idx = 0, tempIndex = 0, prevNode = new Array();
 	obj.children().each(function(i,e){
@@ -412,12 +443,12 @@ wg.GetElement = function(obj,parent,linenumber,index,selector){
         }
 		
 		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
-			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector);
+			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector, contentid);
 		}
 	})
 	return linenumber;
 };
-wg.GetCurrentSelector = function(id,selector){
+wg.GetCurrentSelector = function(id,selector, node){
 	$("*.selector").attr("class","selector");
 	$("#"+id).attr("class","selector active");
 	var existingStyle = $(wg.selectedItem(), $("#content-preview").contents()).attr("style");
@@ -430,6 +461,7 @@ wg.GetCurrentSelector = function(id,selector){
 	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
 	
 	wg.selectedItem(selector);
+	wg.selectedItemNode(node);
 	existingStyle = "";
 	existingStyle = $(selector, $("#URLPreview").contents()).attr("style");
 	if(existingStyle!==undefined){
@@ -443,41 +475,37 @@ wg.GetCurrentSelector = function(id,selector){
 		existingStyle = "border:5px solid #FF9900";
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
+	// if (wg.modeSelector() == 'editElementSelector')
+	// 	wg.CreateElementChild(selector);
 };
-wg.saveNewScrapper = function () {
-	if (!app.isFormValid(".form-scrapper-top")) {
-		return;
-	}
-	
+wg.CreateElementChild = function(selectorParent){
+	$("#inspectElement2>ul").replaceWith("<ul></ul>");
+	var childElem = $(selectorParent, $("#content-preview").contents()), idx = 0;
+	$(childElem).each(function(i,e){
+		console.log($(this).html());
+		if($(this).html()!==undefined){
+			linenumber = wg.GetElement($(this),0,0,0,selectorParent, "#inspectElement2");
+		}
+	})
 };
 wg.addScrapperPayload = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, wg.templateScrapperPayload));
-	wg.scrapperPayloads.push(item);
+	wg.configScrapper.temp.parameters.push(item);
 };
 wg.removeScrapperPayload = function (index) {
 	return function () {
-		var item = wg.scrapperPayloads()[index];
-		wg.scrapperPayloads.remove(item);
+		var item = wg.configScrapper.temp.parameters()[index];
+		wg.configScrapper.temp.parameters.remove(item);
 	};
 };
 wg.encodePayload = function () {
 	wg.configScrapper.Parameter({});
 
 	var p = {};
-	wg.scrapperPayloads().forEach(function (e) {
+	wg.configScrapper.temp.parameters().forEach(function (e) {
 		p[e.key()] = app.couldBeNumber(e.value());
 	});
 	wg.configScrapper.Parameter(p);
-};
-wg.decodePayload = function () {
-	wg.scrapperPayloads([]);
-
-	var param = wg.configScrapper.Parameter();
-	for (var key in param) {
-		if (param.hasOwnProperty(key)) {
-			wg.scrapperPayloads.push({ key: key, value: param[key] });
-		}
-	}
 };
 wg.startScrapper = function (_id) {
 	app.ajaxPost("/webgrabber/startservice", { _id: _id }, function (res) {
@@ -509,15 +537,21 @@ wg.viewHistory = function (_id) {
 	});
 }
 wg.nextSetting = function() {
+	if (!app.isFormValid(".form-row-1")) {
+		return;
+	}
+
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
 		wg.addSelectorSetting();
 };
 wg.backSetting = function() {
+	app.resetValidation(".form-row-selector");
+	app.resetValidation(".form-row-column-selector");
 	wg.modeSetting(wg.modeSetting()-1);
 };
 wg.addSelectorSetting = function() {
-	wg.selectorRowSetting.push(ko.mapping.fromJS(wg.templateConfigSelector));
+	wg.selectorRowSetting.push(ko.mapping.fromJS($.extend(true, {}, wg.templateConfigSelector)));
 }
 wg.removeSelectorSetting = function(each){
 	// console.log(ko.mapping.toJS(each));
@@ -525,22 +559,76 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 wg.showSelectorSetting = function(index,nameSelector){
-	if (wg.selectorRowSetting()[index].columnsettings().length == 0)
-		wg.selectorRowSetting()[index].columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: 0}));
+	if (!app.isFormValid(".form-row-selector")) {
+		return;
+	}
 
-	ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
+	var selector = ko.mapping.toJS(wg.selectorRowSetting()[index]);
+	if (selector.columnsettings.length == 0) {
+		selector.columnsettings.push({alias: "", valuetype: "", selector: "", index: 0});
+	}
+	ko.mapping.fromJS(selector, wg.configSelector);
+
 	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
+	wg.CreateElementChild(selector.rowselector);
 }
 wg.backSettingSelector = function() {
-	wg.modeSelector("");
+	if (wg.modeSelector() === 'editElementSelector')
+		wg.modeSelector("");
+	else if(wg.modeSelector() === 'edit')
+		wg.modeSelector("");
+	else if (wg.modeSelector() === 'editElementConfig')
+		wg.modeSelector("edit");
 }
 wg.saveSettingSelector = function() {
-	ko.mapping.fromJS(wg.configSelector,wg.selectorRowSetting()[wg.tempIndexColumn()]);
+	if (!app.isFormValid(".form-row-column-selector")) {
+		var type = ko.mapping.toJS(wg.configSelector).destoutputtype;
+		var totalAllowedForCSV = 0, totalAllowedForDB = 0;
+		var errors = $(".form-row-column-selector").data("kendoValidator").errors();
+
+		errors.forEach(function (item) {
+			if (type == "csv") {
+				if (item.indexOf("FileName") > -1 || item.indexOf("Delimiter") > -1) {
+					totalAllowedForCSV++;
+				}
+			} else {
+				if (item.indexOf("ConnectionId") > -1 || item.indexOf("Collection") > -1) {
+					totalAllowedForDB++;
+				}
+			}
+		});
+
+		if (type == "csv") {
+			if (errors.length >= 0 && totalAllowedForCSV == 0) {
+
+			} else {
+				return;
+			}
+		} else {
+			if (errors.length >= 0 && totalAllowedForDB == 0) {
+
+			} else {
+				return;
+			}
+		}
+	}
+
+	var selector = ko.mapping.toJS(wg.configSelector);
+	wg.selectorRowSetting.replace(wg.selectorRowSetting()[wg.tempIndexColumn()], selector);
+
 	wg.modeSelector("");
 }
 wg.addColumnSetting = function() {
-	wg.configSelector.columnsettings.push(ko.mapping.fromJS({alias: "", valuetype: "", selector: "", index: wg.configSelector.columnsettings().length - 1}));
+	var selector = $.extend(true, {}, ko.mapping.toJS(wg.configSelector));
+	selector.columnsettings.push({
+		alias: "", 
+		valuetype: "", 
+		selector: "", 
+		index: wg.configSelector.columnsettings().length - 1
+	});
+
+	ko.mapping.fromJS(selector, wg.configSelector);
 }
 wg.removeColumnSetting = function(each){
 	var item = wg.configSelector.columnsettings()[each];
@@ -558,43 +646,64 @@ wg.GetRowSelector = function(index){
 	wg.selectedItem('');
 };
 wg.saveSelectedElement = function(index){
+	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
 		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItem());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItemNode());
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
-}
+};
+wg.parseGrabConf = function () {
+	wg.configSelector.desttype(wg.configSelector.destoutputtype());
+
+	var config = ko.mapping.toJS(wg.configScrapper);
+	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting).map(function (item) {
+		if (typeof item.connectioninfo.useheader == "string") {
+			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
+		}
+		
+		return item;
+	});
+	config.nameid = config._id;
+
+	var grabConfData = {};
+	var tempParameters = [];
+	config.temp.parameters.forEach(function (each) {
+		if (each.key == "" || each.value == "") {
+			return;
+		}
+
+		tempParameters.push(each);
+
+		if ($.trim(each.pattern) != "") {
+			grabConfData[each.key] = "Date2String(" + each.pattern + ",'" + each.format + "')";
+		} else {
+			grabConfData[each.key] = String(each.value);
+		}
+	});
+
+	config.grabconf.data = grabConfData;
+	config.temp.parameters = tempParameters;
+
+	return config;
+};
 wg.saveSelectorConf = function(){
-	var param = ko.mapping.toJS(wg.configScrapper);
-	param.datasettings = ko.mapping.toJS(wg.selectorRowSetting);
-	param.nameid = param._id;
-	// for (var key in param.DataSettings){
-	// 	if (param.datasettings[key].desttype === 'Mongo'){
-	// 		param.datasettings[key].connectioninfo = {
-	// 			Host: param.datasettings[key].connectioninfo.host,
-	// 			Database: param.datasettings[key].connectioninfo.database,
-	// 			Collection: param.datasettings[key].connectioninfo.collection,
-	// 			UserName: param.datasettings[key].connectioninfo.username,
-	// 			Password: param.datasettings[key].connectioninfo.password,
-	// 		}
-	// 	} else {
-	// 		param.datasettings[key].ConnectionInfo = {
-	// 			FilterCond: param.datasettings[key].connectioninfo.filtercond,
-	// 			FileName: param.datasettings[key].connectioninfo.filename,
-	// 			UseHeader: tparam.datasettings[key].connectioninfo.useheader,
-	// 			Delimiter: param.datasettings[key].connectioninfo.delimiter,
-	// 		}
-	// 	}
-	// }
-	app.ajaxPost("/webgrabber/savescrapperdata", param, function (res) {
-		// console.log(param);
-		// console.log(res);
+	if (!app.isFormValid(".form-scrapper-top")) {
+		return;
+	}
+	if (!app.isFormValid(".form-row-selector")) {
+		return;
+	}
+
+	var config = wg.parseGrabConf();
+	app.ajaxPost("/webgrabber/savescrapperdata", config, function (res) {
 		if(!app.isFine(res)) {
 			return;
 		}
+
 		app.mode("");
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -618,14 +727,18 @@ wg.viewData = function (id) {
 
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
-		param.Driver = baseSetting.desttype;
+		param.Driver = baseSetting.destoutputtype;
 
-		if (param.Driver == "database") {
+		if (baseSetting.desttype == "database") {
 			param.Host = baseSetting.Host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
 			param.Username = baseSetting.connectioninfo.username;
 			param.Password = baseSetting.connectioninfo.password;
+		} else {
+			param.FileName = baseSetting.connectioninfo.filename;
+			param.UseHeader = baseSetting.connectioninfo.useheader;
+			param.Delimiter = baseSetting.connectioninfo.delimiter;
 		}
 	}
 
@@ -714,6 +827,35 @@ wg.getConnection = function () {
 	});
 };
 
+wg.changeConnectionID = function (e) {
+	app.resetValidation(".form-row-column-selector");
+
+	var _id = this.value();
+	app.ajaxPost("/datasource/selectconnection", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (res.data.Driver != 'mongo') {
+			wg.collectionInput(false);
+			swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
+			return;
+		} else {
+			wg.collectionInput(true);
+		}
+		
+		wg.configSelector.desttype(res.data.Driver);
+		var connInfo = wg.configSelector.connectioninfo;
+		connInfo.connectionid(_id);
+		connInfo.host(res.data.Host);
+		connInfo.database(res.data.Database);
+		connInfo.username(res.data.UserName);
+		connInfo.password(res.data.Password);
+	});
+
+	return true;
+};
+
 wg.selectGridWebGrabber = function(e){
 	var grid = $(".grid-web-grabber").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
@@ -753,26 +895,6 @@ wg.checkDeleteWebGrabber = function(elem, e){
 		}
 	}
 }
-
-
-wg.configSelector.connectioninfo.connectionid.subscribe(function (e) {
-	var fconnection = e;
-	if (fconnection) {
-		app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-			if(res.data[0].Driver != 'mongo') {
-				wg.collectionInput(false);
-			} else {
-				wg.collectionInput(true);
-			}
-			
-			wg.configSelector.connectioninfo.database(res.data[0].Database);
-		});
-		wg.configSelector.connectioninfo.connectionid(fconnection);
-	}
-});
 
 $(function () {
 	wg.getConnection();
