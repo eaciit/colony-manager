@@ -9,7 +9,7 @@ import (
 	// "github.com/eaciit/sedotan/sedotan.v1"
 	"github.com/eaciit/sedotan/sedotan.v1/webapps/modules"
 	"github.com/eaciit/toolkit"
-	"os"
+	// "os"
 	"path"
 	f "path/filepath"
 	"reflect"
@@ -138,21 +138,6 @@ func (w *WebGrabberController) StartService(r *knot.WebContext) interface{} {
 	err = colonycore.Get(payload, payload.ID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	// create output file if not exists
-	for _, ds := range payload.DataSettings {
-		if ds.DestinationType == "csv" {
-			outputPath := ds.ConnectionInfo.Host
-			if toolkit.IsFileNotExist(outputPath) {
-				f, err := os.OpenFile(outputPath, os.O_RDWR|os.O_CREATE, 0666)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
-				} else {
-					defer f.Close()
-				}
-			}
-		}
 	}
 
 	o, err := toolkit.ToM(payload)
@@ -443,11 +428,11 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 				ConnectionInfo: &colonycore.ConnectionInfo{
 					FileName:  "GoldTab01.csv",
 					Delimiter: ",",
-					UseHeader: false,
+					UseHeader: true,
 					Host:      path.Join(AppBasePath, "config", "webgrabber", "output", "GoldTab01.csv"),
 					Settings: toolkit.M{
 						"delimiter": ",",
-						"useheader": false,
+						"useheader": true,
 						"newfile":   true,
 					},
 				},
