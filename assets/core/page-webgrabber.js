@@ -78,7 +78,12 @@ wg.templateConfigSelector = {
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
-wg.templateFilterCond = ["AND", "OR", "NAND", "NOR"];
+wg.templateFilterCond = ko.observableArray([
+	{Id:"$and",Title:"AND"},
+	{Id:"$or",Title:"OR"},
+	{Id:"$nand",Title:"NAND"},
+	{Id:"$nor",Title:"NOR"},
+]),
 wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.operationcondList = ko.observableArray([
@@ -482,14 +487,11 @@ wg.GetCurrentSelector = function(id,selector, node){
 		existingStyle = "border:5px solid #FF9900";
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
-	// if (wg.modeSelector() == 'editElementSelector')
-	// 	wg.CreateElementChild(selector);
 };
 wg.CreateElementChild = function(selectorParent){
 	$("#inspectElement2>ul").replaceWith("<ul></ul>");
 	var childElem = $(selectorParent, $("#content-preview").contents()), idx = 0;
 	$(childElem).each(function(i,e){
-		console.log($(this).html());
 		if($(this).html()!==undefined){
 			linenumber = wg.GetElement($(this),0,0,0,selectorParent, "#inspectElement2");
 		}
@@ -561,7 +563,6 @@ wg.addSelectorSetting = function() {
 	wg.selectorRowSetting.push(ko.mapping.fromJS($.extend(true, {}, wg.templateConfigSelector)));
 }
 wg.removeSelectorSetting = function(each){
-	// console.log(ko.mapping.toJS(each));
 	var item = wg.selectorRowSetting()[each];
 	wg.selectorRowSetting.remove(item);
 }
@@ -573,6 +574,9 @@ wg.showSelectorSetting = function(index,nameSelector){
 	var selector = ko.mapping.toJS(wg.selectorRowSetting()[index]);
 	if (selector.columnsettings.length == 0) {
 		selector.columnsettings.push({alias: "", valuetype: "", selector: "", index: 0});
+	}
+	if (selector.conditionlist.length == 0) {
+		selector.conditionlist.push({column: "", operator: "$eq", value: ""});
 	}
 	ko.mapping.fromJS(selector, wg.configSelector);
 
@@ -641,6 +645,20 @@ wg.removeColumnSetting = function(each){
 	var item = wg.configSelector.columnsettings()[each];
 	wg.configSelector.columnsettings.remove(item);
 }
+wg.addFilterCondition = function() {
+	var selector = $.extend(true, {}, ko.mapping.toJS(wg.configSelector));
+	selector.conditionlist.push({
+		column: "", 
+		operator: "$eq", 
+		value: ""
+	});
+
+	ko.mapping.fromJS(selector, wg.configSelector);
+}
+wg.removeFilterCondition = function(each){
+	var item = wg.configSelector.conditionlist()[each];
+	wg.configSelector.conditionlist.remove(item);
+}
 wg.GetRowSelector = function(index){
 	if (wg.modeSelector() === ''){
 		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
@@ -678,6 +696,30 @@ wg.parseGrabConf = function () {
 			return c;
 		});
 		
+		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
+		condition[item.filtercond] = [];
+		for (var key in conditionlist){
+			var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
+			obj[col] = {};
+			var format = ko.utils.arrayFilter(columnsettings,function (item) {
+		        return item.alias == col;
+		    });
+			switch (format[0]){
+				case "integer":
+					obj[col][operation] = parseInt(val);
+					break;
+				case "float":
+					obj[col][operation] = parseFloat(val);
+					break;
+				default:
+					obj[col][operation] = val;
+					break;
+			}
+			condition[item.filtercond].push(obj);
+		}
+		item.filtercond = condition;
+		delete item["conditionlist"];
+
 		return item;
 	});
 	config.nameid = config._id;
@@ -700,7 +742,6 @@ wg.parseGrabConf = function () {
 
 	config.grabconf.data = grabConfData;
 	config.temp.parameters = tempParameters;
-
 	return config;
 };
 wg.saveSelectorConf = function(){
