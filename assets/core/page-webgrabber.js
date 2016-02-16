@@ -78,7 +78,6 @@ wg.templateConfigSelector = {
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
-wg.templateFilterCond = ["AND", "OR", "NAND", "NOR"];
 wg.templateFilterCond = ko.observableArray([
 	{Id:"$and",Title:"AND"},
 	{Id:"$or",Title:"OR"},
@@ -115,13 +114,11 @@ wg.scrapperColumns = ko.observableArray([
 	} },
 	{ field: "_id", title: "Web Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 160, attributes: { style: "text-align: center;", class:'excludethis' }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster notthis' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster neitherthis' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
 		].join(" ");
 	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
@@ -171,7 +168,12 @@ wg.templateConfigConnection = {
 	Password: "",
 	Settings: []
 };
-
+wg.replaceEqWithNthChild = function (s) {
+	return s.replace(/eq\(([^)]+)\)/g, function (e) {
+		var i = parseInt(e.split("(").reverse()[0].split(")")[0]) + 1;
+		return "nth-child(" + i + ")";
+	});
+}
 wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
 wg.editScrapper = function (_id) {
@@ -685,6 +687,13 @@ wg.parseGrabConf = function () {
 		if (typeof item.connectioninfo.useheader == "string") {
 			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
 		}
+
+		item.rowselector = wg.replaceEqWithNthChild(item.rowselector);
+		item.columnsettings = item.columnsettings.map(function (c) {
+			c.selector = wg.replaceEqWithNthChild(c.selector);
+			return c;
+		});
+		
 		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
 		condition[item.filtercond] = [];
 		for (var key in conditionlist){
@@ -902,7 +911,16 @@ wg.changeConnectionID = function (e) {
 wg.selectGridWebGrabber = function(e){
 	var grid = $(".grid-web-grabber").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
-	wg.editScrapper(selectedItem._id);
+	var target = $( event.target );
+	if ( $(target).is( ".excludethis" ) ) {
+	    return false;
+	  }else if ($(target).parents(".notthis").length ) {
+	  	return false;
+	  }else if ($(target).parents(".neitherthis" ).length ) {
+	  	return false;
+	  }else{
+		wg.editScrapper(selectedItem._id);
+	  }
 	wg.showWebGrabber(true);
 };
 
