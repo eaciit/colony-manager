@@ -517,4 +517,4 @@ func (a *ApplicationController) ReadDirectoryx(r *knot.WebContext) interface{} {
   }
  }
  return helper.CreateResult(true, ret, "")
-} 
+}
