@@ -482,8 +482,8 @@ wg.GetCurrentSelector = function(id,selector, node){
 		existingStyle = "border:5px solid #FF9900";
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
-	if (wg.modeSelector() == 'editElementSelector')
-		wg.CreateElementChild(selector);
+	// if (wg.modeSelector() == 'editElementSelector')
+	// 	wg.CreateElementChild(selector);
 };
 wg.CreateElementChild = function(selectorParent){
 	$("#inspectElement2>ul").replaceWith("<ul></ul>");
@@ -578,6 +578,7 @@ wg.showSelectorSetting = function(index,nameSelector){
 
 	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
+	wg.CreateElementChild(selector.rowselector);
 }
 wg.backSettingSelector = function() {
 	if (wg.modeSelector() === 'editElementSelector')

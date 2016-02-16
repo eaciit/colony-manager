@@ -180,10 +180,10 @@ a {
   margin-left: 15%; }
 
 .nav1 {
-  padding-top: 3%; }
+  padding-top: 1%; }
 
 .lbl {
-  margin-left: -9%; }
+  margin-left: -12%; }
 
 .intext {
   width: 100%;
@@ -216,6 +216,9 @@ a {
 
 .col-100 {
   width: 100%; }
+
+#myTab {
+  margin-bottom: 2%; }
 
 /** structured stylesheet */
 body {
