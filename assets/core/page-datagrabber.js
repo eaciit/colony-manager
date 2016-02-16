@@ -29,6 +29,16 @@ dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
+
+// Test Data Child
+// dg.dataTestBind = ko.observableArray( [
+// {"Format":"","Label":"Age","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"double","_id":"Age"},
+// {"Format":"","Label":"Address","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Address"},
+// {"Format":"","Label":"Job","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Job", "expanded":true, "items":[{"_id":"testA", "Label":"testA", "items":[{"_id":"asa", "Label":"ere"}]}, {"_id":"testB", "Label":"testB"}]},
+// {"Format":"","Label":"email","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"email"},
+// {"Format":"","Label":"FullName","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"FullName"},
+// {"Format":"","Label":"_id","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"_id"}]);
+
 dg.selectedDataGrabber = ko.observable('');
 dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
