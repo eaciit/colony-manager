@@ -9,6 +9,7 @@ srv.templateConfigServer = {
 	folder: "",
 	os: "",
 	enable: false,
+	host: "",
 	sshtype: "",
 	sshfile: "",
 	sshuser: "",
@@ -86,9 +87,6 @@ srv.saveServer = function(){
 		return;
 	}
 
-	// if (!qr.validateQuery()) {
-	// 	return;
-	// }
 	var data = ko.mapping.toJS(srv.configServer);
 	app.ajaxPost("/server/saveservers", data, function (res) {
 		if (!app.isFine(res)) {

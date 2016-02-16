@@ -31,7 +31,7 @@
 				<div class="form-group row nav2">
 					<div class="col-sm-10">
 						<label class="col-sm-2 filter-label lbl">Search</label>
-						<div class="col-sm-4">
+						<div class="col-sm-3">
 			               <input type="text" class="input-sm form-control" > <!-- data-bind="value: apl.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ApplicationFilter}" -->
 			            </div>
 			        </div>
@@ -58,7 +58,7 @@
 	    		<span class="glyphicon glyphicon-remove"></span>Delete
 	    	</button>
 		</nav>
-		<ul id="myTab" class="nav nav-tabs">
+		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
 	      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
 	      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
 	    </ul>
