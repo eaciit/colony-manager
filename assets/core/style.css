@@ -220,6 +220,11 @@ a {
 #myTab {
   margin-bottom: 2%; }
 
+.bgcustom {
+  padding: 10px 15px;
+  margin-left: 15px;
+  width: 300px; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;

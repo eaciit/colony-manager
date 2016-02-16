@@ -15,7 +15,7 @@ apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");

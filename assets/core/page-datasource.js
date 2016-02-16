@@ -80,9 +80,9 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Database", title: "Database" },
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;", class:'excludethis' }, template: function (d) {
+	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster notthis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
 		].join(" ");
 	} },
 ]);
@@ -286,13 +286,11 @@ ds.selectGridConnection = function(e){
 	var grid = $(".grid-connection").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
 	var target = $( event.target );
-	if ( $(target).is( ".excludethis" ) ) {
-	    return false;
-	  }else if ($(target).parents(".notthis").length ) {
+	if ($(target).parents(".excludethis").length ) {
 	  	return false;
-	  }else{
+	}else{
 		ds.editConnection(selectedItem._id);
-	  }
+	}
 	ds.showConnection(true);
 };
 

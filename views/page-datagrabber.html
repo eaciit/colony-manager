@@ -36,6 +36,7 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">

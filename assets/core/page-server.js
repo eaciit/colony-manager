@@ -37,23 +37,16 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:25, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:8, template: function (d) {
 		return [
 			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"srv.checkDeleteServer(this, 'server')\" />"
 		].join(" ");
 	} },
-	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
 	{ field: "enable", title: "Enable", width: 80},
-	// { title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
-	// 	return [
-	// 		"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-	// 		"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Server' onclick='srv.removeServer(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
-	// 	].join(" ");
-	// } },	
 ]);
 
 srv.getServers = function() {

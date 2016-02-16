@@ -63,6 +63,7 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
