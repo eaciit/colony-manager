@@ -40,13 +40,11 @@ dg.scrapperColumns = ko.observableArray([
 	} },
 	{ field: "_id", title: "Data Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 160, attributes: { style: "text-align: center;", class:'excludethis' }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster notthis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster neitherthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Grabber' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Grabber' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 		].join(" ");
 	} },
 	{ field: "DataSourceOrigin", title: "Data Source Origin", width: 150 },
@@ -155,7 +153,17 @@ dg.getDataSourceData = function () {
 dg.selectGridDataGrabber = function(e){
 	var grid = $(".grid-data-grabber").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
-	dg.editScrapper(selectedItem._id);
+	var target = $( event.target );
+	if ( $(target).is( ".excludethis" ) ) {
+	    return false;
+	  }else if ($(target).parents(".notthis").length ) {
+	  	return false;
+	  }else if ($(target).parents(".neitherthis" ).length ) {
+	  	return false;
+	  }else{
+		dg.editScrapper(selectedItem._id);
+	  }
+
 	dg.showDataGrabber(true);
 };
 dg.editScrapper = function (_id) {

@@ -80,11 +80,9 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Database", title: "Database" },
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 130, attributes: { style: "text-align: center;", class:'excludethis' }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Connection' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Connection' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster notthis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
 		].join(" ");
 	} },
 ]);
@@ -100,12 +98,6 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "QueryInfo", title: "Query", template: function (d) {
 		return "test"
 	} },
-	// { title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-	// 	return [
-	// 		"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Source' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-	// 		"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Source' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
-	// 	].join(" ");
-	// } },
 ]);
 ds.settingsColumns = ko.observableArray([
 	{ field: "key", title: "Key", template: function (d) {
@@ -293,7 +285,14 @@ ds.testConnection = function () {
 ds.selectGridConnection = function(e){
 	var grid = $(".grid-connection").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
-	ds.editConnection(selectedItem._id);
+	var target = $( event.target );
+	if ( $(target).is( ".excludethis" ) ) {
+	    return false;
+	  }else if ($(target).parents(".notthis").length ) {
+	  	return false;
+	  }else{
+		ds.editConnection(selectedItem._id);
+	  }
 	ds.showConnection(true);
 };
 
