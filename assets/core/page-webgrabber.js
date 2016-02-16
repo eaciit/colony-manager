@@ -192,7 +192,9 @@ wg.editScrapper = function (_id) {
 		ko.mapping.fromJS(res.data, wg.configScrapper);
 
 		wg.selectorRowSetting([]);
-		res.data.datasettings.forEach(function (item) {
+		res.data.datasettings.forEach(function (item, index) {
+			item.filtercond = "";
+			item["conditionlist"] = [];
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
