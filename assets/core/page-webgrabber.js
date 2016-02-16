@@ -358,18 +358,20 @@ wg.getURL = function () {
 		var doc = wg.writeContent(res.data);
 		wg.modeSetting(1);
 
-		var startofbody = res.data.indexOf("<body");
-		var endofbody = res.data.indexOf("</body");
-		var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
-		startofbody = bodyyo.indexOf(">");
-		bodyyo = bodyyo.substr(startofbody+1);
-		URLSource = $.parseHTML(bodyyo);
-		$("#inspectElement>ul").replaceWith("<ul></ul>");
-		$(URLSource).each(function(i,e){
-			if($(this).html()!==undefined){
-				linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
-			}
-		})
+		$("#content-preview").load(function(){
+			var startofbody = res.data.indexOf("<body");
+			var endofbody = res.data.indexOf("</body");
+			var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
+			startofbody = bodyyo.indexOf(">");
+			bodyyo = bodyyo.substr(startofbody+1);
+			URLSource = $.parseHTML(bodyyo);
+			$("#inspectElement>ul").replaceWith("<ul></ul>");
+			$(URLSource).each(function(i,e){
+				if($(this).html()!==undefined){
+					linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
+				}
+			})
+		});
 	});
 };
 wg.getNodeElement = function(obj,classes,id){
@@ -403,11 +405,14 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
 
 	var indexTemp = $("#content-preview").contents().find(selector2).index()+1;
+	// console.log(selector2);
+	// console.log($("#content-preview").contents().find(selector2).index());
 	if (contentid === '#inspectElement2' && linenumber > 1)
 		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
 	else if (contentid === '#inspectElement')
 		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
 
+	// console.log(selector);
 	$liElem = $("<li id='scw"+linenumber+"' class='selector' parentid='scw"+parent+"'></li>");
 	// $liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
 	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":nth-child("+indexTemp+")')", "indexelem":index});
