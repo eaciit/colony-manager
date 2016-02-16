@@ -25,12 +25,13 @@ wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
-	calltype: "POST",
+	calltype: "GET",
 	sourcetype: "SourceType_Http",
 	intervaltype: "seconds",
 	grabinterval: 20,
 	timeoutinterval: 20,
-	url: "http://www.shfe.com.cn/en/products/Gold/",
+	// url: "http://www.shfe.com.cn/en/products/Gold/",
+	url: "http://www.google.com",
 	logconf: {
 		"filename": "LOG-GRABDCE",
 		"filepattern": "",
@@ -192,7 +193,9 @@ wg.editScrapper = function (_id) {
 		ko.mapping.fromJS(res.data, wg.configScrapper);
 
 		wg.selectorRowSetting([]);
-		res.data.datasettings.forEach(function (item) {
+		res.data.datasettings.forEach(function (item, index) {
+			item.filtercond = "";
+			item["conditionlist"] = [];
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
@@ -355,18 +358,20 @@ wg.getURL = function () {
 		var doc = wg.writeContent(res.data);
 		wg.modeSetting(1);
 
-		var startofbody = res.data.indexOf("<body");
-		var endofbody = res.data.indexOf("</body");
-		var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
-		startofbody = bodyyo.indexOf(">");
-		bodyyo = bodyyo.substr(startofbody+1);
-		URLSource = $.parseHTML(bodyyo);
-		$("#inspectElement>ul").replaceWith("<ul></ul>");
-		$(URLSource).each(function(i,e){
-			if($(this).html()!==undefined){
-				linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
-			}
-		})
+		$("#content-preview").load(function(){
+			var startofbody = res.data.indexOf("<body");
+			var endofbody = res.data.indexOf("</body");
+			var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
+			startofbody = bodyyo.indexOf(">");
+			bodyyo = bodyyo.substr(startofbody+1);
+			URLSource = $.parseHTML(bodyyo);
+			$("#inspectElement>ul").replaceWith("<ul></ul>");
+			$(URLSource).each(function(i,e){
+				if($(this).html()!==undefined){
+					linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
+				}
+			})
+		});
 	});
 };
 wg.getNodeElement = function(obj,classes,id){
@@ -383,7 +388,7 @@ wg.getNodeElement = function(obj,classes,id){
 };
 wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 	linenumber +=1;
-	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
+	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id), parentselector = selector;
 	if(id !== undefined && id !== "")
 		id = "id='"+id+"'";
 	else
@@ -395,12 +400,22 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		classes = "";
 
 	if (contentid === '#inspectElement2' && linenumber > 1)
-		selector += " > " + nodeelement.element+":eq("+index+")";
+		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
 	else if (contentid === '#inspectElement')
-		selector += " > " + nodeelement.element+":eq("+index+")";
+		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
 
+	var indexTemp = $("#content-preview").contents().find(selector2).index()+1;
+	// console.log(selector2);
+	// console.log($("#content-preview").contents().find(selector2).index());
+	if (contentid === '#inspectElement2' && linenumber > 1)
+		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
+	else if (contentid === '#inspectElement')
+		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
+
+	// console.log(selector);
 	$liElem = $("<li id='scw"+linenumber+"' class='selector' parentid='scw"+parent+"'></li>");
-	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	// $liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":nth-child("+indexTemp+")')", "indexelem":index});
 	$liElem.appendTo($(contentid+">ul"));
 
 	$divSeqElem = $("<div></div>");
@@ -469,7 +484,7 @@ wg.GetCurrentSelector = function(id,selector, node){
 		$(wg.selectedItem(), $("#content-preview").contents()).attr("style",existingStyle);
 	}
 	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
-	
+
 	wg.selectedItem(selector);
 	wg.selectedItemNode(node);
 	existingStyle = "";
@@ -671,10 +686,10 @@ wg.GetRowSelector = function(index){
 wg.saveSelectedElement = function(index){
 	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
-		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
+		wg.selectorRowSetting()[index].rowselector(wg.replaceEqWithNthChild(wg.selectedItem()));
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItemNode());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.replaceEqWithNthChild(wg.selectedItemNode()));
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
@@ -696,26 +711,30 @@ wg.parseGrabConf = function () {
 		
 		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
 		condition[item.filtercond] = [];
-		for (var key in conditionlist){
-			var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
-			obj[col] = {};
-			var format = ko.utils.arrayFilter(columnsettings,function (item) {
-		        return item.alias == col;
-		    });
-			switch (format[0]){
-				case "integer":
-					obj[col][operation] = parseInt(val);
-					break;
-				case "float":
-					obj[col][operation] = parseFloat(val);
-					break;
-				default:
-					obj[col][operation] = val;
-					break;
+		if (item.filtercond != ''){
+			for (var key in conditionlist){
+				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
+				obj[col] = {};
+				var format = ko.utils.arrayFilter(columnsettings,function (item) {
+			        return item.alias == col;
+			    });
+				switch (format[0]){
+					case "integer":
+						obj[col][operation] = parseInt(val);
+						break;
+					case "float":
+						obj[col][operation] = parseFloat(val);
+						break;
+					default:
+						obj[col][operation] = val;
+						break;
+				}
+				condition[item.filtercond].push(obj);
 			}
-			condition[item.filtercond].push(obj);
+			item.filtercond = condition;
+		} else {
+			item.filtercond = {};
 		}
-		item.filtercond = condition;
 		delete item["conditionlist"];
 
 		return item;
