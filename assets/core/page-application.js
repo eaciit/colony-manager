@@ -119,12 +119,6 @@ apl.getUploadFile = function() {
 	});
 };
 
-apl.selectApps = function(e){
-	var tab = $(".grid-application").data("kendoGrid");
-	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id)
-}
-
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
@@ -136,7 +130,7 @@ apl.getTab = function(){
 	        $( $(this).attr('href') ).hide();
 	    }
 	    else {
-	        e.preventDefault();
+	        //e.preventDefault();
 	        $(this).tab('show');
 	    }
 	});
@@ -145,15 +139,14 @@ apl.getTab = function(){
 var treeview;
 var onres;
 var data;
-var parent;
 apl.treeView = function () {
+	$('#btnNewFileDir').hide();
+	$('#btnRemoveDir').hide();
 	app.ajaxPost("/application/readdirectory", {}, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
 		onres = res.data;
-		//console.log("=======hasilnya"+JSON.stringify(onres));
 		apl.appRecordsDir(onres);
 		treeview = $("#treeview-left").kendoTreeView({
 			animation: false,
@@ -168,26 +161,24 @@ apl.treeView = function () {
 }
 apl.selectDirApp = function(e){
 	data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	console.log("========>>"+data.text);
+	//console.log(data);
+	var ondata = JSON.stringify(data);
 	$('#nm-file').text(data.text);
 	parent = treeview.dataSource.view()[0];
-	//var data = ondata.parent();
-	//console.log(JSON.stringify(parent));
+	prtText = "/"+parent.text;
+	console.log("=======>> parent"+ JSON.stringify(parent));
+	console.log();
 	if (data.type === 'file'){
 		var editor = $('#scriptarea').data('CodeMirrorInstance');
 		editor.setValue(data.content);
 		editor.focus();
-	}	
-	apl.appTreeMode(data.type);
-}
-
-apl.pathSelectfile = function(){
-	var a = "/"
-	for(var i=0;i<data.length;i++){
-		if(parent.text == data.text){
-
-		}
+		$('#btnNewFileDir').hide();
+		$('#btnRemoveDir').show();
+	}else if (data.type === 'folder'){
+		$('#btnNewFileDir').show();
+		$('#btnRemoveDir').show();
 	}
+	apl.appTreeMode(data.type);
 }
 
 apl.trvRefresh = function(){
@@ -273,6 +264,67 @@ apl.OnRemove = function(){
  	} 
  
 }
+
+apl.newFile = function(){
+	$("#myModalNorm").modal('show');
+	$("#modal-form").reset();
+}
+
+apl.saveFilename = function(){
+	$("#myModalNorm").modal('hide');
+	var name = $("#onfilename").val();
+	var onpath = data.path;
+	var path = onpath.replace(" \ ", "/" );
+	//senddata.push(data.path, name);
+	alert(path);
+	app.ajaxPost("/application/gennewfile", {path: path, value: name}, function () {
+		if (!app.isFine) {
+			return;
+		}
+		$("#onfilename").val("");
+		apl.trvRefresh();
+		swal({title: "File successfully save", type: "success"});
+	});
+}
+
+apl.removeFile = function(){
+	var name = data.text;
+	swal({
+		title: "Are you sure?",
+		text: 'Application with id "' + data.text + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: false
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/application/deletefileselected", {path: data.path}, function () {
+					if (!app.isFine) {
+						return;
+					}
+
+				 swal({title: "Application successfully deleted", type: "success"});
+				 apl.trvRefresh();
+				});
+			},1000);
+
+		});
+}
+
+apl.savefile = function(){
+	setTimeout(function () {
+		app.ajaxPost("/application/editsave", {path: data.path, contentfield: $('#scriptarea').data('CodeMirrorInstance').getValue()}, function () {
+			if (!app.isFine) {
+				return;
+			}
+			apl.trvRefresh();
+		 	swal({title: "File save successfully", type: "success"});
+		});
+	});
+}
+
 
 $(function () {
 	apl.getApplications();
