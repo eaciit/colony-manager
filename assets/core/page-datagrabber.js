@@ -75,6 +75,9 @@ dg.historyColumns = ko.observableArray([
 		].join(" ");
 	}, filterable: false }
 ]);
+dg.changeDataSourceOrigin = function () {
+	dg.prepareFieldsOrigin(this.value());
+};
 dg.fieldOfDataSource = function (which) {
 	return ko.computed(function () {
 		var ds = Lazy(dg.dataSourcesData()).find({
@@ -188,6 +191,7 @@ dg.editScrapper = function (_id) {
 		dg.scrapperMode('editor');
 		app.resetValidation("#form-add-scrapper");
 		ko.mapping.fromJS(res.data, dg.configScrapper);
+		dg.prepareFieldsOrigin(dg.configScrapper.DataSourceOrigin());
 	});
 };
 dg.removeScrapper = function (_id) {
@@ -383,7 +387,29 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
+dg.prepareFieldsOrigin = function (_id) {
+	var row = Lazy(dg.dataSourcesData()).find({ _id: _id });
 
+	var ds = new kendo.data.HierarchicalDataSource({
+        data: row.MetaData,
+        schema: {
+            model: {
+                children: "Sub"
+            }
+        }
+    });
+
+	$(".fields-origin").replaceWith('<div class="fields-origin"></div>');
+    $(".fields-origin").kendoTreeView({
+        dataSource: ds,
+        dataTextField: ["Label"],
+        template: function (d) {
+        	return [
+        		"<div style='width: 200px;'>" + d.item._id + "</div>",
+    		].join("")
+        },
+    });
+};
 dg.checkDeleteDataGrabber = function(elem, e){
 	if (e === 'datagrabberall'){
 		if ($(elem).prop('checked') === true){
