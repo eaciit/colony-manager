@@ -63,6 +63,7 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -321,8 +322,45 @@
 		    							<div class="row">
 			    							<label class="col-md-4 filter-label">Filter Cond.</label>
 				    						<div class="col-md-6">
-				    							<select style="width: 100%;" data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: connectioninfo.filtercond, optionLabel: 'Select one'}"></select>
+				    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: filtercond, dataValueField: 'Id', dataTextField: 'Title', optionLabel: 'Select one'}"></select>
+				    							<button class="btn btn-sm btn-primary" data-bind="visible: filtercond() != '', click: wg.addFilterCondition"><span class="glyphicon glyphicon-plus"></span></button>
 				    						</div>
+				    						<div class="clearfix"></div>
+				    					</div>
+				    					<div class="row" data-bind="visible: filtercond() != ''">
+				    						<div class="col-md-12">
+					    						<table class="table" id="tablecond">
+													<thead>
+														<tr>
+															<th>Column</th>
+															<th>Operation</th>
+															<th>Value</th>
+															<th>&nbsp;</th>
+														</tr>
+													</thead>
+													<tbody data-bind="foreach: conditionlist">
+														<tr>
+															<td>
+																<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.configSelector.columnsettings, dataValueField: 'alias', dataTextField: 'alias', value: column}, attr: { 'name': 'column-filter-colomn-' + $index() }" style="width:90px;"></select>
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-colomn-' + $index() }"></span>
+															</td>
+															<td>
+																<select required data-required-msg="Operation Type cannot be empty" data-bind="kendoDropDownList: { data: wg.operationcondList, dataValueField: 'Id', dataTextField: 'Title', value: operator}, attr: { 'name': 'column-filter-operation-' + $index() }" style="width:90px;"></select>
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-operation-' + $index() }"></span>
+															</td>
+															<td>
+																<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-value-' + $index() }"></span>
+															</td>
+															<td>
+																<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeFilterCondition($index())}">
+																	<span class="glyphicon glyphicon-remove"></span>
+																</button>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
 				    						<div class="clearfix"></div>
 				    					</div>
 			    						<div class="row">
@@ -394,7 +432,8 @@
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
 		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-		    					<div id="inspectElement"><ul></ul></div>
+		    					<div id="inspectElement" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementSelector'"><ul></ul></div>
+		    					<div id="inspectElement2" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementConfig'"><ul></ul></div>
 		    				</div>
 		    			</div>
 
