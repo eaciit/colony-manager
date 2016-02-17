@@ -25,13 +25,13 @@ apl.applicationColumns = ko.observableArray([
 	{ field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
 		].join(" ");
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<a href='#'>Browse</a>"
+			"<a href='#' onclick= 'apl.OpenInNewTab()'>Browse</a>"
 		].join(" ");
 	}}
 ]);
@@ -39,8 +39,13 @@ apl.applicationColumns = ko.observableArray([
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
 	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id)
-}
+	var target = $( event.target );
+	if ($(target).parents("#excludethis").length ) {
+	  	return false;
+	}else{
+		apl.editApplication(data._id);
+	}
+};
 
 apl.getApplications = function() {
 	apl.applicationData([]);
@@ -119,11 +124,11 @@ apl.getUploadFile = function() {
 	});
 };
 
-apl.selectApps = function(e){
-	var tab = $(".grid-application").data("kendoGrid");
-	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id)
-}
+// apl.selectApps = function(e){
+// 	var tab = $(".grid-application").data("kendoGrid");
+// 	var data = tab.dataItem(tab.select());
+// 	apl.editApplication(data._id)
+// }
 
 apl.backToFront = function () {
 	app.mode('');
@@ -239,6 +244,11 @@ apl.codemirror = function(){
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
     // editor.focus();
     $('#scriptarea').data('CodeMirrorInstance', editor);
+}
+
+apl.OpenInNewTab = function (url) {
+  var win = window.open(url, '_blank');
+  win.focus();
 }
 
 function ApplicationFilter(event){
