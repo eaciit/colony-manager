@@ -11,13 +11,13 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	// "github.com/eaciit/toolkit"
+	. "github.com/eaciit/sshclient"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	. "github.com/eaciit/sshclient"
 )
 
 var unzipDest = fmt.Sprintf("%s", filepath.Join(AppBasePath, "..", "colony-app", "apps"))
@@ -36,6 +36,15 @@ type TreeSource struct {
 	Expanded       bool          `json:"expanded",bson:"expanded"`
 	SpriteCssClass string        `json:"spriteCssClass",bson:"spriteCssClass"`
 	Items          []*TreeSource `json:"items",bson:"items"`
+}
+
+type TreeSourceUi struct {
+	Text      string         `json:"text",bson:"text"`
+	Type      string         `json:"type",bson:"type"`
+	Expanded  bool           `json:"expanded",bson:"expanded"`
+	Iconclass string         `json:"iconclass",bson:"iconclass"`
+	Content   string         `json:"content",bson:"content"`
+	Items     []TreeSourceUi `json:"items",bson:"items"`
 }
 
 func CreateApplicationController(s *knot.Server) *ApplicationController {
@@ -371,18 +380,16 @@ func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-
-
-func (a *ApplicationController) SendFile(host string, user string, pass string , filepath string ,destination string , pem string) interface{} {
+func (a *ApplicationController) SendFile(host string, user string, pass string, filepath string, destination string, pem string) interface{} {
 	//r.Config.OutputType = knot.OutputJson
-	
+
 	var SshClient SshSetting
 	SshClient.SSHAuthType = SSHAuthType_Password
 	SshClient.SSHHost = host //"192.168.56.102:22" //r.Request.FormValue("SSHHost")
-	if(pem==""){
-		SshClient.SSHUser = user //"eaciit1" //r.Request.FormValue("SSHUser")
+	if pem == "" {
+		SshClient.SSHUser = user     //"eaciit1" //r.Request.FormValue("SSHUser")
 		SshClient.SSHPassword = pass //"12345" //r.Request.FormValue("SSHPassword")
-	}else{
+	} else {
 		SshClient.SSHKeyLocation = pem
 	}
 	// filepath := "E:\\a.jpg"  //r.Request.FormValue("filepath")
@@ -390,8 +397,171 @@ func (a *ApplicationController) SendFile(host string, user string, pass string ,
 
 	e := SshClient.CopyFileSsh(filepath, destination)
 	if e != nil {
-		return helper.CreateResult(true, e , "")
+		return helper.CreateResult(true, e, "")
 	} else {
 		return helper.CreateResult(true, "sukses", "")
 	}
+}
+
+func SubMenu(path string) []TreeSourceUi {
+	fmt.Println("path :", path)
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		fmt.Println("Error : ", err)
+	}
+
+	var ret []TreeSourceUi
+	for _, f := range files {
+		var mst2 TreeSourceUi
+		if filepath.Ext(f.Name()) != "" {
+			mst2.Text = f.Name()
+			mst2.Type = "file"
+			mst2.Expanded = false
+			mst2.Iconclass = "glyphicon glyphicon-file"
+			//fmt.Println("==============>>>>> 1", mst2.Items)
+			content, err := ioutil.ReadFile(path + "/" + f.Name())
+			if err != nil {
+				fmt.Println("Error : ", err)
+			}
+			mst2.Content = string(content)
+			ret = append(ret, mst2)
+		} else {
+			mst2.Text = f.Name()
+			mst2.Type = "folder"
+			mst2.Expanded = true
+			mst2.Iconclass = "glyphicon glyphicon-folder-open"
+			var smst []TreeSourceUi
+			newDir := path + "/" + f.Name()
+			smst = SubMenu(newDir)
+
+			mst2.Items = smst
+			ret = append(ret, mst2)
+			//fmt.Println("==============>>>>> 2", mst2.Items)
+		}
+	}
+	return ret
+}
+
+func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	var ret []TreeSourceUi
+	path, err := os.Getwd()
+	var dir1 = filepath.Join(path, "..", "colony-app", "apps")
+	fmt.Println("==========>>44", dir1)
+	var dir = "D:/GoW/src/github.com/eaciit/colony-app/apps"
+
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	for _, f := range files {
+		var mst2 TreeSourceUi
+		if filepath.Ext(f.Name()) != "" {
+			mst2.Text = f.Name()
+			mst2.Type = "file"
+			mst2.Expanded = false
+			mst2.Iconclass = "glyphicon glyphicon-file"
+			content, err := ioutil.ReadFile(f.Name())
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			mst2.Content = string(content)
+			ret = append(ret, mst2)
+		} else {
+			mst2.Text = f.Name()
+			mst2.Type = "folder"
+			mst2.Expanded = true
+			mst2.Iconclass = "glyphicon glyphicon-folder-open"
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			mst2.Content = ""
+			var smst []TreeSourceUi
+			newDir := dir + "/" + f.Name()
+			smst = SubMenu(newDir)
+			mst2.Items = smst
+			//fmt.Println("==============>>>>>", mst2.Items)
+			ret = append(ret, mst2)
+		}
+	}
+	return helper.CreateResult(true, ret, "")
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func (a *ApplicationController) GenNewFile(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	d1 := []byte("")
+	err := ioutil.WriteFile("TestNewFile.html", d1, 0644)
+	check(err)
+
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) DeleteFileSelected(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	err := os.RemoveAll("TestDir")
+	check(err)
+
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) CreateNewDirectory(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	err := os.Mkdir("."+string(filepath.Separator)+"TestDir", 0777)
+	check(err)
+
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) ReadDirectoryx(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	var ret []TreeSourceUi
+	// path, err := os.Getwd()
+	// var dir = filepath.Join(path, "..", "colony-app")
+	var dir = "C:/Projects/Go/src/github.com/eaciit/colony-app/apps"
+
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	for _, f := range files {
+		var mst2 TreeSourceUi
+		if filepath.Ext(f.Name()) != "" {
+			mst2.Text = f.Name()
+			mst2.Type = "file"
+			mst2.Expanded = false
+			mst2.Iconclass = "glyphicon glyphicon-file"
+			content, err := ioutil.ReadFile(f.Name())
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			mst2.Content = string(content)
+			ret = append(ret, mst2)
+		} else {
+			mst2.Text = f.Name()
+			mst2.Type = "folder"
+			mst2.Expanded = true
+			mst2.Iconclass = "glyphicon glyphicon-folder-open"
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			mst2.Content = ""
+			var smst []TreeSourceUi
+			newDir := dir + "/" + f.Name()
+			smst = SubMenu(newDir)
+			mst2.Items = smst
+			ret = append(ret, mst2)
+		}
+	}
+	return helper.CreateResult(true, ret, "")
 }
