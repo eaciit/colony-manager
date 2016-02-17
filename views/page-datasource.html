@@ -60,6 +60,7 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'edit')">
@@ -218,6 +219,7 @@
 		    <div class="panel-body">
 		    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'editDataSource')">

@@ -25,6 +25,7 @@
 	    <div class="panel-body">
 	    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
 	    </div>
+	    <p class="bg-danger bgcustom">Please click row to edit!</p>
 	</div>
 	<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 		<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">

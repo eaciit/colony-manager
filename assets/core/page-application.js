@@ -15,7 +15,7 @@ apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 20, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
@@ -142,82 +142,59 @@ apl.getTab = function(){
 	});
 }
 
+var treeview;
+var onres;
+var data;
+var parent;
 apl.treeView = function () {
-	apl.appRecordsDir([{ 
-		text: "assets",
-		type: "folder", 
-		iconclass: "glyphicon glyphicon-folder-open",
-		content: "",
-		expanded: true,
-		items: [{ 
-			text: "core" ,
-			type: "folder", 
-			expanded: true,
-			iconclass: "glyphicon glyphicon-folder-open",
-			content: "",
-			items: [{
-				text: "page-application.html",
-				type: "file", 
-				content: '<html> \n'+
-					'<div class="col-xs-6 col-sm-2" id="sidebar"> \n'+
-						'<div class="row"> \n'+
-							'<ul class="nav"> \n'+
-								'<li><a href="#" data-bind="css: { \'active\': (app.section() == \'application\') }, click: app.changeActiveSection(\'application\')">Application<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li> \n'+
-								'<li><a href="#" data-bind="css: { \'active\': (app.section() == \'servers\') }, click: app.changeActiveSection(\'servers\')">Servers<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> \n'+
-							'</ul> \n'+
-						'</div> \n'+
-					'</div> \n'+
-					'</html> \n',
-				iconclass: "glyphicon glyphicon-file",
-			}]
-		}] 
-	}, {
-		text: "controller", 
-		type: "folder", 
-		expanded: true,
-		iconclass: "glyphicon glyphicon-folder-open",
-		items: [{ 
-			text: "application.go",
-			type: "file", 
-			content: 'package controller \n'+
-				'import (\n'+
-					'"archive/zip"\n'+
-					'"encoding/json"\n'+
-					'"fmt"\n'+
-					'// "github.com/eaciit/cast"\n'+
-					'"github.com/eaciit/colony-core/v0"\n'+
-					'"github.com/eaciit/colony-manager/helper"\n'+
-					'"github.com/eaciit/dbox"\n'+
-					'_ "github.com/eaciit/dbox/dbc/jsons"\n'+
-					'"github.com/eaciit/knot/knot.v1"\n'+
-					'// "github.com/eaciit/toolkit"\n'+
-					'"io"\n'+
-					'"io/ioutil"\n'+
-					'"os"\n'+
-					'"path/filepath"\n'+
-					'"strconv"\n'+
-					'"strings"\n'+
-				')',
-			iconclass: "glyphicon glyphicon-file",
-		}] 
-	}]);
-    $("#treeview-left").kendoTreeView({
-		animation: {
-			collapse: false
-		},
-		template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
-		select: apl.selectDirApp,
-		dataSource: apl.appRecordsDir(),
-    });
-};
+	app.ajaxPost("/application/readdirectory", {}, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		onres = res.data;
+		//console.log("=======hasilnya"+JSON.stringify(onres));
+		apl.appRecordsDir(onres);
+		treeview = $("#treeview-left").kendoTreeView({
+			animation: false,
+			template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
+			select: apl.selectDirApp,
+			dataSource: apl.appRecordsDir(),
+			loadOnDemand: false
+	    }).data("kendoTreeView");
+	    treeview.expand(".k-item");
+
+	});
+}
 apl.selectDirApp = function(e){
-	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
+	data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
+	console.log("========>>"+data.text);
+	$('#nm-file').text(data.text);
+	parent = treeview.dataSource.view()[0];
+	//var data = ondata.parent();
+	//console.log(JSON.stringify(parent));
 	if (data.type === 'file'){
 		var editor = $('#scriptarea').data('CodeMirrorInstance');
 		editor.setValue(data.content);
 		editor.focus();
-	}
+	}	
 	apl.appTreeMode(data.type);
+}
+
+apl.pathSelectfile = function(){
+	var a = "/"
+	for(var i=0;i<data.length;i++){
+		if(parent.text == data.text){
+
+		}
+	}
+}
+
+apl.trvRefresh = function(){
+	apl.treeView();
+	setTimeout(function(){
+		apl.treeView();
+	},1000);
 }
 apl.searchTreeView = function(){
 	var search = $('#searchDirectori').val();
@@ -302,6 +279,8 @@ $(function () {
 	apl.getUploadFile();
 	apl.getTab()
 	apl.codemirror();
+	apl.treeView();
+
 });
 
 apl.treeView();
