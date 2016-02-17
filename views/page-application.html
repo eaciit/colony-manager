@@ -119,20 +119,24 @@
 							    			<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 							    		</div>
 							    		<div class="col-md-3">
-					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
+					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:apl.trvRefresh">Refresh</button>	
 							    		</div>
 						    		</div>
 							    </div>
-					    		<div class="col-md-8">
-					    			<label class="col-md-11 pdTop6" id=""></label>
-					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" >Save</button>
+							    <div class="col-md-3">
+							    	<label class="col-md-3 pdTop6" id=""></label>
+					    			<div id="nm-file" class="pdTop6"></div>
+					    		</div>
+					    		<div class="col-md-5">
+					    			<label class="col-md-8" id=""></label>
+					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" id="trv-save" >Save</button>
 					    		</div>
 					    	</div>
 					    	<div class="col-md-12 bd1">
 					            <div class="col-md-4">			    		
 					            	<div id="example">
 							            <div class="tvcustom">
-							                <div id="treeview-left"></div>
+							                <div id="treeview-left" data-bind="value: (apl.treeView() == '')"></div>
 							            </div>
 							        </div>
 					    		</div>
