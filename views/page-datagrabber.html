@@ -150,6 +150,35 @@
 								</table>
 				        	</div>
 				        </div>
+
+				        <div class="form-group">
+				        	<div class="col-md-12">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Field Origin</th>
+											<th>Field Destination</th>
+											<th>&nbsp;</th>
+										</tr>
+									</thead>
+									<tbody>
+										<td>
+										<!-- 
+										Test Child
+										<div class="" data-bind="kendoTreeView:{ data:dg.dataTestBind(), dataValueField: '_id', dataTextField: 'Label' }"></div> 
+										-->
+
+										<div class="" data-bind="kendoTreeView:{ data:dg.fieldOfDataSource('origin'), dataValueField: '_id', dataTextField: 'Label' }"></div>
+
+										</td>
+										<td>
+											<div class="" data-bind="kendoTreeView:{ data:dg.fieldOfDataSource('destination'), dataValueField: '_id', dataTextField: 'Label' }"></div>
+										</td>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
 		        	</div>
 		        </form>
 		    </div>
