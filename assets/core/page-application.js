@@ -12,6 +12,7 @@ apl.templateFile = {
 	Path: "",
 	Filename: "",
 	Type: "folder",
+	Content: "",
 }
 apl.selectable = ko.observableArray([]);
 apl.filterValue = ko.observable('');
@@ -202,6 +203,7 @@ apl.newFileDir = function(){
 	}
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
+	apl.configFile.Content("");
 	var confNew = ko.mapping.toJS(apl.configFile);
 	app.ajaxPost("/application/createnewfile", confNew, function(res) {
 		if (!app.isFine(res)) {
@@ -220,6 +222,22 @@ apl.removeFileDir = function(){
 	apl.configFile.Path($("#txt-path").html());
 	var confNew = ko.mapping.toJS(apl.configFile);
 	app.ajaxPost("/application/deletefileselected", confNew, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		apl.treeView(apl.configApplication._id());
+		ko.mapping.fromJS(apl.templateFile, apl.configFile);
+		apl.appTreeMode("");
+		apl.appTreeSelected("");
+	});
+}
+apl.updateFileDir = function(){
+	apl.configFile.ID(apl.configApplication._id());
+	apl.configFile.Path($("#txt-path").html());
+	apl.configFile.Type("file");
+	apl.configFile.Content($('#scriptarea').data('CodeMirrorInstance').getValue());
+	var confNew = ko.mapping.toJS(apl.configFile);
+	app.ajaxPost("/application/createnewfile", confNew, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}

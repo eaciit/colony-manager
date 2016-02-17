@@ -519,6 +519,9 @@ func (a *ApplicationController) CreateNewFile(r *knot.WebContext) interface{} {
 		os.MkdirAll(filepath.Join(unzipDest, ID, pathfolder, Filename), 0755)
 	} else {
 		content := []byte("")
+		if payload["Content"].(string) != "" {
+			content = []byte(payload["Content"].(string))
+		}
 		err = ioutil.WriteFile(filepath.Join(unzipDest, ID, pathfolder, Filename), content, 0644)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
