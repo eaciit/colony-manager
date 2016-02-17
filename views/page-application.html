@@ -32,7 +32,7 @@
 					<div class="col-sm-10">
 						<label class="col-sm-2 filter-label lbl">Search</label>
 						<div class="col-sm-3">
-			               <input type="text" class="input-sm form-control" > <!-- data-bind="value: apl.filterValue, valueUpdate: 'afterkeydown', 'input', event: {'keyup': ApplicationFilter}" -->
+			               <input type="text" class="input-sm form-control" >
 			            </div>
 			        </div>
 		    	</div>
@@ -46,6 +46,7 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-data-application grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, selectable: 'multiple, row', change: apl.selectApps, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToFront">
@@ -119,13 +120,17 @@
 							    			<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 							    		</div>
 							    		<div class="col-md-3">
-					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" >Refresh</button>	
+					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:apl.trvRefresh">Refresh</button>	
 							    		</div>
 						    		</div>
 							    </div>
-					    		<div class="col-md-8">
-					    			<label class="col-md-11 pdTop6" id=""></label>
-					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" >Save</button>
+							    <div class="col-md-3">
+							    	<label class="col-md-3 pdTop6" id=""></label>
+					    			<div id="nm-file" class="pdTop6"></div>
+					    		</div>
+					    		<div class="col-md-5">
+					    			<label class="col-md-8" id=""></label>
+					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" id="trv-save" >Save</button>
 					    		</div>
 					    	</div>
 					    	<div class="col-md-12 bd1">

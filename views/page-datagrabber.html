@@ -36,6 +36,7 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -73,7 +74,7 @@
 						<div class="form-group">
 				        	<label class="col-md-4 filter-label">Data Source Origin</label>
 				        	<div class="col-md-5">
-				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one' }"></select>
+				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceOrigin }"></select>
 								<span class="k-invalid-msg" data-for="data-source-origin"></span>
 				        	</div>
 				        </div>
@@ -122,6 +123,12 @@
 
 				        <div class="form-group">
 				        	<div class="col-md-12">
+				        		<div class="fields-origin"></div>
+				        	</div>
+				        </div>
+
+				        <div class="form-group">
+				        	<div class="col-md-12">
 								<table class="table">
 									<thead>
 										<tr>
@@ -150,6 +157,35 @@
 								</table>
 				        	</div>
 				        </div>
+
+				        <div class="form-group">
+				        	<div class="col-md-12">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Field Origin</th>
+											<th>Field Destination</th>
+											<th>&nbsp;</th>
+										</tr>
+									</thead>
+									<tbody>
+										<td>
+										<!-- 
+										Test Child
+										<div class="" data-bind="kendoTreeView:{ data:dg.dataTestBind(), dataValueField: '_id', dataTextField: 'Label' }"></div> 
+										-->
+
+										<div class="" data-bind="kendoTreeView:{ data:dg.fieldOfDataSource('origin'), dataValueField: '_id', dataTextField: 'Label' }"></div>
+
+										</td>
+										<td>
+											<div class="" data-bind="kendoTreeView:{ data:dg.fieldOfDataSource('destination'), dataValueField: '_id', dataTextField: 'Label' }"></div>
+										</td>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
 		        	</div>
 		        </form>
 		    </div>

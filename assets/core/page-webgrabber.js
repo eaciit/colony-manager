@@ -108,18 +108,18 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:25, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:20, template: function (d) {
 		return [
 			"<input type='checkbox' class='webgrabbercheck' idcheck='"+d._id+"' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabber')\" />"
 		].join(" ");
 	} },
 	{ field: "_id", title: "Web Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{ title: "", width: 160, attributes: { style: "text-align: center;", class:'excludethis' }, template: function (d) {
+	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster notthis' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster neitherthis' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
@@ -931,7 +931,7 @@ wg.selectGridWebGrabber = function(e){
 	var grid = $(".grid-web-grabber").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
 	var target = $( event.target );
-	if ( $(target).is( ".excludethis" ) ) {
+	if ( $(target).parents( ".excludethis" ).length ) {
 	    return false;
 	  }else if ($(target).parents(".notthis").length ) {
 	  	return false;

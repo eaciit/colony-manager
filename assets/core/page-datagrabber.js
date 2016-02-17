@@ -29,6 +29,16 @@ dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
+
+// Test Data Child
+// dg.dataTestBind = ko.observableArray( [
+// {"Format":"","Label":"Age","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"double","_id":"Age"},
+// {"Format":"","Label":"Address","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Address"},
+// {"Format":"","Label":"Job","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Job", "expanded":true, "items":[{"_id":"testA", "Label":"testA", "items":[{"_id":"asa", "Label":"ere"}]}, {"_id":"testB", "Label":"testB"}]},
+// {"Format":"","Label":"email","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"email"},
+// {"Format":"","Label":"FullName","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"FullName"},
+// {"Format":"","Label":"_id","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"_id"}]);
+
 dg.selectedDataGrabber = ko.observable('');
 dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
@@ -40,11 +50,11 @@ dg.scrapperColumns = ko.observableArray([
 	} },
 	{ field: "_id", title: "Data Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{ title: "", width: 160, attributes: { style: "text-align: center;", class:'excludethis' }, template: function (d) {
+	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster notthis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster neitherthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
 	{ field: "DataSourceOrigin", title: "Data Source Origin", width: 150 },
@@ -65,6 +75,9 @@ dg.historyColumns = ko.observableArray([
 		].join(" ");
 	}, filterable: false }
 ]);
+dg.changeDataSourceOrigin = function () {
+	dg.prepareFieldsOrigin(this.value());
+};
 dg.fieldOfDataSource = function (which) {
 	return ko.computed(function () {
 		var ds = Lazy(dg.dataSourcesData()).find({
@@ -154,7 +167,7 @@ dg.selectGridDataGrabber = function(e){
 	var grid = $(".grid-data-grabber").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
 	var target = $( event.target );
-	if ( $(target).is( ".excludethis" ) ) {
+	if ( $(target).parents( ".excludethis" ).length ) {
 	    return false;
 	  }else if ($(target).parents(".notthis").length ) {
 	  	return false;
@@ -178,6 +191,7 @@ dg.editScrapper = function (_id) {
 		dg.scrapperMode('editor');
 		app.resetValidation("#form-add-scrapper");
 		ko.mapping.fromJS(res.data, dg.configScrapper);
+		dg.prepareFieldsOrigin(dg.configScrapper.DataSourceOrigin());
 	});
 };
 dg.removeScrapper = function (_id) {
@@ -373,7 +387,29 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
+dg.prepareFieldsOrigin = function (_id) {
+	var row = Lazy(dg.dataSourcesData()).find({ _id: _id });
 
+	var ds = new kendo.data.HierarchicalDataSource({
+        data: row.MetaData,
+        schema: {
+            model: {
+                children: "Sub"
+            }
+        }
+    });
+
+	$(".fields-origin").replaceWith('<div class="fields-origin"></div>');
+    $(".fields-origin").kendoTreeView({
+        dataSource: ds,
+        dataTextField: ["Label"],
+        template: function (d) {
+        	return [
+        		"<div style='width: 200px;'>" + d.item._id + "</div>",
+    		].join("")
+        },
+    });
+};
 dg.checkDeleteDataGrabber = function(elem, e){
 	if (e === 'datagrabberall'){
 		if ($(elem).prop('checked') === true){
