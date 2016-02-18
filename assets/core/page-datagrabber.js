@@ -2,7 +2,7 @@ app.section('scrapper');
 
 viewModel.dataGrabber = {}; var dg = viewModel.dataGrabber;
 
-dg.templateConfigScrapper = {
+/*dg.templateConfigScrapper = {
 	_id: "",
 	DataSourceOrigin: "",
 	DataSourceDestination: "",
@@ -12,7 +12,21 @@ dg.templateConfigScrapper = {
 	TimeoutInterval: 20,
 	Map: [],
 	RunAt: []
+};*/
+
+dg.templateConfigScrapper = {
+	_id: "",
+	name:"",
+	DataSourceOrigin: "",
+	DataSourceDestination: "",
+	IgnoreFieldsDestination: [],
+	IntervalType: "seconds",
+	GrabInterval: 20,
+	TimeoutInterval: 20,
+	Map: [],
+	RunAt: []
 };
+
 dg.templateMap = {
 	FieldOrigin: "",
 	FieldDestination: ""

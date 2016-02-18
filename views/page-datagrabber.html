@@ -1,10 +1,6 @@
 <!-- core -->
 <script src="/res/core/page-datagrabber.js"></script>
 
-<!-- jquery treegrid -->
-<script src="/res/jquery-treegrid/js/jquery.treegrid.min.js"></script>
-<link href="/res/jquery-treegrid/css/jquery.treegrid.css" rel="stylesheet">
-
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
@@ -40,7 +36,6 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
-		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -58,7 +53,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 700px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (dg.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
@@ -67,7 +62,7 @@
 		    </div>
 		    <div class="panel-body">
 		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" id="form-add-scrapper" novalidate>
-					<div class="col-md-12" style="width: 650px;">
+					<div class="col-md-12">
 						<div class="form-group">
 				        	<label class="col-md-2 filter-label">ID</label>
 				        	<div class="col-md-4">
@@ -76,43 +71,65 @@
 				        	</div>
 				        	<label class="col-md-2 filter-label">Destination</label>
 				        	<div class="col-md-4">
-				        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoComboBox:{data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id',filter: 'contains', suggest: true, minLength: 1, change: dg.changeDataSourceDestination }"></select>
+				        		<input required class="form-control input-sm full-width" data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoComboBox:{data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id',filter: 'contains', suggest: true, minLength: 1}"/>
 								<span class="k-invalid-msg" data-for="data-source-destination"></span>
 				        	</div>
-
 				        </div>
 				        <div class="form-group">
 				        	<label class="col-md-2 filter-label">Name</label>
 				        	<div class="col-md-4">
-				        		<input required class="form-control input-sm full-width" type="text" name="Name" placeholder="Type Name here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
+				        		<input required class="form-control input-sm full-width" type="text" name="Name" placeholder="Type Name here" data-bind="value: name, enable: (dg.scrapperMode() == '')" />
 								<span class="k-invalid-msg" data-for="Name"></span>
 				        	</div>
-				        	<label class="col-md-2 filter-label">Origin</label>
+
+				        	<label class="col-md-2 filter-label">Source</label>
 				        	<div class="col-md-4">
-				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoComboBox: {data: dg.dataSourcesData, value: DataSourceOrigin,dataValueField: '_id', dataTextField: '_id',filter: 'contains', suggest: true, minLength: 1,change: dg.changeDataSourceOrigin}"></select>
+				        		<input required class="form-control input-sm full-width" data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoComboBox: {data: dg.dataSourcesData, value: DataSourceOrigin,dataValueField: '_id', dataTextField: '_id',filter: 'contains', suggest: true, minLength: 1}"/>
 								<span class="k-invalid-msg" data-for="data-source-origin"></span>
 				        	</div>
 				        </div>
-
 				        <div class="form-group">
 				        	<label class="col-md-4 filter-label">Pre - Transfer Command</label>
 				        	<div class="col-md-8">
-				        		<input class="form-control input-sm full-width" type="text" name="Pre-Transfer" data-bind="" />
+				        		<input class="form-control input-sm full-width" type="text" name="Pre-Transfer" data-bind="value: name, enable: (dg.scrapperMode() == '')" />
 								<span class="k-invalid-msg" data-for="Pre_Transfer"></span>
 				        	</div>
 				        </div>
 				        <div class="form-group">
 				        	<label class="col-md-4 filter-label">Post - Transfer Command</label>
 				        	<div class="col-md-8">
-				        		<input class="form-control input-sm full-width" type="text" name="Post-Transfer" data-bind="" />
+				        		<input class="form-control input-sm full-width" type="text" name="Post-Transfer" data-bind="value: name, enable: (dg.scrapperMode() == '')" />
 								<span class="k-invalid-msg" data-for="Post_Transfer"></span>
 				        	</div>
 				        </div>
-			        
-					<div class="col-md-12">
 				        <div class="form-group">
 				        	<div class="col-md-12">
-				        		<table class="table tree table-tree-map"></table>
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Field Origin</th>
+											<th>Field Destination</th>
+											<th>&nbsp;</th>
+										</tr>
+									</thead>
+									<tbody data-bind="foreach: dg.configScrapper.Map">
+										<tr>
+											<td>
+												<select required data-required-msg="Field Origin cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSource('origin'), value: FieldOrigin, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-origin-' + $index() }"></select>
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-origin-' + $index() }"></span>
+											</td>
+											<td>
+												<select required data-required-msg="Field Destination cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSource('destination'), value: FieldDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-destination-' + $index() }"></select>
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-destination-' + $index() }"></span>
+											</td>
+											<td>
+												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: dg.removeMap($index())">
+													<span class="glyphicon glyphicon-remove"></span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
 				        	</div>
 				        </div>
 		        	</div>
