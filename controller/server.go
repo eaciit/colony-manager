@@ -142,3 +142,47 @@ func (s *ServerController) ServersFilter(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, data, "")
 }
+
+
+func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := new(colonycore.Server)
+	e := r.GetPayload(&data)
+	 
+	var SshClient SshSetting
+	SshClient.SSHAuthType = SSHAuthType_Password
+	SshClient.SSHHost = data.Host //"192.168.56.102:22" 
+	//if(pem==""){
+	SshClient.SSHUser = data.SSHUser//"eaciit1"  
+	SshClient.SSHPassword = data.SSHPass//"12345"  
+	// }else{
+	// 	SshClient.SSHKeyLocation = pem
+	// }
+
+	filepath := "d:\\"+data.SSHFile   
+	destination := data.Folder //"/home/eaciit1" 
+
+	e = SshClient.CopyFileSsh(filepath, destination)
+	if e != nil {
+		return helper.CreateResult(true, data , "")
+	} else {
+		return helper.CreateResult(true, data, "")
+	}
+}
+
+
+func (s *ServerController) UploadFile(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	 
+	err, fileName := helper.UploadHandler(r, "uploadfile", zipSource)
+	err, host := helper.UploadHandler(r, "host", zipSource)
+	path  := "d:\\"+fileName
+	_, _, err = helper.FetchThenSaveFile(r.Request, "uploadfile",path)
+ 	if err != nil {
+		return helper.CreateResult(true, err, "1")
+	}
+	 
+	return helper.CreateResult(true,host, "")
+ 
+}

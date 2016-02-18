@@ -85,6 +85,8 @@ srv.saveServer = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
+		srv.UploadServer();
+		srv.sendFile();
 	});
 	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
 	});
@@ -210,6 +212,52 @@ srv.getServerFile = function() {
 	     $('#file-name').val(filename);
 	     $("#nama").text(filename)
 	 });
+};
+
+
+srv.UploadServer = function(){ 
+
+      	var inputFiles = document.getElementById("fileserver");
+      	 
+      	var formdata = new FormData();
+
+      	for (i = 0; i < inputFiles.files.length; i++) {
+            formdata.append('uploadfile', inputFiles.files[i]);
+            formdata.append('filetypes', inputFiles.files[i].type);
+            formdata.append('filesizes', inputFiles.files[i].size);
+           
+        }
+       
+      	var xhr = new XMLHttpRequest();
+        xhr.open('POST', "/server/uploadfile"); 
+        xhr.send(formdata);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                alert(xhr.responseText);
+            }
+        }
+         
+        return false;
+};
+ 
+
+srv.sendFile = function(){
+	var inputFiles = document.getElementById("fileserver");
+    console.log(inputFiles.files[0].name);
+	if (!app.isFormValid(".form-server")) {
+		return;
+	}
+	srv.configServer.sshfile(inputFiles.files[0].name);
+	var data = ko.mapping.toJS(srv.configServer);
+	console.log(data);
+	app.ajaxPost("/server/sendfile", data, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+	});
+	swal({title: "File successfully Send", type: "success",closeOnConfirm: true
+	});
+	srv.backToFront()
 };
 
 srv.showFileUserPass = function (){	
