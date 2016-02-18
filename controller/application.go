@@ -44,6 +44,7 @@ type TreeSourceUi struct {
 	Expanded  bool           `json:"expanded",bson:"expanded"`
 	Iconclass string         `json:"iconclass",bson:"iconclass"`
 	Content   string         `json:"content",bson:"content"`
+	Path      string         `json:"path",bson:"path"`
 	Items     []TreeSourceUi `json:"items",bson:"items"`
 }
 
@@ -418,12 +419,14 @@ func SubMenu(path string) []TreeSourceUi {
 			mst2.Type = "file"
 			mst2.Expanded = false
 			mst2.Iconclass = "glyphicon glyphicon-file"
+			//fmt.Println("========> path submenu", mst2.Path)
 			//fmt.Println("==============>>>>> 1", mst2.Items)
 			content, err := ioutil.ReadFile(path + "/" + f.Name())
 			if err != nil {
 				fmt.Println("Error : ", err)
 			}
 			mst2.Content = string(content)
+			mst2.Path = filepath.Join(path, f.Name())
 			ret = append(ret, mst2)
 		} else {
 			mst2.Text = f.Name()
@@ -435,6 +438,7 @@ func SubMenu(path string) []TreeSourceUi {
 			smst = SubMenu(newDir)
 
 			mst2.Items = smst
+			mst2.Path = filepath.Join(path, f.Name())
 			ret = append(ret, mst2)
 			//fmt.Println("==============>>>>> 2", mst2.Items)
 		}
@@ -462,11 +466,13 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 			mst2.Type = "file"
 			mst2.Expanded = false
 			mst2.Iconclass = "glyphicon glyphicon-file"
+			//fmt.Println("========> path submenu", mst2.Path)
 			content, err := ioutil.ReadFile(f.Name())
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 			mst2.Content = string(content)
+			mst2.Path = filepath.Join(dir, f.Name())
 			ret = append(ret, mst2)
 		} else {
 			mst2.Text = f.Name()
@@ -479,8 +485,10 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 			mst2.Content = ""
 			var smst []TreeSourceUi
 			newDir := dir + "/" + f.Name()
+			fmt.Println("========>55", newDir)
 			smst = SubMenu(newDir)
 			mst2.Items = smst
+			mst2.Path = filepath.Join(path, f.Name())
 			//fmt.Println("==============>>>>>", mst2.Items)
 			ret = append(ret, mst2)
 		}
@@ -564,4 +572,22 @@ func (a *ApplicationController) ReadDirectoryx(r *knot.WebContext) interface{} {
 		}
 	}
 	return helper.CreateResult(true, ret, "")
+}
+
+func (a *ApplicationController) EditSave(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	text := payload["contentfield"].(string)
+	path := payload["path"].(string)
+	d1 := []byte(text)
+	err = ioutil.WriteFile(path, d1, 0644)
+
+	return helper.CreateResult(true, err, "")
 }

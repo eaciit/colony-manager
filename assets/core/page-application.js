@@ -314,6 +314,7 @@ apl.removeFile = function(){
 }
 
 apl.savefile = function(){
+	console.log("======>>1 "+data.path);
 	setTimeout(function () {
 		app.ajaxPost("/application/editsave", {path: data.path, contentfield: $('#scriptarea').data('CodeMirrorInstance').getValue()}, function () {
 			if (!app.isFine) {
