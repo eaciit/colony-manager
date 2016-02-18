@@ -5,7 +5,6 @@
 <script src="/res/jquery-treegrid/js/jquery.treegrid.min.js"></script>
 <link href="/res/jquery-treegrid/css/jquery.treegrid.css" rel="stylesheet">
 
-
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
@@ -70,58 +69,44 @@
 		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" id="form-add-scrapper" novalidate>
 					<div class="col-md-12" style="width: 600px;">
 						<div class="form-group">
-				        	<label class="col-md-4 filter-label">ID</label>
-				        	<div class="col-md-5">
+				        	<label class="col-md-2 filter-label">ID</label>
+				        	<div class="col-md-4">
 				        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
 								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
+				        	<label class="col-md-2 filter-label">Destination</label>
+				        	<div class="col-md-4">
+				        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoComboBox:{data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id',filter: 'contains', suggest: true, minLength: 1}"></select>
+								<span class="k-invalid-msg" data-for="data-source-destination"></span>
+				        	</div>
+
 				        </div>
-						<div class="form-group">
-				        	<label class="col-md-4 filter-label">Data Source Origin</label>
-				        	<div class="col-md-5">
-				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceOrigin }"></select>
+				        <div class="form-group">
+				        	<label class="col-md-2 filter-label">Name</label>
+				        	<div class="col-md-4">
+				        		<input required class="form-control input-sm full-width" type="text" name="Name" placeholder="Type Name here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
+								<span class="k-invalid-msg" data-for="Name"></span>
+				        	</div>
+				        	<label class="col-md-2 filter-label">Source</label>
+				        	<div class="col-md-4">
+				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoComboBox: {data: dg.dataSourcesData, value: DataSourceOrigin,dataValueField: '_id', dataTextField: '_id',filter: 'contains', suggest: true, minLength: 1}"></select>
 								<span class="k-invalid-msg" data-for="data-source-origin"></span>
 				        	</div>
 				        </div>
 				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Data Source Destination</label>
-				        	<div class="col-md-5">
-				        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceDestination }"></select>
-								<span class="k-invalid-msg" data-for="data-source-destination"></span>
+				        	<label class="col-md-4 filter-label">Pre - Transfer Command</label>
+				        	<div class="col-md-8">
+				        		<input class="form-control input-sm full-width" type="text" name="Pre-Transfer" data-bind="" />
+								<span class="k-invalid-msg" data-for="Pre_Transfer"></span>
 				        	</div>
 				        </div>
 				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Ignored Fields</label>
-				        	<div class="col-md-5">
-				        		<select class="full-width" data-bind="kendoMultiSelect: { data: dg.fieldOfDataSource('destination'), value: IgnoreFieldsDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', enabled: dg.isDataSourceNotEmpty('destination') }"></select>
+				        	<label class="col-md-4 filter-label">Post - Transfer Command</label>
+				        	<div class="col-md-8">
+				        		<input class="form-control input-sm full-width" type="text" name="Post-Transfer" data-bind="" />
+								<span class="k-invalid-msg" data-for="Post_Transfer"></span>
 				        	</div>
 				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Interval Type</label>
-				        	<div class="col-md-5">
-				        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateIntervalType, value: IntervalType, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
-								<span class="k-invalid-msg" data-for="interval-type"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Interval Duration</label>
-				        	<div class="col-md-5">
-				        		<input class="full-width" name="interval-duration" required data-required-msg="Interval duration cannot be empty" data-bind="kendoNumericTextBox: { value: GrabInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
-								<span class="k-invalid-msg" data-for="interval-duration"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Timeout Duration</label>
-				        	<div class="col-md-5">
-				        		<input class="full-width" name="timeout-duration" required data-required-msg="Timeout duration cannot be empty" data-bind="kendoNumericTextBox: { value: TimeoutInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
-								<span class="k-invalid-msg" data-for="timeout-duration"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Fields Mapping</label>
-				        </div>
-			        </div>
-			        
 					<div class="col-md-12">
 				        <div class="form-group">
 				        	<div class="col-md-12">
@@ -191,4 +176,4 @@
 		    </div>
 		</div>
 	</div>
-</div>
+</div>s
