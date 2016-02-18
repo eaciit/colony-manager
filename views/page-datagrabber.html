@@ -5,6 +5,12 @@
 <script src="/res/jquery-treegrid/js/jquery.treegrid.min.js"></script>
 <link href="/res/jquery-treegrid/css/jquery.treegrid.css" rel="stylesheet">
 
+<style>
+	.table-tree-map .treegrid-expanded td:nth-child(4) *,
+	.table-tree-map .treegrid-expanded td:nth-child(5) * {
+		visibility: hidden;
+	}
+</style>
 
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">

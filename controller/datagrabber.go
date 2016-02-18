@@ -480,39 +480,60 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	for _, each := range data {
 		eachTransformedData := toolkit.M{}
 
-		for _, eachMeta := range dsDestination.MetaData {
-			fieldFrom := eachMeta.ID
-		checkMap:
-			for _, eachMap := range dataGrabber.Maps {
-				if eachMap.Destination == eachMeta.ID {
-					fieldFrom = eachMap.Source
-					break checkMap
-				}
-			}
+		for _, eachMap := range dataGrabber.Maps {
+			var valueEachSourceField interface{}
 
-			if eachMeta.Type == "object" {
-				o := toolkit.M{}
-
-				eachObject, err := toolkit.ToM(each.Get(fieldFrom))
-				if err != nil {
-					eachObject = toolkit.M{}
-				}
-
-				for _, subMeta := range eachMeta.Sub {
-					o.Set(subMeta.ID, eachObject.Get(subMeta.ID))
-				}
-
-				eachTransformedData.Set(eachMeta.ID, o)
+			if !strings.Contains(eachMap.Source, "|") {
+				valueEachSourceField = each.Get(eachMap.Source)
 			} else {
-				eachTransformedData.Set(eachMeta.ID, each.Get(fieldFrom))
+				prev := strings.Split(eachMap.Source, "|")[0]
+				next := strings.Split(eachMap.Source, "|")[1]
+
+				valueObject := toolkit.M{}
+				if valueObject, _ = toolkit.ToM(each.Get(prev)); valueObject != nil {
+					valueEachSourceField = valueObject.Get(next)
+				}
 			}
 
+			if !strings.Contains(eachMap.Destination, "|") {
+				if eachMap.SourceType == "object" {
+					sourceObject, _ := toolkit.ToM(valueEachSourceField)
+					if sourceObject == nil {
+						sourceObject = toolkit.M{}
+					}
+
+					valueObject := toolkit.M{}
+					for _, desMeta := range dsDestination.MetaData {
+						if desMeta.ID == eachMap.Destination {
+							for _, eachMetaSub := range desMeta.Sub {
+								valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+							}
+							break
+						}
+					}
+
+					eachTransformedData.Set(eachMap.Destination, valueObject)
+				} else {
+					eachTransformedData.Set(eachMap.Destination, valueEachSourceField)
+				}
+			} else {
+				prev := strings.Split(eachMap.Destination, "|")[0]
+				next := strings.Split(eachMap.Destination, "|")[1]
+
+				valueObject, _ := toolkit.ToM(eachTransformedData.Get(prev))
+				if valueObject == nil {
+					valueObject = toolkit.M{}
+				}
+
+				valueObject.Set(next, valueEachSourceField)
+				eachTransformedData.Set(prev, valueObject)
+			}
 		}
 
+		fmt.Printf("==== %#v\n", eachTransformedData)
+
 		transformedData = append(transformedData, eachTransformedData)
-
 		tableName := dsDestination.QueryInfo.GetString("from")
-
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
 

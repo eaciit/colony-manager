@@ -80,6 +80,26 @@ dg.dataSourcesDataForSourceAndDest = function (which) {
 dg.changeDataSourceOrigin = function () {
 	dg.prepareFieldsOrigin(this.value());
 };
+dg.expandMetaData = function (allMetaData, parent, result) {
+	parent = (parent == undefined) ? "" : (parent + "|");
+	result = (result == undefined) ? [] : result;
+
+	allMetaData.forEach(function (md) {
+		result.push({
+			_id: parent + md._id,
+			Label: md.Label,
+			Type: md.Type,
+		});
+
+		if (md.Sub != null || md.Sub != undefined) {
+			dg.expandMetaData(md.Sub, md._id, result);
+		}
+	});
+
+	console.log(result);
+
+	return result;
+};
 dg.changeDataSourceDestination = function () {
 	var ds = Lazy(dg.dataSourcesData()).find({
 		_id: this.value()
@@ -89,7 +109,7 @@ dg.changeDataSourceDestination = function () {
 		var $comboBox = $(each).data("kendoComboBox");
 		$comboBox.value('');
 		$comboBox.setDataSource(new kendo.data.DataSource({
-			data: ds.MetaData
+			data: dg.expandMetaData(ds.MetaData)
 		}));
 	});
 }
@@ -109,7 +129,7 @@ dg.fieldOfDataSourceDestination = ko.computed(function () {
 		return [];
 	}
 
-	return ds.MetaData;
+	return dg.expandMetaData(ds.MetaData);
 }, dg);
 dg.getScrapperData = function (){
 	app.ajaxPost("/datagrabber/getdatagrabber", {}, function (res) {
@@ -482,7 +502,12 @@ dg.prepareFieldsOrigin = function (_id) {
 				suggest: true, 
 				minLength: 2,
 				template: function (d) {
-					return d._id + ' (' + d.Type + ')';
+					var labelsComp = d._id.split("|").reverse();
+					var space = labelsComp.slice(1).map(function (e, i) {
+						return "<b class='color-blue'>&nbsp;&nbsp;>&nbsp;&nbsp;</b>";
+					}).join("");
+
+					return space + labelsComp[0] + ' (' + d.Type + ')';
 				},
 				change: function () {
 					if (this.value() == "") {
@@ -534,7 +559,7 @@ dg.prepareFieldsOrigin = function (_id) {
 dg.parseMap = function () {
 	var maps = [];
 
-	$(".table-tree-map tr:gt(0)").each(function (i, e) {
+	$(".table-tree-map tr:gt(0):visible").each(function (i, e) {
 		var $fd = $(e).find("select.field-destination").data("kendoComboBox");
 		var $td = $(e).find("select.type-destination").data("kendoDropDownList");
 		if ($fd.value() == "") {
@@ -545,7 +570,8 @@ dg.parseMap = function () {
 			Source: $(e).attr("data-key"),
 			SourceType: $(e).attr("data-type"),
 			Destination: $fd.value(),
-			DestinationType: ""
+			DestinationType: "",
+			Sub: []
 		};
 
 		var typeDestVisiblility = $(e).find("select.type-destination")
