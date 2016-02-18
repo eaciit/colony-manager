@@ -31,15 +31,6 @@ dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
 dg.fieldDataTypes = ko.observableArray(['string', 'double', 'int']);
 
-// Test Data Child
-// dg.dataTestBind = ko.observableArray( [
-// {"Format":"","Label":"Age","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"double","_id":"Age"},
-// {"Format":"","Label":"Address","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Address"},
-// {"Format":"","Label":"Job","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Job", "expanded":true, "items":[{"_id":"testA", "Label":"testA", "items":[{"_id":"asa", "Label":"ere"}]}, {"_id":"testB", "Label":"testB"}]},
-// {"Format":"","Label":"email","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"email"},
-// {"Format":"","Label":"FullName","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"FullName"},
-// {"Format":"","Label":"_id","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"_id"}]);
-
 dg.selectedDataGrabber = ko.observable('');
 dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
@@ -76,6 +67,14 @@ dg.historyColumns = ko.observableArray([
 		].join(" ");
 	}, filterable: false }
 ]);
+dg.dataSourcesDataForSourceAndDest = function (which) {
+	return ko.computed(function () {
+		return Lazy(dg.dataSourcesData()).filter(function (k) {
+			var where = (which != "origin") ? "DataSourceOrigin" : "DataSourceDestination";
+			return dg.configScrapper[where]() != k._id;
+		}).toArray();
+	}, dg);
+}
 dg.changeDataSourceOrigin = function () {
 	dg.prepareFieldsOrigin(this.value());
 };
