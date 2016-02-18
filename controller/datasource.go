@@ -533,11 +533,18 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		}
 	}
 
+	metadata := d.parseMetadata(data)
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	return helper.CreateResult(true, metadata, "")
+}
+
+func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.FieldInfo {
 	metadata := []*colonycore.FieldInfo{}
+
 	for key, val := range data {
 		label := key
 
@@ -551,10 +558,40 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		meta.Format = ""
 		meta.Lookup = lookup
 
+		switch toolkit.TypeName(val) {
+		case "toolkit.M":
+			meta.Type = "object"
+
+			meta.Sub = d.parseMetadata(val.(toolkit.M))
+		case "[]interface {}":
+			meta.Type = "array"
+
+			valArray := val.([]interface{})
+			if len(valArray) > 0 {
+				if toolkit.TypeName(valArray[0]) == "toolkit.M" {
+					meta.Type = "array-objects"
+					meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))
+				} else {
+					switch target := toolkit.TypeName(valArray[0]); {
+					case strings.Contains(target, "interface"):
+					case strings.Contains(target, "string"):
+						meta.Type = "array-string"
+					case strings.Contains(target, "int"):
+						meta.Type = "array-int"
+					case strings.Contains(target, "float"):
+					case strings.Contains(target, "double"):
+						meta.Type = "array-double"
+					default:
+						meta.Type = "array-string"
+					}
+				}
+			}
+		}
+
 		metadata = append(metadata, meta)
 	}
 
-	return helper.CreateResult(true, metadata, "")
+	return metadata
 }
 
 func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{} {

@@ -487,3 +487,81 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 	}
 	return helper.CreateResult(true, ret, "")
 }
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func (a *ApplicationController) GenNewFile(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	d1 := []byte("")
+	err := ioutil.WriteFile("TestNewFile.html", d1, 0644)
+	check(err)
+
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) DeleteFileSelected(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	err := os.RemoveAll("TestDir")
+	check(err)
+
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) CreateNewDirectory(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	err := os.Mkdir("."+string(filepath.Separator)+"TestDir", 0777)
+	check(err)
+
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) ReadDirectoryx(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	var ret []TreeSourceUi
+	// path, err := os.Getwd()
+	// var dir = filepath.Join(path, "..", "colony-app")
+	var dir = "C:/Projects/Go/src/github.com/eaciit/colony-app/apps"
+
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	for _, f := range files {
+		var mst2 TreeSourceUi
+		if filepath.Ext(f.Name()) != "" {
+			mst2.Text = f.Name()
+			mst2.Type = "file"
+			mst2.Expanded = false
+			mst2.Iconclass = "glyphicon glyphicon-file"
+			content, err := ioutil.ReadFile(f.Name())
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			mst2.Content = string(content)
+			ret = append(ret, mst2)
+		} else {
+			mst2.Text = f.Name()
+			mst2.Type = "folder"
+			mst2.Expanded = true
+			mst2.Iconclass = "glyphicon glyphicon-folder-open"
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			mst2.Content = ""
+			var smst []TreeSourceUi
+			newDir := dir + "/" + f.Name()
+			smst = SubMenu(newDir)
+			mst2.Items = smst
+			ret = append(ret, mst2)
+		}
+	}
+	return helper.CreateResult(true, ret, "")
+}

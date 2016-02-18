@@ -25,12 +25,13 @@ wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
-	calltype: "POST",
+	calltype: "GET",
 	sourcetype: "SourceType_Http",
 	intervaltype: "seconds",
 	grabinterval: 20,
 	timeoutinterval: 20,
-	url: "http://www.shfe.com.cn/en/products/Gold/",
+	// url: "http://www.shfe.com.cn/en/products/Gold/",
+	url: "http://www.google.com",
 	logconf: {
 		"filename": "LOG-GRABDCE",
 		"filepattern": "",
@@ -78,7 +79,12 @@ wg.templateConfigSelector = {
 }
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
-wg.templateFilterCond = ["AND", "OR", "NAND", "NOR"];
+wg.templateFilterCond = ko.observableArray([
+	{Id:"$and",Title:"AND"},
+	{Id:"$or",Title:"OR"},
+	{Id:"$nand",Title:"NAND"},
+	{Id:"$nor",Title:"NOR"},
+]),
 wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
 wg.operationcondList = ko.observableArray([
@@ -102,20 +108,18 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:25, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:20, template: function (d) {
 		return [
 			"<input type='checkbox' class='webgrabbercheck' idcheck='"+d._id+"' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabber')\" />"
 		].join(" ");
 	} },
 	{ field: "_id", title: "Web Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.editScrapper(\"" + d._id + "\")' title='Edit Grabber'><span class='fa fa-edit'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' onclick='wg.removeScrapper(\"" + d._id + "\")' title='Delete Grabber'><span class='fa fa-trash'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
@@ -165,7 +169,12 @@ wg.templateConfigConnection = {
 	Password: "",
 	Settings: []
 };
-
+wg.replaceEqWithNthChild = function (s) {
+	return s.replace(/eq\(([^)]+)\)/g, function (e) {
+		var i = parseInt(e.split("(").reverse()[0].split(")")[0]) + 1;
+		return "nth-child(" + i + ")";
+	});
+}
 wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
 wg.editScrapper = function (_id) {
@@ -184,7 +193,9 @@ wg.editScrapper = function (_id) {
 		ko.mapping.fromJS(res.data, wg.configScrapper);
 
 		wg.selectorRowSetting([]);
-		res.data.datasettings.forEach(function (item) {
+		res.data.datasettings.forEach(function (item, index) {
+			item.filtercond = "";
+			item["conditionlist"] = [];
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
@@ -347,18 +358,20 @@ wg.getURL = function () {
 		var doc = wg.writeContent(res.data);
 		wg.modeSetting(1);
 
-		var startofbody = res.data.indexOf("<body");
-		var endofbody = res.data.indexOf("</body");
-		var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
-		startofbody = bodyyo.indexOf(">");
-		bodyyo = bodyyo.substr(startofbody+1);
-		URLSource = $.parseHTML(bodyyo);
-		$("#inspectElement>ul").replaceWith("<ul></ul>");
-		$(URLSource).each(function(i,e){
-			if($(this).html()!==undefined){
-				linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
-			}
-		})
+		$("#content-preview").load(function(){
+			var startofbody = res.data.indexOf("<body");
+			var endofbody = res.data.indexOf("</body");
+			var bodyyo = res.data.substr(startofbody,endofbody-startofbody);
+			startofbody = bodyyo.indexOf(">");
+			bodyyo = bodyyo.substr(startofbody+1);
+			URLSource = $.parseHTML(bodyyo);
+			$("#inspectElement>ul").replaceWith("<ul></ul>");
+			$(URLSource).each(function(i,e){
+				if($(this).html()!==undefined){
+					linenumber = wg.GetElement($(this),0,0,0,"body", "#inspectElement");
+				}
+			})
+		});
 	});
 };
 wg.getNodeElement = function(obj,classes,id){
@@ -375,7 +388,7 @@ wg.getNodeElement = function(obj,classes,id){
 };
 wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 	linenumber +=1;
-	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id);
+	var classes = obj.attr("class"), id = obj.attr("id"), nodeName = obj.get()[0].nodeName.toLowerCase(), nodeelement = wg.getNodeElement(obj, classes, id), parentselector = selector;
 	if(id !== undefined && id !== "")
 		id = "id='"+id+"'";
 	else
@@ -387,12 +400,22 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		classes = "";
 
 	if (contentid === '#inspectElement2' && linenumber > 1)
-		selector += " > " + nodeelement.element+":eq("+index+")";
+		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
 	else if (contentid === '#inspectElement')
-		selector += " > " + nodeelement.element+":eq("+index+")";
+		selector2 = selector + " > " + nodeelement.element+":eq("+index+")";
 
+	var indexTemp = $("#content-preview").contents().find(selector2).index()+1;
+	// console.log(selector2);
+	// console.log($("#content-preview").contents().find(selector2).index());
+	if (contentid === '#inspectElement2' && linenumber > 1)
+		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
+	else if (contentid === '#inspectElement')
+		selector += " > " + nodeelement.element+":nth-child("+indexTemp+")";
+
+	// console.log(selector);
 	$liElem = $("<li id='scw"+linenumber+"' class='selector' parentid='scw"+parent+"'></li>");
-	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	// $liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":eq("+index+")')", "indexelem":index});
+	$liElem.attr({"onclick":"wg.GetCurrentSelector('"+"scw"+linenumber+"','"+selector+"', '"+nodeelement.element+":nth-child("+indexTemp+")')", "indexelem":index});
 	$liElem.appendTo($(contentid+">ul"));
 
 	$divSeqElem = $("<div></div>");
@@ -461,7 +484,7 @@ wg.GetCurrentSelector = function(id,selector, node){
 		$(wg.selectedItem(), $("#content-preview").contents()).attr("style",existingStyle);
 	}
 	$("body", $("#content-preview").contents()).scrollTop($(selector, $("#content-preview").contents()).offset().top);
-	
+
 	wg.selectedItem(selector);
 	wg.selectedItemNode(node);
 	existingStyle = "";
@@ -477,14 +500,11 @@ wg.GetCurrentSelector = function(id,selector, node){
 		existingStyle = "border:5px solid #FF9900";
 	}
 	$(selector, $("#content-preview").contents()).attr("style",existingStyle);
-	if (wg.modeSelector() == 'editElementSelector')
-		wg.CreateElementChild(selector);
 };
 wg.CreateElementChild = function(selectorParent){
 	$("#inspectElement2>ul").replaceWith("<ul></ul>");
 	var childElem = $(selectorParent, $("#content-preview").contents()), idx = 0;
 	$(childElem).each(function(i,e){
-		console.log($(this).html());
 		if($(this).html()!==undefined){
 			linenumber = wg.GetElement($(this),0,0,0,selectorParent, "#inspectElement2");
 		}
@@ -556,7 +576,6 @@ wg.addSelectorSetting = function() {
 	wg.selectorRowSetting.push(ko.mapping.fromJS($.extend(true, {}, wg.templateConfigSelector)));
 }
 wg.removeSelectorSetting = function(each){
-	// console.log(ko.mapping.toJS(each));
 	var item = wg.selectorRowSetting()[each];
 	wg.selectorRowSetting.remove(item);
 }
@@ -569,10 +588,14 @@ wg.showSelectorSetting = function(index,nameSelector){
 	if (selector.columnsettings.length == 0) {
 		selector.columnsettings.push({alias: "", valuetype: "", selector: "", index: 0});
 	}
+	if (selector.conditionlist.length == 0) {
+		selector.conditionlist.push({column: "", operator: "$eq", value: ""});
+	}
 	ko.mapping.fromJS(selector, wg.configSelector);
 
 	wg.tempIndexColumn(index);
 	wg.modeSelector("edit");
+	wg.CreateElementChild(selector.rowselector);
 }
 wg.backSettingSelector = function() {
 	if (wg.modeSelector() === 'editElementSelector')
@@ -635,6 +658,20 @@ wg.removeColumnSetting = function(each){
 	var item = wg.configSelector.columnsettings()[each];
 	wg.configSelector.columnsettings.remove(item);
 }
+wg.addFilterCondition = function() {
+	var selector = $.extend(true, {}, ko.mapping.toJS(wg.configSelector));
+	selector.conditionlist.push({
+		column: "", 
+		operator: "$eq", 
+		value: ""
+	});
+
+	ko.mapping.fromJS(selector, wg.configSelector);
+}
+wg.removeFilterCondition = function(each){
+	var item = wg.configSelector.conditionlist()[each];
+	wg.configSelector.conditionlist.remove(item);
+}
 wg.GetRowSelector = function(index){
 	if (wg.modeSelector() === ''){
 		ko.mapping.fromJS(wg.selectorRowSetting()[index],wg.configSelector);
@@ -649,10 +686,10 @@ wg.GetRowSelector = function(index){
 wg.saveSelectedElement = function(index){
 	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
-		wg.selectorRowSetting()[index].rowselector(wg.selectedItem());
+		wg.selectorRowSetting()[index].rowselector(wg.replaceEqWithNthChild(wg.selectedItem()));
 		wg.modeSelector("");
 	} else {
-		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.selectedItemNode());
+		wg.configSelector.columnsettings()[wg.tempIndexSetting()].selector(wg.replaceEqWithNthChild(wg.selectedItemNode()));
 		wg.modeSelector("edit");
 	}
 	wg.selectedItem('');
@@ -665,7 +702,41 @@ wg.parseGrabConf = function () {
 		if (typeof item.connectioninfo.useheader == "string") {
 			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
 		}
+
+		item.rowselector = wg.replaceEqWithNthChild(item.rowselector);
+		item.columnsettings = item.columnsettings.map(function (c) {
+			c.selector = wg.replaceEqWithNthChild(c.selector);
+			return c;
+		});
 		
+		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
+		condition[item.filtercond] = [];
+		if (item.filtercond != ''){
+			for (var key in conditionlist){
+				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
+				obj[col] = {};
+				var format = ko.utils.arrayFilter(columnsettings,function (item) {
+			        return item.alias == col;
+			    });
+				switch (format[0]){
+					case "integer":
+						obj[col][operation] = parseInt(val);
+						break;
+					case "float":
+						obj[col][operation] = parseFloat(val);
+						break;
+					default:
+						obj[col][operation] = val;
+						break;
+				}
+				condition[item.filtercond].push(obj);
+			}
+			item.filtercond = condition;
+		} else {
+			item.filtercond = {};
+		}
+		delete item["conditionlist"];
+
 		return item;
 	});
 	config.nameid = config._id;
@@ -688,7 +759,6 @@ wg.parseGrabConf = function () {
 
 	config.grabconf.data = grabConfData;
 	config.temp.parameters = tempParameters;
-
 	return config;
 };
 wg.saveSelectorConf = function(){
@@ -860,7 +930,16 @@ wg.changeConnectionID = function (e) {
 wg.selectGridWebGrabber = function(e){
 	var grid = $(".grid-web-grabber").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
-	wg.editScrapper(selectedItem._id);
+	var target = $( event.target );
+	if ( $(target).parents( ".excludethis" ).length ) {
+	    return false;
+	  }else if ($(target).parents(".notthis").length ) {
+	  	return false;
+	  }else if ($(target).parents(".neitherthis" ).length ) {
+	  	return false;
+	  }else{
+		wg.editScrapper(selectedItem._id);
+	  }
 	wg.showWebGrabber(true);
 };
 
