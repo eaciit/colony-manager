@@ -560,3 +560,27 @@ func (a *ApplicationController) CreateNewDirectory(r *knot.WebContext) interface
 
 	return helper.CreateResult(true, err, "")
 }
+
+func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	Filename := payload["Filename"].(string)
+	pathfolder := payload["Path"].(string)
+	ID := payload["ID"].(string)
+
+	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), string(filepath.Separator))
+	pathlist = append(pathlist[:len(pathlist)-1])
+	path := strings.Join(pathlist,string(filepath.Separator))
+
+	err = os.Rename(filepath.Join(unzipDest, ID, pathfolder),filepath.Join(path,Filename))
+	
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, err, "")
+}

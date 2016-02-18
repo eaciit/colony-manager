@@ -27,7 +27,9 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
+srv.WizardColumns = ko.observableArray([{ field: "hst", title: "Host", width: 80 },{ field: "status", title: "Status", width: 80}]);
 selectedSSH = ko.observable();
+srv.showModal = ko.observable('modal1');
 srv.showFile = ko.observable(true);
 srv.showUserPass = ko.observable(true);
 srv.filterValue = ko.observable('');
@@ -109,6 +111,7 @@ srv.editServer = function (_id) {
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
 	});
+	srv.showFileUserPass();
 }
 
 srv.checkDeleteServer = function(elem, e){
@@ -220,7 +223,19 @@ srv.showFileUserPass = function (){
 		srv.showFile(true);
 		srv.showUserPass(false);
 	};
-}
+};
+
+srv.navModalWizard = function (status) {
+	srv.showModal(status);
+	if(status == 'modal2'){	
+		var nope = $('#txtWizard').val().replace( /\n/g, " " ).split( " " );
+	}
+};
+
+srv.finishButton = function () {
+	srv.showModal('modal1');
+	$('#txtWizard').val('');
+};
 
 $(function () {
     srv.getServers();
