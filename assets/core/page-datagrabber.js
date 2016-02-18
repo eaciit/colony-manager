@@ -502,12 +502,23 @@ dg.prepareFieldsOrigin = function (_id) {
 				suggest: true, 
 				minLength: 2,
 				template: function (d) {
+					var sign = '';
 					var labelsComp = d._id.split("|").reverse();
 					var space = labelsComp.slice(1).map(function (e, i) {
-						return "<b class='color-blue'>&nbsp;&nbsp;>&nbsp;&nbsp;</b>";
+						return "<b class='color-blue'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;>&nbsp;&nbsp;</b>";
 					}).join("");
 
-					return space + labelsComp[0] + ' (' + d.Type + ')';
+					if (d.Type.indexOf('array') > -1) {
+						if (d.Type.indexOf('object') > -1) {
+							sign = "<b class='color-green'>[]()</b>&nbsp;";
+						} else {
+							sign = "<b class='color-green'>[]</b>&nbsp;";
+						}
+					} else if (d.Type == "object") {
+						sign = "<b class='color-green'>()</b>&nbsp;";
+					}
+
+					return space + sign + labelsComp[0] + ' (' + d.Type + ')';
 				},
 				change: function () {
 					if (this.value() == "") {
