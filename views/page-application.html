@@ -109,8 +109,9 @@
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
 				    		<div class="col-md-12 action-button">
-				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-file"></span> New File</button>
-				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
+				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible:apl.appTreeMode() !== '' && apl.appTreeMode() === 'folder', click: apl.newFileDir" data-toggle="modal" data-target=".modal-new-file"><span class="glyphicon glyphicon-file"></span> New File / Folder</button>
+				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
+				    			<button class="btn btn-sm btn-warning" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span> Rename File</button>
 				    		</div>
 					    	<div class="col-md-12 bd1 headercustom">
 					            <div class="col-md-4">
@@ -120,7 +121,7 @@
 							    			<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 							    		</div>
 							    		<div class="col-md-3">
-					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:apl.trvRefresh">Refresh</button>	
+					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:function(){apl.treeView(apl.configApplication._id())}">Refresh</button>	
 							    		</div>
 						    		</div>
 							    </div>
@@ -129,17 +130,15 @@
 					    			<div id="nm-file" class="pdTop6"></div>
 					    		</div>
 					    		<div class="col-md-5">
-					    			<label class="col-md-8" id=""></label>
-					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" id="trv-save" >Save</button>
+					    			<label class="col-md-8 pdTop6" id="txt-path"></label>
+					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" id="trv-save" data-bind="click:apl.updateFileDir" >Save</button>
 					    		</div>
 					    	</div>
 					    	<div class="col-md-12 bd1">
-					            <div class="col-md-4">			    		
-					            	<div id="example">
-							            <div class="tvcustom">
-							                <div id="treeview-left" data-bind="value: (apl.treeView() == '')"></div>
-							            </div>
-							        </div>
+					            <div class="col-md-4">
+						            <div class="tvcustom">
+						                <div id="treeview-left"></div>
+						            </div>
 					    		</div>
 					    		<div class="col-md-8">			    		
 					    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
@@ -153,5 +152,46 @@
 	</div>
 	<div class="col-md-12" data-bind="visible: (app.section() == 'servers'), with: servers">
 		{{template "page-servers.html"}}
+	</div>
+</div>
+
+<div class="modal fade modal-new-file" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					Create New File or Folder
+				</h4>
+			</div>
+			<div class="modal-body" data-bind="with: apl.configFile">
+				<div class="col-md-12 form-row form-newfile">
+					<div class="row">
+						<label class="col-md-3">Type :</label>
+			    		<div class="col-md-9">
+							<select style="width: 100%;" name="TypeFile" required data-required-msg="Use type cannot be empty" data-bind="kendoDropDownList: { data: ['folder','file'], value: Type}"></select>
+						</div>
+					</div>
+					<div class="row">
+						<label class="col-md-3">File Name :</label>
+			    		<div class="col-md-9">
+							<input type="text" required class="form-control" name="FileName" placeholder="Type filename in here !" data-bind="value: Filename" />
+							<span class="k-invalid-msg" data-for="Filename"></span>
+						</div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span> Close
+				</button>
+				<button type="button" class="btn btn-sm btn-primary" data-bind="click: apl.newFileDir">
+					<span class="glyphicon glyphicon-save"></span> Save
+				</button>
+			</div>
+		</div>
 	</div>
 </div>
