@@ -339,6 +339,10 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 	yo()
 
+	if !dataGrabber.UseInterval {
+		return helper.CreateResult(true, nil, "")
+	}
+
 	serviceHolder[dataGrabber.ID] = true
 
 	go func(dg *colonycore.DataGrabber) {
@@ -464,16 +468,6 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		return false, nil, err.Error()
 	}
 
-	arrayContains := func(slice []string, key string) bool {
-		for _, each := range slice {
-			if each == key {
-				return true
-			}
-		}
-
-		return false
-	}
-
 	connDesc := new(colonycore.Connection)
 	err = colonycore.Get(connDesc, dsDestination.ConnectionID)
 	if err != nil {
@@ -487,20 +481,32 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		eachTransformedData := toolkit.M{}
 
 		for _, eachMeta := range dsDestination.MetaData {
-			if arrayContains(dataGrabber.IgnoreFieldsDestination, eachMeta.ID) {
-				continue
-			}
-
 			fieldFrom := eachMeta.ID
 		checkMap:
-			for _, eachMap := range dataGrabber.Map {
-				if eachMap.FieldDestination == eachMeta.ID {
-					fieldFrom = eachMap.FieldOrigin
+			for _, eachMap := range dataGrabber.Maps {
+				if eachMap.Destination == eachMeta.ID {
+					fieldFrom = eachMap.Source
 					break checkMap
 				}
 			}
 
-			eachTransformedData.Set(eachMeta.ID, each.Get(fieldFrom))
+			if eachMeta.Type == "object" {
+				o := toolkit.M{}
+
+				eachObject, err := toolkit.ToM(each.Get(fieldFrom))
+				if err != nil {
+					eachObject = toolkit.M{}
+				}
+
+				for _, subMeta := range eachMeta.Sub {
+					o.Set(subMeta.ID, eachObject.Get(subMeta.ID))
+				}
+
+				eachTransformedData.Set(eachMeta.ID, o)
+			} else {
+				eachTransformedData.Set(eachMeta.ID, each.Get(fieldFrom))
+			}
+
 		}
 
 		transformedData = append(transformedData, eachTransformedData)

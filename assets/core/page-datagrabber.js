@@ -6,12 +6,14 @@ dg.templateConfigScrapper = {
 	_id: "",
 	DataSourceOrigin: "",
 	DataSourceDestination: "",
-	IgnoreFieldsDestination: [],
+	UseInterval: false,
 	IntervalType: "seconds",
 	GrabInterval: 20,
 	TimeoutInterval: 20,
-	Map: [],
-	RunAt: []
+	Maps: [],
+	RunAt: [],
+	PreTransferCommand: "",
+	PostTransferCommand: ""
 };
 dg.templateMap = {
 	FieldOrigin: "",
@@ -91,19 +93,6 @@ dg.changeDataSourceDestination = function () {
 		}));
 	});
 }
-dg.fieldOfDataSource = function (which) {
-	return ko.computed(function () {
-		var ds = Lazy(dg.dataSourcesData()).find({
-			_id: dg.configScrapper[which == "origin" ? "DataSourceOrigin" : "DataSourceDestination"]()
-		});
-
-		if (ds == undefined) {
-			return [];
-		}
-
-		return ds.MetaData;
-	}, dg);
-};
 dg.isDataSourceNotEmpty = function (which) {
 	return ko.computed(function () {
 		var dsID = dg.configScrapper[which == "origin" ? "DataSourceOrigin" : "DataSourceDestination"]();
@@ -154,6 +143,7 @@ dg.saveDataGrabber = function () {
 		return;
 	}
 
+	dg.parseMap();
 	var param = ko.mapping.toJS(dg.configScrapper);
 	app.ajaxPost("/datagrabber/savedatagrabber", param, function (res) {
 		if(!app.isFine(res)) {
@@ -250,6 +240,10 @@ dg.runTransformation = function (_id) {
 		app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
 			if (!app.isFine(res)) {
 				return;
+			}
+
+			if (!dg.configScrapper.UseInterval()) {
+				swal({ title: "Transformation success", type: "success" });
 			}
 
 			dg.checkTransformationStatus();
@@ -451,7 +445,7 @@ dg.prepareFieldsOrigin = function (_id) {
 					'<td>' + item._id + '</td>',
 					'<td><select class="type-origin" data-value="' + item.Type + '"></select></td>',
 					'<td><select class="field-destination"></select></td>',
-					'<td><select class="type-destination"></select></td>',
+					'<td><div style="visibility: hidden;"><select class="type-destination"></select></div></td>',
 				'</tr>'
 			].join("");
 
@@ -460,6 +454,7 @@ dg.prepareFieldsOrigin = function (_id) {
 
 			var $row = $tree.find("tr:last");
 			var $typeOrigin = $row.find("select.type-origin");
+			var $typeDestination = $row.find("select.type-destination");
 
 			if (["array-objects", "array", "object"].indexOf($row.attr("data-type")) > -1) {
 				$typeOrigin.closest('td').html($typeOrigin.attr("data-value"));
@@ -478,17 +473,44 @@ dg.prepareFieldsOrigin = function (_id) {
 
 			$row.find("select.field-destination").kendoComboBox({ 
 				dataSource: {
-					data: dg.fieldOfDataSource('destination')()
+					data: dg.fieldOfDataSourceDestination()
 				},
 				dataValueField: '_id', 
 				dataTextField: 'Label', 
 				placeholder: 'Select one', 
 				filter: 'contains', 
 				suggest: true, 
-				minLength: 2
+				minLength: 2,
+				template: function (d) {
+					return d._id + ' (' + d.Type + ')';
+				},
+				change: function () {
+					if (this.value() == "") {
+						$typeDestination.closest("td").children().css("visibility", "hidden");
+						return;
+					}
+
+					$typeDestination.closest("td").children().css("visibility", "visible");
+					var valueObject = Lazy(dg.fieldOfDataSourceDestination()).find({ 
+						_id: this.value()
+					});
+
+					if (valueObject != undefined) {
+						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
+							$typeDestination.closest("td").children().css("visibility", "hidden");
+							return;
+						} else {
+							if (valueObject.Type.indexOf('array') > -1) {
+								$typeDestination.closest("td").children().css("visibility", "hidden");
+								return;
+							}
+						}
+					}
+
+					$typeDestination.data("kendoDropDownList").value(valueObject.Type);
+				}
 			});
 
-			var $typeDestination = $row.find("select.type-destination");
 			$typeDestination.kendoDropDownList({
 				dataSource: {
 					data: dg.fieldDataTypes()
@@ -508,6 +530,36 @@ dg.prepareFieldsOrigin = function (_id) {
 		expanderCollapsedClass: 'glyphicon glyphicon-plus',
 		initialState: 'collapsed'
 	});
+};
+dg.parseMap = function () {
+	var maps = [];
+
+	$(".table-tree-map tr:gt(0)").each(function (i, e) {
+		var $fd = $(e).find("select.field-destination").data("kendoComboBox");
+		var $td = $(e).find("select.type-destination").data("kendoDropDownList");
+		if ($fd.value() == "") {
+			return;
+		}
+
+		var map = {
+			Source: $(e).attr("data-key"),
+			SourceType: $(e).attr("data-type"),
+			Destination: $fd.value(),
+			DestinationType: ""
+		};
+
+		var typeDestVisiblility = $(e).find("select.type-destination")
+			.closest("td")
+			.children()
+			.css("visibility");
+		if (typeDestVisiblility != "hidden") {
+			map.DestinationType = $td.value();
+		}
+
+		maps.push(map);
+	});
+
+	dg.configScrapper.Maps(maps);
 };
 dg.checkDeleteDataGrabber = function(elem, e){
 	if (e === 'datagrabberall'){

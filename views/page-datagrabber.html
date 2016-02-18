@@ -71,13 +71,13 @@
 					<div class="col-md-12 no-padding no-margin">
 						<div class="col-md-12">
 							<div class="form-group">
-					        	<label class="col-md-2 filter-label">ID</label>
+					        	<label class="col-md-3 filter-label">ID</label>
 					        	<div class="col-md-3">
 					        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
 									<span class="k-invalid-msg" data-for="ID"></span>
 					        	</div>
 
-					        	<label class="col-md-3 filter-label">Source</label>
+					        	<label class="col-md-2 filter-label">Source</label>
 					        	<div class="col-md-3">
 					        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesDataForSourceAndDest('origin'), value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceOrigin }"></select>
 									<span class="k-invalid-msg" data-for="data-source-origin"></span>
@@ -92,16 +92,17 @@
 					        	</div>
 					        </div>
 
-					        <div class="form-group">&nbsp;</div>
-
 					        <div class="form-group">
-					        	<label class="col-md-2 filter-label">Interval Type</label>
+					        	<label class="col-md-3 filter-label">Duration Type</label>
 					        	<div class="col-md-3">
 					        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateIntervalType, value: IntervalType, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
 									<span class="k-invalid-msg" data-for="interval-type"></span>
 					        	</div>
-					        	<label class="col-md-3 filter-label">Interval Duration</label>
-					        	<div class="col-md-3">
+					        	<label class="col-md-2 filter-label">Interval Duration</label>
+					        	<div class="col-md-1">
+						        	<input style="margin-top: 8px;" type="checkbox" data-bind="checked: UseInterval" />
+					        	</div>
+					        	<div class="col-md-3" data-bind="style: { 'visibility': UseInterval() ? 'visible' : 'hidden' }">
 					        		<input class="full-width" name="interval-duration" required data-required-msg="Interval duration cannot be empty" data-bind="kendoNumericTextBox: { value: GrabInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
 									<span class="k-invalid-msg" data-for="interval-duration"></span>
 					        	</div>
@@ -115,7 +116,19 @@
 					        	</div>
 					        </div>
 
-				       		<div class="form-group">&nbsp;</div>
+					        <div class="form-group">
+					        	<label class="col-md-3 filter-label">Pre Transfer Command</label>
+					        	<div class="col-md-8">
+						        	<input class="form-control input-sm full-width" type="text" data-bind="checked: PreTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --pre --data %1" />
+					        	</div>
+					        </div>
+
+					        <div class="form-group">
+					        	<label class="col-md-3 filter-label">Post Transfer Command</label>
+					        	<div class="col-md-8">
+						        	<input class="form-control input-sm full-width" type="text" data-bind="checked: PostTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --post --data %1" />
+					        	</div>
+					        </div>
 
 					        <div class="form-group no-padding">
 					        	<label class="col-md-2 filter-label">Fields Mapping</label>
