@@ -109,9 +109,18 @@
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
 				    		<div class="col-md-12 action-button">
-				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span> New File / Folder</button>
-				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
-				    			<button class="btn btn-sm btn-warning" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span> Rename File</button>
+				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir">
+				    				<span class="glyphicon glyphicon-file"></span>
+			    				</button>
+				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir">
+				    				<span class="glyphicon glyphicon-remove"></span>
+				    			</button>
+				    			<button class="btn btn-sm btn-warning" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''">
+				    				<span class="glyphicon glyphicon-pencil"></span>
+				    			</button>
+				    			<button class="btn btn-sm btn-primary" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir" >
+				    				<span class="fa fa-save"></span>
+			    				</button>
 				    		</div>
 					    	<div class="col-md-12 bd1 headercustom">
 					            <div class="col-md-4">
@@ -131,7 +140,7 @@
 					    		</div>
 					    		<div class="col-md-5">
 					    			<label class="col-md-8 pdTop6" id="txt-path"></label>
-					            	<button class="btn btn-sm btn-primary navbar-btn col-md-1 bd0 mg0 bdcolornone" id="trv-save" data-bind="click:apl.updateFileDir" >Save</button>
+					            	
 					    		</div>
 					    	</div>
 					    	<div class="col-md-12 bd1">
