@@ -109,9 +109,9 @@
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
 				    		<div class="col-md-12 action-button">
-				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible:apl.appTreeMode() !== '' && apl.appTreeMode() === 'folder', click: apl.newFileDir" data-toggle="modal" data-target=".modal-new-file"><span class="glyphicon glyphicon-file"></span> New File / Folder</button>
+				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span> New File / Folder</button>
 				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span> Remove File</button>
-				    			<button class="btn btn-sm btn-warning" data-bind="visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span> Rename File</button>
+				    			<button class="btn btn-sm btn-warning" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span> Rename File</button>
 				    		</div>
 					    	<div class="col-md-12 bd1 headercustom">
 					            <div class="col-md-4">
@@ -163,15 +163,18 @@
 					<span aria-hidden="true">&times;</span>
 				</button>
 				<h4 class="modal-title">
-					Create New File or Folder
+					<span data-bind="text: (apl.renameFileMode() === false) ? 'Create New File or Folder' : 'Rename New File or Folder'"></span>
 				</h4>
 			</div>
 			<div class="modal-body" data-bind="with: apl.configFile">
 				<div class="col-md-12 form-row form-newfile">
 					<div class="row">
 						<label class="col-md-3">Type :</label>
-			    		<div class="col-md-9">
-							<select style="width: 100%;" name="TypeFile" required data-required-msg="Use type cannot be empty" data-bind="kendoDropDownList: { data: ['folder','file'], value: Type}"></select>
+			    		<div class="col-md-9" data-bind="visible: apl.renameFileMode() !== true">
+							<select style="width: 100%;" id="TypeFile" name="TypeFile" required data-required-msg="Use type cannot be empty" data-bind="kendoDropDownList: { data: ['folder','file'], value: Type}"></select>
+						</div>
+						<div class="col-md-9" data-bind="visible: apl.renameFileMode() === true">
+							<span data-bind="text: apl.configFile.Type()"></span>
 						</div>
 					</div>
 					<div class="row">
@@ -188,8 +191,11 @@
 				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
 					<span class="glyphicon glyphicon-remove"></span> Close
 				</button>
-				<button type="button" class="btn btn-sm btn-primary" data-bind="click: apl.newFileDir">
+				<button type="button" class="btn btn-sm btn-primary" data-bind="visible: (apl.renameFileMode() === false), click: apl.newFileDir">
 					<span class="glyphicon glyphicon-save"></span> Save
+				</button>
+				<button type="button" class="btn btn-sm btn-primary" data-bind="visible: (apl.renameFileMode() === true),click: apl.renameFile">
+					<span class="glyphicon glyphicon-save"></span> Rename
 				</button>
 			</div>
 		</div>
