@@ -7,13 +7,23 @@ apl.templateConfigApplication = {
 	Enable: ko.observable(false),
 	AppPath: ""
 };
+apl.templateFile = {
+	ID: "",
+	Path: "",
+	Filename: "",
+	Type: "folder",
+	Content: "",
+}
 apl.selectable = ko.observableArray([]);
 apl.filterValue = ko.observable('');
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
+apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
+apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
+apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.applicationColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -25,13 +35,13 @@ apl.applicationColumns = ko.observableArray([
 	{ field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
 		].join(" ");
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<a href='#'>Browse</a>"
+			"<a href='#' onclick= 'apl.OpenInNewTab()'>Browse</a>"
 		].join(" ");
 	}}
 ]);
@@ -39,8 +49,13 @@ apl.applicationColumns = ko.observableArray([
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
 	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id)
-}
+	var target = $( event.target );
+	if ($(target).parents("#excludethis").length ) {
+	  	return false;
+	}else{
+		apl.editApplication(data._id);
+	}
+};
 
 apl.getApplications = function() {
 	apl.applicationData([]);
@@ -67,7 +82,7 @@ apl.editApplication = function(_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		apl.treeView(_id);
 		app.mode('editor');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
@@ -97,14 +112,17 @@ apl.saveApplication = function() {
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
 	formData.append("AppsName", data.AppsName);
-	console.log("======= data"+JSON.stringify(data));
+	// console.log("======= data"+JSON.stringify(data));
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
+	request.onload = function(){
+		swal({title: "Application successfully created", type: "success",closeOnConfirm: true});
+		apl.backToFront();
+	}
 	request.send(formData);
-
-	swal({title: "Application successfully created", type: "success",closeOnConfirm: true
-	});
-	apl.backToFront()
+	// request.onreadystatechange = function() {
+		
+	// }
 };
 
 apl.getUploadFile = function() {
@@ -119,82 +137,120 @@ apl.getUploadFile = function() {
 	});
 };
 
-apl.selectApps = function(e){
-	var tab = $(".grid-application").data("kendoGrid");
-	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id)
-}
+// apl.selectApps = function(e){
+// 	var tab = $(".grid-application").data("kendoGrid");
+// 	var data = tab.dataItem(tab.select());
+// 	apl.editApplication(data._id)
+// }
 
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
 };
 
-apl.getTab = function(){
-	$('#myTab a').click(function (e) {
-	    if($(this).parent('li').hasClass('active')){
-	        $( $(this).attr('href') ).hide();
-	    }
-	    else {
-	        e.preventDefault();
-	        $(this).tab('show');
-	    }
-	});
-}
+// apl.getTab = function(){
+// 	$('#myTab a').click(function (e) {
+// 	    if($(this).parent('li').hasClass('active')){
+// 	        $( $(this).attr('href') ).hide();
+// 	    }
+// 	    else {
+// 	        e.preventDefault();
+// 	        $(this).tab('show');
+// 	    }
+// 	});
+// }
 
-var treeview;
-var onres;
-var data;
-var parent;
-apl.treeView = function () {
+apl.getDirectory = function(){
 	app.ajaxPost("/application/readdirectory", {}, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
-		onres = res.data;
-		//console.log("=======hasilnya"+JSON.stringify(onres));
-		apl.appRecordsDir(onres);
-		treeview = $("#treeview-left").kendoTreeView({
+	});
+}
+apl.treeView = function (id) {
+	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		$("#treeview-left").replaceWith("<div id='treeview-left'></div>");
+		apl.appRecordsDir(res.data);
+		var treeview = $("#treeview-left").kendoTreeView({
 			animation: false,
 			template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
 			select: apl.selectDirApp,
 			dataSource: apl.appRecordsDir(),
-			loadOnDemand: false
+			// loadOnDemand: false
 	    }).data("kendoTreeView");
-	    treeview.expand(".k-item");
-
 	});
 }
 apl.selectDirApp = function(e){
-	data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	console.log("========>>"+data.text);
-	$('#nm-file').text(data.text);
-	parent = treeview.dataSource.view()[0];
-	//var data = ondata.parent();
-	//console.log(JSON.stringify(parent));
-	if (data.type === 'file'){
-		var editor = $('#scriptarea').data('CodeMirrorInstance');
-		editor.setValue(data.content);
-		editor.focus();
-	}	
+	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
+	var extension = ko.utils.arrayFilter(apl.extension(),function (item) {
+        return item == data.ext;
+    });
+    if (extension.length ==0){
+		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+	    	var editor = $('#scriptarea').data('CodeMirrorInstance');
+			editor.setValue(res.data);
+			editor.focus();
+		});
+    }
+    $("#txt-path").html(data.path);
 	apl.appTreeMode(data.type);
+	apl.appTreeSelected(data.text);
 }
-
-apl.pathSelectfile = function(){
-	var a = "/"
-	for(var i=0;i<data.length;i++){
-		if(parent.text == data.text){
-
-		}
+apl.newFileDir = function(){
+	if (!app.isFormValid(".form-newfile")) {
+		return;
 	}
+	apl.configFile.ID(apl.configApplication._id());
+	apl.configFile.Path($("#txt-path").html());
+	apl.configFile.Content("");
+	var confNew = ko.mapping.toJS(apl.configFile);
+	app.ajaxPost("/application/createnewfile", confNew, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		apl.treeView(apl.configApplication._id());
+		ko.mapping.fromJS(apl.templateFile, apl.configFile);
+		$('.modal-new-file').modal('hide');
+		apl.appTreeMode("");
+		apl.appTreeSelected("");
+	});
 }
-
-apl.trvRefresh = function(){
-	apl.treeView();
-	setTimeout(function(){
-		apl.treeView();
-	},1000);
+apl.removeFileDir = function(){
+	apl.Filename = apl.appTreeSelected();
+	apl.configFile.ID(apl.configApplication._id());
+	apl.configFile.Path($("#txt-path").html());
+	var confNew = ko.mapping.toJS(apl.configFile);
+	app.ajaxPost("/application/deletefileselected", confNew, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		apl.treeView(apl.configApplication._id());
+		ko.mapping.fromJS(apl.templateFile, apl.configFile);
+		apl.appTreeMode("");
+		apl.appTreeSelected("");
+	});
+}
+apl.updateFileDir = function(){
+	apl.configFile.ID(apl.configApplication._id());
+	apl.configFile.Path($("#txt-path").html());
+	apl.configFile.Type("file");
+	apl.configFile.Content($('#scriptarea').data('CodeMirrorInstance').getValue());
+	var confNew = ko.mapping.toJS(apl.configFile);
+	app.ajaxPost("/application/createnewfile", confNew, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		apl.treeView(apl.configApplication._id());
+		ko.mapping.fromJS(apl.templateFile, apl.configFile);
+		apl.appTreeMode("");
+		apl.appTreeSelected("");
+	});
 }
 apl.searchTreeView = function(){
 	var search = $('#searchDirectori').val();
@@ -211,11 +267,16 @@ apl.codemirror = function(){
         lineNumbers: true,
         lineWrapping: true,
     });
-    editor.setValue('<html></html>');
+    editor.setValue('');
     $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
     // editor.focus();
     $('#scriptarea').data('CodeMirrorInstance', editor);
+}
+
+apl.OpenInNewTab = function (url) {
+  var win = window.open(url, '_blank');
+  win.focus();
 }
 
 function ApplicationFilter(event){
@@ -277,10 +338,7 @@ apl.OnRemove = function(){
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
-	apl.getTab()
+	// apl.getTab();
 	apl.codemirror();
-	apl.treeView();
 
 });
-
-apl.treeView();

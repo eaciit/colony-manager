@@ -1,1 +1,293 @@
-[{"ConnectionID":"200_eccolmag","DataSourceName":"DS 200 USER","MetaData":[{"Format":"","Label":"Age","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"double","_id":"Age"},{"Format":"","Label":"Address","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Address"},{"Format":"","Label":"Job","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Job"},{"Format":"","Label":"email","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"email"},{"Format":"","Label":"FullName","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"FullName"},{"Format":"","Label":"_id","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"_id"}],"QueryInfo":{"from":"users","select":"*"},"_id":"DS_200_USER"},{"ConnectionID":"200_eccolmag","DataSourceName":"DS_200_STUDENTS","MetaData":[{"Format":"","Label":"_id","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"_id"},{"Format":"","Label":"Name","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Name"},{"Format":"","Label":"Age","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"double","_id":"Age"},{"Format":"","Label":"Hobbies","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Type":"string","_id":"Hobbies"}],"QueryInfo":{"from":"students","select":"*"},"_id":"DS_200_STUDENTS"},{"ConnectionID":"200_eccolmag","MetaData":[{"Format":"","Label":"Age","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"double","_id":"Age"},{"Format":"","Label":"Address","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":[{"Format":"","Label":"Street","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"Street"},{"Format":"","Label":"City","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"City"},{"Format":"","Label":"State","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"State"}],"Type":"object","_id":"Address"},{"Format":"","Label":"Relations","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":[{"Format":"","Label":"Relation","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"Relation"},{"Format":"","Label":"Name","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"Name"}],"Type":"array-objects","_id":"Relations"},{"Format":"","Label":"Hobbies","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"array-string","_id":"Hobbies"},{"Format":"","Label":"_id","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"_id"},{"Format":"","Label":"Name","Lookup":{"DataSourceID":"","DisplayField":"","IDField":"","LookupFields":[],"_id":""},"Sub":null,"Type":"string","_id":"Name"}],"QueryInfo":{"from":"source","select":"*"},"_id":"DS_200_SOURCE"}]
+[{
+    "ConnectionID": "200_eccolmag",
+    "DataSourceName": "DS 200 USER",
+    "MetaData": [{
+        "Format": "",
+        "Label": "Age",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Type": "double",
+        "_id": "Age"
+    }, {
+        "Format": "",
+        "Label": "Address",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Type": "string",
+        "_id": "Address"
+    }, {
+        "Format": "",
+        "Label": "Job",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Type": "string",
+        "_id": "Job"
+    }, {
+        "Format": "",
+        "Label": "email",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Type": "string",
+        "_id": "email"
+    }, {
+        "Format": "",
+        "Label": "FullName",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Type": "string",
+        "_id": "FullName"
+    }, {
+        "Format": "",
+        "Label": "_id",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Type": "string",
+        "_id": "_id"
+    }],
+    "QueryInfo": {
+        "from": "users",
+        "select": "*"
+    },
+    "_id": "DS_200_USER"
+}, {
+    "ConnectionID": "200_eccolmag",
+    "MetaData": [{
+        "Format": "",
+        "Label": "Age",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "double",
+        "_id": "Age"
+    }, {
+        "Format": "",
+        "Label": "Address",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": [{
+            "Format": "",
+            "Label": "Street",
+            "Lookup": {
+                "DataSourceID": "",
+                "DisplayField": "",
+                "IDField": "",
+                "LookupFields": [],
+                "_id": ""
+            },
+            "Sub": null,
+            "Type": "string",
+            "_id": "Street"
+        }, {
+            "Format": "",
+            "Label": "City",
+            "Lookup": {
+                "DataSourceID": "",
+                "DisplayField": "",
+                "IDField": "",
+                "LookupFields": [],
+                "_id": ""
+            },
+            "Sub": null,
+            "Type": "string",
+            "_id": "City"
+        }, {
+            "Format": "",
+            "Label": "State",
+            "Lookup": {
+                "DataSourceID": "",
+                "DisplayField": "",
+                "IDField": "",
+                "LookupFields": [],
+                "_id": ""
+            },
+            "Sub": null,
+            "Type": "string",
+            "_id": "State"
+        }],
+        "Type": "object",
+        "_id": "Address"
+    }, {
+        "Format": "",
+        "Label": "Relations",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": [{
+            "Format": "",
+            "Label": "Relation",
+            "Lookup": {
+                "DataSourceID": "",
+                "DisplayField": "",
+                "IDField": "",
+                "LookupFields": [],
+                "_id": ""
+            },
+            "Sub": null,
+            "Type": "string",
+            "_id": "Relation"
+        }, {
+            "Format": "",
+            "Label": "Name",
+            "Lookup": {
+                "DataSourceID": "",
+                "DisplayField": "",
+                "IDField": "",
+                "LookupFields": [],
+                "_id": ""
+            },
+            "Sub": null,
+            "Type": "string",
+            "_id": "Name"
+        }],
+        "Type": "array-objects",
+        "_id": "Relations"
+    }, {
+        "Format": "",
+        "Label": "Hobbies",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "array-string",
+        "_id": "Hobbies"
+    }, {
+        "Format": "",
+        "Label": "_id",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "string",
+        "_id": "_id"
+    }, {
+        "Format": "",
+        "Label": "Name",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "string",
+        "_id": "Name"
+    }],
+    "QueryInfo": {
+        "from": "source",
+        "select": "*"
+    },
+    "_id": "DS_200_SOURCE"
+}, {
+    "ConnectionID": "200_eccolmag",
+    "MetaData": [{
+        "Format": "",
+        "Label": "Hobbies",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "array-string",
+        "_id": "Hobbies"
+    }, {
+        "Format": "",
+        "Label": "_id",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "string",
+        "_id": "_id"
+    }, {
+        "Format": "",
+        "Label": "Name",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "string",
+        "_id": "Name"
+    }, {
+        "Format": "",
+        "Label": "Age",
+        "Lookup": {
+            "DataSourceID": "",
+            "DisplayField": "",
+            "IDField": "",
+            "LookupFields": [],
+            "_id": ""
+        },
+        "Sub": null,
+        "Type": "double",
+        "_id": "Age"
+    }],
+    "QueryInfo": {
+        "from": "students",
+        "select": "*"
+    },
+    "_id": "DS_200_STUDENTS"
+}]

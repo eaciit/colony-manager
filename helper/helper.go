@@ -290,7 +290,7 @@ func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string)
 	}
 	defer file.Close()
 
-	dstSource := dstpath + "\\" + handler.Filename
+	dstSource := dstpath + toolkit.PathSeparator + handler.Filename
 	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err, ""
