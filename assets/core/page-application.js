@@ -16,10 +16,12 @@ apl.templateFile = {
 }
 apl.selectable = ko.observableArray([]);
 apl.filterValue = ko.observable('');
+apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
+apl.renameFileMode = ko.observable(false);
 apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
@@ -49,12 +51,7 @@ apl.applicationColumns = ko.observableArray([
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
 	var data = tab.dataItem(tab.select());
-	var target = $( event.target );
-	if ($(target).parents("#excludethis").length ) {
-	  	return false;
-	}else{
-		apl.editApplication(data._id);
-	}
+	apl.editApplication(data._id);
 };
 
 apl.getApplications = function() {
@@ -137,36 +134,19 @@ apl.getUploadFile = function() {
 	});
 };
 
-// apl.selectApps = function(e){
-// 	var tab = $(".grid-application").data("kendoGrid");
-// 	var data = tab.dataItem(tab.select());
-// 	apl.editApplication(data._id)
-// }
-
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
 };
 
-// apl.getTab = function(){
-// 	$('#myTab a').click(function (e) {
-// 	    if($(this).parent('li').hasClass('active')){
-// 	        $( $(this).attr('href') ).hide();
-// 	    }
-// 	    else {
-// 	        e.preventDefault();
-// 	        $(this).tab('show');
-// 	    }
+// apl.getDirectory = function(){
+// 	app.ajaxPost("/application/readdirectory", {}, function(res) {
+// 		if (!app.isFine(res)) {
+// 			return;
+// 		}
 // 	});
 // }
 
-apl.getDirectory = function(){
-	app.ajaxPost("/application/readdirectory", {}, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-	});
-}
 apl.treeView = function (id) {
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
 		if (!app.isFine(res)) {
@@ -179,7 +159,6 @@ apl.treeView = function (id) {
 			template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
 			select: apl.selectDirApp,
 			dataSource: apl.appRecordsDir(),
-			// loadOnDemand: false
 	    }).data("kendoTreeView");
 	});
 }
@@ -214,11 +193,20 @@ apl.newFileDir = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
+		swal({title: "File successfully save", type: "success"});
 		apl.treeView(apl.configApplication._id());
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		$('.modal-new-file').modal('hide');
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+	});
+}
+apl.modalNewFileDir = function (){
+	$('.modal-new-file').modal('show');
+	apl.renameFileMode(false);
+	apl.configFile.Filename("");
+	$("#TypeFile").kendoDropDownList({
+	  enable: true
 	});
 }
 apl.removeFileDir = function(){
@@ -316,7 +304,7 @@ apl.OnRemove = function(){
 		showCancelButton: true,
 		confirmButtonColor: "#DD6B55",
 		confirmButtonText: "Delete",
-		closeOnConfirm: false
+		closeOnConfirm: true
 		},
 		function() {
 			setTimeout(function () {
@@ -335,10 +323,38 @@ apl.OnRemove = function(){
  
 }
 
+apl.modalRenameFile =  function(){
+	$('.modal-new-file').modal('show');
+	apl.renameFileMode(true);
+	apl.configFile.ID(apl.configApplication._id());
+	apl.configFile.Path($("#txt-path").html());
+	apl.configFile.Type(apl.appTreeMode());
+	apl.configFile.Filename(apl.appTreeSelected());
+}
+
+apl.renameFile = function(){
+	apl.configFile.Path($("#txt-path").html());
+	apl.configFile.Content("");
+	var newFile = ko.mapping.toJS(apl.configFile);
+	app.ajaxPost("/application/renamefileselected", newFile, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		$('.modal-new-file').modal('hide');
+		apl.treeView(apl.configApplication._id());
+		ko.mapping.fromJS(apl.templateFile, apl.configFile);
+		apl.appTreeMode("");
+		apl.appTreeSelected("");
+	});
+}
+
+
+
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	// apl.getTab();
 	apl.codemirror();
+	apl.treeView("") ;
 
 });
