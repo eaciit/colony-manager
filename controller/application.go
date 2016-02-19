@@ -20,33 +20,16 @@ import (
 	"strings"
 )
 
-var unzipDest = AppBasePath + toolkit.PathSeparator + filepath.Join("..", "colony-app", "apps")
-var zipSource = AppBasePath + toolkit.PathSeparator + filepath.Join("config", "applications")
-var parents = make(map[string]*TreeSource)
-var basePath string
-var newDirName string
+var (
+	unzipDest  = filepath.Join(EC_APP_PATH, "src")
+	zipSource  = filepath.Join(EC_APP_PATH, "src")
+	parents    = make(map[string]*colonycore.TreeSource)
+	basePath   string
+	newDirName string
+)
 
 type ApplicationController struct {
 	App
-}
-
-type TreeSource struct {
-	ID             int           `json:"_id",bson:"_id"`
-	Text           string        `json:"text",bson:"text"`
-	Expanded       bool          `json:"expanded",bson:"expanded"`
-	SpriteCssClass string        `json:"spriteCssClass",bson:"spriteCssClass"`
-	Items          []*TreeSource `json:"items",bson:"items"`
-}
-
-type TreeSourceModel struct {
-	Text      string            `json:"text"`
-	Type      string            `json:"type"`
-	Expanded  bool              `json:"expanded"`
-	Iconclass string            `json:"iconclass"`
-	Ext       string            `json:"ext"`
-	Path      string            `json:"path"`
-	Items     []TreeSourceModel `json:"items"`
-	// Content   string            `json:"content"`
 }
 
 func CreateApplicationController(s *knot.Server) *ApplicationController {
@@ -74,7 +57,7 @@ func deleteDirectory(scanDir string, delDir string, dirName string) error {
 	return nil
 }
 
-func createJson(object *TreeSource) {
+func createJson(object *colonycore.TreeSource) {
 	jsonData, err := json.MarshalIndent(object, "", "	")
 
 	if err != nil {
@@ -82,7 +65,7 @@ func createJson(object *TreeSource) {
 	}
 	jsonString := string(jsonData)
 
-	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, "DirectoryTree.json"))
+	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, ".directory-tree.json"))
 
 	fmt.Println("writing: " + filename)
 	f, err := os.Create(filename)
@@ -121,7 +104,7 @@ func createTree(i int, path string, isDir bool) error {
 		}
 	}
 
-	parents[path] = &TreeSource{
+	parents[path] = &colonycore.TreeSource{
 		ID:             i,
 		Expanded:       isDir,
 		Text:           text,
@@ -179,7 +162,7 @@ func extractAndWriteFile(i int, f *zip.File) error {
 	return nil
 }
 
-func Unzip(src string) (result *TreeSource, err error) {
+func Unzip(src string) (result *colonycore.TreeSource, err error) {
 	r, err := zip.OpenReader(src)
 	// if err != nil {
 	// 	return nil, err
@@ -222,18 +205,22 @@ func Unzip(src string) (result *TreeSource, err error) {
 		fmt.Println("error : ", err)
 	}
 
-	if _, err := os.Stat(src); !os.IsNotExist(err) { /*delete zip file after extracting*/
+	if _, err := os.Stat(src); !os.IsNotExist(err) {
 		err = r.Close()
 		if err != nil {
 			fmt.Println("error : ", err)
 			return nil, err
 		}
+	}
 
-		err = os.Remove(src)
-		if err != nil {
-			fmt.Println("error : ", err)
-			return nil, err
-		}
+	newNameParsed := func() string {
+		comps := strings.Split(src, ".")[:]
+		return fmt.Sprintf("%s.%s", newname, comps[len(comps)-1])
+	}()
+
+	err = os.Rename(src, newNameParsed)
+	if err != nil {
+		fmt.Println("error : ", err)
 	}
 
 	return
@@ -404,17 +391,17 @@ func (a *ApplicationController) SendFile(host string, user string, pass string, 
 	}
 }
 
-func SubMenu(path string, pathdir string) []TreeSourceModel {
+func SubMenu(path string, pathdir string) []*colonycore.TreeSourceModel {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		fmt.Println("Error : ", err)
 	}
-	var arrDir []TreeSourceModel
+	var arrDir []*colonycore.TreeSourceModel
 
 	for _, f := range files {
-		var treeModel TreeSourceModel
-		if info, err := os.Stat(path+toolkit.PathSeparator+f.Name()); err == nil && info.IsDir() {
-		// if filepath.Ext(f.Name()) != "" {
+		var treeModel colonycore.TreeSourceModel
+		if info, err := os.Stat(path + toolkit.PathSeparator + f.Name()); err == nil && info.IsDir() {
+			// if filepath.Ext(f.Name()) != "" {
 			treeModel.Text = f.Name()
 			treeModel.Type = "folder"
 			treeModel.Expanded = false
@@ -422,7 +409,7 @@ func SubMenu(path string, pathdir string) []TreeSourceModel {
 			treeModel.Path = pathdir + f.Name()
 			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
 			treeModel.Items = SubMenu(path+toolkit.PathSeparator+f.Name(), pathdir+f.Name()+toolkit.PathSeparator)
-			arrDir = append(arrDir, treeModel)
+			arrDir = append(arrDir, &treeModel)
 		} else {
 			treeModel.Text = f.Name()
 			treeModel.Type = "file"
@@ -435,7 +422,7 @@ func SubMenu(path string, pathdir string) []TreeSourceModel {
 			// treeModel.Content = string(content)
 			treeModel.Path = pathdir + f.Name()
 			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
-			arrDir = append(arrDir, treeModel)
+			arrDir = append(arrDir, &treeModel)
 		}
 	}
 	return arrDir
@@ -450,16 +437,16 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 	}
 	namefolder := payload["ID"].(string)
 
-	var arrDir []TreeSourceModel
+	var arrDir []*colonycore.TreeSourceModel
 	urlDir := filepath.Join(unzipDest, namefolder)
 	files, err := ioutil.ReadDir(urlDir)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	for _, f := range files {
-		var treeModel TreeSourceModel
-		if info, err := os.Stat(urlDir+toolkit.PathSeparator+f.Name()); err == nil && info.IsDir() {
-		// if filepath.Ext(f.Name()) != "" {
+		var treeModel colonycore.TreeSourceModel
+		if info, err := os.Stat(urlDir + toolkit.PathSeparator + f.Name()); err == nil && info.IsDir() {
+			// if filepath.Ext(f.Name()) != "" {
 			treeModel.Text = f.Name()
 			treeModel.Type = "folder"
 			treeModel.Expanded = false
@@ -467,7 +454,7 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
 			treeModel.Path = f.Name()
 			treeModel.Items = SubMenu(urlDir+toolkit.PathSeparator+f.Name(), f.Name()+toolkit.PathSeparator)
-			arrDir = append(arrDir, treeModel)
+			arrDir = append(arrDir, &treeModel)
 		} else {
 			treeModel.Text = f.Name()
 			treeModel.Type = "file"
@@ -480,7 +467,7 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 			// treeModel.Content = string(content)
 			treeModel.Path = f.Name()
 			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
-			arrDir = append(arrDir, treeModel)
+			arrDir = append(arrDir, &treeModel)
 		}
 	}
 	return helper.CreateResult(true, arrDir, "")
@@ -552,17 +539,6 @@ func (a *ApplicationController) DeleteFileSelected(r *knot.WebContext) interface
 	return helper.CreateResult(true, err, "")
 }
 
-func (a *ApplicationController) CreateNewDirectory(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	err := os.Mkdir("."+string(filepath.Separator)+"TestDir", 0777)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, err, "")
-}
-
 func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := map[string]interface{}{}
@@ -576,10 +552,10 @@ func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface
 
 	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), string(filepath.Separator))
 	pathlist = append(pathlist[:len(pathlist)-1])
-	path := strings.Join(pathlist,string(filepath.Separator))
+	path := strings.Join(pathlist, string(filepath.Separator))
 
-	err = os.Rename(filepath.Join(unzipDest, ID, pathfolder),filepath.Join(path,Filename))
-	
+	err = os.Rename(filepath.Join(unzipDest, ID, pathfolder), filepath.Join(path, Filename))
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

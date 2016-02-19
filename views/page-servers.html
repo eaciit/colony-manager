@@ -62,7 +62,7 @@
 			    		<div class="form-group">
 				    		<label class="col-md-3 filter-label">Type</label>
 				    		<div class="col-md-7">
-				    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
+				    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
 						        </select>
 						        <span class="k-invalid-msg" data-for="type"></span>
 				    		</div>
@@ -79,7 +79,7 @@
 			    		<div class="form-group">
 				    		<label class="col-md-3 filter-label">OS</label>
 				    		<div class="col-md-7">
-				    			<select id="os" data-required-msg="OS cannot be empty" name="os" data-placeholder="Select OS" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
+				    			<select id="os" data-required-msg="OS cannot be empty" name="os" data-placeholder="Select OS" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
 						        </select>
 						        <span class="k-invalid-msg" data-for="os"></span>
 				    		</div>
@@ -107,6 +107,13 @@
 								<span class="k-invalid-msg" data-for="host"></span>
 				    		</div>
 			    		</div>
+			    		<div class="form-group" data-bind="visible: srv.showUserPass">
+				    		<label class="col-md-3 filter-label">User</label>
+				    		<div class="col-md-7">
+				    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
+								<span class="k-invalid-msg" data-for="user"></span>
+				    		</div>
+			    		</div>
 			    		<div class="form-group" data-bind="visible: srv.showFile">
 				    		<label class="col-md-3 filter-label">File</label>
 				    		<div class="col-md-7">
@@ -120,30 +127,21 @@
 				    	<div class="form-group">
 				    		<label class="col-md-3 filter-label">Type</label>
 				    		<div class="col-md-7">
-				    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.selectedSSH, change: srv.showFileUserPass}">
+				    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.selectedSSH, change: srv.showFileUserPass}">
 						        </select>
 						        <span class="k-invalid-msg" data-for="type-ssh"></span>
 				    		</div>
 			    		</div>
 			    		<div class="" data-bind="visible: srv.showUserPass">
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">User</label>
-					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
-									<span class="k-invalid-msg" data-for="user"></span>
-					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">Pass</label>
-					    		<div class="col-md-7">
-					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
-									<span class="k-invalid-msg" data-for="password"></span>
-					    		</div>
+				    		<label class="col-md-3 filter-label">Pass</label>
+				    		<div class="col-md-7">
+				    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
+								<span class="k-invalid-msg" data-for="password"></span>
 				    		</div>
 				    	</div>
 		    		</div>
 		    	</div>
-		    	<div class="col-md-12">
+		    	<!-- <div class="col-md-12">
 			    	<div class="col-md-12">
 		    			<p class="pcustom">Command</p>
 		    		</div>
@@ -177,7 +175,7 @@
 				    		</div>
 			    		</div>
 			    	</div>
-		    	</div>
+		    	</div> -->
 		    </div>
     	</form>
     </div>
