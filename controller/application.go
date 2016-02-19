@@ -413,7 +413,17 @@ func SubMenu(path string, pathdir string) []TreeSourceModel {
 
 	for _, f := range files {
 		var treeModel TreeSourceModel
-		if filepath.Ext(f.Name()) != "" {
+		if info, err := os.Stat(path+toolkit.PathSeparator+f.Name()); err == nil && info.IsDir() {
+		// if filepath.Ext(f.Name()) != "" {
+			treeModel.Text = f.Name()
+			treeModel.Type = "folder"
+			treeModel.Expanded = false
+			treeModel.Iconclass = "glyphicon glyphicon-folder-open"
+			treeModel.Path = pathdir + f.Name()
+			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
+			treeModel.Items = SubMenu(path+toolkit.PathSeparator+f.Name(), pathdir+f.Name()+toolkit.PathSeparator)
+			arrDir = append(arrDir, treeModel)
+		} else {
 			treeModel.Text = f.Name()
 			treeModel.Type = "file"
 			treeModel.Expanded = false
@@ -425,15 +435,6 @@ func SubMenu(path string, pathdir string) []TreeSourceModel {
 			// treeModel.Content = string(content)
 			treeModel.Path = pathdir + f.Name()
 			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
-			arrDir = append(arrDir, treeModel)
-		} else {
-			treeModel.Text = f.Name()
-			treeModel.Type = "folder"
-			treeModel.Expanded = false
-			treeModel.Iconclass = "glyphicon glyphicon-folder-open"
-			treeModel.Path = pathdir + f.Name()
-			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
-			treeModel.Items = SubMenu(path+toolkit.PathSeparator+f.Name(), pathdir+f.Name()+toolkit.PathSeparator)
 			arrDir = append(arrDir, treeModel)
 		}
 	}
@@ -457,7 +458,17 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 	}
 	for _, f := range files {
 		var treeModel TreeSourceModel
-		if filepath.Ext(f.Name()) != "" {
+		if info, err := os.Stat(urlDir+toolkit.PathSeparator+f.Name()); err == nil && info.IsDir() {
+		// if filepath.Ext(f.Name()) != "" {
+			treeModel.Text = f.Name()
+			treeModel.Type = "folder"
+			treeModel.Expanded = false
+			treeModel.Iconclass = "glyphicon glyphicon-folder-open"
+			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
+			treeModel.Path = f.Name()
+			treeModel.Items = SubMenu(urlDir+toolkit.PathSeparator+f.Name(), f.Name()+toolkit.PathSeparator)
+			arrDir = append(arrDir, treeModel)
+		} else {
 			treeModel.Text = f.Name()
 			treeModel.Type = "file"
 			treeModel.Expanded = false
@@ -469,15 +480,6 @@ func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 			// treeModel.Content = string(content)
 			treeModel.Path = f.Name()
 			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
-			arrDir = append(arrDir, treeModel)
-		} else {
-			treeModel.Text = f.Name()
-			treeModel.Type = "folder"
-			treeModel.Expanded = false
-			treeModel.Iconclass = "glyphicon glyphicon-folder-open"
-			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
-			treeModel.Path = f.Name()
-			treeModel.Items = SubMenu(urlDir+toolkit.PathSeparator+f.Name(), f.Name()+toolkit.PathSeparator)
 			arrDir = append(arrDir, treeModel)
 		}
 	}

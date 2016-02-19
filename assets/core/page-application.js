@@ -164,19 +164,14 @@ apl.treeView = function (id) {
 }
 apl.selectDirApp = function(e){
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	var extension = ko.utils.arrayFilter(apl.extension(),function (item) {
-        return item == data.ext;
-    });
-    if (extension.length ==0){
-		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-	    	var editor = $('#scriptarea').data('CodeMirrorInstance');
-			editor.setValue(res.data);
-			editor.focus();
-		});
-    }
+	app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+    	var editor = $('#scriptarea').data('CodeMirrorInstance');
+		editor.setValue(res.data);
+		editor.focus();
+	});
     $("#txt-path").html(data.path);
 	apl.appTreeMode(data.type);
 	apl.appTreeSelected(data.text);
@@ -188,6 +183,7 @@ apl.newFileDir = function(){
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
 	apl.configFile.Content("");
+	apl.configFile.Type($("#TypeFile").kendoDropDownList().val());
 	var confNew = ko.mapping.toJS(apl.configFile);
 	app.ajaxPost("/application/createnewfile", confNew, function(res) {
 		if (!app.isFine(res)) {
