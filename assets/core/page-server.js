@@ -224,15 +224,14 @@ srv.getServerFile = function() {
 
 srv.UploadServer = function(){ 
 
-      	var inputFiles = document.getElementById("fileserver");
-      	 
+      	var inputFiles = document.getElementById("uploadserver");
+      	console.log(inputFiles.files[0].name)
       	var formdata = new FormData();
 
       	for (i = 0; i < inputFiles.files.length; i++) {
             formdata.append('uploadfile', inputFiles.files[i]);
             formdata.append('filetypes', inputFiles.files[i].type);
-            formdata.append('filesizes', inputFiles.files[i].size);
-           
+            formdata.append('filesizes', inputFiles.files[i].size);           
         }
        
       	var xhr = new XMLHttpRequest();
@@ -249,7 +248,7 @@ srv.UploadServer = function(){
  
 
 srv.sendFile = function(){
-	var inputFiles = document.getElementById("fileserver");
+	var inputFiles = document.getElementById("uploadserver");
     console.log(inputFiles.files[0].name);
 	if (!app.isFormValid(".form-server")) {
 		return;
