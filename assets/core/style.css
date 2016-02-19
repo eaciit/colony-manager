@@ -53,6 +53,23 @@ a {
   .btn-text-danger:hover {
     color: #c9302c; }
 
+.btn-outline {
+  background-color: transparent;
+  color: inherit;
+  transition: all 0.1s;
+  background-image: none;
+  text-shadow: none;
+  border-width: 1.5px;
+  border-radius: 5px; }
+
+.btn-primary.btn-outline {
+  color: #eee;
+  border-color: #eee; }
+  .btn-primary.btn-outline:hover {
+    color: #fff;
+    border-color: #fff;
+    background: #blue-hover; }
+
 .form-control.disabled, fieldset.disabled .form-control {
   cursor: not-allowed; }
 
@@ -167,6 +184,10 @@ table.table tr:hover td {
   height: 25px;
   margin-top: 2px; }
 
+.btncustom {
+  height: 25px;
+  margin-top: 2px; }
+
 .demo-section {
   display: inline-block;
   vertical-align: top;
@@ -186,7 +207,7 @@ table.table tr:hover td {
   padding-top: 1%; }
 
 .lbl {
-  margin-left: -9%; }
+  margin-left: -12%; }
 
 .intext {
   width: 100%;
