@@ -53,10 +53,10 @@
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
 	    	<button class="btn btn-sm btn-primary" data-bind="click: apl.saveApplication" >
-	    		<span class="glyphicon glyphicon-save"></span>Save
+	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
 	    	<button class="btn btn-sm btn-danger" data-bind="visible: (apl.applicationMode() != '')">
-	    		<span class="glyphicon glyphicon-remove"></span>Delete
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
 		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
@@ -93,7 +93,7 @@
 						    		</div>
 						    		<div class="col-sm-4 btn-upload">
 							    		<span class="btn btn-sm btn-success btn-file">
-										    <span class="glyphicon glyphicon-upload"></span>Upload <input required id="files" name="files" type="file" accept=".zip">
+										    <span class="glyphicon glyphicon-upload"></span> Upload <input required id="files" name="files" type="file" accept=".zip">
 										</span>
 										 <span class="k-invalid-msg" data-for="files"></span>
 										<span id="nama" data-bind="value:AppPath"></span>
@@ -125,12 +125,14 @@
 					    	<div class="col-md-12 bd1 headercustom">
 					            <div class="col-md-4">
 					    		    <div class="form-group">
-							    		<label class="col-md-3 pdTop6">Search :</label>
-							    		<div class="col-md-6">
-							    			<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
-							    		</div>
-							    		<div class="col-md-3">
-					            			<button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:function(){apl.treeView(apl.configApplication._id())}">Refresh</button>	
+							    		<label class="col-md-3 pdTop6">Search</label>
+							    		<div class="col-md-9">
+							    			<div class="input-group">
+										      <input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
+										      <span class="input-group-btn">
+										        <button class="btn btn-sm btn-default btncustom" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><i class="glyphicon glyphicon-search"></i></button>
+										      </span>
+										    </div>
 							    		</div>
 						    		</div>
 							    </div>

@@ -210,14 +210,30 @@ apl.removeFileDir = function(){
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
 	var confNew = ko.mapping.toJS(apl.configFile);
-	app.ajaxPost("/application/deletefileselected", confNew, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		apl.treeView(apl.configApplication._id());
-		ko.mapping.fromJS(apl.templateFile, apl.configFile);
-		apl.appTreeMode("");
-		apl.appTreeSelected("");
+	swal({
+		title: "Are you sure?",
+		text: 'File / folder with name "' + apl.Filename + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/application/deletefileselected", confNew, function(res) {
+					if (!app.isFine) {
+						return;
+					}
+
+				 apl.treeView(apl.configApplication._id());
+				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
+				 apl.appTreeMode("");
+				 apl.appTreeSelected("");
+				 swal({title: "File / Folder successfully deleted", type: "success"});
+				});
+		},1000);
+
 	});
 }
 apl.updateFileDir = function(){
@@ -234,6 +250,7 @@ apl.updateFileDir = function(){
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+		swal({title: "File / Folder successfully updated", type: "success"});
 	});
 }
 apl.searchTreeView = function(){
@@ -341,6 +358,7 @@ apl.renameFile = function(){
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+		swal({title: "File / Folder successfully renamed", type: "success"});
 	});
 }
 
