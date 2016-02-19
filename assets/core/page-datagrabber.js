@@ -36,6 +36,7 @@ dg.fieldDataTypes = ko.observableArray(['string', 'double', 'int']);
 dg.selectedDataGrabber = ko.observable('');
 dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
+
 dg.scrapperColumns = ko.observableArray([
 	{ headerTemplate: "<input type='checkbox' class='datagrabbercheckall' onclick=\"dg.checkDeleteDataGrabber(this, 'datagrabberall', 'all')\"/>", width:25, template: function (d) {
 		return [
@@ -217,6 +218,7 @@ dg.editScrapper = function (_id) {
 		dg.prepareFieldsOrigin(dg.configScrapper.DataSourceOrigin());
 	});
 };
+
 dg.removeScrapper = function (_id) {
 	if (dg.tempCheckIdDataGrabber().length === 0) {
 		swal({
@@ -255,21 +257,27 @@ dg.backToFrontPage = function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
 };
+
 dg.runTransformation = function (_id) {
 	return function () {
-		app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
-			if (!app.isFine(res)) {
+		var param = ko.mapping.toJS(dg.configScrapper);
+			app.ajaxPost("/datagrabber/savedatagrabber", param, function (res) {
+			if(!app.isFine(res)) {
 				return;
 			}
-
-			if (!dg.configScrapper.UseInterval()) {
-				swal({ title: "Transformation success", type: "success" });
-			}
-
-			dg.checkTransformationStatus();
+			app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
+				if (!app.isFine(res)) {
+					return;
+				}
+				if (!dg.configScrapper.UseInterval()) {
+					swal({ title: "Transformation success", type: "success" });
+				}
+				dg.checkTransformationStatus();
+			});
 		});
 	};
 };
+
 dg.stopTransformation = function (_id) {
 	return function () {
 		app.ajaxPost("/datagrabber/stoptransformation", { _id: _id }, function (res) {
@@ -567,12 +575,14 @@ dg.prepareFieldsOrigin = function (_id) {
 		initialState: 'collapsed'
 	});
 };
+
 dg.parseMap = function () {
 	var maps = [];
 
 	$(".table-tree-map tr:gt(0):visible").each(function (i, e) {
 		var $fd = $(e).find("select.field-destination").data("kendoComboBox");
 		var $td = $(e).find("select.type-destination").data("kendoDropDownList");
+		
 		if ($fd.value() == "") {
 			return;
 		}
@@ -583,7 +593,7 @@ dg.parseMap = function () {
 			Destination: $fd.value(),
 			DestinationType: "",
 			Sub: []
-		};
+			};
 
 		var typeDestVisiblility = $(e).find("select.type-destination")
 			.closest("td")
@@ -591,6 +601,10 @@ dg.parseMap = function () {
 			.css("visibility");
 		if (typeDestVisiblility != "hidden") {
 			map.DestinationType = $td.value();
+		}
+		var destinationVisibility = $(e).find("select.field-destination").css("visibility")	;
+		if (destinationVisibility == "hidden"){
+			return;
 		}
 
 		maps.push(map);

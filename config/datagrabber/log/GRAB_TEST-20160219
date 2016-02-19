@@ -1,0 +1,40 @@
+SUCCESS 2016/02/19 11:20:46 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:46 ===> Success transforming 0 data
+SUCCESS 2016/02/19 11:20:47 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:47 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:47 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:20:48 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:48 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:48 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:20:49 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:49 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:49 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:20:50 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:50 ===> Success transforming 0 data
+SUCCESS 2016/02/19 11:20:51 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:51 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:51 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:20:55 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:55 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:55 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:20:57 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:57 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:57 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:20:58 ===> Transformation started! DS_200_USER -> DS_200_STUDENTS interval 20 seconds
+SUCCESS 2016/02/19 11:20:58 ===> Success transforming 0 data
+ERROR 2016/02/19 11:20:58 remove C:\projects\go\src\github.com\eaciit\colony-manager\config\datagrabber\data\20160219-110930.json: The process cannot access the file because it is being used by another process.
+SUCCESS 2016/02/19 11:30:00 ===> Starting transform! DS_200_SOURCE -> DS_200_DESTINATION
+SUCCESS 2016/02/19 11:30:00 ===> Transformation started! DS_200_SOURCE -> DS_200_DESTINATION interval 20 seconds
+SUCCESS 2016/02/19 11:30:00 ===> Success transforming 0 data
+SUCCESS 2016/02/19 13:10:09 ===> Starting transform! DS_200_SOURCE -> DS_200_DESTINATION
+SUCCESS 2016/02/19 13:10:09 ===> Transformation started! DS_200_SOURCE -> DS_200_DESTINATION interval 20 seconds
+SUCCESS 2016/02/19 13:10:09 ===> Success transforming 0 data
+SUCCESS 2016/02/19 13:42:59 ===> Starting transform! DS_200_SOURCE -> DS_200_DESTINATION
+SUCCESS 2016/02/19 13:42:59 ===> Transformation started! DS_200_SOURCE -> DS_200_DESTINATION interval 20 seconds
+SUCCESS 2016/02/19 13:42:59 ===> Success transforming 0 data
+SUCCESS 2016/02/19 16:08:16 ===> Starting transform! DS_200_SOURCE -> DS_200_DESTINATION
+SUCCESS 2016/02/19 16:08:16 ===> Transformation started! DS_200_SOURCE -> DS_200_DESTINATION interval 20 seconds
+SUCCESS 2016/02/19 16:08:16 ===> Success transforming 0 data
+SUCCESS 2016/02/19 16:13:52 ===> Starting transform! DS_200_SOURCE -> DS_200_DESTINATION
+SUCCESS 2016/02/19 16:13:52 ===> Transformation started! DS_200_SOURCE -> DS_200_DESTINATION interval 20 seconds
+SUCCESS 2016/02/19 16:13:52 ===> Success transforming 0 data
