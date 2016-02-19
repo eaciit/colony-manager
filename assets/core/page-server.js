@@ -9,6 +9,7 @@ srv.templateConfigServer = {
 	folder: "",
 	os: "",
 	enable: false,
+	host: "",
 	sshtype: "",
 	sshfile: "",
 	sshuser: "",
@@ -26,6 +27,11 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
+srv.WizardColumns = ko.observableArray([{ field: "hst", title: "Host", width: 80 },{ field: "status", title: "Status", width: 80}]);
+selectedSSH = ko.observable();
+srv.showModal = ko.observable('modal1');
+srv.showFile = ko.observable(true);
+srv.showUserPass = ko.observable(true);
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
@@ -33,23 +39,16 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:25, template: function (d) {
+	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:8, template: function (d) {
 		return [
 			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"srv.checkDeleteServer(this, 'server')\" />"
 		].join(" ");
 	} },
-	// { field: "_id", title: "ID", width: 80, template:function (d) { return ["<a onclick='srv.editServer(\"" + d._id + "\")'>" + d._id + "</a>"]} },
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "type", title: "Type", width: 80},
 	{ field: "os", title: "OS", width: 80},
 	{ field: "folder", title: "Folder", width: 80},
 	{ field: "enable", title: "Enable", width: 80},
-	// { title: "", width: 80, attributes: { style: "text-align: center;" }, template: function (d) {
-	// 	return [
-	// 		"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Server' onclick='srv.editServer(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-	// 		"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Server' onclick='srv.removeServer(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
-	// 	].join(" ");
-	// } },	
 ]);
 
 srv.getServers = function() {
@@ -75,6 +74,7 @@ srv.createNewServer = function () {
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
+    srv.showFileUserPass();
 };
 
 srv.saveServer = function(){
@@ -82,14 +82,13 @@ srv.saveServer = function(){
 		return;
 	}
 
-	// if (!qr.validateQuery()) {
-	// 	return;
-	// }
 	var data = ko.mapping.toJS(srv.configServer);
 	app.ajaxPost("/server/saveservers", data, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
+		srv.UploadServer();
+		srv.sendFile();
 	});
 	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
 	});
@@ -109,11 +108,16 @@ srv.editServer = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		console.log(res)
+		
 		app.mode('editor');
 		srv.ServerMode('edit');
-		ko.mapping.fromJS(res.data, srv.configServer);
+		try {
+			ko.mapping.fromJS(res.data, srv.configServer);
+		} catch (err) {
+			ko.mapping.fromJS(res.data, srv.configServer);
+		}
 	});
+	srv.showFileUserPass();
 }
 
 srv.checkDeleteServer = function(elem, e){
@@ -182,9 +186,9 @@ srv.removeServer = function(){
 }
 
 srv.getUploadFile = function() {
-	$('#fileserver').change(function(){
+	$('#uploadserver').change(function(){
 		var filename = $(this).val().replace(/^.*[\\\/]/, '');
-	     $('#file-name').val(filename);
+	     $('#upload-name').val(filename);
 	     $("#nama").text(filename)
 	 });
 };
@@ -203,19 +207,88 @@ function ServerFilter(event){
 	});
 }
 
-srv.checkall = function() {
-	$("#selectall").change(function() {
-		$("input:checkbox").prop('checked', $(this).prop("checked"));
-	});
-}
-
 srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
 };
 
+srv.getServerFile = function() {
+	$('#fileserver').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $('#file-name').val(filename);
+	     $("#nama").text(filename)
+	 });
+};
+
+
+srv.UploadServer = function(){ 
+
+      	var inputFiles = document.getElementById("fileserver");
+      	 
+      	var formdata = new FormData();
+
+      	for (i = 0; i < inputFiles.files.length; i++) {
+            formdata.append('uploadfile', inputFiles.files[i]);
+            formdata.append('filetypes', inputFiles.files[i].type);
+            formdata.append('filesizes', inputFiles.files[i].size);
+           
+        }
+       
+      	var xhr = new XMLHttpRequest();
+        xhr.open('POST', "/server/uploadfile"); 
+        xhr.send(formdata);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                alert(xhr.responseText);
+            }
+        }
+         
+        return false;
+};
+ 
+
+srv.sendFile = function(){
+	var inputFiles = document.getElementById("fileserver");
+    console.log(inputFiles.files[0].name);
+	if (!app.isFormValid(".form-server")) {
+		return;
+	}
+	srv.configServer.sshfile(inputFiles.files[0].name);
+	var data = ko.mapping.toJS(srv.configServer);
+	console.log(data);
+	app.ajaxPost("/server/sendfile", data, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+	});
+	swal({title: "File successfully Send", type: "success",closeOnConfirm: true
+	});
+	srv.backToFront()
+};
+
+srv.showFileUserPass = function (){	
+	if ($("#type-ssh").val() === 'Credentials') {
+		srv.showFile(false);
+		srv.showUserPass(true);
+	}else{
+		srv.showFile(true);
+		srv.showUserPass(false);
+	};
+};
+
+srv.navModalWizard = function (status) {
+	srv.showModal(status);
+	if(status == 'modal2'){	
+		var nope = $('#txtWizard').val().replace( /\n/g, " " ).split( " " );
+	}
+};
+
+srv.finishButton = function () {
+	srv.showModal('modal1');
+	$('#txtWizard').val('');
+};
+
 $(function () {
-	srv.checkall()
     srv.getServers();
 });

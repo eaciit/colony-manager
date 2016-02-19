@@ -339,6 +339,10 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 	yo()
 
+	if !dataGrabber.UseInterval {
+		return helper.CreateResult(true, nil, "")
+	}
+
 	serviceHolder[dataGrabber.ID] = true
 
 	go func(dg *colonycore.DataGrabber) {
@@ -464,16 +468,6 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		return false, nil, err.Error()
 	}
 
-	arrayContains := func(slice []string, key string) bool {
-		for _, each := range slice {
-			if each == key {
-				return true
-			}
-		}
-
-		return false
-	}
-
 	connDesc := new(colonycore.Connection)
 	err = colonycore.Get(connDesc, dsDestination.ConnectionID)
 	if err != nil {
@@ -486,27 +480,159 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	for _, each := range data {
 		eachTransformedData := toolkit.M{}
 
-		for _, eachMeta := range dsDestination.MetaData {
-			if arrayContains(dataGrabber.IgnoreFieldsDestination, eachMeta.ID) {
-				continue
-			}
+		for _, eachMap := range dataGrabber.Maps {
+			var valueEachSourceField interface{}
 
-			fieldFrom := eachMeta.ID
-		checkMap:
-			for _, eachMap := range dataGrabber.Map {
-				if eachMap.FieldDestination == eachMeta.ID {
-					fieldFrom = eachMap.FieldOrigin
-					break checkMap
+			if !strings.Contains(eachMap.Source, "|") {
+				valueEachSourceField = each.Get(eachMap.Source)
+			} else {
+				prev := strings.Split(eachMap.Source, "|")[0]
+				next := strings.Split(eachMap.Source, "|")[1]
+
+				var fieldInfoDes *colonycore.FieldInfo = nil
+				for _, eds := range dsOrigin.MetaData {
+					if eds.ID == prev {
+						fieldInfoDes = eds
+						break
+					}
+				}
+
+				if fieldInfoDes != nil {
+					if fieldInfoDes.Type == "array-objects" {
+						valueObjects := []interface{}{}
+						if temp, _ := each.Get(prev, nil).([]interface{}); temp != nil {
+							valueObjects = make([]interface{}, len(temp))
+							for i, each := range temp {
+								if tempSub, _ := toolkit.ToM(each); tempSub != nil {
+									valueObjects[i] = tempSub.Get(next)
+								}
+							}
+						}
+						valueEachSourceField = valueObjects
+					} else {
+						valueObject := toolkit.M{}
+						if valueObject, _ = toolkit.ToM(each.Get(prev)); valueObject != nil {
+							valueEachSourceField = valueObject.Get(next)
+						}
+					}
 				}
 			}
 
-			eachTransformedData.Set(eachMeta.ID, each.Get(fieldFrom))
+			fmt.Printf("---- SOURCE %#v\n", valueEachSourceField)
+
+			if !strings.Contains(eachMap.Destination, "|") {
+				if eachMap.SourceType == "object" {
+					sourceObject, _ := toolkit.ToM(valueEachSourceField)
+					if sourceObject == nil {
+						sourceObject = toolkit.M{}
+					}
+
+					valueObject := toolkit.M{}
+					for _, desMeta := range dsDestination.MetaData {
+						if desMeta.ID == eachMap.Destination {
+							for _, eachMetaSub := range desMeta.Sub {
+								valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+							}
+							break
+						}
+					}
+
+					eachTransformedData.Set(eachMap.Destination, valueObject)
+				} else if eachMap.SourceType == "array-objects" {
+					sourceObjects, _ := valueEachSourceField.([]interface{})
+					if sourceObjects == nil {
+						sourceObjects = []interface{}{}
+					}
+
+					valueObjects := []interface{}{}
+					for _, sourceObjectRaw := range sourceObjects {
+						sourceObject, _ := toolkit.ToM(sourceObjectRaw)
+						if sourceObject == nil {
+							sourceObject = toolkit.M{}
+						}
+
+						valueObject := toolkit.M{}
+						for _, desMeta := range dsDestination.MetaData {
+							if desMeta.ID == eachMap.Destination {
+								for _, eachMetaSub := range desMeta.Sub {
+									valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+								}
+								break
+							}
+						}
+
+						valueObjects = append(valueObjects, valueObject)
+					}
+
+					eachTransformedData.Set(eachMap.Destination, valueObjects)
+				} else {
+					eachTransformedData.Set(eachMap.Destination, valueEachSourceField)
+				}
+			} else {
+				prev := strings.Split(eachMap.Destination, "|")[0]
+				next := strings.Split(eachMap.Destination, "|")[1]
+
+				var fieldInfoDes *colonycore.FieldInfo = nil
+				for _, eds := range dsDestination.MetaData {
+					if eds.ID == prev {
+						fieldInfoDes = eds
+						break
+					}
+				}
+
+				if fieldInfoDes != nil {
+					if fieldInfoDes.Type == "array-objects" {
+						valueObjects := []interface{}{}
+						if temp := eachTransformedData.Get(prev, nil); temp == nil {
+							valueObjects = []interface{}{}
+						} else {
+							valueObjects, _ = temp.([]interface{})
+							if valueObjects == nil {
+								valueObjects = []interface{}{}
+							}
+						}
+
+						if temp, _ := valueEachSourceField.([]interface{}); temp != nil {
+							for i, eachVal := range temp {
+								valueObject := toolkit.M{}
+								if len(valueObjects) > i {
+									if temp2, _ := toolkit.ToM(valueObjects[i]); temp2 != nil {
+										valueObject = temp2
+										valueObject.Set(next, eachVal)
+									}
+
+									valueObjects[i] = valueObject
+								} else {
+									if fieldInfoDes.Sub != nil {
+										for _, subMeta := range fieldInfoDes.Sub {
+											valueObject.Set(subMeta.ID, nil)
+										}
+									}
+
+									valueObject.Set(next, eachVal)
+									valueObjects = append(valueObjects, valueObject)
+								}
+							}
+						}
+
+						eachTransformedData.Set(prev, valueObjects)
+					} else {
+						valueObject, _ := toolkit.ToM(eachTransformedData.Get(prev))
+						if valueObject == nil {
+							valueObject = toolkit.M{}
+						}
+
+						valueObject.Set(next, valueEachSourceField)
+						eachTransformedData.Set(prev, valueObject)
+					}
+				}
+			}
 		}
 
+		fmt.Printf("==== %#v\n", eachTransformedData)
+
 		transformedData = append(transformedData, eachTransformedData)
-
 		tableName := dsDestination.QueryInfo.GetString("from")
-
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
 
