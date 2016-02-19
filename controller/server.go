@@ -8,8 +8,6 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	. "github.com/eaciit/sshclient"
-	// . "github.com/eaciit/toolkit"
-	// "strings"
 )
 
 type ServerController struct {
