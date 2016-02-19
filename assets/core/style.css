@@ -255,6 +255,9 @@ table.table tr:hover td {
 .modalcustom {
   width: 800px; }
 
+.txtWizard {
+  resize: none; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;

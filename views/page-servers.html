@@ -195,14 +195,20 @@
 					</h4>
 				</div>
 				<div class="modal-body" data-bind="">
-					<div class="col-md-12">
-						<p>some explanation about this popup wizard.</p>
-					</div>
-					<div class="col-md-12">
-						<textarea class="form-control" rows="6" name="txtWizard" id="txtWizard"></textarea>
-						<span class="k-invalid-msg" data-for="txtWizard"></span>
-					</div>
-					<div class="clearfix"></div>
+    				<form class="form-horizontal form-wizard" id="form-wizard" novalidate>
+						<div class="form-group">
+							<div class="col-md-12">
+								<p>some explanation about this popup wizard.</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-md-12">
+								<textarea required class="form-control txtWizard" rows="6" name="Textarea Wizard" id="txtWizard" data-bind="value: srv.txtWizard"></textarea>
+								<span class="k-invalid-msg" data-for="Textarea Wizard"></span>
+							</div>
+						</div>
+						<div class="clearfix"></div>
+					</form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
@@ -223,11 +229,15 @@
 					</h4>
 				</div>
 				<div class="modal-body" data-bind="">
-					<div class="col-md-12">
-						<p>this is the next chapter of the wizard.</p>
+					<div class="form-group">
+						<div class="col-md-12">
+							<p>this is the next chapter of the wizard.</p>
+						</div>
 					</div>
-					<div class="col-md-12">
-						<div class="grid grid-data-wizard grid-wizard" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.WizardData, columns: srv.WizardColumns, filterfable: false, pageable: true}"></div>
+					<div class="form-group">
+						<div class="col-md-12">
+							<div class="grid grid-data-wizard grid-wizard" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.dataWizard, columns: srv.WizardColumns, filterfable: false, pageable: true}"></div>
+						</div>
 					</div>
 					<div class="clearfix"></div>
 				</div>

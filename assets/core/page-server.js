@@ -27,8 +27,13 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
-srv.WizardColumns = ko.observableArray([{ field: "hst", title: "Host", width: 80 },{ field: "status", title: "Status", width: 80}]);
+srv.WizardColumns = ko.observableArray([
+	{ field: "host", title: "Host", width: 80 },
+	{ field: "status", title: "Status", width: 80}
+]);
+srv.dataWizard = ko.observableArray([]);
 selectedSSH = ko.observable();
+srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.showFile = ko.observable(true);
 srv.showUserPass = ko.observable(true);
@@ -87,8 +92,6 @@ srv.saveServer = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
-		srv.UploadServer();
-		srv.sendFile();
 	});
 	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
 	});
@@ -111,11 +114,7 @@ srv.editServer = function (_id) {
 		
 		app.mode('editor');
 		srv.ServerMode('edit');
-		try {
-			ko.mapping.fromJS(res.data, srv.configServer);
-		} catch (err) {
-			ko.mapping.fromJS(res.data, srv.configServer);
-		}
+		ko.mapping.fromJS(res.data, srv.configServer);
 	});
 	srv.showFileUserPass();
 }
@@ -221,52 +220,6 @@ srv.getServerFile = function() {
 	 });
 };
 
-
-srv.UploadServer = function(){ 
-
-      	var inputFiles = document.getElementById("fileserver");
-      	 
-      	var formdata = new FormData();
-
-      	for (i = 0; i < inputFiles.files.length; i++) {
-            formdata.append('uploadfile', inputFiles.files[i]);
-            formdata.append('filetypes', inputFiles.files[i].type);
-            formdata.append('filesizes', inputFiles.files[i].size);
-           
-        }
-       
-      	var xhr = new XMLHttpRequest();
-        xhr.open('POST', "/server/uploadfile"); 
-        xhr.send(formdata);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                alert(xhr.responseText);
-            }
-        }
-         
-        return false;
-};
- 
-
-srv.sendFile = function(){
-	var inputFiles = document.getElementById("fileserver");
-    console.log(inputFiles.files[0].name);
-	if (!app.isFormValid(".form-server")) {
-		return;
-	}
-	srv.configServer.sshfile(inputFiles.files[0].name);
-	var data = ko.mapping.toJS(srv.configServer);
-	console.log(data);
-	app.ajaxPost("/server/sendfile", data, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-	});
-	swal({title: "File successfully Send", type: "success",closeOnConfirm: true
-	});
-	srv.backToFront()
-};
-
 srv.showFileUserPass = function (){	
 	if ($("#type-ssh").val() === 'Credentials') {
 		srv.showFile(false);
@@ -277,16 +230,30 @@ srv.showFileUserPass = function (){
 	};
 };
 
+srv.popupWizard = function () {
+	srv.showModal('modal1');
+	srv.txtWizard('');
+}
+
 srv.navModalWizard = function (status) {
-	srv.showModal(status);
-	if(status == 'modal2'){	
-		var nope = $('#txtWizard').val().replace( /\n/g, " " ).split( " " );
+	if(status == 'modal2' && srv.txtWizard() !== '' ){
+		if (!app.isFormValid("#form-wizard")) {
+			return;
+		}	
+		var dataWizard = srv.txtWizard().replace( /\n/g, " " ).split( " " );
+		for (var key in dataWizard){
+			srv.dataWizard.push({id: key, host: dataWizard[key], status:""});
+		}
+		srv.showModal(status);
+	}else if(status == 'modal1'){
+		srv.txtWizard('');
+		srv.showModal(status);
 	}
 };
 
 srv.finishButton = function () {
 	srv.showModal('modal1');
-	$('#txtWizard').val('');
+	srv.txtWizard('');
 };
 
 $(function () {
