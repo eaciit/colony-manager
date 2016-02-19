@@ -255,12 +255,50 @@ apl.updateFileDir = function(){
 }
 apl.searchTreeView = function(){
 	var search = $('#searchDirectori').val();
+	var treeview = $("#treeview-left").data("kendoTreeView");
 	var searchResult = ko.utils.arrayFilter(apl.appRecordsDir(), function (item) {
         return item.text.toLowerCase().indexOf(search.toLowerCase()) >= 0;
     });
-    $("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+    var temirectory = [];
+    if (searchResult.length != 0 ){
+		$("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+    }else{
+    	var dataTreeJson = apl.appRecordsDir();
+    	dataTreeJson.forEach(function(each){
+    		if (each.items != null ){
+    			temirectory.push(each.items)
+    		}
+    	});
+    	apl.searchTreeViewSub(temirectory, search)
+    }
 }
 
+apl.searchTreeViewSub = function(dataJson, search){
+	var JSON = [];
+	if (dataJson.length != 0 ){
+		for (var i in dataJson){
+			JSON = JSON.concat(dataJson[i]);
+		}
+		var treeview = $("#treeview-left").data("kendoTreeView");
+		var searchResult = ko.utils.arrayFilter(JSON, function (item) {
+	        return item.text.toLowerCase().indexOf(search.toLowerCase()) >= 0;
+	    });
+		var temirectory = [];
+		if (searchResult.length != 0 ){
+			$("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+	    }else{
+	    	JSON.forEach(function(each){
+	    		if (each.items != null ){
+	    			temirectory.push(each.items)
+	    		}
+	    	});
+	    	apl.searchTreeViewSub(temirectory, search)
+	    }
+	}else{
+		$("#treeview-left").data("kendoTreeView").setDataSource([]);
+	}
+	
+}
 apl.codemirror = function(){
     var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
         mode: "text/html",
