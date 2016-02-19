@@ -29,27 +29,27 @@
 		</nav>
 
 	    <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
-		    <div class="col-md-4 no-padding">
+		    <div class="col-md-3 no-padding">
 		    	<label class="col-md-4 filter-label">
 		    		Search
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<input class="form-control input-sm" type="text"  />
+		    		<input class="form-control input-sm" type="text" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
-		    <div class="col-md-4 no-padding">
-		    	<label class="col-md-4 filter-label">
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
 		    		Request Type
 		    	</label>
-		    	<div class="col-md-8 no-padding">
+		    	<div class="col-md-7 no-padding">
 		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
-		    <div class="col-md-4 no-padding">
-		    	<label class="col-md-4 filter-label">
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
 		    		Source Type
 		    	</label>
-		    	<div class="col-md-8 no-padding">
+		    	<div class="col-md-7 no-padding">
 		    		<select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>

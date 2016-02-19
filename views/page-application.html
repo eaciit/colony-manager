@@ -28,15 +28,18 @@
 			    		<span class="glyphicon glyphicon-plus"></span> Add
 			    </button>
 		    	<button class="btn btn-sm btn-danger" data-bind="click: apl.OnRemove"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-				<div class="form-group row nav2">
-					<div class="col-sm-10">
-						<label class="col-sm-2 filter-label lbl">Search</label>
-						<div class="col-sm-3">
-			               <input type="text" class="input-sm form-control" >
-			            </div>
-			        </div>
-		    	</div>
 		    </div>
+		</nav>
+
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+			<div class="col-md-4">
+				<label class="col-md-4 filter-label">
+					Search
+				</label>
+				<div class="col-md-8">
+					<input class="form-control full-width input-sm" type="text" placeholder="Type keyword here" />
+				</div>
+			</div>
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == '')">
@@ -48,6 +51,7 @@
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
+
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
@@ -59,10 +63,12 @@
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
+
 		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
 	      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
 	      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
 	    </ul>
+
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
 			<div class="panel-heading">
 		        <h1 class="panel-title"><span data-bind="text: (apl.applicationMode() == '') ? 'Create New' : 'Edit'"></span>
@@ -92,11 +98,14 @@
 						    			<span class="k-invalid-msg" data-for="name"></span>
 						    		</div>
 						    		<div class="col-sm-4 btn-upload">
-							    		<span class="btn btn-sm btn-success btn-file">
-										    <span class="glyphicon glyphicon-upload"></span> Upload <input required id="files" name="files" type="file" accept=".zip">
-										</span>
-										 <span class="k-invalid-msg" data-for="files"></span>
-										<span id="nama" data-bind="value:AppPath"></span>
+							    		<div>
+							    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
+											    <span class="fa fa-file"></span> Upload .zip file 
+											    <input required id="files" name="files" type="file" accept=".zip">
+											</span>
+											<span id="nama" data-bind="value:AppPath"></span>
+							    		</div>
+										<span class="k-invalid-msg" data-for="files"></span>
 									</div>
 					    		</div>
 					    		<!-- <div class="form-group row"> 
@@ -108,17 +117,17 @@
 			    	</div>
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
-				    		<div class="col-md-12 action-button">
-				    			<button class="btn btn-sm btn-success" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir">
+				    		<div class="col-md-12 action-button no-padding">
+				    			<button class="btn btn-sm btn-success tooltipster" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir" title="Create new file/folder">
 				    				<span class="glyphicon glyphicon-file"></span>
 			    				</button>
-				    			<button class="btn btn-sm btn-danger" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir">
+				    			<button class="btn btn-sm btn-danger tooltipster" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir" title="Delete">
 				    				<span class="glyphicon glyphicon-remove"></span>
 				    			</button>
-				    			<button class="btn btn-sm btn-warning" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''">
+				    			<button class="btn btn-sm btn-warning tooltipster" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''" title="Rename">
 				    				<span class="glyphicon glyphicon-pencil"></span>
 				    			</button>
-				    			<button class="btn btn-sm btn-primary" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir" >
+				    			<button class="btn btn-sm btn-primary tooltipster" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir" title="Save changes">
 				    				<span class="fa fa-save"></span>
 			    				</button>
 				    		</div>

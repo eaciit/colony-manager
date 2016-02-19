@@ -1,23 +1,18 @@
 viewModel.servers = {}; var srv = viewModel.servers;
 srv.templateOS = ko.observableArray([
 	{ value: "windows", text: "Windows" },
-	{ value: "linux", text: "Linux" }
+	{ value: "linux", text: "Linux/Darwin" }
 ]);
 srv.templateConfigServer = {
 	_id: "",
-	type: "",
-	folder: "",
-	os: "",
-	enable: false,
+	os: "linux",
+	appPath: "",
+	dataPath: "",
 	host: "",
 	sshtype: "",
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
-	cmdextract: "",
-	cmdnewfile: "",
-	cmdcopy: "",
-	cmddir: ""
 };
 srv.templatetype = ko.observableArray([
 	{ value: "Local", text: "Local" },
@@ -44,16 +39,26 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:8, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"srv.checkDeleteServer(this, 'server')\" />"
 		].join(" ");
 	} },
-	{ field: "_id", title: "ID", width: 80 },
-	{ field: "type", title: "Type", width: 80},
-	{ field: "os", title: "OS", width: 80},
-	{ field: "folder", title: "Folder", width: 80},
-	{ field: "enable", title: "Enable", width: 80},
+	{ field: "_id", title: "ID" },
+	// { field: "type", title: "Type" },
+	{ field: "host", title: "Host" },
+	{ field: "os", title: "OS", template: function (d) {
+		var row = Lazy(srv.templateOS()).find({ value: d.os });
+		if (row != undefined) {
+			return row.text;
+		}
+
+		return d.os;
+	} },
+	{ field: "sshtype", title: "SSH Type" },
+	// { field: "appPath", title: "App Path" },
+	// { field: "dataPath", title: "Data Path" },
+	// { field: "enable", title: "Enable" },
 ]);
 
 srv.getServers = function() {
