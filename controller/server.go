@@ -7,6 +7,7 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/live"
 	. "github.com/eaciit/sshclient"
 )
 
@@ -158,7 +159,7 @@ func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
 	// 	SshClient.SSHKeyLocation = pem
 	// }
 
-	filepath := "d:\\" + data.SSHFile
+	filepath := "d:\\" + "fileName.zip"
 	destination := data.Folder //"/home/eaciit1"
 
 	e = SshClient.CopyFileSsh(filepath, destination)
@@ -171,15 +172,38 @@ func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
 
 func (s *ServerController) UploadFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	e := r.GetPayload(&payload)
+	filename := payload["filename"].(string)
+	err, _ := helper.UploadHandler(r, "uploadfile", zipSource)
 
-	err, fileName := helper.UploadHandler(r, "uploadfile", zipSource)
-	err, host := helper.UploadHandler(r, "host", zipSource)
-	path := "d:\\" + fileName
+	path := "d:\\" + filename
 	_, _, err = helper.FetchThenSaveFile(r.Request, "uploadfile", path)
 	if err != nil {
-		return helper.CreateResult(true, err, "1")
+		return helper.CreateResult(true, e, "1")
 	}
 
-	return helper.CreateResult(true, host, "")
+	return helper.CreateResult(true, filename, "")
 
+}
+
+func (s *ServerController) CheckPing(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	// payload := map[string]interface{}{}
+	// err := r.GetPayload(&payload)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+	// IP := payload["IP"].(string)
+	IP := "192.168.56.102:22"
+	type PingStatus struct {
+		IP     string `json:"ip",bson:"ip"`
+		Status string `json:"status",bson:"status"`
+	}
+	p := new(live.Ping)
+	p.Type = live.PingType_Network
+	p.Host = IP
+	_ = p.Check()
+	data := PingStatus{IP: IP, Status: p.LastStatus}
+	return helper.CreateResult(true, data, "")
 }
