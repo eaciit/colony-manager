@@ -1,4 +1,5 @@
 <h1>Servers</h1>
+
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
     <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
 		<span class="glyphicon glyphicon-refresh"></span> Refresh
@@ -10,17 +11,21 @@
 		<span class="glyphicon glyphicon-remove"></span> Delete
 	</button>
 	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.popupWizard" data-toggle="modal" data-target=".modal-wizard">
-		<span class="glyphicon glyphicon-send"></span> Wizard
+		<span class="glyphicon glyphicon-send"></span> Add Wizard
 	</button>
-	<div class="form-group row nav2">
-		<div class="col-sm-10">
-			<label class="col-sm-2 filter-label lbl">Search</label>
-			<div class="col-sm-4">
-		        <input type="text" class="input-sm form-control" >
-		    </div>
-		</div>
-	 </div>
 </nav>
+
+<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+	<div class="col-md-4">
+		<label class="col-md-4 filter-label">
+			Search
+		</label>
+		<div class="col-md-8">
+			<input class="form-control full-width input-sm" type="text" placeholder="Type keyword here" />
+		</div>
+	</div>
+</nav>
+
 <div class="panel" data-bind="visible: (app.mode() == '')">
     <div class="panel-heading">
         <h1 class="panel-title">Servers</h1>
@@ -30,6 +35,7 @@
     </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
+
 <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
 		<span class="glyphicon glyphicon-chevron-left"></span> Back
@@ -42,143 +48,146 @@
 	</button>
 </nav>
 
-<div class="panel col-md-11" data-bind="visible: (app.mode() == 'editor')">
+<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
 	<div class="panel-heading">
         <h1 class="panel-title"><span data-bind="text: (srv.ServerMode() == '') ? 'Create New' : 'Edit'"></span>
         </h1>
     </div>
     <div class="panel-body">
     	<form class="form-horizontal form-server" id="form-add-Server" data-bind="with: configServer" novalidate>
-	    	<div class="col-md-12">
-	    		<div class="col-md-12">
-		    		<div class="col-md-6">
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">ID</label>
-				    		<div class="col-md-7">
-				    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
-								<span class="k-invalid-msg" data-for="ID"></span>					    			
-				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">Type</label>
-				    		<div class="col-md-7">
-				    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
-						        </select>
-						        <span class="k-invalid-msg" data-for="type"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">Folder</label>
-				    		<div class="col-md-7">
-				    			<input required type="text" class="form-control input-sm" name="folder" placeholder="Type the Folder Name Here" data-bind="value: folder">
-								<span class="k-invalid-msg" data-for="folder"></span>
-				    		</div>
-			    		</div>
+    		<div class="col-md-6">
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">ID</label>
+		    		<div class="col-md-7">
+		    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
+						<span class="k-invalid-msg" data-for="ID"></span>					    			
 		    		</div>
-		    		<div class="col-md-6">
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">OS</label>
-				    		<div class="col-md-7">
-				    			<select id="os" data-required-msg="OS cannot be empty" name="os" data-placeholder="Select OS" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, optionLabel: 'Select one' }">
-						        </select>
-						        <span class="k-invalid-msg" data-for="os"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">Enable</label>
-				    		<div class="col-md-7">
-				    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
-				    		</div>
-			    		</div>
-			    		<span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
-						    <span class="glyphicon glyphicon-upload"></span> Upload <input id="uploadserver" name="uploadserver" type="file" accept=".zip" data-bind="value :sshfile"> <!-- srv.getUploadFile -->
+	    		</div>
+	    		<!-- <div class="form-group">
+		    		<label class="col-md-3 filter-label">Type</label>
+		    		<div class="col-md-7">
+		    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
+				        </select>
+				        <span class="k-invalid-msg" data-for="type"></span>
+		    		</div>
+	    		</div> -->
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">OS</label>
+		    		<div class="col-md-7">
+		    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os}">
+				        </select>
+				        <span class="k-invalid-msg" data-for="os"></span>
+		    		</div>
+	    		</div>
+    		</div>
+    		<div class="col-md-6">
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">App Path</label>
+		    		<div class="col-md-9">
+		    			<input required type="text" class="form-control input-sm" name="apppath" placeholder="Example: /Users/test/app-path" data-bind="value: appPath">
+						<span class="k-invalid-msg" data-for="apppath"></span>
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Data Path</label>
+		    		<div class="col-md-9">
+		    			<input required type="text" class="form-control input-sm" name="datapath" placeholder="Example: /Users/test/data-path" data-bind="value: dataPath">
+						<span class="k-invalid-msg" data-for="datapath"></span>
+		    		</div>
+	    		</div>
+	    		<!-- <div class="form-group">
+		    		<label class="col-md-3 filter-label">Enable</label>
+		    		<div class="col-md-7">
+		    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
+		    		</div>
+	    		</div> -->
+	    		<!-- <span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
+				    <span class="glyphicon glyphicon-upload"></span> Upload <input id="uploadserver" name="uploadserver" type="file" accept=".zip"  data-bind="fileInput : sshfile">
+				</span> -->
+    		</div>
+
+    		<div class="col-md-12 row">
+    			<p class="pcustom">SSH Access</p>
+    		</div>
+
+    		<div class="col-md-6">
+    			<div class="form-group">
+			    	<label class="col-md-3 filter-label">Host</label>
+		    		<div class="col-md-7">
+		    			<input required type="text" class="form-control input-sm" name="host" placeholder="Type Host Here" data-bind="value: host">
+						<span class="k-invalid-msg" data-for="host"></span>
+		    		</div>
+	    		</div>
+	    		<div class="form-group" data-bind="visible: srv.showUserPass">
+		    		<label class="col-md-3 filter-label">User</label>
+		    		<div class="col-md-7">
+		    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
+						<span class="k-invalid-msg" data-for="user"></span>
+		    		</div>
+	    		</div>
+	    		<div class="form-group" data-bind="visible: srv.showFile">
+		    		<label class="col-md-3 filter-label">File</label>
+		    		<div class="col-md-7">
+		    			<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
+						    <span class="glyphicon glyphicon-upload"></span> Upload 
+						    <input id="fileserver" name="fileserver" type="file" accept=".zip">
+						    <!-- srv.getServerFile -->
 						</span>
 		    		</div>
+	    		</div>
+    		</div>
+    		<div class="col-md-6">				    		
+		    	<div class="form-group">
+		    		<label class="col-md-3 filter-label">Type</label>
+		    		<div class="col-md-7">
+		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.selectedSSH, change: srv.showFileUserPass}">
+				        </select>
+				        <span class="k-invalid-msg" data-for="type-ssh"></span>
+		    		</div>
+	    		</div>
+	    		<div class="form-group" data-bind="visible: srv.showUserPass">
+		    		<label class="col-md-3 filter-label">Pass</label>
+		    		<div class="col-md-7">
+		    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
+						<span class="k-invalid-msg" data-for="password"></span>
+		    		</div>
 		    	</div>
+    		</div>
+	    	<!-- <div class="col-md-12">
 		    	<div class="col-md-12">
-		    		<div class="col-md-12">
-		    			<p class="pcustom">SSH Access</p>
-		    		</div>
-		    		<div class="col-md-6">
-		    			<div class="form-group">
-					    	<label class="col-md-3 filter-label">Host</label>
-				    		<div class="col-md-7">
-				    			<input required type="text" class="form-control input-sm" name="host" placeholder="Type Host Here" data-bind="value: host">
-								<span class="k-invalid-msg" data-for="host"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group" data-bind="visible: srv.showFile">
-				    		<label class="col-md-3 filter-label">File</label>
-				    		<div class="col-md-7">
-				    			<span class="btn btn-sm btn-success btn-file btnsrvcustom">
-								    <span class="glyphicon glyphicon-upload"></span> Upload <input id="fileserver" name="fileserver" type="file" accept=".zip"> <!-- srv.getServerFile -->
-								</span>
-				    		</div>
-			    		</div>
-		    		</div>
-		    		<div class="col-md-6">				    		
-				    	<div class="form-group">
-				    		<label class="col-md-3 filter-label">Type</label>
-				    		<div class="col-md-7">
-				    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="form-control col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.selectedSSH, change: srv.showFileUserPass}">
-						        </select>
-						        <span class="k-invalid-msg" data-for="type-ssh"></span>
-				    		</div>
-			    		</div>
-			    		<div class="" data-bind="visible: srv.showUserPass">
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">User</label>
-					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
-									<span class="k-invalid-msg" data-for="user"></span>
-					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 filter-label">Pass</label>
-					    		<div class="col-md-7">
-					    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
-									<span class="k-invalid-msg" data-for="password"></span>
-					    		</div>
-				    		</div>
-				    	</div>
-		    		</div>
-		    	</div>
+	    			<p class="pcustom">Command</p>
+	    		</div>
 		    	<div class="col-md-12">
-			    	<div class="col-md-12">
-		    			<p class="pcustom">Command</p>
+		    		<div class="form-group">
+			    		<label class="col-md-2 filter-label">Extract</label>
+			    		<div class="col-md-9">
+			    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract">
+							<span class="k-invalid-msg" data-for="extract"></span>
+			    		</div>
 		    		</div>
-			    	<div class="col-md-12">
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">Extract</label>
-				    		<div class="col-md-9">
-				    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract">
-								<span class="k-invalid-msg" data-for="extract"></span>
-				    		</div>
+		    		<div class="form-group">
+			    		<label class="col-md-2 filter-label">New File</label>
+			    		<div class="col-md-9">
+			    			<input required type="text" class="form-control input-sm" name="new-file" placeholder="Type New File Here" data-bind="value: cmdnewfile">
+							<span class="k-invalid-msg" data-for="new-file"></span>
 			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">New File</label>
-				    		<div class="col-md-9">
-				    			<input required type="text" class="form-control input-sm" name="new-file" placeholder="Type New File Here" data-bind="value: cmdnewfile">
-								<span class="k-invalid-msg" data-for="new-file"></span>
-				    		</div>
+		    		</div>
+		    		<div class="form-group">
+			    		<label class="col-md-2 filter-label">Copy</label>
+			    		<div class="col-md-9">
+			    			<input required type="text" class="form-control input-sm" name="copy" placeholder="Type Copy Here" data-bind="value: cmdcopy">
+							<span class="k-invalid-msg" data-for="copy"></span>
 			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">Copy</label>
-				    		<div class="col-md-9">
-				    			<input required type="text" class="form-control input-sm" name="copy" placeholder="Type Copy Here" data-bind="value: cmdcopy">
-								<span class="k-invalid-msg" data-for="copy"></span>
-				    		</div>
+		    		</div>
+		    		<div class="form-group">
+			    		<label class="col-md-2 filter-label">Make Directory</label>
+			    		<div class="col-md-9">
+			    			<input required type="text" class="form-control input-sm" name="m-directory" placeholder="Make a Directory Here" data-bind="value: cmddir">
+							<span class="k-invalid-msg" data-for="m-directory"></span>
 			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">Make Directory</label>
-				    		<div class="col-md-9">
-				    			<input required type="text" class="form-control input-sm" name="m-directory" placeholder="Make a Directory Here" data-bind="value: cmddir">
-								<span class="k-invalid-msg" data-for="m-directory"></span>
-				    		</div>
-			    		</div>
-			    	</div>
+		    		</div>
 		    	</div>
-		    </div>
+	    	</div> -->
     	</form>
     </div>
 </div>
@@ -195,14 +204,20 @@
 					</h4>
 				</div>
 				<div class="modal-body" data-bind="">
-					<div class="col-md-12">
-						<p>some explanation about this popup wizard.</p>
-					</div>
-					<div class="col-md-12">
-						<textarea class="form-control" rows="6" name="txtWizard" id="txtWizard"></textarea>
-						<span class="k-invalid-msg" data-for="txtWizard"></span>
-					</div>
-					<div class="clearfix"></div>
+    				<form class="form-horizontal form-wizard" id="form-wizard" novalidate>
+						<div class="form-group">
+							<div class="col-md-12">
+								<p>some explanation about this popup wizard.</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-md-12">
+								<textarea required class="form-control txtWizard" rows="6" name="Textarea Wizard" id="txtWizard" data-bind="value: srv.txtWizard"></textarea>
+								<span class="k-invalid-msg" data-for="Textarea Wizard"></span>
+							</div>
+						</div>
+						<div class="clearfix"></div>
+					</form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
@@ -223,11 +238,15 @@
 					</h4>
 				</div>
 				<div class="modal-body" data-bind="">
-					<div class="col-md-12">
-						<p>this is the next chapter of the wizard.</p>
+					<div class="form-group">
+						<div class="col-md-12">
+							<p>this is the next chapter of the wizard.</p>
+						</div>
 					</div>
-					<div class="col-md-12">
-						<div class="grid grid-data-wizard grid-wizard" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.WizardData, columns: srv.WizardColumns, filterfable: false, pageable: true}"></div>
+					<div class="form-group">
+						<div class="col-md-12">
+							<div class="grid grid-data-wizard grid-wizard" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.dataWizard, columns: srv.WizardColumns, filterfable: false, pageable: true}"></div>
+						</div>
 					</div>
 					<div class="clearfix"></div>
 				</div>

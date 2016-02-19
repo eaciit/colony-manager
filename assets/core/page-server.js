@@ -1,23 +1,18 @@
 viewModel.servers = {}; var srv = viewModel.servers;
 srv.templateOS = ko.observableArray([
 	{ value: "windows", text: "Windows" },
-	{ value: "linux", text: "Linux" }
+	{ value: "linux", text: "Linux/Darwin" }
 ]);
 srv.templateConfigServer = {
 	_id: "",
-	type: "",
-	folder: "",
-	os: "",
-	enable: false,
+	os: "linux",
+	appPath: "",
+	dataPath: "",
 	host: "",
 	sshtype: "",
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
-	cmdextract: "",
-	cmdnewfile: "",
-	cmdcopy: "",
-	cmddir: ""
 };
 srv.templatetype = ko.observableArray([
 	{ value: "Local", text: "Local" },
@@ -27,8 +22,13 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
-srv.WizardColumns = ko.observableArray([{ field: "hst", title: "Host", width: 80 },{ field: "status", title: "Status", width: 80}]);
+srv.WizardColumns = ko.observableArray([
+	{ field: "host", title: "Host", width: 80 },
+	{ field: "status", title: "Status", width: 80}
+]);
+srv.dataWizard = ko.observableArray([]);
 selectedSSH = ko.observable();
+srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.showFile = ko.observable(true);
 srv.showUserPass = ko.observable(true);
@@ -39,16 +39,26 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.ServerColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='servercheckall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/>", width:8, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"srv.checkDeleteServer(this, 'server')\" />"
 		].join(" ");
 	} },
-	{ field: "_id", title: "ID", width: 80 },
-	{ field: "type", title: "Type", width: 80},
-	{ field: "os", title: "OS", width: 80},
-	{ field: "folder", title: "Folder", width: 80},
-	{ field: "enable", title: "Enable", width: 80},
+	{ field: "_id", title: "ID" },
+	// { field: "type", title: "Type" },
+	{ field: "host", title: "Host" },
+	{ field: "os", title: "OS", template: function (d) {
+		var row = Lazy(srv.templateOS()).find({ value: d.os });
+		if (row != undefined) {
+			return row.text;
+		}
+
+		return d.os;
+	} },
+	{ field: "sshtype", title: "SSH Type" },
+	// { field: "appPath", title: "App Path" },
+	// { field: "dataPath", title: "Data Path" },
+	// { field: "enable", title: "Enable" },
 ]);
 
 srv.getServers = function() {
@@ -87,8 +97,6 @@ srv.saveServer = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
-		srv.UploadServer();
-		srv.sendFile();
 	});
 	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
 	});
@@ -111,11 +119,7 @@ srv.editServer = function (_id) {
 		
 		app.mode('editor');
 		srv.ServerMode('edit');
-		try {
-			ko.mapping.fromJS(res.data, srv.configServer);
-		} catch (err) {
-			ko.mapping.fromJS(res.data, srv.configServer);
-		}
+		ko.mapping.fromJS(res.data, srv.configServer);
 	});
 	srv.showFileUserPass();
 }
@@ -221,18 +225,16 @@ srv.getServerFile = function() {
 	 });
 };
 
-
 srv.UploadServer = function(){ 
 
-      	var inputFiles = document.getElementById("fileserver");
-      	 
+      	var inputFiles = document.getElementById("uploadserver");
+      	console.log(inputFiles.files[0].name)
       	var formdata = new FormData();
 
       	for (i = 0; i < inputFiles.files.length; i++) {
             formdata.append('uploadfile', inputFiles.files[i]);
             formdata.append('filetypes', inputFiles.files[i].type);
-            formdata.append('filesizes', inputFiles.files[i].size);
-           
+            formdata.append('filesizes', inputFiles.files[i].size);           
         }
        
       	var xhr = new XMLHttpRequest();
@@ -249,7 +251,7 @@ srv.UploadServer = function(){
  
 
 srv.sendFile = function(){
-	var inputFiles = document.getElementById("fileserver");
+	var inputFiles = document.getElementById("uploadserver");
     console.log(inputFiles.files[0].name);
 	if (!app.isFormValid(".form-server")) {
 		return;
@@ -277,16 +279,30 @@ srv.showFileUserPass = function (){
 	};
 };
 
+srv.popupWizard = function () {
+	srv.showModal('modal1');
+	srv.txtWizard('');
+}
+
 srv.navModalWizard = function (status) {
-	srv.showModal(status);
-	if(status == 'modal2'){	
-		var nope = $('#txtWizard').val().replace( /\n/g, " " ).split( " " );
+	if(status == 'modal2' && srv.txtWizard() !== '' ){
+		if (!app.isFormValid("#form-wizard")) {
+			return;
+		}	
+		var dataWizard = srv.txtWizard().replace( /\n/g, " " ).split( " " );
+		for (var key in dataWizard){
+			srv.dataWizard.push({id: key, host: dataWizard[key], status:""});
+		}
+		srv.showModal(status);
+	}else if(status == 'modal1'){
+		srv.txtWizard('');
+		srv.showModal(status);
 	}
 };
 
 srv.finishButton = function () {
 	srv.showModal('modal1');
-	$('#txtWizard').val('');
+	srv.txtWizard('');
 };
 
 $(function () {

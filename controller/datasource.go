@@ -299,7 +299,7 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 
 	if o.Driver == "weblink" {
 		fileType := helper.GetFileExtension(o.Host)
-		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(AppBasePath, "config", "etc", o.ID), fileType)
+		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 		file, err := os.Create(fileLocation)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())

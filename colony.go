@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/knot/knot.v1"
 	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -16,12 +16,13 @@ var (
 )
 
 func main() {
+	if controller.EC_APP_PATH == "" || controller.EC_DATA_PATH == "" {
+		fmt.Println("Please set the EC_APP_PATH and EC_DATA_PATH variable")
+		return
+	}
+
 	runtime.GOMAXPROCS(4)
-
-	wd, _ := os.Getwd()
-	colonycore.ConfigPath = filepath.Join(wd, "config")
-
-	knot.SharedObject().Set("FilePath", path.Join(controller.AppBasePath, "config", "files"))
+	colonycore.ConfigPath = filepath.Join(controller.EC_APP_PATH, "config")
 
 	server = new(knot.Server)
 	server.Address = "localhost:3000"

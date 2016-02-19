@@ -108,7 +108,7 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:20, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/></center>", width: 40, attributes: { class: "align-center" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='webgrabbercheck' idcheck='"+d._id+"' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabber')\" />"
 		].join(" ");

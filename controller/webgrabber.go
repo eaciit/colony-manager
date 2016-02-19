@@ -1,21 +1,23 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/sedotan/sedotan.v1"
 	"github.com/eaciit/sedotan/sedotan.v1/webapps/modules"
 	"github.com/eaciit/toolkit"
-	// "os"
-	"path"
 	f "path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
-	// "time"
+)
+
+var (
+	wgLogPath        string = f.Join(EC_DATA_PATH, "webgrabber", "log") + toolkit.PathSeparator
+	wgHistoryPath    string = f.Join(EC_DATA_PATH, "webgrabber", "history") + toolkit.PathSeparator
+	wgHistoryRecPath string = f.Join(EC_DATA_PATH, "webgrabber", "historyrec") + toolkit.PathSeparator
+	wgOutputPath     string = f.Join(EC_DATA_PATH, "webgrabber", "output") + toolkit.PathSeparator
 )
 
 type WebGrabberController struct {
@@ -23,15 +25,14 @@ type WebGrabberController struct {
 }
 
 func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
-	fmt.Println("")
 	var controller = new(WebGrabberController)
 	controller.Server = s
 	return controller
 }
 
 func (w *WebGrabberController) PrepareHistoryPath() {
-	modules.HistoryPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "history") + toolkit.PathSeparator
-	modules.HistoryRecPath = AppBasePath + toolkit.PathSeparator + f.Join("config", "webgrabber", "historyrec") + toolkit.PathSeparator
+	modules.HistoryPath = wgHistoryPath
+	modules.HistoryRecPath = wgHistoryRecPath
 }
 
 func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
@@ -78,12 +79,12 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	}
 
 	payload.LogConfiguration.FileName = "LOG-" + payload.ID
-	payload.LogConfiguration.LogPath = f.Join(AppBasePath, "config", "webgrabber", "log") + toolkit.PathSeparator
+	payload.LogConfiguration.LogPath = wgLogPath
 	payload.LogConfiguration.FilePattern = "20060102"
 
 	for i, each := range payload.DataSettings {
 		if each.DestinationType == "csv" {
-			payload.DataSettings[i].ConnectionInfo.Host = path.Join(AppBasePath, "config", "webgrabber", "output", each.ConnectionInfo.FileName)
+			payload.DataSettings[i].ConnectionInfo.Host = f.Join(wgOutputPath, each.ConnectionInfo.FileName)
 			payload.DataSettings[i].ConnectionInfo.Settings = toolkit.M{
 				"delimiter": each.ConnectionInfo.Delimiter,
 				"useheader": each.ConnectionInfo.UseHeader,
@@ -393,7 +394,7 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 		wg.LogConfiguration = &colonycore.LogConfiguration{
 			FileName:    "LOG-GRABDCE",
 			FilePattern: "20060102",
-			LogPath:     path.Join(AppBasePath, "config", "webgrabber", "log") + toolkit.PathSeparator,
+			LogPath:     wgLogPath,
 		}
 		wg.ID = "irondcecomcn"
 		wg.IDBackup = "irondcecomcn"
@@ -429,7 +430,7 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 					FileName:  "GoldTab01.csv",
 					Delimiter: ",",
 					UseHeader: true,
-					Host:      path.Join(AppBasePath, "config", "webgrabber", "output", "GoldTab01.csv"),
+					Host:      f.Join(wgOutputPath, "GoldTab01.csv"),
 					Settings: toolkit.M{
 						"delimiter": ",",
 						"useheader": true,
@@ -462,7 +463,7 @@ func (w *WebGrabberController) InsertSampleData(r *knot.WebContext) interface{} 
 		wg.LogConfiguration = &colonycore.LogConfiguration{
 			FileName:    "LOG-testCSV",
 			FilePattern: "20060102",
-			LogPath:     path.Join(AppBasePath, "config", "webgrabber", "log") + toolkit.PathSeparator,
+			LogPath:     wgLogPath,
 		}
 		wg.ID = "testCSV"
 		wg.IDBackup = "testCSV"

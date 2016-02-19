@@ -27,26 +27,32 @@ apl.appRecordsDir = ko.observableArray([]);
 apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
 apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
 	{ field: "_id", title: "ID", width: 80 },
-	{ field: "AppsName", title: "Name", width: 130},
-	{ field: "Enable", title: "Enable", width: 50},
-	{ title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ field: "AppsName", title: "Name" },
+	// { field: "Enable", title: "Enable", width: 50},
+	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' onclick='apl.deploy(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Browse' onclick='apl.browse(\"" + d._id + "\")()'><span class='fa fa-eye'></span></button>"
 		].join(" ");
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<a href='#' onclick= 'apl.OpenInNewTab()'>Browse</a>"
-		].join(" ");
-	}}
 ]);
+apl.deploy = function (_id) {
+	return function (e) {
+
+	};
+};
+apl.browse = function (_id) {
+	return function (e) {
+
+	};
+};
 
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
@@ -81,19 +87,19 @@ apl.editApplication = function(_id) {
 		}
 		apl.treeView(_id);
 		app.mode('editor');
+		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
 	});
 };
 
 apl.createNewApplication = function () {
-	//alert("masuk create");
 	app.mode("editor");
+	$('a[href="#Form"]').tab('show');
 	apl.applicationMode('');
-	$("#files").val('');
-	$('#nama').text('');
+	apl.configApplication._id("");
+	apl.configApplication.AppsName("");
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
-	//apl.addMap();
 };
 
 apl.saveApplication = function() {
@@ -164,19 +170,14 @@ apl.treeView = function (id) {
 }
 apl.selectDirApp = function(e){
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	var extension = ko.utils.arrayFilter(apl.extension(),function (item) {
-        return item == data.ext;
-    });
-    if (extension.length ==0){
-		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-	    	var editor = $('#scriptarea').data('CodeMirrorInstance');
-			editor.setValue(res.data);
-			editor.focus();
-		});
-    }
+	app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+    	var editor = $('#scriptarea').data('CodeMirrorInstance');
+		editor.setValue(res.data);
+		editor.focus();
+	});
     $("#txt-path").html(data.path);
 	apl.appTreeMode(data.type);
 	apl.appTreeSelected(data.text);
@@ -188,6 +189,7 @@ apl.newFileDir = function(){
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
 	apl.configFile.Content("");
+	apl.configFile.Type($("#TypeFile").kendoDropDownList().val());
 	var confNew = ko.mapping.toJS(apl.configFile);
 	app.ajaxPost("/application/createnewfile", confNew, function(res) {
 		if (!app.isFine(res)) {
@@ -214,14 +216,30 @@ apl.removeFileDir = function(){
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
 	var confNew = ko.mapping.toJS(apl.configFile);
-	app.ajaxPost("/application/deletefileselected", confNew, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		apl.treeView(apl.configApplication._id());
-		ko.mapping.fromJS(apl.templateFile, apl.configFile);
-		apl.appTreeMode("");
-		apl.appTreeSelected("");
+	swal({
+		title: "Are you sure?",
+		text: 'File / folder with name "' + apl.Filename + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/application/deletefileselected", confNew, function(res) {
+					if (!app.isFine) {
+						return;
+					}
+
+				 apl.treeView(apl.configApplication._id());
+				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
+				 apl.appTreeMode("");
+				 apl.appTreeSelected("");
+				 swal({title: "File / Folder successfully deleted", type: "success"});
+				});
+		},1000);
+
 	});
 }
 apl.updateFileDir = function(){
@@ -238,16 +256,55 @@ apl.updateFileDir = function(){
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+		swal({title: "File / Folder successfully updated", type: "success"});
 	});
 }
 apl.searchTreeView = function(){
 	var search = $('#searchDirectori').val();
+	var treeview = $("#treeview-left").data("kendoTreeView");
 	var searchResult = ko.utils.arrayFilter(apl.appRecordsDir(), function (item) {
         return item.text.toLowerCase().indexOf(search.toLowerCase()) >= 0;
     });
-    $("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+    var temirectory = [];
+    if (searchResult.length != 0 ){
+		$("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+    }else{
+    	var dataTreeJson = apl.appRecordsDir();
+    	dataTreeJson.forEach(function(each){
+    		if (each.items != null ){
+    			temirectory.push(each.items)
+    		}
+    	});
+    	apl.searchTreeViewSub(temirectory, search)
+    }
 }
 
+apl.searchTreeViewSub = function(dataJson, search){
+	var JSON = [];
+	if (dataJson.length != 0 ){
+		for (var i in dataJson){
+			JSON = JSON.concat(dataJson[i]);
+		}
+		var treeview = $("#treeview-left").data("kendoTreeView");
+		var searchResult = ko.utils.arrayFilter(JSON, function (item) {
+	        return item.text.toLowerCase().indexOf(search.toLowerCase()) >= 0;
+	    });
+		var temirectory = [];
+		if (searchResult.length != 0 ){
+			$("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+	    }else{
+	    	JSON.forEach(function(each){
+	    		if (each.items != null ){
+	    			temirectory.push(each.items)
+	    		}
+	    	});
+	    	apl.searchTreeViewSub(temirectory, search)
+	    }
+	}else{
+		$("#treeview-left").data("kendoTreeView").setDataSource([]);
+	}
+	
+}
 apl.codemirror = function(){
     var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
         mode: "text/html",
@@ -345,6 +402,7 @@ apl.renameFile = function(){
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+		swal({title: "File / Folder successfully renamed", type: "success"});
 	});
 }
 
@@ -353,8 +411,7 @@ apl.renameFile = function(){
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
-	// apl.getTab();
 	apl.codemirror();
 	apl.treeView("") ;
-
+	app.prepareTooltipster($(".tooltipster"));
 });
