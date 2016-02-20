@@ -10,7 +10,6 @@ import (
 	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -475,11 +474,29 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		return false, nil, err.Error()
 	}
 
+	const FLAG_ARG_DATA string = `%1`
 	transformedData := []toolkit.M{}
 
 	for _, each := range data {
+		// ================ pre transfer command
+		if dataGrabber.PreTransferCommand != "" {
+			jsonTranformedDataBytes, err := json.Marshal(each)
+			if err != nil {
+				return false, nil, err.Error()
+			}
+			jsonTranformedData := string(jsonTranformedDataBytes)
+
+			var preCommand = dataGrabber.PreTransferCommand
+			if strings.Contains(dataGrabber.PreTransferCommand, FLAG_ARG_DATA) {
+				preCommand = strings.TrimSpace(strings.Replace(dataGrabber.PreTransferCommand, FLAG_ARG_DATA, "", -1))
+			}
+
+			output, err := toolkit.RunCommand(preCommand, jsonTranformedData)
+			fmt.Printf("===> Pre Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", preCommand, jsonTranformedData, output)
+		}
+		// ================
+
 		eachTransformedData := toolkit.M{}
-		eachTDFromPost := toolkit.M{}
 
 		for _, eachMap := range dataGrabber.Maps {
 			var valueEachSourceField interface{}
@@ -519,7 +536,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				}
 			}
 
-			fmt.Printf("---- SOURCE %#v\n", valueEachSourceField)
+			// fmt.Printf("---- SOURCE %#v\n", valueEachSourceField)
 
 			if !strings.Contains(eachMap.Destination, "|") {
 				if eachMap.SourceType == "object" {
@@ -630,7 +647,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			}
 		}
 
-		fmt.Printf("==== %#v\n", eachTransformedData)
+		// fmt.Printf("==== %#v\n", eachTransformedData)
 
 		transformedData = append(transformedData, eachTransformedData)
 		tableName := dsDestination.QueryInfo.GetString("from")
@@ -639,29 +656,34 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 
-		//convert encode object to json
-		var jsonTranformedData, err112 = json.Marshal(eachTransformedData)
-		if err112 != nil {
-			fmt.Println(err112.Error())
-		}
+		dataToSave := eachTransformedData
 
-		if dataGrabber.PreTransferCommand != "" {
-			//pre transfer command action
-			var runPreTransfer, _ = exec.Command(dataGrabber.PreTransferCommand, string(jsonTranformedData)).Output()
-			fmt.Printf(" - > \n %s \n", string(runPreTransfer))
-		}
-
+		// ================ post transfer command
 		if dataGrabber.PostTransferCommand != "" {
-			//post transfer command action
-			var runPostTransfer, _ = exec.Command(dataGrabber.PostTransferCommand, string(jsonTranformedData)).Output()
-			fmt.Printf(" - > \n %s \n", string(runPostTransfer))
+			jsonTranformedDataBytes, err := json.Marshal(eachTransformedData)
+			if err != nil {
+				return false, nil, err.Error()
+			}
+			jsonTranformedData := string(jsonTranformedDataBytes)
 
-			//decode json to object
-			json.Unmarshal([]byte(runPostTransfer), &eachTDFromPost)
+			var postCommand = dataGrabber.PostTransferCommand
+			if strings.Contains(dataGrabber.PostTransferCommand, FLAG_ARG_DATA) {
+				postCommand = strings.TrimSpace(strings.Replace(dataGrabber.PostTransferCommand, FLAG_ARG_DATA, "", -1))
+			}
 
+			dataToSave = toolkit.M{}
+			postData := toolkit.M{}
+
+			output, err := toolkit.RunCommand(postCommand, jsonTranformedData)
+			fmt.Printf("===> Post Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", postCommand, jsonTranformedData, output)
+			if err == nil {
+				if err := json.Unmarshal([]byte(output), &postData); err == nil {
+					dataToSave = postData
+				}
+			}
 		}
 
-		err = queryWrapper.Save(tableName, eachTDFromPost)
+		err = queryWrapper.Save(tableName, dataToSave)
 		if err != nil {
 			logConf.AddLog(err.Error(), "ERROR")
 			return false, nil, err.Error()
