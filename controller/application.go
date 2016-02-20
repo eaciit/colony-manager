@@ -10,7 +10,7 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	. "github.com/eaciit/sshclient"
+	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
@@ -371,8 +371,8 @@ func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
 func (a *ApplicationController) SendFile(host string, user string, pass string, filepath string, destination string, pem string) interface{} {
 	//r.Config.OutputType = knot.OutputJson
 
-	var SshClient SshSetting
-	SshClient.SSHAuthType = SSHAuthType_Password
+	var SshClient sshclient.SshSetting
+	SshClient.SSHAuthType = sshclient.SSHAuthType_Password
 	SshClient.SSHHost = host //"192.168.56.102:22" //r.Request.FormValue("SSHHost")
 	if pem == "" {
 		SshClient.SSHUser = user     //"eaciit1" //r.Request.FormValue("SSHUser")
@@ -383,7 +383,7 @@ func (a *ApplicationController) SendFile(host string, user string, pass string, 
 	// filepath := "E:\\a.jpg"  //r.Request.FormValue("filepath")
 	// destination := "/home/eaciit1"  //r.Request.FormValue("destination")
 
-	e := SshClient.CopyFileSsh(filepath, destination)
+	e := SshClient.SshCopyByPath(filepath, destination)
 	if e != nil {
 		return helper.CreateResult(true, e, "")
 	} else {

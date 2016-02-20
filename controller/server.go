@@ -8,7 +8,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
-	. "github.com/eaciit/sshclient"
+	"github.com/eaciit/sshclient"
 )
 
 type ServerController struct {
@@ -108,6 +108,41 @@ func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
+func (s *ServerController) Ping(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.Server)
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	client := sshclient.SshSetting{}
+	client.SSHHost = payload.Host
+
+	if payload.SSHType == "File" {
+		client.SSHAuthType = sshclient.SSHAuthType_Certificate
+		client.SSHKeyLocation = payload.SSHFile
+	} else {
+		client.SSHAuthType = sshclient.SSHAuthType_Password
+		client.SSHUser = payload.SSHUser
+		client.SSHPassword = payload.SSHPass
+	}
+
+	c, err := client.Connect()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer c.Close()
+
+	return helper.CreateResult(true, nil, "")
+}
+
 func (s *ServerController) ServersFilter(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -149,12 +184,12 @@ func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
 	data := new(colonycore.Server)
 	e := r.GetPayload(&data)
 
-	var SshClient SshSetting
-	SshClient.SSHAuthType = SSHAuthType_Password
-	SshClient.SSHHost = data.Host //"192.168.56.102:22"
+	var client sshclient.SshSetting
+	client.SSHAuthType = sshclient.SSHAuthType_Password
+	client.SSHHost = data.Host //"192.168.56.102:22"
 	//if(pem==""){
-	SshClient.SSHUser = data.SSHUser     //"eaciit1"
-	SshClient.SSHPassword = data.SSHPass //"12345"
+	client.SSHUser = data.SSHUser     //"eaciit1"
+	client.SSHPassword = data.SSHPass //"12345"
 	// }else{
 	// 	SshClient.SSHKeyLocation = pem
 	// }
@@ -162,7 +197,7 @@ func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
 	filepath := "d:\\" + "fileName.zip"
 	destination := data.Folder //"/home/eaciit1"
 
-	e = SshClient.CopyFileSsh(filepath, destination)
+	e = client.SshCopyByPath(filepath, destination)
 	if e != nil {
 		return helper.CreateResult(true, data, "")
 	} else {

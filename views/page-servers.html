@@ -43,6 +43,9 @@
     <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
 		<span class="glyphicon glyphicon-save"></span> Save
 	</button>
+    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.ping">
+		<span class="fa fa-info-circle"></span> Test Connection
+	</button>
 	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
 		<span class="glyphicon glyphicon-remove"></span> Delete
 	</button>
@@ -140,7 +143,7 @@
 		    	<div class="form-group">
 		    		<label class="col-md-3 filter-label">Type</label>
 		    		<div class="col-md-7">
-		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.selectedSSH, change: srv.showFileUserPass}">
+		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype, change: srv.showFileUserPass}">
 				        </select>
 				        <span class="k-invalid-msg" data-for="type-ssh"></span>
 		    		</div>
