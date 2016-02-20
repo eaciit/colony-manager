@@ -82,7 +82,7 @@ ds.connectionListColumns = ko.observableArray([
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
 		].join(" ");
 	} },
 ]);

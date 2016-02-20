@@ -27,7 +27,6 @@ srv.WizardColumns = ko.observableArray([
 	{ field: "status", title: "Status", width: 80}
 ]);
 srv.dataWizard = ko.observableArray([]);
-selectedSSH = ko.observable();
 srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.showFile = ko.observable(true);
@@ -86,8 +85,7 @@ srv.createNewServer = function () {
 	srv.showServer(false);
     srv.showFileUserPass();
 };
-
-srv.saveServer = function(){
+srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
 		return;
 	}
@@ -97,10 +95,17 @@ srv.saveServer = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
+
+		if (typeof c != "undefined") {
+			c();
+		}
 	});
-	swal({title: "Server successfully created", type: "success",closeOnConfirm: true
+}
+srv.saveServer = function(){
+	srv.doSaveServer(function () {
+		swal({title: "Server successfully created", type: "success",closeOnConfirm: true});
+		srv.backToFront();
 	});
-	srv.backToFront()
 };
 
 srv.selectGridServer = function(e){
@@ -123,6 +128,17 @@ srv.editServer = function (_id) {
 	});
 	srv.showFileUserPass();
 }
+srv.ping = function () {
+	srv.doSaveServer(function () {
+		app.ajaxPost("/server/ping", { _id: srv.configServer._id() }, function(res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+			
+			swal({title: "Connected", type: "success"});
+		});
+	});
+};
 
 srv.checkDeleteServer = function(elem, e){
 	if (e === 'serverall'){
