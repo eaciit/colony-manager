@@ -10,6 +10,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -478,6 +479,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 	for _, each := range data {
 		eachTransformedData := toolkit.M{}
+		eachTDFromPost := toolkit.M{}
 
 		for _, eachMap := range dataGrabber.Maps {
 			var valueEachSourceField interface{}
@@ -636,7 +638,30 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
 
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
-		err = queryWrapper.Save(tableName, eachTransformedData)
+
+		//convert encode object to json
+		var jsonTranformedData, err112 = json.Marshal(eachTransformedData)
+		if err112 != nil {
+			fmt.Println(err112.Error())
+		}
+
+		if dataGrabber.PreTransferCommand != "" {
+			//pre transfer command action
+			var runPreTransfer, _ = exec.Command(dataGrabber.PreTransferCommand, string(jsonTranformedData)).Output()
+			fmt.Printf(" - > \n %s \n", string(runPreTransfer))
+		}
+
+		if dataGrabber.PostTransferCommand != "" {
+			//post transfer command action
+			var runPostTransfer, _ = exec.Command(dataGrabber.PostTransferCommand, string(jsonTranformedData)).Output()
+			fmt.Printf(" - > \n %s \n", string(runPostTransfer))
+
+			//decode json to object
+			json.Unmarshal([]byte(runPostTransfer), &eachTDFromPost)
+
+		}
+
+		err = queryWrapper.Save(tableName, eachTDFromPost)
 		if err != nil {
 			logConf.AddLog(err.Error(), "ERROR")
 			return false, nil, err.Error()
