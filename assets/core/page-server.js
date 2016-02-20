@@ -23,8 +23,8 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "File", text: "File" }
 ]);
 srv.WizardColumns = ko.observableArray([
-	{ field: "host", title: "Host", width: 80 },
-	{ field: "status", title: "Status", width: 80}
+	{ field: "host", title: "Host", width: 200 },
+	{ field: "status", title: "Status" }
 ]);
 srv.dataWizard = ko.observableArray([]);
 srv.txtWizard = ko.observable('');
@@ -130,7 +130,7 @@ srv.editServer = function (_id) {
 }
 srv.ping = function () {
 	srv.doSaveServer(function () {
-		app.ajaxPost("/server/ping", { _id: srv.configServer._id() }, function(res) {
+		app.ajaxPost("/server/testconnection", { _id: srv.configServer._id() }, function(res) {
 			if (!app.isFine(res)) {
 				return;
 			}
@@ -299,16 +299,47 @@ srv.popupWizard = function () {
 	srv.showModal('modal1');
 	srv.txtWizard('');
 }
+srv.dataBoundWizard = function () {
+	var $sel = $(".grid-data-wizard");
+	var $grid = $sel.data("kendoGrid");
+	var ds = $grid.dataSource;
 
+	ds.data().forEach(function (e) {
+		var $row = $sel.find("tr[data-uid='" + e.uid + "']");
+		$row.removeClass("ok not-ok");
+
+		if (e.status == "OK") {
+			$row.addClass("ok");
+		} else {
+			$row.addClass("not-ok");
+		}
+	});
+};
 srv.navModalWizard = function (status) {
 	if(status == 'modal2' && srv.txtWizard() !== '' ){
 		if (!app.isFormValid("#form-wizard")) {
 			return;
 		}	
-		var dataWizard = srv.txtWizard().replace( /\n/g, " " ).split( " " );
-		for (var key in dataWizard){
-			srv.dataWizard.push({id: key, host: dataWizard[key], status:""});
-		}
+
+		srv.dataWizard([]);
+		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
+			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
+			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
+				var o = { 
+					host: ip, 
+					status: res.data 
+				};
+
+				if (!res.success) {
+					o.status = res.message;
+				}
+
+				srv.dataWizard.push(o);
+			}, {
+				timeout: 5000
+			});
+		});
+
 		srv.showModal(status);
 	}else if(status == 'modal1'){
 		srv.txtWizard('');

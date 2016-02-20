@@ -108,7 +108,7 @@ func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (s *ServerController) Ping(r *knot.WebContext) interface{} {
+func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.Server)
@@ -224,21 +224,22 @@ func (s *ServerController) UploadFile(r *knot.WebContext) interface{} {
 
 func (s *ServerController) CheckPing(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	// payload := map[string]interface{}{}
-	// err := r.GetPayload(&payload)
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
-	// IP := payload["IP"].(string)
-	IP := "192.168.56.102:22"
-	type PingStatus struct {
-		IP     string `json:"ip",bson:"ip"`
-		Status string `json:"status",bson:"status"`
+
+	payload := struct {
+		IP string `json:"ip"`
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
+
 	p := new(live.Ping)
 	p.Type = live.PingType_Network
-	p.Host = IP
-	_ = p.Check()
-	data := PingStatus{IP: IP, Status: p.LastStatus}
-	return helper.CreateResult(true, data, "")
+	p.Host = payload.IP
+
+	if err := p.Check(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, p.LastStatus, "")
 }
