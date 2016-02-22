@@ -34,6 +34,7 @@ srv.WizardColumns = ko.observableArray([
 srv.dataWizard = ko.observableArray([]);
 selectedSSH = ko.observable();
 srv.txtWizard = ko.observable('');
+srv.validator = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.showFile = ko.observable(true);
 srv.showUserPass = ko.observable(true);
@@ -233,13 +234,17 @@ srv.showFileUserPass = function (){
 srv.popupWizard = function () {
 	srv.showModal('modal1');
 	srv.txtWizard('');
+	srv.dataWizard([]);
+}
+
+srv.validate = function () {
+	if (!app.isFormValid("#form-wizard")) {
+		return;
+	}
 }
 
 srv.navModalWizard = function (status) {
 	if(status == 'modal2' && srv.txtWizard() !== '' ){
-		if (!app.isFormValid("#form-wizard")) {
-			return;
-		}	
 		var dataWizard = srv.txtWizard().replace( /\n/g, " " ).split( " " );
 		for (var key in dataWizard){
 			srv.dataWizard.push({id: key, host: dataWizard[key], status:""});
@@ -248,12 +253,14 @@ srv.navModalWizard = function (status) {
 	}else if(status == 'modal1'){
 		srv.txtWizard('');
 		srv.showModal(status);
+		srv.dataWizard([]);
 	}
 };
 
 srv.finishButton = function () {
 	srv.showModal('modal1');
 	srv.txtWizard('');
+	srv.dataWizard([]);	
 };
 
 $(function () {
