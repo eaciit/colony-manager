@@ -29,6 +29,7 @@ srv.WizardColumns = ko.observableArray([
 srv.isNew = ko.observable(false);
 srv.dataWizard = ko.observableArray([]);
 srv.txtWizard = ko.observable('');
+srv.validator = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
@@ -267,6 +268,13 @@ srv.backToFront = function () {
 srv.popupWizard = function () {
 	srv.showModal('modal1');
 	srv.txtWizard('');
+	srv.dataWizard([]);
+}
+
+srv.validate = function () {
+	if (!app.isFormValid("#form-wizard")) {
+		return;
+	}
 }
 srv.dataBoundWizard = function () {
 	var $sel = $(".grid-data-wizard");
@@ -304,21 +312,27 @@ srv.navModalWizard = function (status) {
 				}
 
 				srv.dataWizard.push(o);
-			}, function () { }, {
+			}, function () { 
+				var o = { 
+					host: ip, 
+					status: "request timeout"
+				};
+
+				srv.dataWizard.push(o);
+			}, {
 				timeout: 5000
 			});
 		});
-
 		srv.showModal(status);
 	}else if(status == 'modal1'){
-		srv.txtWizard('');
 		srv.showModal(status);
+		srv.dataWizard([]);
 	}
 };
 
 srv.finishButton = function () {
 	srv.showModal('modal1');
-	srv.txtWizard('');
+	srv.dataWizard([]);	
 };
 
 $(function () {
