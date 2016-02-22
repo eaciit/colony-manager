@@ -494,7 +494,7 @@ dg.prepareFieldsOrigin = function (_id) {
 					'<td>' + item._id + '</td>',
 					'<td><select class="type-origin" data-value="' + item.Type + '"></select></td>',
 					'<td><select class="field-destination" style="width: 200px;"></select></td>',
-					'<td><div id = "typeData" style="visibility: hidden;"><select class="type-destination"></select></div></td>',
+					'<td><div style="visibility: hidden;"><select class="type-destination"></select></div></td>',
 				'</tr>'
 			].join("");
 
