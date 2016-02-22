@@ -131,17 +131,25 @@
 				    				<span class="fa fa-save"></span>
 			    				</button>
 				    		</div>
-					    	<div class="col-md-12 bd1 headercustom">
-					            <div class="col-md-4">
-					    		    <div class="form-group">
-							    		<label class="col-md-3 pdTop6">Search</label>
-							    		<div class="col-md-9">
+					    	<!-- <div class="col-md-12 headercustom">
+					            <div class="col-md-6">
+					    		    <div class="col-md-10 form-group head-form">
+							    		<label class="col-md-3 srch pdTop6">Search :</label>
+							    		<div class="col-md-5 inpt-src">
 							    			<div class="input-group">
 										      <input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 										      <span class="input-group-btn">
 										        <button class="btn btn-sm btn-default btncustom" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><i class="glyphicon glyphicon-search"></i></button>
 										      </span>
 										    </div>
+										    <div class="trv-btn">
+									    		<div class="btn-group btn-group-md" >
+												  <button type="button" class="btn btn-primary btn-menu"  id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span></button>
+												  <button type="button" class="btn btn-primary btn-menu"  data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span></button>
+												  <button type="button" class="btn btn-primary btn-menu" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span></button>
+												  <button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh"></span></button>
+												</div>
+								    		</div>
 							    		</div>
 						    		</div>
 							    </div>
@@ -153,16 +161,42 @@
 					    			<label class="col-md-8 pdTop6" id="txt-path"></label>
 					            	
 					    		</div>
+					    	</div> -->
+					    	<div class="col-md-12 headercustom">
+					            <div class="col-md-4 trv-4">
+					    		    <div class="col-md-12">
+							    		<label class="col-md-3 srch pdTop6">Search :</label>
+							    		<div class="col-md-6 inpt-src">
+							    			
+										      <input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
+										      <!-- <span class="input-group-btn">
+										        <button class="btn btn-sm btn-default btncustom" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><i class="glyphicon glyphicon-search"></i></button>
+										      </span> -->
+							    		</div>
+							    		<div class="btn-ongrup">	
+										<button type="button" class="btn btn-primary btn-menu flr"  id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span></button>
+										<button type="button" class="btn btn-primary btn-menu flr"  data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span></button>
+										<button type="button" class="btn btn-primary btn-menu flr" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span></button>
+										<button class="btn btn-primary btn-menu flr" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh"></span></button>
+										</div>	
+						    		</div>
+							    </div>
+							    <div class="col-md-3 row">
+							    	<label class="col-md-3" id=""></label>
+					    			<div id="nm-file" class="pdpath"></div>
+					    		</div>
+					    			<label class="pdpath" id="txt-path"></label>
+					    			<button type="button" class="btn btn-primary btn-menu flr" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk"></span></button><!-- header -->
 					    	</div>
-					    	<div class="col-md-12 bd1">
-					            <div class="col-md-4">
+					    	<div class="col-md-12 bd1" id="splitter">
+					            <div class="col-md-4 trv-5">
 						            <div class="tvcustom">
 						                <div id="treeview-left"></div>
 						            </div>
 					    		</div>
 					    		<div class="col-md-8">			    		
 					    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
-					    		</div>
+					    		</div><!-- isi -->
 				    		</div>
 				        </div>
 				    </div>

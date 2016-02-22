@@ -24,7 +24,7 @@ apl.appTreeMode = ko.observable('');
 apl.renameFileMode = ko.observable(false);
 apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
-apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
+apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg','.pdf','.PDF']);
 apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.applicationColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -169,15 +169,30 @@ apl.treeView = function (id) {
 	});
 }
 apl.selectDirApp = function(e){
+	var eleTop = $(e.node).offset().top;
+    var treeScrollTop = $("#treeview-left").scrollTop();
+    var treeTop = $("#treeview-left").offset().top;
+    $("#treeview-left").animate({
+      scrollTop: (treeScrollTop + eleTop) - treeTop
+    });
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+	var extension = ko.utils.arrayFilter(apl.extension(),function (item) {
+        return item == data.ext;
+    });
+	if (extension.length ==0){
+		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+	    	var editor = $('#scriptarea').data('CodeMirrorInstance');
+			editor.setValue(res.data);
+			editor.focus();
+		});
+    }else{
     	var editor = $('#scriptarea').data('CodeMirrorInstance');
-		editor.setValue(res.data);
+		editor.setValue('');
 		editor.focus();
-	});
+    }
     $("#txt-path").html(data.path);
 	apl.appTreeMode(data.type);
 	apl.appTreeSelected(data.text);
@@ -313,10 +328,22 @@ apl.codemirror = function(){
         lineWrapping: true,
     });
     editor.setValue('');
-    $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
+    $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
     // editor.focus();
     $('#scriptarea').data('CodeMirrorInstance', editor);
+}
+
+apl.treeScroller = function(){
+	$('#splitter').kendoSplitter({
+		orientation: "horizontal",
+		panes: [
+			{ size: "25%" },
+			{ }]
+    });
+	// var treeview = $("#treeview-left").data("kendoTreeView");
+	// treeview.select(".k-item:eq(40)");
+	// treeview.element.closest(".k-scrollable").scrollTo(treeview.select(), 400);
 }
 
 apl.OpenInNewTab = function (url) {
