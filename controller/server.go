@@ -24,7 +24,17 @@ func CreateServerController(s *knot.Server) *ServerController {
 func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	cursor, err := colonycore.Find(new(colonycore.Server), nil)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("os", search), dbox.Contains("host", search), dbox.Contains("sshtype", search))
+
+	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -182,7 +192,7 @@ func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	data := new(colonycore.Server)
-	e := r.GetPayload(&data)
+	// e := r.GetPayload(&data)
 
 	var client sshclient.SshSetting
 	client.SSHAuthType = sshclient.SSHAuthType_Password
@@ -194,15 +204,15 @@ func (s *ServerController) SendFile(r *knot.WebContext) interface{} {
 	// 	SshClient.SSHKeyLocation = pem
 	// }
 
-	filepath := "d:\\" + "fileName.zip"
-	destination := data.Folder //"/home/eaciit1"
+	// filepath := "d:\\" + "fileName.zip"
+	// destination := data.Folder //"/home/eaciit1"
 
-	e = client.SshCopyByPath(filepath, destination)
-	if e != nil {
+	// e = client.SshCopyByPath(filepath, destination)
+	// if e != nil {
+	// 	return helper.CreateResult(true, data, "")
+	// } else {
 		return helper.CreateResult(true, data, "")
-	} else {
-		return helper.CreateResult(true, data, "")
-	}
+	// }
 }
 
 func (s *ServerController) UploadFile(r *knot.WebContext) interface{} {

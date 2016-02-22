@@ -36,7 +36,7 @@ dg.fieldDataTypes = ko.observableArray(['string', 'double', 'int']);
 dg.selectedDataGrabber = ko.observable('');
 dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
-
+dg.searchfield = ko.observable('');
 dg.scrapperColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='datagrabbercheckall' onclick=\"dg.checkDeleteDataGrabber(this, 'datagrabberall', 'all')\"/></center>", width: 40, attributes: { class: "align-center" }, template: function (d) {
 		return [
@@ -133,11 +133,13 @@ dg.fieldOfDataSourceDestination = ko.computed(function () {
 	return dg.expandMetaData(ds.MetaData);
 }, dg);
 dg.getScrapperData = function (){
-	app.ajaxPost("/datagrabber/getdatagrabber", {}, function (res) {
+	app.ajaxPost("/datagrabber/getdatagrabber", {search: dg.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		dg.scrapperData(res.data);
 		dg.checkTransformationStatus();
 	});
@@ -186,7 +188,7 @@ dg.backToFront = function () {
 	app.mode("");
 };
 dg.getDataSourceData = function () {
-	app.ajaxPost("/datasource/getdatasources", {}, function (res) {
+	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -309,7 +311,8 @@ dg.checkTransformationStatus = function () {
 		}
 	});
 	dg.scrapperIntervals([]);
-	dg.scrapperData().forEach(function (each) {
+	if(dg.scrapperData()!=""){
+		dg.scrapperData().forEach(function (each) {
 		var process = function () {
 			var $grid = $(".grid-data-grabber");
 			var $kendoGrid = $grid.data("kendoGrid");
@@ -346,7 +349,9 @@ dg.checkTransformationStatus = function () {
 
 		process();
 		dg.scrapperIntervals.push(setInterval(process, 10 * 1000));
-	});
+		});
+	};
+	
 };
 dg.viewHistory = function (_id) {
 	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {

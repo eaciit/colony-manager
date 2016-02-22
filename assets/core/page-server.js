@@ -37,6 +37,7 @@ srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
+srv.searchfield = ko.observable('');
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -62,11 +63,13 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function() {
 	srv.ServerData([]);
-	app.ajaxPost("/server/getservers", {}, function (res) {
+	app.ajaxPost("/server/getservers", {search: srv.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		srv.ServerData(res.data);
 		var grid = $(".grid-server").data("kendoGrid");
 		$(grid.tbody).on("mouseenter", "tr", function (e) {

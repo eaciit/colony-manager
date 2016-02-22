@@ -273,7 +273,17 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 func (a *ApplicationController) GetApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	cursor, err := colonycore.Find(new(colonycore.Application), nil)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search))
+
+	cursor, err := colonycore.Find(new(colonycore.Application), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
