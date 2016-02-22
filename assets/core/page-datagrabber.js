@@ -225,6 +225,16 @@ dg.editScrapper = function (_id) {
 		app.resetValidation("#form-add-scrapper");
 		ko.mapping.fromJS(res.data, dg.configScrapper);
 		dg.prepareFieldsOrigin(dg.configScrapper.DataSourceOrigin());
+
+		$.each(res.data.Maps, function(key,val){
+			var $valSource = $("tr[data-key= '"+ val.Source +"']");
+			var $valDes = $valSource.find("td:eq(3) select.field-destination").data("kendoComboBox");
+			var $valDesType = $valSource.find("td:eq(4) select.type-destination").data("kendoDropDownList");
+			var $DesTypevisible = $valSource.find("td:eq(4) div").css("visibility","visible");
+			
+			$valDes.value(val.Destination);
+			$valDesType.value(val.SourceType)
+		})
 	});
 };
 
