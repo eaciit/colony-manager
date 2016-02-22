@@ -31,7 +31,7 @@
         <h1 class="panel-title">Servers</h1>
     </div>
     <div class="panel-body">
-    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
+    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-application')}"></div>
     </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
@@ -43,7 +43,7 @@
     <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
 		<span class="glyphicon glyphicon-save"></span> Save
 	</button>
-    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.ping">
+    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.testConnection">
 		<span class="fa fa-info-circle"></span> Test Connection
 	</button>
 	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
@@ -133,7 +133,7 @@
 		    		<div class="col-md-7">
 		    			<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
 						    <span class="glyphicon glyphicon-upload"></span> Upload 
-						    <input id="fileserver" name="fileserver" type="file">
+						    <input id="privatekey" type="file">
 						    <!-- srv.getServerFile -->
 						</span>
 		    		</div>

@@ -26,6 +26,7 @@ srv.WizardColumns = ko.observableArray([
 	{ field: "host", title: "Host", width: 200 },
 	{ field: "status", title: "Status" }
 ]);
+srv.isNew = ko.observable(false);
 srv.dataWizard = ko.observableArray([]);
 srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
@@ -53,6 +54,11 @@ srv.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ field: "sshtype", title: "SSH Type" },
+	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
+		return [
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-play'></span></button>"
+		].join(" ");
+	} },
 	// { field: "appPath", title: "App Path" },
 	// { field: "dataPath", title: "Data Path" },
 	// { field: "enable", title: "Enable" },
@@ -77,6 +83,8 @@ srv.getServers = function() {
 };
 
 srv.createNewServer = function () {
+	srv.isNew(true);
+	$("#privatekey").replaceWith($("#privatekey").clone());
 	app.mode("editor");
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
@@ -93,12 +101,26 @@ srv.doSaveServer = function (c) {
 		}
 	}
 
-	var data = ko.mapping.toJS(srv.configServer);
+	var data = ko.mapping.fromJS(srv.configServer);
+
+	if (srv.configServer.sshtype() == "File") {
+		var file = $("#privatekey")[0].files[0];
+		var payload = ko.mapping.toJS(srv.configServer);
+		var data = new FormData();
+		for (var key in payload) {
+			if (payload.hasOwnProperty(key)) {
+				data.append(key, payload[key])
+			}
+		}
+		data.append("privatekey", file);
+	}
+
 	app.ajaxPost("/server/saveservers", data, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
+		srv.isNew(true);
 		if (typeof c != "undefined") {
 			c();
 		}
@@ -112,6 +134,7 @@ srv.saveServer = function(){
 };
 
 srv.selectGridServer = function(e){
+	srv.isNew(false);
 	var grid = $(".grid-server").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
 	srv.editServer(selectedItem._id);
@@ -119,6 +142,8 @@ srv.selectGridServer = function(e){
 };
 
 srv.editServer = function (_id) {
+	$("#privatekey").replaceWith($("#privatekey").clone());
+
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	app.ajaxPost("/server/selectservers", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
@@ -130,16 +155,25 @@ srv.editServer = function (_id) {
 		ko.mapping.fromJS(res.data, srv.configServer);
 	});
 }
-srv.ping = function () {
-	srv.doSaveServer(function () {
-		app.ajaxPost("/server/testconnection", { _id: srv.configServer._id() }, function(res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-			
-			swal({title: "Connected", type: "success"});
-		});
+srv.doTestConnection = function (_id) {
+	if (_id != undefined) {
+		if (srv.isNew()) {
+			sweetAlert("Oops...", "Please save the server first", "error");
+			return;
+		}
+	}
+
+	_id = (_id == undefined) ? srv.configServer._id() : _id;
+	app.ajaxPost("/server/testconnection", { _id: _id }, function(res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		
+		swal({title: "Connected", type: "success"});
 	});
+};
+srv.testConnection = function () {
+	srv.doTestConnection(srv.configServer._id());
 };
 
 srv.checkDeleteServer = function(elem, e){
@@ -207,14 +241,6 @@ srv.removeServer = function(){
 	
 }
 
-srv.getUploadFile = function() {
-	$('#uploadserver').change(function(){
-		var filename = $(this).val().replace(/^.*[\\\/]/, '');
-	     $('#upload-name').val(filename);
-	     $("#nama").text(filename)
-	 });
-};
-
 function ServerFilter(event){
 	app.ajaxPost("/server/serversfilter", {inputText : srv.filterValue()}, function(res){
 		if(!app.isFine(res)){
@@ -234,59 +260,6 @@ srv.backToFront = function () {
 	srv.getServers();
 	$("#selectall").attr("checked",false)
 };
-
-srv.getServerFile = function() {
-	$('#fileserver').change(function(){
-		var filename = $(this).val().replace(/^.*[\\\/]/, '');
-	     $('#file-name').val(filename);
-	     $("#nama").text(filename)
-	 });
-};
-
-srv.UploadServer = function(){ 
-
-      	var inputFiles = document.getElementById("uploadserver");
-      	console.log(inputFiles.files[0].name)
-      	var formdata = new FormData();
-
-      	for (i = 0; i < inputFiles.files.length; i++) {
-            formdata.append('uploadfile', inputFiles.files[i]);
-            formdata.append('filetypes', inputFiles.files[i].type);
-            formdata.append('filesizes', inputFiles.files[i].size);           
-        }
-       
-      	var xhr = new XMLHttpRequest();
-        xhr.open('POST', "/server/uploadfile"); 
-        xhr.send(formdata);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                alert(xhr.responseText);
-            }
-        }
-         
-        return false;
-};
- 
-
-srv.sendFile = function(){
-	var inputFiles = document.getElementById("uploadserver");
-    console.log(inputFiles.files[0].name);
-	if (!app.isFormValid(".form-server")) {
-		return;
-	}
-	srv.configServer.sshfile(inputFiles.files[0].name);
-	var data = ko.mapping.toJS(srv.configServer);
-	console.log(data);
-	app.ajaxPost("/server/sendfile", data, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-	});
-	swal({title: "File successfully Send", type: "success",closeOnConfirm: true
-	});
-	srv.backToFront()
-};
-
 srv.popupWizard = function () {
 	srv.showModal('modal1');
 	srv.txtWizard('');

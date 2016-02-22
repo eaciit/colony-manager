@@ -56,12 +56,14 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
     };
 
     if (data instanceof FormData) {
+        delete config.config;
+        config.data = data;
         config.async = false;
         config.cache = false;
         config.contentType = false;
         config.processData = false;
     }
-
+    
     if (otherConfig != undefined) {
         config = $.extend(true, config, otherConfig);
     }
