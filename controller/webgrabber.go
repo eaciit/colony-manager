@@ -38,7 +38,27 @@ func (w *WebGrabberController) PrepareHistoryPath() {
 func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	cursor, err := colonycore.Find(new(colonycore.WebGrabber), nil)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+	requesttype := payload["requesttype"].(string)
+	sourcetype := payload["sourcetype"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search))
+
+	if requesttype != "" {
+		query = dbox.And(query, dbox.Eq("calltype", requesttype))
+	}
+
+	if sourcetype != "" {
+		query = dbox.And(query, dbox.Eq("sourcetype", sourcetype))
+	}
+
+	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -524,4 +544,22 @@ func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
 	defer cursor.Close()
 
 	return helper.CreateResult(true, payload, "")
+}
+
+func (d *WebGrabberController) GetConnections(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := []colonycore.Connection{}
+	cursor, err := colonycore.Find(new(colonycore.Connection), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
 }

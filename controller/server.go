@@ -28,7 +28,16 @@ func CreateServerController(s *knot.Server) *ServerController {
 func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	cursor, err := colonycore.Find(new(colonycore.Server), nil)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+
+	query := dbox.Or(dbox.Contains("_id", search), dbox.Contains("os", search), dbox.Contains("host", search), dbox.Contains("sshtype", search))
+
+	cursor, err := colonycore.Find(new(colonycore.Server), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -255,25 +264,19 @@ func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	client := sshclient.SshSetting{}
-	client.SSHHost = payload.Host
-
-	if payload.SSHType == "File" {
-		client.SSHAuthType = sshclient.SSHAuthType_Certificate
-		client.SSHKeyLocation = payload.SSHFile
-	} else {
-		client.SSHAuthType = sshclient.SSHAuthType_Password
-		client.SSHUser = payload.SSHUser
-		client.SSHPassword = payload.SSHPass
+	a, b, err := s.SSHConnect(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
+	defer b.Close()
 
-	c, err := client.Connect()
+	c, err := a.Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer c.Close()
 
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, payload, "")
 }
 
 func (s *ServerController) CheckPing(r *knot.WebContext) interface{} {
