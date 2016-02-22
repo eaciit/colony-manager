@@ -26,6 +26,8 @@ apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
 apl.configFile = ko.mapping.fromJS(apl.templateFile);
+apl.searchfield = ko.observable('');
+apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -70,11 +72,13 @@ apl.getApplications = function() {
 	$(ongrid.tbody).on("mouseleave", "tr", function (e) {
 	    $(this).removeClass("k-state-hover");
 	});
-	app.ajaxPost("/application/getapps", {}, function (res) {
+	app.ajaxPost("/application/getapps", {search: apl.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		apl.applicationData(res.data);
 	});
 };
@@ -405,8 +409,6 @@ apl.renameFile = function(){
 		swal({title: "File / Folder successfully renamed", type: "success"});
 	});
 }
-
-
 
 $(function () {
 	apl.getApplications();

@@ -209,8 +209,18 @@ func (d *DataGrabberController) GetTransformedData(r *knot.WebContext) interface
 func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search))
+
 	data := []colonycore.DataGrabber{}
-	cursor, err := colonycore.Find(new(colonycore.DataGrabber), nil)
+	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

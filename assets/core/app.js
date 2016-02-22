@@ -33,6 +33,17 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         callback();
     };
 
+    if (typeof callbackSuccess == "object") {
+        otherConfig = callbackSuccess;
+        callbackSuccess = function () { };
+        callbackError = function () { };
+    } 
+
+    if (typeof callbackError == "object") {
+        otherConfig = callbackError;
+        callbackError = function () { };
+    } 
+
     var config = {
         url: url,
         type: 'post',
@@ -56,6 +67,8 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
     };
 
     if (data instanceof FormData) {
+        delete config.config;
+        config.data = data;
         config.async = false;
         config.cache = false;
         config.contentType = false;
