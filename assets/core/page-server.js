@@ -29,8 +29,6 @@ srv.WizardColumns = ko.observableArray([
 srv.dataWizard = ko.observableArray([]);
 srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
-srv.showFile = ko.observable(true);
-srv.showUserPass = ko.observable(true);
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
@@ -83,11 +81,16 @@ srv.createNewServer = function () {
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
-    srv.showFileUserPass();
 };
 srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
-		return;
+		var errors = Lazy($(".form-server").data("kendoValidator").errors()).filter(function (d) {
+			return ["user is required", "password is required"].indexOf(d) == -1;
+		}).toArray();
+
+		if (errors.length > 0) {
+			return;
+		}
 	}
 
 	var data = ko.mapping.toJS(srv.configServer);
@@ -126,7 +129,6 @@ srv.editServer = function (_id) {
 		srv.ServerMode('edit');
 		ko.mapping.fromJS(res.data, srv.configServer);
 	});
-	srv.showFileUserPass();
 }
 srv.ping = function () {
 	srv.doSaveServer(function () {
@@ -283,16 +285,6 @@ srv.sendFile = function(){
 	swal({title: "File successfully Send", type: "success",closeOnConfirm: true
 	});
 	srv.backToFront()
-};
-
-srv.showFileUserPass = function (){	
-	if ($("#type-ssh").val() === 'Credentials') {
-		srv.showFile(false);
-		srv.showUserPass(true);
-	}else{
-		srv.showFile(true);
-		srv.showUserPass(false);
-	};
 };
 
 srv.popupWizard = function () {
