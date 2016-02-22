@@ -13,12 +13,14 @@ After go-getting this project, please follow steps below.
  - Set these two environment variables 
 
  for windows:
-   + `EC_APP_PATH`  => `%GOPATH%\src\github.com\eaciit\colony-app\app-root`
-   + `EC_DATA_PATH` => `%GOPATH%\src\github.com\eaciit\colony-app\data-root`
+ 
+     + `EC_APP_PATH`  => `%GOPATH%\src\github.com\eaciit\colony-app\app-root`
+     + `EC_DATA_PATH` => `%GOPATH%\src\github.com\eaciit\colony-app\data-root`
 
  for unix/linux/darwin:
-   + `EC_APP_PATH`  => `$GOPATH/src/github.com/eaciit/colony-app/app-root`
-   + `EC_DATA_PATH` => `$GOPATH/src/github.com/eaciit/colony-app/data-root`
+ 
+     + `EC_APP_PATH`  => `$GOPATH/src/github.com/eaciit/colony-app/app-root`
+     + `EC_DATA_PATH` => `$GOPATH/src/github.com/eaciit/colony-app/data-root`
 
 Run the app
 
