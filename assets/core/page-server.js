@@ -101,7 +101,7 @@ srv.doSaveServer = function (c) {
 		}
 	}
 
-	var data = ko.mapping.fromJS(srv.configServer);
+	var data = ko.mapping.toJS(srv.configServer);
 
 	if (srv.configServer.sshtype() == "File") {
 		var file = $("#privatekey")[0].files[0];
@@ -256,6 +256,7 @@ function ServerFilter(event){
 }
 
 srv.backToFront = function () {
+	srv.isNew(false);
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
@@ -300,7 +301,7 @@ srv.navModalWizard = function (status) {
 				}
 
 				srv.dataWizard.push(o);
-			}, {
+			}, function () { }, {
 				timeout: 5000
 			});
 		});

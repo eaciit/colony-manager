@@ -1,16 +1,16 @@
 package controller
 
 import (
-	// "encoding/json"
 	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
-	// "github.com/eaciit/dbox"
+	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
 	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
+	"golang.org/x/crypto/ssh"
 	"path/filepath"
 )
 
@@ -48,16 +48,23 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	r.Request.ParseMultipartForm(32 << 20)
 	r.Request.ParseForm()
 
-	dataRaw := map[string]interface{}{}
-	err := r.GetForms(&dataRaw)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
 	data := new(colonycore.Server)
-	err = toolkit.Serde(dataRaw, &data, "json")
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	if r.Request.FormValue("sshtype") == "File" {
+		dataRaw := map[string]interface{}{}
+		err := r.GetForms(&dataRaw)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		err = toolkit.Serde(dataRaw, &data, "json")
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	} else {
+		err := r.GetPayload(&data)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	if data.SSHType == "File" {
@@ -75,6 +82,22 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 		}
 	}
+	oldData := new(colonycore.Server)
+
+	cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", data.ID))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	oldDataAll := []colonycore.Server{}
+	err = cursor.Fetch(&oldDataAll, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	if len(oldDataAll) > 0 {
+		oldData = &oldDataAll[0]
+	}
 
 	err = colonycore.Delete(data)
 	if err != nil {
@@ -84,6 +107,70 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	err = colonycore.Save(data)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	sshSetting, client, err := s.SSHConnect(data)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer client.Close()
+
+	if data.OS == "linux" {
+		setEnvPath := func() interface{} {
+			sshSetting.GetOutputCommandSsh(`sed -i '/export EC_APP_PATH/d' ~/.bashrc`)
+			sshSetting.GetOutputCommandSsh(`sed -i '/export EC_DATA_PATH/d' ~/.bashrc`)
+			sshSetting.GetOutputCommandSsh("echo 'export EC_APP_PATH=" + data.AppPath + "' >> ~/.bashrc")
+			sshSetting.GetOutputCommandSsh("echo 'export EC_DATA_PATH=" + data.DataPath + "' >> ~/.bashrc")
+
+			return nil
+		}
+		if oldData.AppPath == "" || oldData.DataPath == "" {
+			_, err := sshSetting.RunCommandSsh(
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "bin")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "cli")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "config")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "daemon")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "src")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "web", "share")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "log")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "output")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datasource", "upload")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "server", "privatekeys")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "history")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "historyrec")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "log")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "output")),
+			)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			if res := setEnvPath(); res != nil {
+				return res
+			}
+		} else if oldData.AppPath != data.AppPath {
+			moveDir := fmt.Sprintf(`mv %s %s`, oldData.AppPath, data.AppPath)
+			_, err := sshSetting.GetOutputCommandSsh(moveDir)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			if res := setEnvPath(); res != nil {
+				return res
+			}
+		} else if oldData.DataPath != data.DataPath {
+			moveDir := fmt.Sprintf(`mv %s %s`, oldData.DataPath, data.DataPath)
+			_, err := sshSetting.GetOutputCommandSsh(moveDir)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			if res := setEnvPath(); res != nil {
+				return res
+			}
+		}
+	} else {
+		// windows
 	}
 
 	return helper.CreateResult(true, nil, "")
@@ -134,6 +221,24 @@ func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, data, "")
+}
+
+func (s *ServerController) SSHConnect(payload *colonycore.Server) (sshclient.SshSetting, *ssh.Client, error) {
+	client := sshclient.SshSetting{}
+	client.SSHHost = payload.Host
+
+	if payload.SSHType == "File" {
+		client.SSHAuthType = sshclient.SSHAuthType_Certificate
+		client.SSHKeyLocation = payload.SSHFile
+	} else {
+		client.SSHAuthType = sshclient.SSHAuthType_Password
+		client.SSHUser = payload.SSHUser
+		client.SSHPassword = payload.SSHPass
+	}
+
+	theClient, err := client.Connect()
+
+	return client, theClient, err
 }
 
 func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {

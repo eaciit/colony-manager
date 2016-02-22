@@ -63,7 +63,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         config.contentType = false;
         config.processData = false;
     }
-    
+
     if (otherConfig != undefined) {
         config = $.extend(true, config, otherConfig);
     }
