@@ -22,6 +22,7 @@ apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.renameFileMode = ko.observable(false);
+apl.boolEx = ko.observable(false);
 apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
@@ -94,8 +95,20 @@ apl.editApplication = function(_id) {
 };
 
 apl.createNewApplication = function () {
+	var editor = $('#scriptarea').data('CodeMirrorInstance');
+	var treeviewLeft = $("#treeview-left").data("kendoTreeView");
+	var uploadFile = $("#files");
+	var fileName = $("#nama");
+	$("#txt-path").html("");
+	uploadFile.val("");
+	fileName.html("");
+	treeviewLeft.setDataSource([]);
+	editor.setValue("");
+	editor.focus();
 	app.mode("editor");
+	$("#searchDirectori").val("");
 	$('a[href="#Form"]').tab('show');
+	apl.appRecordsDir([])
 	apl.applicationMode('');
 	apl.configApplication._id("");
 	apl.configApplication.AppsName("");
@@ -154,6 +167,7 @@ apl.backToFront = function () {
 // }
 
 apl.treeView = function (id) {
+	$("#searchDirectori").val("");
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
 		if (!app.isFine(res)) {
 			return;
@@ -170,17 +184,35 @@ apl.treeView = function (id) {
 }
 apl.selectDirApp = function(e){
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
-		if (!app.isFine(res)) {
-			return;
+	var editor = $('#scriptarea').data('CodeMirrorInstance');
+	var arrayEx = data.text.split('.');	
+	var extension = apl.extension();
+	for (var i in extension){
+		if ("."+arrayEx[1] != extension[i]){
+			apl.boolEx(true);
+		}else{
+			apl.boolEx(false);
+			editor.setValue("");
+			editor.focus();
+			$("#txt-path").html("");
+			apl.appTreeMode("");
+			apl.appTreeSelected("");
+			break;
 		}
-    	var editor = $('#scriptarea').data('CodeMirrorInstance');
-		editor.setValue(res.data);
-		editor.focus();
-	});
-    $("#txt-path").html(data.path);
-	apl.appTreeMode(data.type);
-	apl.appTreeSelected(data.text);
+	}
+
+	if (apl.boolEx() == true){
+		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+			editor.setValue(res.data);
+			editor.focus();
+		});
+	    $("#txt-path").html(data.path);
+		apl.appTreeMode(data.type);
+		apl.appTreeSelected(data.text);
+	}
 }
 apl.newFileDir = function(){
 	if (!app.isFormValid(".form-newfile")) {
