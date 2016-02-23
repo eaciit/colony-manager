@@ -192,18 +192,18 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 
 	err = deleteDirectory(unzipDest, newname, newDirName) /*delete existing directory*/
 	if err != nil {
-		return nil, "", err
+		return result, "", err
 	}
 
 	err = os.Rename(basePath, newname) /*rename unzip file to appID*/
 	if err != nil {
-		return nil, "", err
+		return result, "", err
 	}
 
 	if _, err := os.Stat(src); !os.IsNotExist(err) {
 		err = r.Close()
 		if err != nil {
-			return nil, "", err
+			return result, "", err
 		}
 	}
 
@@ -220,10 +220,10 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 
 	err = os.Rename(src, newNameParsed)
 	if err != nil {
-		return nil, newNameParsed, err
+		return result, newNameParsed, err
 	}
 
-	return nil, newNameParsed, nil
+	return result, newNameParsed, nil
 }
 
 func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
