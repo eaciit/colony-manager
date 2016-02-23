@@ -230,10 +230,13 @@ dg.editScrapper = function (_id) {
 			var $valSource = $("tr[data-key= '"+ val.Source +"']");
 			var $valDes = $valSource.find("td:eq(3) select.field-destination").data("kendoComboBox");
 			var $valDesType = $valSource.find("td:eq(4) select.type-destination").data("kendoDropDownList");
-			var $DesTypevisible = $valSource.find("td:eq(4) div").css("visibility","visible");
+			
+			if (val.SourceType != "object" && val.SourceType != "array-objects" && val.SourceType != "array-string"){
+				$valSource.find("td:eq(4) div").css("visibility","visible");	
+			}
 			
 			$valDes.value(val.Destination);
-			$valDesType.value(val.SourceType)
+			$valDesType.value(val.SourceType);
 		})
 	});
 };
@@ -564,7 +567,16 @@ dg.prepareFieldsOrigin = function (_id) {
 					var valueObject = Lazy(dg.fieldOfDataSourceDestination()).find({ 
 						_id: this.value()
 					});
-
+					
+					/*var $coba = valueObject.Type;					
+					var $coba1 = item.Type;
+					if ($coba != $coba1){
+						$typeDestination.closest("td").children().css("visibility", "hidden");
+						this.value("");
+						alert("salah!!");
+					}
+					*/
+					
 					if (valueObject != undefined) {
 						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
 							$typeDestination.closest("td").children().css("visibility", "hidden");
@@ -637,6 +649,11 @@ dg.parseMap = function () {
 	});
 
 	dg.configScrapper.Maps(maps);
+
+	var $coba = $(".table-tree-map").find("tr[data-type='array-objects'] td:eq(2)");
+	var $test = $coba.text();
+	console.log("isi coba "+$test);
+
 };
 dg.checkDeleteDataGrabber = function(elem, e){
 	if (e === 'datagrabberall'){
