@@ -255,7 +255,6 @@ apl.removeFileDir = function(){
 				 swal({title: "File / Folder successfully deleted", type: "success"});
 				});
 		},1000);
-
 	});
 }
 apl.updateFileDir = function(){
