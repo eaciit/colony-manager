@@ -28,8 +28,8 @@ srv.WizardColumns = ko.observableArray([
 ]);
 srv.isNew = ko.observable(false);
 srv.dataWizard = ko.observableArray([]);
-srv.txtWizard = ko.observable('');
 srv.validator = ko.observable('');
+srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.filterValue = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
@@ -276,6 +276,7 @@ srv.validate = function () {
 		return;
 	}
 }
+
 srv.dataBoundWizard = function () {
 	var $sel = $(".grid-data-wizard");
 	var $grid = $sel.data("kendoGrid");
@@ -301,7 +302,9 @@ srv.navModalWizard = function (status) {
 		srv.dataWizard([]);
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
 			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
+			
 			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
+				app.isLoading(true);
 				var o = { 
 					host: ip, 
 					status: res.data 
@@ -323,16 +326,22 @@ srv.navModalWizard = function (status) {
 				timeout: 5000
 			});
 		});
+		
+		$(document).ajaxStop(function() {
+		  app.isLoading(false);
+		});
+
 		srv.showModal(status);
 	}else if(status == 'modal1'){
 		srv.showModal(status);
-		srv.dataWizard([]);
+		srv.dataWizard([]);		
 	}
 };
 
 srv.finishButton = function () {
 	srv.showModal('modal1');
-	srv.dataWizard([]);	
+	srv.txtWizard('');
+	srv.dataWizard([]);
 };
 
 $(function () {
