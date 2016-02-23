@@ -43,8 +43,9 @@ apl.applicationColumns = ko.observableArray([
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
-	{ field: "_id", title: "ID", width: 120 },
+	{ field: "_id", title: "ID" },
 	{ field: "AppsName", title: "Name" },
+	{ field: "Type", title: "Type" },
 	// { field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
