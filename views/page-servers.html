@@ -226,7 +226,7 @@
 					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
 						<span class="glyphicon glyphicon-remove"></span> Cancel
 					</button>
-					<button type="button" id="buttonWizard" class="btn btn-sm btn-primary" data-bind="click: function(){srv.navModalWizard('modal2')}">
+					<button type="button" id="buttonWizard" class="btn btn-sm btn-primary" data-bind="click: function(){srv.navModalWizard('modal2'), srv.validate()}">
 						<span class="glyphicon glyphicon-arrow-right"></span> Continue
 					</button>
 				</div>
@@ -263,6 +263,7 @@
 					<button type="button" class="btn btn-sm btn-primary" data-dismiss="modal" data-bind="click: srv.finishButton">
 						<span class="glyphicon glyphicon-ok"></span> OK
 					</button>
+							{{template "_loader.html"}}
 				</div>
 			</div>
 		</div>

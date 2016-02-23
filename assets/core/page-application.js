@@ -37,13 +37,15 @@ apl.applicationColumns = ko.observableArray([
 	// { field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' onclick='apl.deploy(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' data-toggle='modal' data-target='.modal-deploy'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Browse' onclick='apl.browse(\"" + d._id + "\")()'><span class='fa fa-eye'></span></button>"
 		].join(" ");
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 ]);
 apl.deploy = function (_id) {
+	app.isLoading(true);
+	$(".modal-deploy").unbind();
 	return function (e) {
 
 	};
