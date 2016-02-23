@@ -212,7 +212,10 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 		subComps := strings.Split(newname, toolkit.PathSeparator)
 		subComps = append(subComps[:len(subComps)-1], fmt.Sprintf("source-%s", subComps[len(subComps)-1]))
 		newname = strings.Join(subComps, toolkit.PathSeparator)
-		return fmt.Sprintf("%s.%s", newname, comps[len(comps)-1])
+		fullpath := fmt.Sprintf("%s.%s", newname, comps[len(comps)-1])
+
+		comps = strings.Split(fullpath, toolkit.PathSeparator)
+		return comps[len(comps)-1]
 	}()
 
 	err = os.Rename(src, newNameParsed)
@@ -337,7 +340,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	}
 	o.Enable = enable
 	o.AppsName = r.Request.FormValue("AppsName")
-	//a.SendFile(host,user,pass,filepath,destination,pem)
+	o.Type = r.Request.FormValue("Type")
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())

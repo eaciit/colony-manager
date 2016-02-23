@@ -140,8 +140,8 @@ apl.saveApplication = function() {
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
-	formData.append("AppsName", data.AppsName);
-	// console.log("======= data"+JSON.stringify(data));
+	formData.append("Type", data.Type);
+	
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
 	request.onload = function(){
@@ -149,9 +149,6 @@ apl.saveApplication = function() {
 		apl.backToFront();
 	}
 	request.send(formData);
-	// request.onreadystatechange = function() {
-		
-	// }
 };
 
 apl.getUploadFile = function() {
