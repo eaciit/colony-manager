@@ -133,6 +133,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 			return nil
 		}
+
 		if oldData.AppPath == "" || oldData.DataPath == "" {
 			_, err := sshSetting.RunCommandSsh(
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "bin")),
