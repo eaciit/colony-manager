@@ -43,6 +43,24 @@ apl.applicationColumns = ko.observableArray([
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 ]);
+apl.ServerColumns = ko.observableArray([
+	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
+		].join(" ");
+	} },
+	{ field: "_id", title: "ID" },
+	{ field: "host", title: "Host" },
+	{ field: "os", title: "OS", template: function (d) {
+		var row = Lazy(srv.templateOS()).find({ value: d.os });
+		if (row != undefined) {
+			return row.text;
+		}
+
+		return d.os;
+	} },
+	{ field: "sshtype", title: "SSH Type" }
+]);
 apl.deploy = function (_id) {
 	app.isLoading(true);
 	$(".modal-deploy").unbind();
@@ -408,7 +426,21 @@ apl.renameFile = function(){
 	});
 }
 
-
+apl.selectServer = function(elem, e){
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", true);
+			});
+		} else {
+			var idtemp = '';
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+			});
+		}
+	}
+}
 
 $(function () {
 	apl.getApplications();

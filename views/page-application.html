@@ -242,7 +242,7 @@
 					</div>
 					<div class="form-group">
 						<div class="col-md-12">
-							<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
+							<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: apl.ServerColumns, filterfable: false, pageable: true}"></div>
 						</div>
 					</div>
 					{{template "_loader.html"}}
