@@ -304,7 +304,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	_, err = sshSetting.GetOutputCommandSsh(fmt.Sprintf("unzip %s.zip", destinationZipPath))
+	zipToExtract := fmt.Sprintf("unzip %s", destinationZipPath)
+	_, err = sshSetting.GetOutputCommandSsh(zipToExtract)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
