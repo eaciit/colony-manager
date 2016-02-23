@@ -33,7 +33,6 @@ type ApplicationController struct {
 func CreateApplicationController(s *knot.Server) *ApplicationController {
 	var controller = new(ApplicationController)
 	controller.Server = s
-	helper.DebugMode = true
 	return controller
 }
 
