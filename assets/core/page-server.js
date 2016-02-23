@@ -58,7 +58,7 @@ srv.ServerColumns = ko.observableArray([
 	{ field: "sshtype", title: "SSH Type" },
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-play'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
 		].join(" ");
 	} },
 	// { field: "appPath", title: "App Path" },
