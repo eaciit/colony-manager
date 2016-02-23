@@ -47,7 +47,7 @@ dg.scrapperColumns = ko.observableArray([
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
@@ -277,28 +277,39 @@ dg.backToFrontPage = function () {
 	dg.getDataSourceData();
 };
 
-dg.runTransformation = function (_id) {
-	return function () {
-		dg.doSaveDataGrabber(function () {
-			if (dg.configScrapper.UseInterval()) {
-				dg.backToFront();
+dg.runTransformationWhenEdit = function () {
+	dg.doSaveDataGrabber(function () {
+		if (dg.configScrapper.UseInterval()) {
+			dg.backToFront();
+		}
+
+		dg.getScrapperData();
+
+		app.ajaxPost("/datagrabber/starttransformation", { _id: dg.configScrapper._id() }, function (res) {
+			if (!app.isFine(res)) {
+				return;
 			}
 
-			dg.getScrapperData();
+			if (!dg.configScrapper.UseInterval()) {
+				swal({ title: "Transformation success", type: "success" });
+			}
 
-			app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
-				if (!app.isFine(res)) {
-					return;
-				}
-
-				if (!dg.configScrapper.UseInterval()) {
-					swal({ title: "Transformation success", type: "success" });
-				}
-
-				dg.checkTransformationStatus();
-			});
+			dg.checkTransformationStatus();
 		});
-	};
+	});
+};
+dg.runTransformation = function (_id) {
+	app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (!dg.configScrapper.UseInterval()) {
+			swal({ title: "Transformation success", type: "success" });
+		}
+
+		dg.checkTransformationStatus();
+	});
 };
 
 dg.stopTransformation = function (_id) {
