@@ -306,6 +306,16 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
+
+		if app.DeployedTo == nil {
+			app.DeployedTo = []string{}
+		}
+
+		app.DeployedTo = append(app.DeployedTo, server.ID)
+		err = colonycore.Save(app)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	return helper.CreateResult(true, nil, "")

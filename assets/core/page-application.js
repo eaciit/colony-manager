@@ -6,7 +6,8 @@ apl.templateConfigApplication = {
 	AppsName: "",
 	Enable: ko.observable(false),
 	Type: "web",
-	AppPath: ""
+	AppPath: "",
+	DeployedTo: [],
 };
 apl.appTypes = ko.observableArray([
 	{ value: "web", title: "Web" },
