@@ -159,7 +159,7 @@ func extractAndWriteFile(i int, f *zip.File) error {
 	return nil
 }
 
-func Unzip(src string) (result *colonycore.TreeSource, zipName string, err error) {
+func unzip(src string) (result *colonycore.TreeSource, zipName string, err error) {
 	r, err := zip.OpenReader(src)
 	if err != nil {
 		return nil, "", err
@@ -257,6 +257,35 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
 		sourceZipPath := filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
 		destinationPath := filepath.Join(server.AppPath, "src")
+		destinationZipPath := filepath.Join(destinationPath, fmt.Sprintf("%s.zip", app.ID))
+
+		installerFile := ""
+
+		filepath.Walk(sourcePath, func(path string, f os.FileInfo, err error) error {
+			if installerFile != "" {
+				return nil
+			}
+
+			comps := strings.Split(path, toolkit.PathSeparator)
+			filename := comps[len(comps)-1]
+			if server.OS == "linux" {
+				if strings.Contains(filename, ".sh") {
+					installerFile = filename
+				}
+			} else if server.OS == "windows" {
+				if strings.Contains(filename, ".bat") {
+					installerFile = filename
+				} else if strings.Contains(filename, ".exe") {
+					installerFile = filename
+				}
+			}
+
+			if installerFile != "" {
+				installerFile = strings.Replace(installerFile, sourcePath+toolkit.PathSeparator, "", -1)
+			}
+
+			return nil
+		})
 
 		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
 		if err != nil {
@@ -269,6 +298,11 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		err = os.Remove(sourceZipPath)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		err = sshSetting.GetOutputCommandSsh(fmt.Sprintf("unzip %s.zip", destinationZipPath))
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -311,7 +345,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 
 	if zipFile != "" && o.ID != "" {
 		newDirName = o.ID
-		directoryTree, zipName, _ := Unzip(zipFile)
+		directoryTree, zipName, _ := unzip(zipFile)
 		createJson(directoryTree)
 
 		o.ZipName = zipName

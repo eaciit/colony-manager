@@ -111,6 +111,13 @@
 										<span class="k-invalid-msg" data-for="files"></span>
 									</div>
 					    		</div>
+					    		<div class="form-group row">
+						    		<label class="col-md-3 filter-label">Type</label>
+						    		<div class="col-md-3">
+		    							<select data-required-msg="Type cannot be empty" name="AppType" class="col-100" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
+						    			<span class="k-invalid-msg" data-for="AppType"></span>
+						    		</div>
+					    		</div>
 					    		<!-- <div class="form-group row"> 
 					    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> 
 					    		</div> -->

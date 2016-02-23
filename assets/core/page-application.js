@@ -5,8 +5,14 @@ apl.templateConfigApplication = {
 	_id: "",
 	AppsName: "",
 	Enable: ko.observable(false),
+	Type: "web",
 	AppPath: ""
 };
+apl.appTypes = ko.observableArray([
+	{ value: "web", title: "Web" },
+	{ value: "cli", title: "CLI" },
+	{ value: "daemon", title: "Daemon/Service" },
+]);
 apl.templateFile = {
 	ID: "",
 	Path: "",
