@@ -167,6 +167,7 @@ apl.treeView = function (id) {
 			dataSource: apl.appRecordsDir(),
 	    }).data("kendoTreeView");
 	});
+
 }
 apl.selectDirApp = function(e){
 	var eleTop = $(e.node).offset().top;
@@ -329,7 +330,7 @@ apl.codemirror = function(){
     });
     editor.setValue('');
     $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
-    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
+    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
     // editor.focus();
     $('#scriptarea').data('CodeMirrorInstance', editor);
 }
@@ -338,7 +339,7 @@ apl.treeScroller = function(){
 	$('#splitter').kendoSplitter({
 		orientation: "horizontal",
 		panes: [
-			{ size: "25%" },
+			{ },
 			{ }]
     });
 	// var treeview = $("#treeview-left").data("kendoTreeView");
@@ -441,4 +442,5 @@ $(function () {
 	apl.codemirror();
 	apl.treeView("") ;
 	app.prepareTooltipster($(".tooltipster"));
+
 });
