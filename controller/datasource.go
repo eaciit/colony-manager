@@ -299,8 +299,9 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 
 	if o.Driver == "json" || o.Driver == "csv" {
 		fileType := helper.GetFileExtension(o.Host)
-		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
-		file, err := os.Create(fileLocation)
+		o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
+
+		file, err := os.Create(o.FileLocation)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -478,7 +479,39 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 		Password: password,
 		Settings: settings,
 	}
+
+	if driver == "json" || driver == "csv" {
+		fileTempID := helper.RandomIDWithPrefix("f")
+		fileType := helper.GetFileExtension(host)
+		fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
+
+		file, err := os.Create(fakeDataConn.FileLocation)
+		if err != nil {
+			os.Remove(fakeDataConn.FileLocation)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer file.Close()
+
+		resp, err := http.Get(host)
+		if err != nil {
+			os.Remove(fakeDataConn.FileLocation)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer resp.Body.Close()
+
+		_, err = io.Copy(file, resp.Body)
+		if err != nil {
+			os.Remove(fakeDataConn.FileLocation)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
 	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
+
+	if fakeDataConn.FileLocation != "" {
+		os.Remove(fakeDataConn.FileLocation)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

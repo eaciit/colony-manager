@@ -12,8 +12,6 @@ import (
 	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"fmt"
 	"github.com/eaciit/toolkit"
-	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -43,6 +41,7 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	if len(other) > 3 {
 		wrapper.ci.Settings = other[3].(toolkit.M)
 	}
+	fmt.Printf("--- %#v\n", wrapper.ci)
 
 	wrapper.connection, wrapper.err = dbox.NewConnection(driver, wrapper.ci)
 	if wrapper.err != nil {
@@ -194,11 +193,7 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 
 func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
 	if dataConn.Driver == "json" || dataConn.Driver == "csv" {
-		basePath, _ := os.Getwd()
-		fileType := GetFileExtension(dataConn.Host)
-		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(basePath, "config", "etc", dataConn.ID), fileType)
-
-		return Query(fileType, fileLocation)
+		return Query(dataConn.Driver, dataConn.FileLocation)
 	}
 
 	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
