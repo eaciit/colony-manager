@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -70,7 +69,6 @@ func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer cursor.Close()
-	fmt.Println("Len 73", data)
 	return helper.CreateResult(true, data, "")
 }
 
@@ -316,23 +314,23 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, logs, "")
 }
 
-// func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
-// 	r.Config.OutputType = knot.OutputJson
-// 	w.PrepareHistoryPath()
+func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	w.PrepareHistoryPath()
 
-// 	payload := new(colonycore.WebGrabber)
-// 	err := r.GetPayload(payload)
-// 	if err != nil {
-// 		return helper.CreateResult(false, nil, err.Error())
-// 	}
+	payload := new(colonycore.WebGrabber)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-// 	err = colonycore.Delete(payload)
-// 	if err != nil {
-// 		return helper.CreateResult(false, nil, err.Error())
-// 	}
+	err = colonycore.Delete(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-// 	return helper.CreateResult(true, nil, "")
-// }
+	return helper.CreateResult(true, nil, "")
+}
 
 func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
