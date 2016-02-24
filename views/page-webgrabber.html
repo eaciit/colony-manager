@@ -3,511 +3,511 @@
 
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: webGrabber" style="display:none;">
-    <div class="row">
-        <ul class="nav">
-            <li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Web Grabber<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
-            <!-- <li><a href="#" data-bind="css: { 'active': (app.section() == 'scheduler') }, click: app.changeActiveSection('scheduler')">Scheduler<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> -->
-        </ul>
-    </div>
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'scrapper') }, click: app.changeActiveSection('scrapper')">Web Grabber<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<!-- <li><a href="#" data-bind="css: { 'active': (app.section() == 'scheduler') }, click: app.changeActiveSection('scheduler')">Scheduler<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li> -->
+		</ul>
+	</div>
 </div>
 
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: webGrabber">
-    <div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
-        <h1>Web Grabber</h1>
+	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
+		<h1>Web Grabber</h1>
 
-        <nav class="navbar" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: wg.getScrapperData">
-                <span class="glyphicon glyphicon-refresh"></span> Refresh
-            </button>
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: wg.createNewScrapper">
-                <span class="glyphicon glyphicon-plus"></span> Create New Web Grabber
-            </button>
-            <button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: wg.removeScrapper">
-                <span class="glyphicon glyphicon-remove"></span> Delete
-            </button>
-        </nav>
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Web Grabber
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: wg.removeScrapper">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
 
-        <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
-            <div class="col-md-3 no-padding">
-                <label class="col-md-4 filter-label">
-                    Search
-                </label>
-                <div class="col-md-8 no-padding">
-                    <input class="form-control input-sm" type="text" data-bind="value: wg.searchfield" placeholder="Type keyword here" />
-                </div>
-            </div>
-            <div class="col-md-3 no-padding">
-                <label class="col-md-5 filter-label">
-                    Request Type
-                </label>
-                <div class="col-md-7 no-padding">
-                    <select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
-                </div>
-            </div>
-            <div class="col-md-3 no-padding">
-                <label class="col-md-5 filter-label">
-                    Source Type
-                </label>
-                <div class="col-md-7 no-padding">
-                    <select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
-                </div>
-            </div>
-        </nav>
+	    <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<input class="form-control input-sm" type="text" data-bind="value: wg.searchfield" placeholder="Type keyword here" />
+		    	</div>
+		    </div>
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
+		    		Request Type
+		    	</label>
+		    	<div class="col-md-7 no-padding">
+		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
+		    		Source Type
+		    	</label>
+		    	<div class="col-md-7 no-padding">
+		    		<select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		</nav>
 
-        <div class="panel" data-bind="visible: (app.mode() == '')">
-            <div class="panel-heading">
-                <h1 class="panel-title">All Web Grabbers</h1>
-            </div>
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">All Web Grabbers</h1>
+		    </div>
 
-            <div class="panel-body">
-                <div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
-            </div>
-            <p class="bg-danger bgcustom">Please click row to edit!</p>
-        </div>
+		    <div class="panel-body">
+		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
+		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
 
-        <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
-                <span class="glyphicon glyphicon-chevron-left"></span> Back
-            </button>
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getURL">
-                <span class="glyphicon glyphicon-refresh"></span> Fetch Content
-            </button>
-        </nav>
+	    		<span class="glyphicon glyphicon-refresh"></span> Fetch Content
+	    	</button>
+		</nav>
 
-        <div class="panel" id="panel-set-up" data-bind="visible: (app.mode() == 'editor')">
-            <div class="panel-heading">
-                <h1 class="panel-title">
-                    <span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
-                    Grabber
-                </h1>
-            </div>
-            <div class="panel-body">
-                <form class="form-horizontal form-scrapper-top" data-bind="with: configScrapper" novalidate>
-                    <div class="col-md-11">
-                        <div class="form-group">
-                            <label class="col-md-2 filter-label">Source Type</label>
-                            <div class="col-md-3">
-                                <select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: sourcetype, dataValueField: 'value', dataTextField: 'title' }"></select>
-                                <span class="k-invalid-msg" data-for="source-type"></span>
-                            </div>
+		<div class="panel" id="panel-set-up" data-bind="visible: (app.mode() == 'editor')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+		        	Grabber
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<form class="form-horizontal form-scrapper-top" data-bind="with: configScrapper" novalidate>
+					<div class="col-md-11">
+						<div class="form-group">
+				        	<label class="col-md-2 filter-label">Source Type</label>
+				        	<div class="col-md-3">
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: sourcetype, dataValueField: 'value', dataTextField: 'title' }"></select>
+								<span class="k-invalid-msg" data-for="source-type"></span>
+				        	</div>
 
-                            <label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
-                            <div class="col-md-3">
-                                <select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: wg.configScrapper.grabconf.calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
-                                <span class="k-invalid-msg" data-for="source-type"></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-2 filter-label">URL</label>
-                            <div class="col-md-10">
-                                <input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
-                                <span class="k-invalid-msg" data-for="URL"></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-2 filter-label">Payload</label>
-                            <div class="col-md-2">
-                                <button class="btn btn-sm btn-success" data-bind="click: wg.addScrapperPayload">
-                                    <span class="glyphicon glyphicon-plus"></span> Add more
-                                </button>
-                            </div>
-                            <div class="clearfix"></div>
-                            <div class="col-md-10 col-md-offset-2">
-                                <table class="table">
-                                    <col width="24%">
-                                    <col width="24%">
-                                    <col width="24%">
-                                    <col width="24%">
+				        	<label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
+				        	<div class="col-md-3">
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: wg.configScrapper.grabconf.calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
+								<span class="k-invalid-msg" data-for="source-type"></span>
+					        </div>
+				        </div>
+						<div class="form-group">
+				        	<label class="col-md-2 filter-label">URL</label>
+				        	<div class="col-md-10">
+				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
+								<span class="k-invalid-msg" data-for="URL"></span>
+				        	</div>
+				        </div>
+						<div class="form-group">
+				        	<label class="col-md-2 filter-label">Payload</label>
+				        	<div class="col-md-2">
+				        		<button class="btn btn-sm btn-success" data-bind="click: wg.addScrapperPayload">
+				        			<span class="glyphicon glyphicon-plus"></span> Add more
+				        		</button>
+				        	</div>
+				        	<div class="clearfix"></div>
+				        	<div class="col-md-10 col-md-offset-2">
+								<table class="table">
+									<col width="24%">
+									<col width="24%">
+									<col width="24%">
+									<col width="24%">
 
-                                    <thead>
-                                        <tr>
-                                            <th>Key</th>
-                                            <th>Value</th>
-                                            <th>Pattern</th>
-                                            <th>Format</th>
-                                            <th>&nbsp;</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody data-bind="foreach: wg.configScrapper.grabconf.temp.parameters">
-                                        <tr>
-                                            <td>
-                                                <input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
-                                                <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-key-' + $index() }"></span>
-                                            </td>
-                                            <td>
-                                                <input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
-                                                <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
-                                            </td>
-                                            <td>
-                                                <select style="width: 100%;" data-bind="kendoDropDownList: { data: wg.parametersPattern, dataValueField: 'value', dataTextField: 'title', value: pattern}"></select>
-                                            </td>
-                                            <td>
-                                                <input class="form-control input-sm full-width" type="text" data-bind="value: format" placeholder="Type format here" />
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeScrapperPayload($index())">
-                                                    <span class="glyphicon glyphicon-remove"></span>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+									<thead>
+										<tr>
+											<th>Key</th>
+											<th>Value</th>
+											<th>Pattern</th>
+											<th>Format</th>
+											<th>&nbsp;</th>
+										</tr>
+									</thead>
+									<tbody data-bind="foreach: wg.configScrapper.grabconf.temp.parameters">
+										<tr>
+											<td>
+												<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-key-' + $index() }"></span>
+											</td>
+											<td>
+												<input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
+												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
+											</td>
+											<td>
+												<select style="width: 100%;" data-bind="kendoDropDownList: { data: wg.parametersPattern, dataValueField: 'value', dataTextField: 'title', value: pattern}"></select>
+											</td>
+											<td>
+												<input class="form-control input-sm full-width" type="text" data-bind="value: format" placeholder="Type format here" />
+											</td>
+											<td>
+												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeScrapperPayload($index())">
+													<span class="glyphicon glyphicon-remove"></span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+				        	</div>
+				        </div>
+					</div>
+				</form>
+		    </div>
+		</div>
 
-        <div class="panel" data-bind="visible: (app.mode() == 'editor') && (wg.modeSetting() != 0)">
-            <div class="panel-heading">
-                <h1 class="panel-title">
-                    Preview
-                </h1>
-            </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-4 vv-padding-right" data-bind="with:wg.configScrapper">
-                        <div class="col-md-12 sub-title-content">
-                            <span data-bind="text:wg.templateStepSetting()[wg.modeSetting()-1]"></span>
-                        </div>
-                        <div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == ''">
-                            <button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-                            <button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
-                            <button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
-                            <button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() == 2, click: wg.saveSelectorConf"><span class="glyphicon glyphicon-save"></span> Save</button>
-                        </div>
+		<div class="panel" data-bind="visible: (app.mode() == 'editor') && (wg.modeSetting() != 0)">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Preview
+	        	</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="row">
+		    		<div class="col-md-4 vv-padding-right" data-bind="with:wg.configScrapper">
+		    			<div class="col-md-12 sub-title-content">
+		    				<span data-bind="text:wg.templateStepSetting()[wg.modeSetting()-1]"></span>
+		    			</div>
+		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == ''">
+		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() == 2, click: wg.saveSelectorConf"><span class="glyphicon glyphicon-save"></span> Save</button>
+		    			</div>
 
-                        <!-- Form Set Up -->
-                        <div class="col-md-12 form-row form-row-1" data-bind="visible: wg.modeSetting() == 1">
-                            <div class="row">
-                                <label class="col-md-6 filter-label">ID</label>
-                                <div class="col-md-6">
-                                    <input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
-                                    <span class="k-invalid-msg" data-for="ID"></span>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <label class="col-md-6 filter-label">Start Time</label>
-                                <div class="col-md-6">
-                                    <input required data-bind="kendoDateTimePicker: {value:wg.configScrapper.intervalconf.starttime,format:'MM/dd/yyyy hh:mm tt'}" name ="StartTime"/>
+		    			<!-- Form Set Up -->
+	    				<div class="col-md-12 form-row form-row-1" data-bind="visible: wg.modeSetting() == 1">
+	    					<div class="row">
+					        	<label class="col-md-6 filter-label">ID</label>
+					        	<div class="col-md-6">
+					        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+									<span class="k-invalid-msg" data-for="ID"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Start Time</label>
+					        	<div class="col-md-6">
+									<input required data-bind="kendoDateTimePicker: {value:wg.configScrapper.intervalconf.starttime,format:'MM/dd/yyyy hh:mm tt'}" name ="StartTime"/>
                                     <span class="k-invalid-msg" data-for="StartTime"></span>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <label class="col-md-6 filter-label">Interval Type</label>
-                                <div class="col-md-6">
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Interval Type</label>
+					        	<div class="col-md-6">
                                     <select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: wg.configScrapper.intervalconf.intervaltype}"></select>
-                                    <span class="k-invalid-msg" data-for="IntervalType"></span>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <label class="col-md-6 filter-label">Grap Interval</label>
-                                <div class="col-md-6">
-                                    <input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" />
-                                    <span class="k-invalid-msg" data-for="GrabInterval"></span>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <label class="col-md-6 filter-label">Timeout Interval</label>
-                                <div class="col-md-6">
-                                    <input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" />
-                                    <span class="k-invalid-msg" data-for="TimeoutInterval"></span>
-                                </div>
-                            </div>
-                        </div>
+									<span class="k-invalid-msg" data-for="IntervalType"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Grap Interval</label>
+					        	<div class="col-md-6">
+					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" />
+									<span class="k-invalid-msg" data-for="GrabInterval"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Timeout Interval</label>
+					        	<div class="col-md-6">
+					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" />
+									<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
+					        	</div>
+					        </div>
+	    				</div>
 
-                        <!-- Form Selector -->
-                        <div class="col-md-12" data-bind="visible:wg.modeSetting() == 2 && wg.modeSelector() == ''">
-                            <div class="row">
-                                <label class="col-md-3 filter-label">Selector</label>
-                                <div class="col-md-6">
-                                    <button class="btn btn-sm btn-success" data-bind="click: wg.addSelectorSetting">
-                                        <span class="glyphicon glyphicon-plus"></span>
-                                    </button>
-                                </div>
-                                <div class="col-md-12 vv-padding-right">
-                                    <form class="form-row-selector">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Selector</th>
-                                                    <th>&nbsp;</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody data-bind="foreach: wg.selectorRowSetting">
-                                                <tr>
-                                                    <td>
-                                                        <input required="" class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
-                                                        <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
-                                                    </td>
-                                                    <td>
-                                                        <div>
-                                                            <div class="input-group input-group-sm" style="width:150px;">
-                                                                <input class="form-control input-sm disabled" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: rowselector, attr: { 'name': 'selector-setting-value-' + $index() }" />
-                                                                <span class="input-group-btn">
-                                                                    <button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
-                                                                </span>
-                                                            </div>
-                                                            <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-value-' + $index() }"></span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-success" data-bind="click: function(){wg.showSelectorSetting($index(), name)}">
-                                                            <span class="glyphicon glyphicon-cog"></span>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeSelectorSetting($index())}">
-                                                            <span class="glyphicon glyphicon-remove"></span>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+	    				<!-- Form Selector -->
+	    				<div class="col-md-12" data-bind="visible:wg.modeSetting() == 2 && wg.modeSelector() == ''">
+	    					<div class="row">
+	    						<label class="col-md-3 filter-label">Selector</label>
+	    						<div class="col-md-6">
+	    							<button class="btn btn-sm btn-success" data-bind="click: wg.addSelectorSetting">
+					        			<span class="glyphicon glyphicon-plus"></span>
+					        		</button>
+	    						</div>
+					        	<div class="col-md-12 vv-padding-right">
+					        		<form class="form-row-selector">
+					        			<table class="table">
+											<thead>
+												<tr>
+													<th>Name</th>
+													<th>Selector</th>
+													<th>&nbsp;</th>
+												</tr>
+											</thead>
+											<tbody data-bind="foreach: wg.selectorRowSetting">
+												<tr>
+													<td>
+														<input required="" class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
+													</td>
+													<td>
+														<div>
+															<div class="input-group input-group-sm" style="width:150px;">
+																<input class="form-control input-sm disabled" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: rowselector, attr: { 'name': 'selector-setting-value-' + $index() }" />
+																<span class="input-group-btn">
+																	<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
+																</span>
+															</div>
+															<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-value-' + $index() }"></span>
+														</div>
+													</td>
+													<td>
+														<button class="btn btn-sm btn-success" data-bind="click: function(){wg.showSelectorSetting($index(), name)}">
+															<span class="glyphicon glyphicon-cog"></span>
+														</button>
+														<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeSelectorSetting($index())}">
+															<span class="glyphicon glyphicon-remove"></span>
+														</button>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+					        		</form>
+					        	</div>
+	    					</div>
+	    				</div>
 
-                        <!-- Form Setting Selector -->
-                        <div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'edit'">
-                            <button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-                            <button class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Clear</button>
-                            <button class="btn btn-sm btn-primary" data-bind="click:wg.saveSettingSelector"><span class="glyphicon glyphicon-save"></span> Save</button>
-                        </div>
-                        <div class="col-md-12" data-bind="visible:wg.modeSelector() == 'edit'">
-                            <form class="form-row-column-selector">
-                                <div class="row" data-bind="with:wg.configSelector">
-                                    <label class="col-md-6 filter-label">Column Setting</label>
-                                    <div class="col-md-6">
-                                        <button class="btn btn-sm btn-success" data-bind="click: wg.addColumnSetting">
-                                            <span class="glyphicon glyphicon-plus"></span>
-                                        </button>
-                                    </div>
-                                    <div class="col-md-12 vv-padding-right vv-padding-left">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Alias</th>
-                                                    <th>Type</th>
-                                                    <th>Selector</th>
-                                                    <th>&nbsp;</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody data-bind="foreach: columnsettings">
-                                                <tr>
-                                                    <td>
-                                                        <input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
-                                                        <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
-                                                    </td>
-                                                    <td>
-                                                        <select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
-                                                        <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
-                                                    </td>
-                                                    <td>
-                                                        <div>
-                                                            <div class="input-group input-group-sm" style="width:130px;">
-                                                                <input class="form-control input-sm disabled" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'column-selector-value-' + $index() }" />
-                                                                <span class="input-group-btn">
-                                                                    <button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
-                                                                </span>
-                                                            </div>
-                                                            <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-value-' + $index() }"></span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeColumnSetting($index())}">
-                                                            <span class="glyphicon glyphicon-remove"></span>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="col-md-12 form-row vv-padding-right vv-padding-left">
-                                        <div class="row">
-                                            <label class="col-md-4 filter-label">Filter Cond.</label>
-                                            <div class="col-md-6">
-                                                <select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: filtercond, dataValueField: 'Id', dataTextField: 'Title', optionLabel: 'Select one'}"></select>
-                                                <button class="btn btn-sm btn-primary" data-bind="visible: filtercond() != '', click: wg.addFilterCondition"><span class="glyphicon glyphicon-plus"></span></button>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: filtercond() != ''">
-                                            <div class="col-md-12">
-                                                <table class="table" id="tablecond">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Column</th>
-                                                            <th>Operation</th>
-                                                            <th>Value</th>
-                                                            <th>&nbsp;</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody data-bind="foreach: conditionlist">
-                                                        <tr>
-                                                            <td>
-                                                                <select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.configSelector.columnsettings, dataValueField: 'alias', dataTextField: 'alias', value: column}, attr: { 'name': 'column-filter-colomn-' + $index() }" style="width:90px;"></select>
-                                                                <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-colomn-' + $index() }"></span>
-                                                            </td>
-                                                            <td>
-                                                                <select required data-required-msg="Operation Type cannot be empty" data-bind="kendoDropDownList: { data: wg.operationcondList, dataValueField: 'Id', dataTextField: 'Title', value: operator}, attr: { 'name': 'column-filter-operation-' + $index() }" style="width:90px;"></select>
-                                                                <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-operation-' + $index() }"></span>
-                                                            </td>
-                                                            <td>
-                                                                <input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
-                                                                <span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-value-' + $index() }"></span>
-                                                            </td>
-                                                            <td>
-                                                                <button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeFilterCondition($index())}">
-                                                                    <span class="glyphicon glyphicon-remove"></span>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row">
-                                            <label class="col-md-4 filter-label">Destination Type</label>
-                                            <div class="col-md-6">
-                                                <select style="width: 100%;" required data-required-msg="Destination type cannot be empty" data-bind="kendoDropDownList: { data: wg.templatedesttype, value: destoutputtype}" name="desttype"></select>
-                                                <span class="k-invalid-msg" for="desttype"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: destoutputtype() == 'database'">
-                                            <label class="col-md-4 filter-label">Connection ID</label>
-                                            <div class="col-md-6">
-                                                <select style="width: 100%;" name="ConnectionId" required data-required-msg="Connection cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.configSelector.connectioninfo.connectionid, change: wg.changeConnectionID }"></select>
-                                                <span class="k-invalid-msg" for="ConnectionId"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: destoutputtype() == 'database'">
-                                            <label class="col-md-4 filter-label">Database</label>
-                                            <div class="col-md-6">
-                                                <input required type="text" readonly="read" class="form-control input-sm full-width" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
-                                                <span class="k-invalid-msg" data-for="Database"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: destoutputtype() == 'database'">
-                                            <label class="col-md-4 filter-label">Collection</label>
-                                            <div class="col-md-6">
-                                                <input required type="text" class="form-control input-sm full-width" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>
-                                                <span class="k-invalid-msg" data-for="Collection"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: destoutputtype() == 'csv'">
-                                            <label class="col-md-4 filter-label">File Name</label>
-                                            <div class="col-md-6">
-                                                <input required type="text" class="form-control input-sm full-width" name="FileName" placeholder="Type filename here" data-bind="value: connectioninfo.filename"/>
-                                                <span class="k-invalid-msg" data-for="FileName"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: destoutputtype() == 'csv'">
-                                            <label class="col-md-4 filter-label">Use Header</label>
-                                            <div class="col-md-6">
-                                                <select style="width: 100%;" name="UseHeader" required data-required-msg="Use header cannot be empty" data-bind="kendoDropDownList: { data: wg.useHeaderOptions, dataValueField: 'value', dataTextField: 'title', value: wg.configSelector.connectioninfo.useheader }"></select>
-                                                <span class="k-invalid-msg" data-for="UseHeader"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="row" data-bind="visible: destoutputtype() == 'csv'">
-                                            <label class="col-md-4 filter-label">Delimiter</label>
-                                            <div class="col-md-6">
-                                                <input required type="text" class="form-control input-sm full-width" name="Delimiter" placeholder="Type delimiter here" data-bind="value: connectioninfo.delimiter"/>
-                                                <span class="k-invalid-msg" data-for="Delimiter"></span>
-                                            </div>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                    </div>
-                            </form>
-                        </div>
-                    </div>
+	    				<!-- Form Setting Selector -->
+		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'edit'">
+		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+		    				<button class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Clear</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="click:wg.saveSettingSelector"><span class="glyphicon glyphicon-save"></span> Save</button>
+		    			</div>
+		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'edit'">
+							<form class="form-row-column-selector">
+			    				<div class="row" data-bind="with:wg.configSelector">
+		    						<label class="col-md-6 filter-label">Column Setting</label>
+		    						<div class="col-md-6">
+		    							<button class="btn btn-sm btn-success" data-bind="click: wg.addColumnSetting">
+						        			<span class="glyphicon glyphicon-plus"></span>
+						        		</button>
+		    						</div>
+		    						<div class="col-md-12 vv-padding-right vv-padding-left">
+		    							<table class="table">
+											<thead>
+												<tr>
+													<th>Alias</th>
+													<th>Type</th>
+													<th>Selector</th>
+													<th>&nbsp;</th>
+												</tr>
+											</thead>
+											<tbody data-bind="foreach: columnsettings">
+												<tr>
+													<td>
+														<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
+														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
+													</td>
+													<td>
+														<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
+														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
+													</td>
+													<td>
+														<div>
+															<div class="input-group input-group-sm" style="width:130px;">
+																<input class="form-control input-sm disabled" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'column-selector-value-' + $index() }" />
+																<span class="input-group-btn">
+																	<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
+																</span>
+															</div>
+															<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-value-' + $index() }"></span>
+														</div>
+													</td>
+													<td>
+														<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeColumnSetting($index())}">
+															<span class="glyphicon glyphicon-remove"></span>
+														</button>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+		    						</div>
+		    						<div class="col-md-12 form-row vv-padding-right vv-padding-left">
+		    							<div class="row">
+			    							<label class="col-md-4 filter-label">Filter Cond.</label>
+				    						<div class="col-md-6">
+				    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: filtercond, dataValueField: 'Id', dataTextField: 'Title', optionLabel: 'Select one'}"></select>
+				    							<button class="btn btn-sm btn-primary" data-bind="visible: filtercond() != '', click: wg.addFilterCondition"><span class="glyphicon glyphicon-plus"></span></button>
+				    						</div>
+				    						<div class="clearfix"></div>
+				    					</div>
+				    					<div class="row" data-bind="visible: filtercond() != ''">
+				    						<div class="col-md-12">
+					    						<table class="table" id="tablecond">
+													<thead>
+														<tr>
+															<th>Column</th>
+															<th>Operation</th>
+															<th>Value</th>
+															<th>&nbsp;</th>
+														</tr>
+													</thead>
+													<tbody data-bind="foreach: conditionlist">
+														<tr>
+															<td>
+																<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.configSelector.columnsettings, dataValueField: 'alias', dataTextField: 'alias', value: column}, attr: { 'name': 'column-filter-colomn-' + $index() }" style="width:90px;"></select>
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-colomn-' + $index() }"></span>
+															</td>
+															<td>
+																<select required data-required-msg="Operation Type cannot be empty" data-bind="kendoDropDownList: { data: wg.operationcondList, dataValueField: 'Id', dataTextField: 'Title', value: operator}, attr: { 'name': 'column-filter-operation-' + $index() }" style="width:90px;"></select>
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-operation-' + $index() }"></span>
+															</td>
+															<td>
+																<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-value-' + $index() }"></span>
+															</td>
+															<td>
+																<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: function(){wg.removeFilterCondition($index())}">
+																	<span class="glyphicon glyphicon-remove"></span>
+																</button>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+				    						<div class="clearfix"></div>
+				    					</div>
+			    						<div class="row">
+			    							<label class="col-md-4 filter-label">Destination Type</label>
+				    						<div class="col-md-6">
+				    							<select style="width: 100%;" required data-required-msg="Destination type cannot be empty" data-bind="kendoDropDownList: { data: wg.templatedesttype, value: destoutputtype}" name="desttype"></select>
+												<span class="k-invalid-msg" for="desttype"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
+			    							<label class="col-md-4 filter-label">Connection ID</label>
+				    						<div class="col-md-6">
+				    							<select style="width: 100%;" name="ConnectionId" required data-required-msg="Connection cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.configSelector.connectioninfo.connectionid, change: wg.changeConnectionID }"></select>
+												<span class="k-invalid-msg" for="ConnectionId"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
+			    							<label class="col-md-4 filter-label">Database</label>
+				    						<div class="col-md-6">
+				    							<input required type="text" readonly="read" class="form-control input-sm full-width" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
+												<span class="k-invalid-msg" data-for="Database"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
+			    							<label class="col-md-4 filter-label">Collection</label>
+				    						<div class="col-md-6">
+				    							<input required type="text" class="form-control input-sm full-width" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>
+												<span class="k-invalid-msg" data-for="Collection"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
+			    							<label class="col-md-4 filter-label">File Name</label>
+				    						<div class="col-md-6">
+				    							<input required type="text" class="form-control input-sm full-width" name="FileName" placeholder="Type filename here" data-bind="value: connectioninfo.filename"/>
+												<span class="k-invalid-msg" data-for="FileName"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
+			    							<label class="col-md-4 filter-label">Use Header</label>
+				    						<div class="col-md-6">
+				    							<select style="width: 100%;" name="UseHeader" required data-required-msg="Use header cannot be empty" data-bind="kendoDropDownList: { data: wg.useHeaderOptions, dataValueField: 'value', dataTextField: 'title', value: wg.configSelector.connectioninfo.useheader }"></select>
+												<span class="k-invalid-msg" data-for="UseHeader"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
+			    							<label class="col-md-4 filter-label">Delimiter</label>
+				    						<div class="col-md-6">
+				    							<input required type="text" class="form-control input-sm full-width" name="Delimiter" placeholder="Type delimiter here" data-bind="value: connectioninfo.delimiter"/>
+												<span class="k-invalid-msg" data-for="Delimiter"></span>
+				    						</div>
+				    						<div class="clearfix"></div>
+			    						</div>
+		    						</div>
+								</form>
+		    				</div>
+		    			</div>
 
-                    <!-- Form Inspect Element -->
-                    <div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
-                        <button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-                        <button class="btn btn-sm btn-primary" data-bind="click:function(){wg.saveSelectedElement(wg.tempIndexColumn())}"><span class="glyphicon glyphicon-save"></span> Save</button>
-                    </div>
-                    <div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
-                        <label class="col-md-6 filter-label">Selected Element</label>
-                        <div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
-                            <div id="inspectElement" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementSelector'"><ul></ul></div>
-                            <div id="inspectElement2" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementConfig'"><ul></ul></div>
-                        </div>
-                    </div>
+		    			<!-- Form Inspect Element -->
+		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
+		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="click:function(){wg.saveSelectedElement(wg.tempIndexColumn())}"><span class="glyphicon glyphicon-save"></span> Save</button>
+		    			</div>
+		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
+		    				<label class="col-md-6 filter-label">Selected Element</label>
+		    				<div class="col-md-12 vv-padding-right vv-padding-left" data-bind="with:wg.configSelector">
+		    					<div id="inspectElement" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementSelector'"><ul></ul></div>
+		    					<div id="inspectElement2" class="inspectElement" data-bind="visible:wg.modeSelector() == 'editElementConfig'"><ul></ul></div>
+		    				</div>
+		    			</div>
 
-                    <!-- Form Preview -->
-                    <!-- <div class="col-md-12" data-bind="visible:wg.modeSetting() == 3"></div> -->
-                </div>
-                <div class="col-md-8">
-                    <iframe class="full-width" id="content-preview"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
+		    			<!-- Form Preview -->
+	    				<!-- <div class="col-md-12" data-bind="visible:wg.modeSetting() == 3"></div> -->
+		    		</div>
+		    		<div class="col-md-8">
+		    			<iframe class="full-width" id="content-preview"></iframe>
+		    		</div>
+		    	</div>
+		    </div>
+		</div>
 
-    <nav class="navbar" data-bind="visible: (app.mode() == 'history')">
-        <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
-            <span class="glyphicon glyphicon-chevron-left"></span> Back
-        </button>
-    </nav>
+		<nav class="navbar" data-bind="visible: (app.mode() == 'history')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
 
-    <div class="panel" data-bind="visible: (app.mode() == 'history')">
-        <div class="panel-heading">
-            <h1 class="panel-title">
-                Grab Histories of
-                <span data-bind="text: wg.selectedID" class="color-blue"></span>
-            </h1>
-        </div>
-        <div class="panel-body">
-            <div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: historyData, columns: historyColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
-        </div>
-    </div>
+		<div class="panel" data-bind="visible: (app.mode() == 'history')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Grab Histories of
+		        	<span data-bind="text: wg.selectedID" class="color-blue"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: historyData, columns: historyColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
+		    </div>
+		</div>
 
-    <nav class="navbar" data-bind="visible: (app.mode() == 'log')">
-        <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
-            <span class="glyphicon glyphicon-chevron-left"></span> Back
-        </button>
-    </nav>
+		<nav class="navbar" data-bind="visible: (app.mode() == 'log')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
 
-    <div class="panel" data-bind="visible: (app.mode() == 'log')">
-        <div class="panel-heading">
-            <h1 class="panel-title">
-                Grab Logs of
-                <span data-bind="text: wg.selectedID" class="color-blue"></span>
-            </h1>
-        </div>
-        <div class="panel-body">
-            <div class="col-md-12" data-bind="html: wg.logData"></div>
-        </div>
-    </div>
+		<div class="panel" data-bind="visible: (app.mode() == 'log')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Grab Logs of
+		        	<span data-bind="text: wg.selectedID" class="color-blue"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+            	<div class="col-md-12" data-bind="html: wg.logData"></div>
+		    </div>
+		</div>
 
-    <nav class="navbar" data-bind="visible: (app.mode() == 'data')">
-        <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
-            <span class="glyphicon glyphicon-chevron-left"></span> Back
-        </button>
-    </nav>
+		<nav class="navbar" data-bind="visible: (app.mode() == 'data')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+		</nav>
 
-    <div class="panel" data-bind="visible: (app.mode() == 'data')">
-        <div class="panel-heading">
-            <h1 class="panel-title">
-                Data of
-                <span data-bind="text: wg.selectedID" class="color-blue"></span>
-            </h1>
-        </div>
-        <div class="panel-body">
-            <div class="col-md-12">
-                <div class="grid-data"></div>
-            </div>
-        </div>
-    </div>
-</div>
+		<div class="panel" data-bind="visible: (app.mode() == 'data')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Data of
+		        	<span data-bind="text: wg.selectedID" class="color-blue"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+            	<div class="col-md-12">
+            		<div class="grid-data"></div>
+            	</div>
+		    </div>
+		</div>
+	</div>
 </div>
