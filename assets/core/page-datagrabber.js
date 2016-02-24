@@ -24,13 +24,20 @@ dg.templateIntervalType = [
 ];
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
+dg.showDataGrabber = ko.observable(true);
 dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
 dg.selectedDataGrabber = ko.observable('');
+dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
 dg.scrapperColumns = ko.observableArray([
+	{ headerTemplate: "<input type='checkbox' class='datagrabbercheckall' onclick=\"dg.checkDeleteDataGrabber(this, 'datagrabberall', 'all')\"/>", width:25, template: function (d) {
+		return [
+			"<input type='checkbox' class='datagrabbercheck' idcheck='"+d._id+"' onclick=\"dg.checkDeleteDataGrabber(this, 'datagrabber')\" />"
+		].join(" ");
+	} },
 	{ field: "_id", title: "Data Grabber ID", width: 130 },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -38,8 +45,8 @@ dg.scrapperColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Grabber' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Grabber' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
+			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Grabber' onclick='dg.editScrapper(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Grabber' onclick='dg.removeScrapper(\"" + d._id + "\")'><span class='glyphicon glyphicon-remove'></span></button>"
 		].join(" ");
 	} },
 	{ field: "DataSourceOrigin", title: "Data Source Origin", width: 150 },
@@ -116,6 +123,7 @@ dg.createNewScrapper = function () {
 	dg.scrapperMode('');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 	dg.addMap();
+	dg.showDataGrabber(false);
 };
 dg.saveDataGrabber = function () {
 	if (!app.isFormValid(".form-datagrabber")) {
@@ -144,6 +152,12 @@ dg.getDataSourceData = function () {
 		dg.dataSourcesData(res.data);
 	});
 };
+dg.selectGridDataGrabber = function(e){
+	var grid = $(".grid-data-grabber").data("kendoGrid");
+	var selectedItem = grid.dataItem(grid.select());
+	dg.editScrapper(selectedItem._id);
+	dg.showDataGrabber(true);
+};
 dg.editScrapper = function (_id) {
 	dg.scrapperMode('edit');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
@@ -156,30 +170,40 @@ dg.editScrapper = function (_id) {
 		dg.scrapperMode('editor');
 		app.resetValidation("#form-add-scrapper");
 		ko.mapping.fromJS(res.data, dg.configScrapper);
-		
 	});
 };
 dg.removeScrapper = function (_id) {
-	swal({
-		title: "Are you sure?",
-		text: 'Data grabber with id "' + _id + '" will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: true
-	}, function() {
-		setTimeout(function () {
-			app.ajaxPost("/datagrabber/removedatagrabber", { _id: _id }, function (res) {
-				if (!app.isFine(res)) {
-					return;
-				}
+	if (dg.tempCheckIdDataGrabber().length === 0) {
+		swal({
+			title: "",
+			text: 'You havent choose any datagrabber to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
+	}else{
+		swal({
+			title: "Are you sure?",
+			text: 'Data grabber with id '+dg.tempCheckIdDataGrabber().toString()+' will be deleted',
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Delete",
+			closeOnConfirm: true
+		}, function() {
+			setTimeout(function () {
+				app.ajaxPost("/datagrabber/removemultipledatagrabber", { _id: dg.tempCheckIdDataGrabber() }, function (res) {
+					if (!app.isFine(res)) {
+						return;
+					}
 
-				swal({ title: "Data successfully deleted", type: "success" });
-				dg.backToFrontPage();
-			});
-		}, 1000);
-	});
+					swal({ title: "Data successfully deleted", type: "success" });
+					dg.backToFrontPage();
+				});
+			}, 1000);
+		});
+	}
 };
 dg.backToFrontPage = function () {
 	app.mode('');
@@ -341,6 +365,31 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
+
+dg.checkDeleteDataGrabber = function(elem, e){
+	if (e === 'datagrabberall'){
+		if ($(elem).prop('checked') === true){
+			$('.datagrabbercheck').each(function(index) {
+				$(this).prop("checked", true);
+				dg.tempCheckIdDataGrabber.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.datagrabbercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				dg.tempCheckIdDataGrabber.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			dg.tempCheckIdDataGrabber.push($(elem).attr('idcheck'));
+		} else {
+			dg.tempCheckIdDataGrabber.remove( function (item) { return item === $(elem).attr('idcheck'); } );
+		}
+	}
+}
+
 function filterDataGrabber(event) {
 	app.ajaxPost("/datagrabber/finddatagrabber", {inputText : dg.valDataGrabberFilter()}, function (res) {
 		if (!app.isFine(res)) {

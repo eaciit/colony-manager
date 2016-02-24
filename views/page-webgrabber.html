@@ -1,10 +1,4 @@
 <!-- core -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/codemirror.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/xml.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/javascript.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/active-line.js"></script> -->
-<!-- <script type="text/javascript" src="/res/js/codemirror/htmlmixed.js"></script> -->
-<!-- <link rel="stylesheet" type="text/css" href="/res/js/codemirror/codemirror.css"> -->
 <script src="/res/core/page-webgrabber.js"></script>
 
 <!-- sidebar -->
@@ -28,6 +22,9 @@
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: wg.createNewScrapper">
 	    		<span class="glyphicon glyphicon-plus"></span> Create New Web Grabber
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: wg.removeScrapper">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
 
@@ -64,7 +61,7 @@
 		    </div>
 
 		    <div class="panel-body">
-		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: scrapperData, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
+		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
 		    </div>
 		</div>
 
@@ -77,6 +74,9 @@
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewScrapper, visible: wg.isContentFetched">
 	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditWebGrabber" data-bind="visible: wg.showWebGrabber">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
 
