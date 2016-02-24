@@ -5,8 +5,15 @@ apl.templateConfigApplication = {
 	_id: "",
 	AppsName: "",
 	Enable: ko.observable(false),
-	AppPath: ""
+	Type: "web",
+	AppPath: "",
+	DeployedTo: [],
 };
+apl.appTypes = ko.observableArray([
+	{ value: "web", title: "Web" },
+	{ value: "cli", title: "CLI" },
+	{ value: "daemon", title: "Daemon/Service" },
+]);
 apl.templateFile = {
 	ID: "",
 	Path: "",
@@ -14,6 +21,7 @@ apl.templateFile = {
 	Type: "folder",
 	Content: "",
 }
+apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
 apl.showErrorDeploy = ko.observable(false);
@@ -24,10 +32,13 @@ apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.renameFileMode = ko.observable(false);
+apl.boolEx = ko.observable(false);
 apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
-apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
+apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg','.pdf','.PDF']);
 apl.configFile = ko.mapping.fromJS(apl.templateFile);
+apl.searchfield = ko.observable('');
+apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -36,14 +47,13 @@ apl.applicationColumns = ko.observableArray([
 	}},
 	{ field: "_id", title: "ID", width: 80 },
 	{ field: "AppsName", title: "Name" },
+	{ field: "Type", title: "Type" },
 	// { field: "Enable", title: "Enable", width: 50},
-	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Deploy to servers' data-toggle='modal' data-target='.modal-deploy' onclick='apl.openDeployModal()'><span class='glyphicon glyphicon-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Browse' onclick='apl.browse(\"" + d._id + "\")()'><span class='fa fa-eye'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
 		].join(" ");
 	} },
-	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 ]);
 apl.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -61,29 +71,74 @@ apl.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
-	{ field: "sshtype", title: "SSH Type" }
-]);
-apl.openDeployModal = function () {
-	$('.selectall').prop("checked", false);
-	$('.servercheck').prop("checked", false);
-	apl.tempCheckIdServer().length = 0;
-	apl.showErrorDeploy(false);
-}
-apl.deploy = function (_id) {
-	if (apl.tempCheckIdServer().length > 0) {
-		apl.showErrorDeploy(false);
-		app.isLoading(true);
-		$(".modal-deploy").unbind();
-		return function (e) {
+	{ field: "status", width: 100, headerTemplate: "<center>status</center>",  attributes: { class: "align-center" }, template: function (d) {
+		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (baseData == undefined) {
+			return "";
+		}
 
-		};
-	}else{
-		apl.showErrorDeploy(true);
+		var deployedTo = baseData.DeployedTo;
+
+		if (deployedTo == null) {
+			deployedTo = [];
+		}
+
+		if (deployedTo.indexOf(d._id) != -1) {
+			return "DEPLOYED";
+		}
+
+		return "UNDEPLOYED";
+	} }
+]);
+apl.gridServerDeployDataBound = function () {
+	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
+		var $td = $(e).find("td:eq(4)");
+		if ($td.html() == "DEPLOYED") {
+			$td.css("background-color", "#5cb85c");
+			$td.css("color", "white");
+		} else {
+			$td.css("background-color", "#d9534f");
+			$td.css("color", "white");
+		}
+	});
+};
+apl.showModalDeploy = function (_id) {
+	return function () {
+		apl.appIDToDeploy(_id);
+		$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
+			$(e).prop("checked", false);
+		});
+		$(".modal-deploy").modal("show");
+	};
+};
+apl.deploy = function () {
+	var $sel = $(".grid-server-deploy");
+	var $allData = $sel.find(".k-grid-content tr input[type=checkbox]:checked");
+
+	if ($allData.size() == 0) {
+		swal({title: "No server selected", type: "error"});
+		return;
 	}
+
+	$allData.each(function (i, e) {
+		var $tr = $(e).closest("tr");
+		var uid = $tr.attr("data-uid");
+
+		var rowData = $sel.data("kendoGrid").dataSource.getByUid(uid);
+		var param = { _id: apl.appIDToDeploy(), Server: rowData._id };
+
+		app.ajaxPost("/application/deploy", param, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			console.log(res);
+		});
+	})
 };
 apl.browse = function (_id) {
 	return function (e) {
-
+		
 	};
 };
 
@@ -100,6 +155,7 @@ apl.selectApps = function(e){
 
 apl.getApplications = function() {
 	apl.applicationData([]);
+	apl.appIDToDeploy('');
 
 	var ongrid = $(".grid-application").data("kendoGrid");
 	$(ongrid.tbody).on("mouseenter", "tr", function (e) {
@@ -108,7 +164,7 @@ apl.getApplications = function() {
 	$(ongrid.tbody).on("mouseleave", "tr", function (e) {
 	    $(this).removeClass("k-state-hover");
 	});
-	app.ajaxPost("/application/getapps", {}, function (res) {
+	app.ajaxPost("/application/getapps", {search: apl.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -132,8 +188,20 @@ apl.editApplication = function(_id) {
 };
 
 apl.createNewApplication = function () {
+	var editor = $('#scriptarea').data('CodeMirrorInstance');
+	var treeviewLeft = $("#treeview-left").data("kendoTreeView");
+	var uploadFile = $("#files");
+	var fileName = $("#nama");
+	$("#txt-path").html("");
+	uploadFile.val("");
+	fileName.html("");
+	treeviewLeft.setDataSource([]);
+	editor.setValue("");
+	editor.focus();
 	app.mode("editor");
+	$("#searchDirectori").val("");
 	$('a[href="#Form"]').tab('show');
+	apl.appRecordsDir([])
 	apl.applicationMode('');
 	apl.configApplication._id("");
 	apl.configApplication.AppsName("");
@@ -152,8 +220,8 @@ apl.saveApplication = function() {
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
-	formData.append("AppsName", data.AppsName);
-	// console.log("======= data"+JSON.stringify(data));
+	formData.append("Type", data.Type);
+	
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
 	request.onload = function(){
@@ -161,9 +229,6 @@ apl.saveApplication = function() {
 		apl.backToFront();
 	}
 	request.send(formData);
-	// request.onreadystatechange = function() {
-		
-	// }
 };
 
 apl.getUploadFile = function() {
@@ -205,20 +270,39 @@ apl.treeView = function (id) {
 			dataSource: apl.appRecordsDir(),
 	    }).data("kendoTreeView");
 	});
+
 }
 apl.selectDirApp = function(e){
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
-		if (!app.isFine(res)) {
-			return;
+	var editor = $('#scriptarea').data('CodeMirrorInstance');
+	var arrayEx = data.text.split('.');	
+	var extension = apl.extension();
+	for (var i in extension){
+		if ("."+arrayEx[1] != extension[i]){
+			apl.boolEx(true);
+		}else{
+			apl.boolEx(false);
+			editor.setValue("");
+			editor.focus();
+			$("#txt-path").html("");
+			apl.appTreeMode("");
+			apl.appTreeSelected("");
+			break;
 		}
-    	var editor = $('#scriptarea').data('CodeMirrorInstance');
-		editor.setValue(res.data);
-		editor.focus();
-	});
-    $("#txt-path").html(data.path);
-	apl.appTreeMode(data.type);
-	apl.appTreeSelected(data.text);
+	}
+
+	if (apl.boolEx() == true){
+		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+			editor.setValue(res.data);
+			editor.focus();
+		});
+	    $("#txt-path").html(data.path);
+		apl.appTreeMode(data.type);
+		apl.appTreeSelected(data.text);
+	}
 }
 apl.newFileDir = function(){
 	if (!app.isFormValid(".form-newfile")) {
@@ -277,7 +361,6 @@ apl.removeFileDir = function(){
 				 swal({title: "File / Folder successfully deleted", type: "success"});
 				});
 		},1000);
-
 	});
 }
 apl.updateFileDir = function(){
@@ -351,10 +434,22 @@ apl.codemirror = function(){
         lineWrapping: true,
     });
     editor.setValue('');
-    $('.CodeMirror-gutter-wrapper').css({'left':'-30px'});
-    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '15px', 'min-height': '863px', 'padding-right': '15px', 'padding-bottom': '0px'});
+    $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
+    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
     // editor.focus();
     $('#scriptarea').data('CodeMirrorInstance', editor);
+}
+
+apl.treeScroller = function(){
+	$('#splitter').kendoSplitter({
+		orientation: "horizontal",
+		panes: [
+			{ },
+			{ }]
+    });
+	// var treeview = $("#treeview-left").data("kendoTreeView");
+	// treeview.select(".k-item:eq(40)");
+	// treeview.element.closest(".k-scrollable").scrollTo(treeview.select(), 400);
 }
 
 apl.OpenInNewTab = function (url) {
@@ -474,4 +569,5 @@ $(function () {
 	apl.codemirror();
 	apl.treeView("") ;
 	app.prepareTooltipster($(".tooltipster"));
+
 });

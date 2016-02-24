@@ -21,7 +21,7 @@
 			Search
 		</label>
 		<div class="col-md-8">
-			<input class="form-control full-width input-sm" type="text" placeholder="Type keyword here" />
+			<input class="form-control full-width input-sm" type="text" data-bind="value: srv.searchfield" placeholder="Type keyword here" />
 		</div>
 	</div>
 </nav>
@@ -31,7 +31,7 @@
         <h1 class="panel-title">Servers</h1>
     </div>
     <div class="panel-body">
-    	<div class="grid grid-data-application grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true}"></div>
+    	<div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div>
     </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
@@ -43,7 +43,7 @@
     <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
 		<span class="glyphicon glyphicon-save"></span> Save
 	</button>
-    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.ping">
+    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.testConnection">
 		<span class="fa fa-info-circle"></span> Test Connection
 	</button>
 	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
@@ -121,19 +121,19 @@
 						<span class="k-invalid-msg" data-for="host"></span>
 		    		</div>
 	    		</div>
-	    		<div class="form-group" data-bind="visible: srv.showUserPass">
+	    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
 		    		<label class="col-md-3 filter-label">User</label>
 		    		<div class="col-md-7">
 		    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
 						<span class="k-invalid-msg" data-for="user"></span>
 		    		</div>
 	    		</div>
-	    		<div class="form-group" data-bind="visible: srv.showFile">
+	    		<div class="form-group" data-bind="visible: sshtype() == 'File'">
 		    		<label class="col-md-3 filter-label">File</label>
 		    		<div class="col-md-7">
 		    			<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
 						    <span class="glyphicon glyphicon-upload"></span> Upload 
-						    <input id="fileserver" name="fileserver" type="file" accept=".zip">
+						    <input id="privatekey" type="file">
 						    <!-- srv.getServerFile -->
 						</span>
 		    		</div>
@@ -143,12 +143,12 @@
 		    	<div class="form-group">
 		    		<label class="col-md-3 filter-label">Type</label>
 		    		<div class="col-md-7">
-		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype, change: srv.showFileUserPass}">
+		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype}">
 				        </select>
 				        <span class="k-invalid-msg" data-for="type-ssh"></span>
 		    		</div>
 	    		</div>
-	    		<div class="form-group" data-bind="visible: srv.showUserPass">
+	    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
 		    		<label class="col-md-3 filter-label">Pass</label>
 		    		<div class="col-md-7">
 		    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">

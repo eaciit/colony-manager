@@ -36,7 +36,7 @@ dg.fieldDataTypes = ko.observableArray(['string', 'double', 'int']);
 dg.selectedDataGrabber = ko.observable('');
 dg.tempCheckIdDataGrabber = ko.observableArray([]);
 dg.selectedLogDate = ko.observable('');
-
+dg.searchfield = ko.observable('');
 dg.scrapperColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='datagrabbercheckall' onclick=\"dg.checkDeleteDataGrabber(this, 'datagrabberall', 'all')\"/></center>", width: 40, attributes: { class: "align-center" }, template: function (d) {
 		return [
@@ -47,7 +47,7 @@ dg.scrapperColumns = ko.observableArray([
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
@@ -133,11 +133,13 @@ dg.fieldOfDataSourceDestination = ko.computed(function () {
 	return dg.expandMetaData(ds.MetaData);
 }, dg);
 dg.getScrapperData = function (){
-	app.ajaxPost("/datagrabber/getdatagrabber", {}, function (res) {
+	app.ajaxPost("/datagrabber/getdatagrabber", {search: dg.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		dg.scrapperData(res.data);
 		dg.checkTransformationStatus();
 	});
@@ -186,7 +188,7 @@ dg.backToFront = function () {
 	app.mode("");
 };
 dg.getDataSourceData = function () {
-	app.ajaxPost("/datasource/getdatasources", {}, function (res) {
+	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -223,6 +225,19 @@ dg.editScrapper = function (_id) {
 		app.resetValidation("#form-add-scrapper");
 		ko.mapping.fromJS(res.data, dg.configScrapper);
 		dg.prepareFieldsOrigin(dg.configScrapper.DataSourceOrigin());
+
+		$.each(res.data.Maps, function(key,val){
+			var $valSource = $("tr[data-key= '"+ val.Source +"']");
+			var $valDes = $valSource.find("td:eq(3) select.field-destination").data("kendoComboBox");
+			var $valDesType = $valSource.find("td:eq(4) select.type-destination").data("kendoDropDownList");
+			
+			if (val.SourceType != "object" && val.SourceType != "array-objects" && val.SourceType != "array-string"){
+				$valSource.find("td:eq(4) div").css("visibility","visible");	
+			}
+			
+			$valDes.value(val.Destination);
+			$valDesType.value(val.SourceType);
+		})
 	});
 };
 
@@ -265,28 +280,39 @@ dg.backToFrontPage = function () {
 	dg.getDataSourceData();
 };
 
-dg.runTransformation = function (_id) {
-	return function () {
-		dg.doSaveDataGrabber(function () {
-			if (dg.configScrapper.UseInterval()) {
-				dg.backToFront();
+dg.runTransformationWhenEdit = function () {
+	dg.doSaveDataGrabber(function () {
+		if (dg.configScrapper.UseInterval()) {
+			dg.backToFront();
+		}
+
+		dg.getScrapperData();
+
+		app.ajaxPost("/datagrabber/starttransformation", { _id: dg.configScrapper._id() }, function (res) {
+			if (!app.isFine(res)) {
+				return;
 			}
 
-			dg.getScrapperData();
+			if (!dg.configScrapper.UseInterval()) {
+				swal({ title: "Transformation success", type: "success" });
+			}
 
-			app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
-				if (!app.isFine(res)) {
-					return;
-				}
-
-				if (!dg.configScrapper.UseInterval()) {
-					swal({ title: "Transformation success", type: "success" });
-				}
-
-				dg.checkTransformationStatus();
-			});
+			dg.checkTransformationStatus();
 		});
-	};
+	});
+};
+dg.runTransformation = function (_id) {
+	app.ajaxPost("/datagrabber/starttransformation", { _id: _id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (!dg.configScrapper.UseInterval()) {
+			swal({ title: "Transformation success", type: "success" });
+		}
+
+		dg.checkTransformationStatus();
+	});
 };
 
 dg.stopTransformation = function (_id) {
@@ -309,7 +335,8 @@ dg.checkTransformationStatus = function () {
 		}
 	});
 	dg.scrapperIntervals([]);
-	dg.scrapperData().forEach(function (each) {
+	if(dg.scrapperData()!=""){
+		dg.scrapperData().forEach(function (each) {
 		var process = function () {
 			var $grid = $(".grid-data-grabber");
 			var $kendoGrid = $grid.data("kendoGrid");
@@ -346,7 +373,9 @@ dg.checkTransformationStatus = function () {
 
 		process();
 		dg.scrapperIntervals.push(setInterval(process, 10 * 1000));
-	});
+		});
+	};
+	
 };
 dg.viewHistory = function (_id) {
 	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {
@@ -549,7 +578,16 @@ dg.prepareFieldsOrigin = function (_id) {
 					var valueObject = Lazy(dg.fieldOfDataSourceDestination()).find({ 
 						_id: this.value()
 					});
-
+					
+					/*var $coba = valueObject.Type;					
+					var $coba1 = item.Type;
+					if ($coba != $coba1){
+						$typeDestination.closest("td").children().css("visibility", "hidden");
+						this.value("");
+						alert("salah!!");
+					}
+					*/
+					
 					if (valueObject != undefined) {
 						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
 							$typeDestination.closest("td").children().css("visibility", "hidden");
@@ -622,6 +660,11 @@ dg.parseMap = function () {
 	});
 
 	dg.configScrapper.Maps(maps);
+
+	var $coba = $(".table-tree-map").find("tr[data-type='array-objects'] td:eq(2)");
+	var $test = $coba.text();
+	console.log("isi coba "+$test);
+
 };
 dg.checkDeleteDataGrabber = function(elem, e){
 	if (e === 'datagrabberall'){

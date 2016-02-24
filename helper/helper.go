@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	debugMode bool
+	DebugMode bool
 )
 
 func GetFileExtension(file string) string {
@@ -170,7 +170,7 @@ func FetchThenSaveFile(r *http.Request, sourceFileName string, destinationFileNa
 func CreateResult(success bool, data interface{}, message string) map[string]interface{} {
 	if !success {
 		fmt.Println("ERROR! ", message)
-		if debugMode {
+		if DebugMode {
 			panic(message)
 		}
 	}

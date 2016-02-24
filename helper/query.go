@@ -7,13 +7,12 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	// _ "github.com/eaciit/dbox/dbc/mssql"
 	"github.com/eaciit/colony-core/v0"
-	_ "github.com/eaciit/dbox/dbc/mysql"
+	"github.com/eaciit/dbox/dbc/mysql"
 	// _ "github.com/eaciit/dbox/dbc/oracle"
 	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"fmt"
 	"github.com/eaciit/toolkit"
-	"os"
-	"path/filepath"
+	"strings"
 )
 
 type queryWrapper struct {
@@ -23,6 +22,10 @@ type queryWrapper struct {
 }
 
 func Query(driver string, host string, other ...interface{}) *queryWrapper {
+	if driver == "mysql" && !strings.Contains(host, ":") {
+		host = fmt.Sprintf("%s:3306", host)
+	}
+
 	wrapper := queryWrapper{}
 	wrapper.ci = &dbox.ConnectionInfo{host, "", "", "", nil}
 
@@ -38,6 +41,7 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	if len(other) > 3 {
 		wrapper.ci.Settings = other[3].(toolkit.M)
 	}
+	fmt.Printf("--- %#v\n", wrapper.ci)
 
 	wrapper.connection, wrapper.err = dbox.NewConnection(driver, wrapper.ci)
 	if wrapper.err != nil {
@@ -45,6 +49,14 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	}
 
 	wrapper.err = wrapper.connection.Connect()
+	if wrapper.err != nil {
+		return &wrapper
+	}
+
+	if driver == "mysql" {
+		wrapper.err = wrapper.connection.(*mysql.Connection).Sql.Ping()
+	}
+
 	return &wrapper
 }
 
@@ -180,12 +192,8 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 }
 
 func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
-	if dataConn.Driver == "weblink" {
-		basePath, _ := os.Getwd()
-		fileType := GetFileExtension(dataConn.Host)
-		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(basePath, "config", "etc", dataConn.ID), fileType)
-
-		return Query(fileType, fileLocation)
+	if dataConn.Driver == "json" || dataConn.Driver == "csv" {
+		return Query(dataConn.Driver, dataConn.FileLocation)
 	}
 
 	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
