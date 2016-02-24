@@ -579,18 +579,16 @@ dg.prepareFieldsOrigin = function (_id) {
 						_id: this.value()
 					});
 					
-					var DestinationType = valueObject.Type;
-					var SourceType = item.Type;
-
 					if (valueObject != undefined) {
-						if (valueObject.Type != item.Type && e.sender.value() != ''){
-							if (["int","string","double","bool"].indexOf(item.Type) == -1){
-								// sweetAlert("Oops...", "Something went wrong! Please check your data type", "error");
-								console.log(e.sender.value());
-								e.sender.value('');
-								console.log(e.sender.value());
-								console.log(e.sender.input);
-								$(e.sender.input).blur();
+						if (valueObject.Type != item.Type && e.sender.value() != '') {
+							var standardTypes = ["int", "string", "double", "bool"];
+							if (standardTypes.indexOf(item.Type) > -1 && standardTypes.indexOf(valueObject.Type) > -1) {
+
+							} else {
+								setTimeout(function () {
+									e.sender.value('');
+									sweetAlert("Oops...", 'Cannot select source type "' + item.Type + '" and destination type "' + valueObject.Type + '"', "error");
+								}, 100);
 							}
 						}
 
