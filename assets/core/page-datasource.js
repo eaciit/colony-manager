@@ -2,10 +2,11 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "csv", text: "Weblink - CSV" },
-	{ value: "json", text: "Weblink - JSON" },
+	{ value: "csv", text: "CSV (Weblink)" },
+	{ value: "json", text: "JSON (Weblink)" },
 	{ value: "mongo", text: "MongoDb" },
-	{ value: "mysql", text: "MySQL" }
+	{ value: "mysql", text: "MySQL" },
+	{ value: "hive", text: "Hive" },
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -22,7 +23,7 @@ ds.templateConfig = {
 	Settings: [],
 
 	FileLocation: "",
-	
+
 	Delimiter: "",
 	Path: "",
 };
@@ -47,6 +48,10 @@ ds.templateLookup = {
 	DisplayField: "",
 	LookupFields: [],
 };
+ds.delimiterOptions = ko.observableArray([
+	{ value: "csv", text: "CSV" },
+	{ value: "tsv", text: "TSV" },
+])
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
