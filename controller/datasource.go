@@ -66,7 +66,7 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql weblink"
+	supportedDrivers := "mongo mysql json csv"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
@@ -297,10 +297,11 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if o.Driver == "weblink" {
+	if o.Driver == "json" || o.Driver == "csv" {
 		fileType := helper.GetFileExtension(o.Host)
-		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
-		file, err := os.Create(fileLocation)
+		o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
+
+		file, err := os.Create(o.FileLocation)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -341,7 +342,7 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search))
 
-	if driver != ""{
+	if driver != "" {
 		query = dbox.And(query, dbox.Eq("Driver", driver))
 	}
 
@@ -478,7 +479,39 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 		Password: password,
 		Settings: settings,
 	}
+
+	if driver == "json" || driver == "csv" {
+		fileTempID := helper.RandomIDWithPrefix("f")
+		fileType := helper.GetFileExtension(host)
+		fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
+
+		file, err := os.Create(fakeDataConn.FileLocation)
+		if err != nil {
+			os.Remove(fakeDataConn.FileLocation)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer file.Close()
+
+		resp, err := http.Get(host)
+		if err != nil {
+			os.Remove(fakeDataConn.FileLocation)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		defer resp.Body.Close()
+
+		_, err = io.Copy(file, resp.Body)
+		if err != nil {
+			os.Remove(fakeDataConn.FileLocation)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
 	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
+
+	if fakeDataConn.FileLocation != "" {
+		os.Remove(fakeDataConn.FileLocation)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -522,7 +555,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 
 	var query = conn.NewQuery().Take(1)
 
-	if dataConn.Driver != "weblink" {
+	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
 		query = query.From(from)
 	}
 
@@ -533,7 +566,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	defer cursor.Close()
 
 	data := toolkit.M{}
-	if dataConn.Driver != "weblink" {
+	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
 		err = cursor.Fetch(&data, 1, false)
 	} else {
 		dataAll := []toolkit.M{}
@@ -954,8 +987,8 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if dataConn.Driver == "weblink" {
-		return helper.CreateResult(true, []string{"weblink"}, "")
+	if dataConn.Driver == "csv" || dataConn.Driver == "json" {
+		return helper.CreateResult(true, []string{dataConn.Driver}, "")
 	}
 
 	var conn dbox.IConnection

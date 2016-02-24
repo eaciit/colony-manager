@@ -2,10 +2,11 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "csv", text: "CSV" },
-	{ value: "json", text: "JSON" },
+	{ value: "csv", text: "CSV (Weblink)" },
+	{ value: "json", text: "JSON (Weblink)" },
 	{ value: "mongo", text: "MongoDb" },
-	{ value: "mysql", text: "MySQL" }
+	{ value: "mysql", text: "MySQL" },
+	{ value: "hive", text: "Hive" },
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -19,7 +20,12 @@ ds.templateConfig = {
 	Database: "",
 	UserName: "",
 	Password: "",
-	Settings: []
+	Settings: [],
+
+	FileLocation: "",
+
+	Delimiter: "",
+	Path: "",
 };
 ds.templateDataSource = {
 	_id: "",
@@ -42,6 +48,10 @@ ds.templateLookup = {
 	DisplayField: "",
 	LookupFields: [],
 };
+ds.delimiterOptions = ko.observableArray([
+	{ value: "csv", text: "CSV" },
+	{ value: "tsv", text: "TSV" },
+])
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
@@ -118,6 +128,13 @@ ds.metadataColumns = ko.observableArray([
 		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Show Meta Data Lookup of \"" + d._id + "\"' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='fa fa-eye'></span></button>";
 	}, width: 60, attributes: { style: "text-align: center;" } },
 ]);
+ds.labelForHost = ko.computed(function () {
+	if (["csv", "json"].indexOf(ds.config.Driver()) > -1) {
+		return "File URL";
+	}
+
+	return "Host";
+}, ds);
 ds.gridMetaDataSchema = {
 	pageSize: 15,
 	schema: {
@@ -219,6 +236,22 @@ ds.populateGridConnections = function () {
 		ds.connectionListData(res.data);
 	});
 };
+ds.isFormAddConnectionValid = function () {
+	if (!app.isFormValid("#form-add-connection")) {
+		if (["json", "csv"].indexOf(ds.config.Driver()) > -1) {
+			var err = $("#form-add-connection").data("kendoValidator").errors();
+			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
+				// no problem
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	return true;
+}
 ds.saveNewConnection = function () {
 	var extension = (ds.config.Host()).split('.').pop();
 	if ((extension == "json") || (extension == "csv")){
@@ -228,21 +261,14 @@ ds.saveNewConnection = function () {
 		}
 	}
 	
-	if (!app.isFormValid("#form-add-connection")) {
-		if (ds.config.Driver() == "weblink") {
-			var err = $("#form-add-connection").data("kendoValidator").errors();
-			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
-				// no problem
-			} else {
-				return;
-			}
-		} else {
-			return;
-		}
+	if (!ds.isFormAddConnectionValid()) {
+		return;
 	}
 
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -253,7 +279,9 @@ ds.saveNewConnection = function () {
 };
 ds.testConnectionFromGrid = function (_id) {
 	var param = $.extend(true, {}, Lazy(ds.connectionListData()).find({ _id: _id }));
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
@@ -269,12 +297,14 @@ ds.testConnectionFromGrid = function (_id) {
 	});
 };
 ds.testConnection = function () {
-	if (!app.isFormValid("#form-add-connection")) {
+	if (!ds.isFormAddConnectionValid()) {
 		return;
 	}
 
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
