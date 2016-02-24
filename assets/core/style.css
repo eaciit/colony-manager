@@ -355,6 +355,22 @@ table.table tr:hover td {
 .grid-data-wizard .not-ok td:nth-child(2) {
   background-color: #c9302c; }
 
+.input-group[class*=col-] {
+  padding-right: 15px;
+  padding-left: 15px; }
+
+.databrowser-label {
+  line-height: 25px;
+  text-align: left; }
+  .databrowser-label:after {
+    content: ":";
+    position: absolute;
+    right: 5px; }
+
+.databrowser-query-label {
+  line-height: 25px;
+  text-align: left; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
