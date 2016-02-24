@@ -35,7 +35,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8">
-		    		<input class="form-control input-sm" type="text" />
+		    		<input class="form-control input-sm" type="text" data-bind="value: dg.searchfield" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		</nav>
@@ -54,10 +54,10 @@
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveDataGrabber">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveDataGrabber">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: runTransformation(configScrapper._id())">
+	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: runTransformationWhenEdit">
 	    		<span class="glyphicon glyphicon-play"></span> Execute Transformation
 	    	</button>
 	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataGrabber" data-bind="visible: dg.showDataGrabber">
@@ -125,14 +125,14 @@
 					        <div class="form-group">
 					        	<label class="col-md-3 filter-label">Pre Transfer Command</label>
 					        	<div class="col-md-8">
-						        	<input class="form-control input-sm full-width" type="text" data-bind="checked: PreTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --pre --data %1" />
+						        	<input class="form-control input-sm full-width" type="text" data-bind="value: PreTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --pre --data %1" />
 					        	</div>
 					        </div>
 
 					        <div class="form-group">
 					        	<label class="col-md-3 filter-label">Post Transfer Command</label>
 					        	<div class="col-md-8">
-						        	<input class="form-control input-sm full-width" type="text" data-bind="checked: PostTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --post --data %1" />
+						        	<input class="form-control input-sm full-width" type="text" data-bind="value: PostTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --post --data %1" />
 					        	</div>
 					        </div>
 

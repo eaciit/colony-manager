@@ -255,6 +255,16 @@ table.table tr:hover td {
 .modalcustom {
   width: 800px; }
 
+.txtWizard {
+  resize: none; }
+
+.grid-data-wizard td:nth-child(2) {
+  color: white; }
+.grid-data-wizard .ok td:nth-child(2) {
+  background-color: #449d44; }
+.grid-data-wizard .not-ok td:nth-child(2) {
+  background-color: #c9302c; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;

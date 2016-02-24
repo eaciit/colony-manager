@@ -40,7 +40,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8">
-		    		<input class="form-control input-sm" type="text"  />
+		    		<input class="form-control input-sm" type="text" data-bind="value: ds.searchfield" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		    <div class="col-md-4">
@@ -67,11 +67,11 @@
             <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewConnection">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveNewConnection">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testConnection">
-	    		<span class="glyphicon glyphicon-save"></span> Test Connection
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: testConnection">
+	    		<span class="fa fa-info-circle"></span> Test Connection
 	    	</button>
 	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditConnection" data-bind="visible: showConnection">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
@@ -134,7 +134,7 @@
 				        <label class="col-sm-4 filter-label">Settings</label>
 				        <div class="col-sm-8">
 				        	<div class="nav">
-				        		<button class="btn btn-primary btn-sm" data-bind="click: ds.addSettings">
+				        		<button class="btn btn-success btn-sm" data-bind="click: ds.addSettings">
 				        			<span class="glyphicon glyphicon-plus"></span> Add
 				        		</button>
 				        	</div>
@@ -189,7 +189,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8">
-		    		<input class="form-control input-sm" type="text" /> <!-- data-bind="value: ds.valDataSourceFilter, valueUpdate: 'afterkeydown', 'input', event: {'keyup': filterDataSource}" -->
+		    		<input class="form-control input-sm" type="text" data-bind="value: ds.search2field" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		</nav>
@@ -198,14 +198,14 @@
             <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveNewDataSource">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveNewDataSource">
 	    		<span class="glyphicon glyphicon-save"></span> Save
-	    	</button>
-	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: testQuery">
-	    		<span class="glyphicon glyphicon-play"></span> Run Query
 	    	</button>
 	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: forceFetchDataSourceMetaData">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh Meta Data
+	    	</button>
+	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: testQuery">
+	    		<span class="glyphicon glyphicon-play"></span> Run Query
 	    	</button>
 	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataSource" data-bind="visible: showDataSource">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
@@ -331,7 +331,7 @@
 		    <div class="panel-body" data-bind="visible: !idThereAnyDataSourceResult()">
 		    	<p class="bg-notif bg-info">
 			    	Need to run 
-			    	<button class="btn btn-xs btn-primary" data-bind="click: testQuery">
+			    	<button class="btn btn-xs btn-success" data-bind="click: testQuery">
 			    		<span class="glyphicon glyphicon-play"></span> Run Query
 			    	</button> 
 			    	to see the result.

@@ -22,6 +22,7 @@ wg.connectionListData = ko.observableArray([]);
 wg.collectionInput = ko.observable();
 wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
+wg.searchfield = ko.observable('');
 wg.templateConfigScrapper = {
 	_id: "",
 	nameid: "",
@@ -108,7 +109,7 @@ wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
 wg.scrapperColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/>", width:20, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/></center>", width: 40, attributes: { class: "align-center" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='webgrabbercheck' idcheck='"+d._id+"' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabber')\" />"
 		].join(" ");
@@ -237,9 +238,12 @@ wg.removeScrapper = function (_id) {
 };
 wg.getScrapperData = function () {
 	wg.scrapperData([]);
-	app.ajaxPost("/webgrabber/getscrapperdata", {}, function (res) {
+	app.ajaxPost("/webgrabber/getscrapperdata", {search: wg.searchfield, requesttype: wg.filterRequestTypes, sourcetype: wg.filterDataSourceTypes}, function (res) {
 		if (!app.isFine(res)) {
 			return;
+		}
+		if (res.data==null){
+			res.data="";
 		}
 		wg.scrapperData(res.data);
 		wg.runBotStats();
@@ -286,7 +290,8 @@ wg.runBotStats = function () {
 
 	var isThereAnyError = false;
 
-	wg.scrapperData().forEach(function (each) {
+	if(wg.scrapperData()!=""){
+		wg.scrapperData().forEach(function (each) {
 		var checkStat = function () {
 			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
 				if (res.success) {
@@ -325,7 +330,9 @@ wg.runBotStats = function () {
 		});
 
 		checkStat();
-	});
+		});
+	}
+	
 };
 wg.parsePayload = function () {
 	var parameters = {};
@@ -890,7 +897,7 @@ function filterWebGrabber(event) {
 
 wg.getConnection = function () {
 	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/datasource/getconnections", param, function (res) {
+	app.ajaxPost("/webgrabber/getconnections", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

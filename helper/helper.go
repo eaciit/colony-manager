@@ -19,6 +19,10 @@ import (
 	"time"
 )
 
+var (
+	DebugMode bool
+)
+
 func GetFileExtension(file string) string {
 	fileComp := strings.Split(file, ".")
 	if len(fileComp) == 0 {
@@ -166,7 +170,9 @@ func FetchThenSaveFile(r *http.Request, sourceFileName string, destinationFileNa
 func CreateResult(success bool, data interface{}, message string) map[string]interface{} {
 	if !success {
 		fmt.Println("ERROR! ", message)
-		panic(message)
+		if DebugMode {
+			panic(message)
+		}
 	}
 
 	return map[string]interface{}{

@@ -5,8 +5,15 @@ apl.templateConfigApplication = {
 	_id: "",
 	AppsName: "",
 	Enable: ko.observable(false),
-	AppPath: ""
+	Type: "web",
+	AppPath: "",
+	DeployedTo: [],
 };
+apl.appTypes = ko.observableArray([
+	{ value: "web", title: "Web" },
+	{ value: "cli", title: "CLI" },
+	{ value: "daemon", title: "Daemon/Service" },
+]);
 apl.templateFile = {
 	ID: "",
 	Path: "",
@@ -14,6 +21,7 @@ apl.templateFile = {
 	Type: "folder",
 	Content: "",
 }
+apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
 apl.filterValue = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
@@ -22,31 +30,115 @@ apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.renameFileMode = ko.observable(false);
+apl.boolEx = ko.observable(false);
 apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg']);
 apl.configFile = ko.mapping.fromJS(apl.templateFile);
+apl.searchfield = ko.observable('');
+apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 10, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
-	{ field: "_id", title: "ID", width: 80 },
-	{ field: "AppsName", title: "Name", width: 130},
-	{ field: "Enable", title: "Enable", width: 50},
-	{ title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ field: "_id", title: "ID" },
+	{ field: "AppsName", title: "Name" },
+	{ field: "Type", title: "Type" },
+	// { field: "Enable", title: "Enable", width: 50},
+	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Start Transformation Service' onclick='apl.runTransformation(\"" + d._id + "\")()'><span class='glyphicon glyphicon-play'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
 		].join(" ");
 	} },
-	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	{title: "", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<a href='#' onclick= 'apl.OpenInNewTab()'>Browse</a>"
-		].join(" ");
-	}}
 ]);
+apl.ServerColumns = ko.observableArray([
+	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
+		].join(" ");
+	} },
+	{ field: "_id", title: "ID" },
+	{ field: "host", title: "Host" },
+	{ field: "os", title: "OS", template: function (d) {
+		var row = Lazy(srv.templateOS()).find({ value: d.os });
+		if (row != undefined) {
+			return row.text;
+		}
+
+		return d.os;
+	} },
+	{ field: "status", width: 100, headerTemplate: "<center>status</center>",  attributes: { class: "align-center" }, template: function (d) {
+		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (baseData == undefined) {
+			return "";
+		}
+
+		var deployedTo = baseData.DeployedTo;
+
+		if (deployedTo == null) {
+			deployedTo = [];
+		}
+
+		if (deployedTo.indexOf(d._id) != -1) {
+			return "DEPLOYED";
+		}
+
+		return "UNDEPLOYED";
+	} }
+]);
+apl.gridServerDeployDataBound = function () {
+	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
+		var $td = $(e).find("td:eq(4)");
+		if ($td.html() == "DEPLOYED") {
+			$td.css("background-color", "#5cb85c");
+			$td.css("color", "white");
+		} else {
+			$td.css("background-color", "#d9534f");
+			$td.css("color", "white");
+		}
+	});
+};
+apl.showModalDeploy = function (_id) {
+	return function () {
+		apl.appIDToDeploy(_id);
+		$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
+			$(e).prop("checked", false);
+		});
+		$(".modal-deploy").modal("show");
+	};
+};
+apl.deploy = function () {
+	var $sel = $(".grid-server-deploy");
+	var $allData = $sel.find(".k-grid-content tr input[type=checkbox]:checked");
+
+	if ($allData.size() == 0) {
+		swal({title: "No server selected", type: "error"});
+		return;
+	}
+
+	$allData.each(function (i, e) {
+		var $tr = $(e).closest("tr");
+		var uid = $tr.attr("data-uid");
+
+		var rowData = $sel.data("kendoGrid").dataSource.getByUid(uid);
+		var param = { _id: apl.appIDToDeploy(), Server: rowData._id };
+
+		app.ajaxPost("/application/deploy", param, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			console.log(res);
+		});
+	})
+};
+apl.browse = function (_id) {
+	return function (e) {
+		
+	};
+};
 
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
@@ -56,6 +148,7 @@ apl.selectApps = function(e){
 
 apl.getApplications = function() {
 	apl.applicationData([]);
+	apl.appIDToDeploy('');
 
 	var ongrid = $(".grid-application").data("kendoGrid");
 	$(ongrid.tbody).on("mouseenter", "tr", function (e) {
@@ -64,11 +157,13 @@ apl.getApplications = function() {
 	$(ongrid.tbody).on("mouseleave", "tr", function (e) {
 	    $(this).removeClass("k-state-hover");
 	});
-	app.ajaxPost("/application/getapps", {}, function (res) {
+	app.ajaxPost("/application/getapps", {search: apl.searchfield}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		apl.applicationData(res.data);
 	});
 };
@@ -81,19 +176,31 @@ apl.editApplication = function(_id) {
 		}
 		apl.treeView(_id);
 		app.mode('editor');
+		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
 	});
 };
 
 apl.createNewApplication = function () {
-	//alert("masuk create");
+	var editor = $('#scriptarea').data('CodeMirrorInstance');
+	var treeviewLeft = $("#treeview-left").data("kendoTreeView");
+	var uploadFile = $("#files");
+	var fileName = $("#nama");
+	$("#txt-path").html("");
+	uploadFile.val("");
+	fileName.html("");
+	treeviewLeft.setDataSource([]);
+	editor.setValue("");
+	editor.focus();
 	app.mode("editor");
+	$("#searchDirectori").val("");
+	$('a[href="#Form"]').tab('show');
+	apl.appRecordsDir([])
 	apl.applicationMode('');
-	$("#files").val('');
-	$('#nama').text('');
+	apl.configApplication._id("");
+	apl.configApplication.AppsName("");
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
-	//apl.addMap();
 };
 
 apl.saveApplication = function() {
@@ -108,8 +215,8 @@ apl.saveApplication = function() {
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
-	formData.append("AppsName", data.AppsName);
-	// console.log("======= data"+JSON.stringify(data));
+	formData.append("Type", data.Type);
+	
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
 	request.onload = function(){
@@ -117,9 +224,6 @@ apl.saveApplication = function() {
 		apl.backToFront();
 	}
 	request.send(formData);
-	// request.onreadystatechange = function() {
-		
-	// }
 };
 
 apl.getUploadFile = function() {
@@ -148,6 +252,7 @@ apl.backToFront = function () {
 // }
 
 apl.treeView = function (id) {
+	$("#searchDirectori").val("");
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
 		if (!app.isFine(res)) {
 			return;
@@ -164,22 +269,35 @@ apl.treeView = function (id) {
 }
 apl.selectDirApp = function(e){
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
-	var extension = ko.utils.arrayFilter(apl.extension(),function (item) {
-        return item == data.ext;
-    });
-    if (extension.length ==0){
+	var editor = $('#scriptarea').data('CodeMirrorInstance');
+	var arrayEx = data.text.split('.');	
+	var extension = apl.extension();
+	for (var i in extension){
+		if ("."+arrayEx[1] != extension[i]){
+			apl.boolEx(true);
+		}else{
+			apl.boolEx(false);
+			editor.setValue("");
+			editor.focus();
+			$("#txt-path").html("");
+			apl.appTreeMode("");
+			apl.appTreeSelected("");
+			break;
+		}
+	}
+
+	if (apl.boolEx() == true){
 		app.ajaxPost("/application/readcontent", {ID: apl.configApplication._id(), Path:data.path}, function(res) {
 			if (!app.isFine(res)) {
 				return;
 			}
-	    	var editor = $('#scriptarea').data('CodeMirrorInstance');
 			editor.setValue(res.data);
 			editor.focus();
 		});
-    }
-    $("#txt-path").html(data.path);
-	apl.appTreeMode(data.type);
-	apl.appTreeSelected(data.text);
+	    $("#txt-path").html(data.path);
+		apl.appTreeMode(data.type);
+		apl.appTreeSelected(data.text);
+	}
 }
 apl.newFileDir = function(){
 	if (!app.isFormValid(".form-newfile")) {
@@ -188,6 +306,7 @@ apl.newFileDir = function(){
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
 	apl.configFile.Content("");
+	apl.configFile.Type($("#TypeFile").kendoDropDownList().val());
 	var confNew = ko.mapping.toJS(apl.configFile);
 	app.ajaxPost("/application/createnewfile", confNew, function(res) {
 		if (!app.isFine(res)) {
@@ -214,14 +333,30 @@ apl.removeFileDir = function(){
 	apl.configFile.ID(apl.configApplication._id());
 	apl.configFile.Path($("#txt-path").html());
 	var confNew = ko.mapping.toJS(apl.configFile);
-	app.ajaxPost("/application/deletefileselected", confNew, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		apl.treeView(apl.configApplication._id());
-		ko.mapping.fromJS(apl.templateFile, apl.configFile);
-		apl.appTreeMode("");
-		apl.appTreeSelected("");
+	swal({
+		title: "Are you sure?",
+		text: 'File / folder with name "' + apl.Filename + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/application/deletefileselected", confNew, function(res) {
+					if (!app.isFine) {
+						return;
+					}
+
+				 apl.treeView(apl.configApplication._id());
+				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
+				 apl.appTreeMode("");
+				 apl.appTreeSelected("");
+				 swal({title: "File / Folder successfully deleted", type: "success"});
+				});
+		},1000);
+
 	});
 }
 apl.updateFileDir = function(){
@@ -238,16 +373,55 @@ apl.updateFileDir = function(){
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+		swal({title: "File / Folder successfully updated", type: "success"});
 	});
 }
 apl.searchTreeView = function(){
 	var search = $('#searchDirectori').val();
+	var treeview = $("#treeview-left").data("kendoTreeView");
 	var searchResult = ko.utils.arrayFilter(apl.appRecordsDir(), function (item) {
         return item.text.toLowerCase().indexOf(search.toLowerCase()) >= 0;
     });
-    $("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+    var temirectory = [];
+    if (searchResult.length != 0 ){
+		$("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+    }else{
+    	var dataTreeJson = apl.appRecordsDir();
+    	dataTreeJson.forEach(function(each){
+    		if (each.items != null ){
+    			temirectory.push(each.items)
+    		}
+    	});
+    	apl.searchTreeViewSub(temirectory, search)
+    }
 }
 
+apl.searchTreeViewSub = function(dataJson, search){
+	var JSON = [];
+	if (dataJson.length != 0 ){
+		for (var i in dataJson){
+			JSON = JSON.concat(dataJson[i]);
+		}
+		var treeview = $("#treeview-left").data("kendoTreeView");
+		var searchResult = ko.utils.arrayFilter(JSON, function (item) {
+	        return item.text.toLowerCase().indexOf(search.toLowerCase()) >= 0;
+	    });
+		var temirectory = [];
+		if (searchResult.length != 0 ){
+			$("#treeview-left").data("kendoTreeView").setDataSource(searchResult);
+	    }else{
+	    	JSON.forEach(function(each){
+	    		if (each.items != null ){
+	    			temirectory.push(each.items)
+	    		}
+	    	});
+	    	apl.searchTreeViewSub(temirectory, search)
+	    }
+	}else{
+		$("#treeview-left").data("kendoTreeView").setDataSource([]);
+	}
+	
+}
 apl.codemirror = function(){
     var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
         mode: "text/html",
@@ -345,16 +519,30 @@ apl.renameFile = function(){
 		ko.mapping.fromJS(apl.templateFile, apl.configFile);
 		apl.appTreeMode("");
 		apl.appTreeSelected("");
+		swal({title: "File / Folder successfully renamed", type: "success"});
 	});
 }
 
-
+apl.selectServer = function(elem, e){
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", true);
+			});
+		} else {
+			var idtemp = '';
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+			});
+		}
+	}
+}
 
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
-	// apl.getTab();
 	apl.codemirror();
 	apl.treeView("") ;
-
+	app.prepareTooltipster($(".tooltipster"));
 });

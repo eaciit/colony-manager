@@ -29,27 +29,27 @@
 		</nav>
 
 	    <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
-		    <div class="col-md-4 no-padding">
+		    <div class="col-md-3 no-padding">
 		    	<label class="col-md-4 filter-label">
 		    		Search
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<input class="form-control input-sm" type="text"  />
+		    		<input class="form-control input-sm" type="text" data-bind="value: wg.searchfield" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
-		    <div class="col-md-4 no-padding">
-		    	<label class="col-md-4 filter-label">
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
 		    		Request Type
 		    	</label>
-		    	<div class="col-md-8 no-padding">
+		    	<div class="col-md-7 no-padding">
 		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
-		    <div class="col-md-4 no-padding">
-		    	<label class="col-md-4 filter-label">
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
 		    		Source Type
 		    	</label>
-		    	<div class="col-md-8 no-padding">
+		    	<div class="col-md-7 no-padding">
 		    		<select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
@@ -108,7 +108,7 @@
 						<div class="form-group">
 				        	<label class="col-md-2 filter-label">Payload</label>
 				        	<div class="col-md-2">
-				        		<button class="btn btn-sm btn-primary" data-bind="click: wg.addScrapperPayload">
+				        		<button class="btn btn-sm btn-success" data-bind="click: wg.addScrapperPayload">
 				        			<span class="glyphicon glyphicon-plus"></span> Add more
 				        		</button>
 				        	</div>
@@ -176,7 +176,7 @@
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
 		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
-		    				<button class="btn btn-sm btn-success" data-bind="visible: wg.modeSetting() == 2, click: wg.saveSelectorConf"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() == 2, click: wg.saveSelectorConf"><span class="glyphicon glyphicon-save"></span> Save</button>
 		    			</div>
 
 		    			<!-- Form Set Up -->
@@ -186,6 +186,13 @@
 					        	<div class="col-md-6">
 					        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
 									<span class="k-invalid-msg" data-for="ID"></span>
+					        	</div>
+					        </div>
+					        <div class="row">
+					        	<label class="col-md-6 filter-label">Start Time</label>
+					        	<div class="col-md-6">
+									<input data-bind="kendoDateTimePicker: wg.starttime" />
+									<span class="k-invalid-msg" data-for="IntervalType"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
@@ -216,7 +223,7 @@
 	    					<div class="row">
 	    						<label class="col-md-3 filter-label">Selector</label>
 	    						<div class="col-md-6">
-	    							<button class="btn btn-sm btn-primary" data-bind="click: wg.addSelectorSetting">
+	    							<button class="btn btn-sm btn-success" data-bind="click: wg.addSelectorSetting">
 					        			<span class="glyphicon glyphicon-plus"></span>
 					        		</button>
 	    						</div>
@@ -267,14 +274,14 @@
 		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'edit'">
 		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
 		    				<button class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-erase"></span> Clear</button>
-		    				<button class="btn btn-sm btn-success" data-bind="click:wg.saveSettingSelector"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="click:wg.saveSettingSelector"><span class="glyphicon glyphicon-save"></span> Save</button>
 		    			</div>
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'edit'">
 							<form class="form-row-column-selector">
 			    				<div class="row" data-bind="with:wg.configSelector">
 		    						<label class="col-md-6 filter-label">Column Setting</label>
 		    						<div class="col-md-6">
-		    							<button class="btn btn-sm btn-primary" data-bind="click: wg.addColumnSetting">
+		    							<button class="btn btn-sm btn-success" data-bind="click: wg.addColumnSetting">
 						        			<span class="glyphicon glyphicon-plus"></span>
 						        		</button>
 		    						</div>
@@ -427,7 +434,7 @@
 		    			<!-- Form Inspect Element -->
 		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<button class="btn btn-sm btn-warning" data-bind="click:wg.backSettingSelector"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-		    				<button class="btn btn-sm btn-success" data-bind="click:function(){wg.saveSelectedElement(wg.tempIndexColumn())}"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="click:function(){wg.saveSelectedElement(wg.tempIndexColumn())}"><span class="glyphicon glyphicon-save"></span> Save</button>
 		    			</div>
 		    			<div class="col-md-12" data-bind="visible:wg.modeSelector() == 'editElementSelector' || wg.modeSelector() == 'editElementConfig'">
 		    				<label class="col-md-6 filter-label">Selected Element</label>
