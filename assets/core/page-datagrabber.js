@@ -557,7 +557,7 @@ dg.prepareFieldsOrigin = function (_id) {
 
 					return space + sign + labelsComp[0] + ' (' + d.Type + ')';
 				},
-				change: function () {
+				change: function (e) {
 					if (this.value() == "") {
 						$typeDestination.closest("td").children().css("visibility", "hidden");
 						return;
@@ -568,16 +568,21 @@ dg.prepareFieldsOrigin = function (_id) {
 						_id: this.value()
 					});
 					
-					/*var $coba = valueObject.Type;					
-					var $coba1 = item.Type;
-					if ($coba != $coba1){
-						$typeDestination.closest("td").children().css("visibility", "hidden");
-						this.value("");
-						alert("salah!!");
-					}
-					*/
-					
+					var DestinationType = valueObject.Type;
+					var SourceType = item.Type;
+
 					if (valueObject != undefined) {
+						if (valueObject.Type != item.Type && e.sender.value() != ''){
+							if (["int","string","double","bool"].indexOf(item.Type) == -1){
+								// sweetAlert("Oops...", "Something went wrong! Please check your data type", "error");
+								console.log(e.sender.value());
+								e.sender.value('');
+								console.log(e.sender.value());
+								console.log(e.sender.input);
+								$(e.sender.input).blur();
+							}
+						}
+
 						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
 							$typeDestination.closest("td").children().css("visibility", "hidden");
 							return;
@@ -588,7 +593,6 @@ dg.prepareFieldsOrigin = function (_id) {
 							}
 						}
 					}
-
 					$typeDestination.data("kendoDropDownList").value(valueObject.Type);
 				}
 			});
@@ -649,10 +653,6 @@ dg.parseMap = function () {
 	});
 
 	dg.configScrapper.Maps(maps);
-
-	var $coba = $(".table-tree-map").find("tr[data-type='array-objects'] td:eq(2)");
-	var $test = $coba.text();
-	console.log("isi coba "+$test);
 
 };
 dg.checkDeleteDataGrabber = function(elem, e){
