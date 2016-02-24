@@ -23,6 +23,8 @@ apl.templateFile = {
 }
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
+apl.tempCheckIdServer = ko.observableArray([]);
+apl.showErrorDeploy = ko.observable(false);
 apl.filterValue = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
@@ -54,7 +56,7 @@ apl.applicationColumns = ko.observableArray([
 	} },
 ]);
 apl.ServerColumns = ko.observableArray([
-	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
 		].join(" ");
@@ -143,7 +145,12 @@ apl.browse = function (_id) {
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
 	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id);
+	var target = $( event.target );
+	if ($(target).parents(".excludethis").length ) {
+	  	return false;
+	}else{
+		apl.editApplication(data._id);
+	}
 };
 
 apl.getApplications = function() {
@@ -537,13 +544,21 @@ apl.selectServer = function(elem, e){
 		if ($(elem).prop('checked') === true){
 			$('.servercheck').each(function(index) {
 				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));
 			});
 		} else {
 			var idtemp = '';
 			$('.servercheck').each(function(index) {
 				$(this).prop("checked", false);
 				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
 			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
+		} else {
+			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
 }
