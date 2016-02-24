@@ -23,9 +23,6 @@ ds.templateConfig = {
 	Settings: [],
 
 	FileLocation: "",
-
-	Delimiter: "",
-	Path: "",
 };
 ds.templateDataSource = {
 	_id: "",
