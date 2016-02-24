@@ -66,7 +66,7 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql weblink"
+	supportedDrivers := "mongo mysql json csv"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
@@ -297,7 +297,7 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if o.Driver == "weblink" {
+	if o.Driver == "json" || o.Driver == "csv" {
 		fileType := helper.GetFileExtension(o.Host)
 		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 		file, err := os.Create(fileLocation)
@@ -341,7 +341,7 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search))
 
-	if driver != ""{
+	if driver != "" {
 		query = dbox.And(query, dbox.Eq("Driver", driver))
 	}
 
@@ -522,7 +522,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 
 	var query = conn.NewQuery().Take(1)
 
-	if dataConn.Driver != "weblink" {
+	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
 		query = query.From(from)
 	}
 
@@ -533,7 +533,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	defer cursor.Close()
 
 	data := toolkit.M{}
-	if dataConn.Driver != "weblink" {
+	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
 		err = cursor.Fetch(&data, 1, false)
 	} else {
 		dataAll := []toolkit.M{}
@@ -954,8 +954,8 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if dataConn.Driver == "weblink" {
-		return helper.CreateResult(true, []string{"weblink"}, "")
+	if dataConn.Driver == "csv" || dataConn.Driver == "json" {
+		return helper.CreateResult(true, []string{dataConn.Driver}, "")
 	}
 
 	var conn dbox.IConnection

@@ -2,8 +2,8 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "csv", text: "CSV" },
-	{ value: "json", text: "JSON" },
+	{ value: "csv", text: "Weblink - CSV" },
+	{ value: "json", text: "Weblink - JSON" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mysql", text: "MySQL" }
 ]);
@@ -242,7 +242,9 @@ ds.saveNewConnection = function () {
 	}
 
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -253,7 +255,9 @@ ds.saveNewConnection = function () {
 };
 ds.testConnectionFromGrid = function (_id) {
 	var param = $.extend(true, {}, Lazy(ds.connectionListData()).find({ _id: _id }));
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
@@ -274,7 +278,9 @@ ds.testConnection = function () {
 	}
 
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {

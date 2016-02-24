@@ -7,7 +7,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	// _ "github.com/eaciit/dbox/dbc/mssql"
 	"github.com/eaciit/colony-core/v0"
-	_ "github.com/eaciit/dbox/dbc/mysql"
+	"github.com/eaciit/dbox/dbc/mysql"
 	// _ "github.com/eaciit/dbox/dbc/oracle"
 	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"fmt"
@@ -45,6 +45,14 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	}
 
 	wrapper.err = wrapper.connection.Connect()
+	if wrapper.err != nil {
+		return &wrapper
+	}
+
+	if driver == "mysql" {
+		wrapper.err = wrapper.connection.(*mysql.Connection).Sql.Ping()
+	}
+
 	return &wrapper
 }
 
@@ -180,7 +188,7 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 }
 
 func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
-	if dataConn.Driver == "weblink" {
+	if dataConn.Driver == "json" || dataConn.Driver == "csv" {
 		basePath, _ := os.Getwd()
 		fileType := GetFileExtension(dataConn.Host)
 		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(basePath, "config", "etc", dataConn.ID), fileType)
