@@ -14,6 +14,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type queryWrapper struct {
@@ -23,6 +24,10 @@ type queryWrapper struct {
 }
 
 func Query(driver string, host string, other ...interface{}) *queryWrapper {
+	if driver == "mysql" && !strings.Contains(host, ":") {
+		host = fmt.Sprintf("%s:3306", host)
+	}
+
 	wrapper := queryWrapper{}
 	wrapper.ci = &dbox.ConnectionInfo{host, "", "", "", nil}
 
