@@ -77,9 +77,9 @@ srv.getServers = function() {
 		}
 		srv.ServerData(res.data);
 		var grid = $(".grid-server").data("kendoGrid");
-		$(grid.tbody).on("mouseenter", "tr", function (e) {
-		    $(this).addClass("k-state-hover");
-		});
+		// $(grid.tbody).on("mouseenter", "tr", function (e) {
+		//     $(this).addClass("k-state-hover");
+		// });
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
 		});

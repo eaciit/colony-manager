@@ -81,7 +81,7 @@
 
 		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
 	      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
-	      <li><a href="#Editor" data-toggle="tab">Editor</a></li>
+	      <li data-bind="visible: (apl.applicationMode() != '')"><a href="#Editor"  data-toggle="tab">Editor</a></li>
 	    </ul>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
@@ -126,7 +126,7 @@
 					    		<div class="form-group row">
 						    		<label class="col-md-3 filter-label">Type</label>
 						    		<div class="col-md-3">
-		    							<select data-required-msg="Type cannot be empty" name="AppType" class="col-100" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
+						    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
 						    			<span class="k-invalid-msg" data-for="AppType"></span>
 						    		</div>
 					    		</div>
@@ -139,7 +139,7 @@
 			    	</div>
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">
-				    		<div class="col-md-12 action-button no-padding">
+				    		<!-- <div class="col-md-12 action-button no-padding">
 				    			<button class="btn btn-sm btn-success tooltipster" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir" title="Create new file/folder">
 				    				<span class="glyphicon glyphicon-file"></span>
 			    				</button>
@@ -152,18 +152,26 @@
 				    			<button class="btn btn-sm btn-primary tooltipster" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir" title="Save changes">
 				    				<span class="fa fa-save"></span>
 			    				</button>
-				    		</div>
-					    	<div class="col-md-12 headercustom">
-					            <div class="col-md-4">
-					    		    <div class="form-group">
-							    		<label class="col-md-3 pdTop6">Search</label>
-							    		<div class="col-md-9">
+				    		</div> -->
+					    	<!-- <div class="col-md-12 headercustom">
+					            <div class="col-md-6">
+					    		    <div class="col-md-10 form-group head-form">
+							    		<label class="col-md-3 srch pdTop6">Search :</label>
+							    		<div class="col-md-5 inpt-src">
 							    			<div class="input-group">
 										      <input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
 										      <span class="input-group-btn">
 										        <button class="btn btn-sm btn-default btncustom" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><i class="glyphicon glyphicon-search"></i></button>
 										      </span>
 										    </div>
+										    <div class="trv-btn">
+									    		<div class="btn-group btn-group-md" >
+												  <button type="button" class="btn btn-primary btn-menu"  id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span></button>
+												  <button type="button" class="btn btn-primary btn-menu"  data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span></button>
+												  <button type="button" class="btn btn-primary btn-menu" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span></button>
+												  <button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh"></span></button>
+												</div>
+								    		</div>
 							    		</div>
 						    		</div>
 							    </div>
@@ -175,16 +183,39 @@
 					    			<label class="col-md-8 pdTop6" id="txt-path"></label>
 					            	
 					    		</div>
+					    	</div> -->
+					    	<div class="col-md-12 headercustom">
+					            <div class="col-md-5 trv-4">
+					    		    <!-- <div class="col-md-12"> -->
+							    		<label class="col-md-3 srch pdTop6">Search</label>
+							    		<div class="col-md-5 inpt-src">
+											<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
+							    		</div>
+										<div class="row-grup">
+											<div class="onbutton gr" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh icn"></span></div>
+											<div class="onbutton gr" type="button" id="btnNewFileDir icn" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file icn"></span></div>
+											<div class="onbutton gr" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove icn"></span></div>
+											<div class="onbutton gr"  data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil icn"></span></div>
+										</div>
+						    		
+							    </div>
+							    <div class="col-md-3 row">
+							    	<label class="col-md-3" id=""></label>
+					    			<div id="nm-file" class="pdpath"></div>
+					    		</div>
+					    			<label class="pdpath" id="txt-path"></label>
+					    			<!-- <button type="button" class="btn btn-primary btn-menu flr" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk"></span></button> -->
+					    			<div class="onbutton1 flr"  data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk icn"></span></div>
 					    	</div>
-					    	<div class="col-md-12 bdcolorgray">
-					            <div class="col-md-4">
+					    	<div class="col-md-12 bd1" id="splitter">
+					            <div class="col-md-5 trv-5">
 						            <div class="tvcustom">
 						                <div id="treeview-left"></div>
 						            </div>
 					    		</div>
-					    		<div class="col-md-8">			    		
+					    		<div class="col-md-7">			    		
 					    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
-					    		</div>
+					    		</div><!-- isi -->
 				    		</div>
 				        </div>
 				    </div>
@@ -265,6 +296,12 @@
 						</div>
 					</div>
 					<div class="clearfix"></div>
+					<div class="form-group">
+						<p class="alert alert-danger bgcustom mgTop15" role="alert" data-bind="visible: apl.showErrorDeploy()">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							You havent select any server(s) to deploy!
+						</p>
+					</div>
 				</div>
 				<div class="modal-footer">
 					{{template "_loader.html"}}
