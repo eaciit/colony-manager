@@ -4,13 +4,12 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	// "github.com/eaciit/cast"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	"github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
 	"os"
@@ -19,22 +18,16 @@ import (
 	"strings"
 )
 
-var unzipDest = fmt.Sprintf("%s", filepath.Join(AppBasePath, "..", "colony-app", "apps"))
-var zipSource = fmt.Sprintf("%s", filepath.Join(AppBasePath, "config", "applications"))
-var parents = make(map[string]*TreeSource)
-var basePath string
-var newDirName string
+var (
+	unzipDest  = filepath.Join(EC_APP_PATH, "src")
+	zipSource  = filepath.Join(EC_APP_PATH, "src")
+	parents    = make(map[string]*colonycore.TreeSource)
+	basePath   string
+	newDirName string
+)
 
 type ApplicationController struct {
 	App
-}
-
-type TreeSource struct {
-	ID             int           `json:"_id",bson:"_id"`
-	Text           string        `json:"text",bson:"text"`
-	Expanded       bool          `json:"expanded",bson:"expanded"`
-	SpriteCssClass string        `json:"spriteCssClass",bson:"spriteCssClass"`
-	Items          []*TreeSource `json:"items",bson:"items"`
 }
 
 func CreateApplicationController(s *knot.Server) *ApplicationController {
@@ -62,7 +55,7 @@ func deleteDirectory(scanDir string, delDir string, dirName string) error {
 	return nil
 }
 
-func createJson(object *TreeSource) {
+func createJson(object *colonycore.TreeSource) {
 	jsonData, err := json.MarshalIndent(object, "", "	")
 
 	if err != nil {
@@ -70,9 +63,8 @@ func createJson(object *TreeSource) {
 	}
 	jsonString := string(jsonData)
 
-	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, "DirectoryTree.json"))
+	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, ".directory-tree.json"))
 
-	fmt.Println("writing: " + filename)
 	f, err := os.Create(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -109,7 +101,7 @@ func createTree(i int, path string, isDir bool) error {
 		}
 	}
 
-	parents[path] = &TreeSource{
+	parents[path] = &colonycore.TreeSource{
 		ID:             i,
 		Expanded:       isDir,
 		Text:           text,
@@ -167,24 +159,21 @@ func extractAndWriteFile(i int, f *zip.File) error {
 	return nil
 }
 
-func Unzip(src string) (result *TreeSource, err error) {
+func unzip(src string) (result *colonycore.TreeSource, zipName string, err error) {
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	/*defer func() {
-		if err := r.Close(); err != nil {
-			fmt.Println("Error 56: ", err)
-			return
-		}
-	}()*/
 
-	os.MkdirAll(unzipDest, 0755)
+	err = os.MkdirAll(unzipDest, 0755)
+	if err != nil {
+		return nil, "", err
+	}
 
 	for i, f := range r.File {
 		err := extractAndWriteFile(i, f)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	}
 
@@ -203,29 +192,135 @@ func Unzip(src string) (result *TreeSource, err error) {
 
 	err = deleteDirectory(unzipDest, newname, newDirName) /*delete existing directory*/
 	if err != nil {
-		fmt.Println("error : ", err)
+		return result, "", err
 	}
 
 	err = os.Rename(basePath, newname) /*rename unzip file to appID*/
 	if err != nil {
-		fmt.Println("error : ", err)
+		return result, "", err
 	}
 
-	if _, err := os.Stat(src); !os.IsNotExist(err) { /*delete zip file after extracting*/
+	if _, err := os.Stat(src); !os.IsNotExist(err) {
 		err = r.Close()
 		if err != nil {
-			fmt.Println("error : ", err)
-			return nil, err
-		}
-
-		err = os.Remove(src)
-		if err != nil {
-			fmt.Println("error : ", err)
-			return nil, err
+			return result, "", err
 		}
 	}
 
-	return
+	newNameParsed := func() string {
+		comps := strings.Split(src, ".")[:]
+		subComps := strings.Split(newname, toolkit.PathSeparator)
+		subComps = append(subComps[:len(subComps)-1], fmt.Sprintf("source-%s", subComps[len(subComps)-1]))
+		newname = strings.Join(subComps, toolkit.PathSeparator)
+		fullpath := fmt.Sprintf("%s.%s", newname, comps[len(comps)-1])
+
+		comps = strings.Split(fullpath, toolkit.PathSeparator)
+		return comps[len(comps)-1]
+	}()
+
+	err = os.Rename(src, newNameParsed)
+	if err != nil {
+		return result, newNameParsed, err
+	}
+
+	return result, newNameParsed, nil
+}
+
+func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		ID     string `json:"_id",bson:"_id"`
+		Server string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	app := new(colonycore.Application)
+	err = colonycore.Get(app, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	server := new(colonycore.Server)
+	err = colonycore.Get(server, payload.Server)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	sshSetting, _, err := new(ServerController).SSHConnect(server)
+
+	if output, err := sshSetting.RunCommandSsh("unzip"); err != nil || strings.Contains(output, "not installed") {
+		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
+	}
+
+	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
+	sourceZipPath := filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+	destinationPath := filepath.Join(server.AppPath, "src")
+	destinationZipPath := filepath.Join(destinationPath, fmt.Sprintf("%s.zip", app.ID))
+
+	installerFile := ""
+
+	filepath.Walk(sourcePath, func(path string, f os.FileInfo, err error) error {
+		if installerFile != "" {
+			return nil
+		}
+
+		comps := strings.Split(path, toolkit.PathSeparator)
+		filename := comps[len(comps)-1]
+		if server.OS == "linux" {
+			if strings.Contains(filename, ".sh") {
+				installerFile = filename
+			}
+		} else if server.OS == "windows" {
+			if strings.Contains(filename, ".bat") {
+				installerFile = filename
+			} else if strings.Contains(filename, ".exe") {
+				installerFile = filename
+			}
+		}
+
+		if installerFile != "" {
+			installerFile = strings.Replace(installerFile, sourcePath+toolkit.PathSeparator, "", -1)
+		}
+
+		return nil
+	})
+
+	err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = os.Remove(sourceZipPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	zipToExtract := fmt.Sprintf("unzip %s", destinationZipPath)
+	_, err = sshSetting.GetOutputCommandSsh(zipToExtract)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if app.DeployedTo == nil {
+		app.DeployedTo = []string{}
+	}
+
+	app.DeployedTo = append(app.DeployedTo, server.ID)
+	err = colonycore.Save(app)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
 }
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
@@ -244,7 +339,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	}
 	o.Enable = enable
 	o.AppsName = r.Request.FormValue("AppsName")
-
+	o.Type = r.Request.FormValue("Type")
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -257,16 +352,19 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 
 	var zipFile string
 	if fileName != "" {
-		zipFile = fmt.Sprintf("%s", filepath.Join(zipSource, fileName))
+		zipFile = filepath.Join(zipSource, fileName)
 	}
 
 	if zipFile != "" && o.ID != "" {
 		newDirName = o.ID
-		directoryTree, _ := Unzip(zipFile)
+		directoryTree, zipName, _ := unzip(zipFile)
 		createJson(directoryTree)
-	}
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+
+		o.ZipName = zipName
+		err = colonycore.Save(o)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	return helper.CreateResult(true, nil, "")
@@ -275,7 +373,17 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 func (a *ApplicationController) GetApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	cursor, err := colonycore.Find(new(colonycore.Application), nil)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search))
+
+	cursor, err := colonycore.Find(new(colonycore.Application), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -337,35 +445,175 @@ func (a *ApplicationController) DeleteApps(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (a *ApplicationController) AppsFilter(r *knot.WebContext) interface{} {
+func subMenu(path string, pathdir string) []*colonycore.TreeSourceModel {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		fmt.Println("Error : ", err)
+	}
+	var arrDir []*colonycore.TreeSourceModel
+
+	for _, f := range files {
+		var treeModel colonycore.TreeSourceModel
+		if info, err := os.Stat(path + toolkit.PathSeparator + f.Name()); err == nil && info.IsDir() {
+			// if filepath.Ext(f.Name()) != "" {
+			treeModel.Text = f.Name()
+			treeModel.Type = "folder"
+			treeModel.Expanded = false
+			treeModel.Iconclass = "glyphicon glyphicon-folder-open"
+			treeModel.Path = pathdir + f.Name()
+			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
+			treeModel.Items = subMenu(path+toolkit.PathSeparator+f.Name(), pathdir+f.Name()+toolkit.PathSeparator)
+			arrDir = append(arrDir, &treeModel)
+		} else {
+			treeModel.Text = f.Name()
+			treeModel.Type = "file"
+			treeModel.Expanded = false
+			treeModel.Iconclass = "glyphicon glyphicon-file"
+			// content, err := ioutil.ReadFile(path + toolkit.PathSeparator + f.Name())
+			// if err != nil {
+			// 	fmt.Println("Error : ", err)
+			// }
+			// treeModel.Content = string(content)
+			treeModel.Path = pathdir + f.Name()
+			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
+			arrDir = append(arrDir, &treeModel)
+		}
+	}
+	return arrDir
+}
+
+func (a *ApplicationController) ReadDirectory(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-
 	payload := map[string]interface{}{}
-
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	namefolder := payload["ID"].(string)
 
-	text := payload["inputText"].(string)
-	var query *dbox.Filter
+	var arrDir []*colonycore.TreeSourceModel
+	urlDir := filepath.Join(unzipDest, namefolder)
+	files, err := ioutil.ReadDir(urlDir)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	for _, f := range files {
+		var treeModel colonycore.TreeSourceModel
+		if info, err := os.Stat(urlDir + toolkit.PathSeparator + f.Name()); err == nil && info.IsDir() {
+			// if filepath.Ext(f.Name()) != "" {
+			treeModel.Text = f.Name()
+			treeModel.Type = "folder"
+			treeModel.Expanded = false
+			treeModel.Iconclass = "glyphicon glyphicon-folder-open"
+			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
+			treeModel.Path = f.Name()
+			treeModel.Items = subMenu(urlDir+toolkit.PathSeparator+f.Name(), f.Name()+toolkit.PathSeparator)
+			arrDir = append(arrDir, &treeModel)
+		} else {
+			treeModel.Text = f.Name()
+			treeModel.Type = "file"
+			treeModel.Expanded = false
+			treeModel.Iconclass = "glyphicon glyphicon-file"
+			// content, err := ioutil.ReadFile(urlDir + toolkit.PathSeparator + f.Name())
+			// if err != nil {
+			// 	fmt.Println("Error : ", err)
+			// }
+			// treeModel.Content = string(content)
+			treeModel.Path = f.Name()
+			treeModel.Ext = strings.ToLower(filepath.Ext(f.Name()))
+			arrDir = append(arrDir, &treeModel)
+		}
+	}
+	return helper.CreateResult(true, arrDir, "")
+}
 
-	if text != "" {
-		query = dbox.Or(dbox.Contains("_id", text),
-			dbox.Contains("AppsName", text))
+func (a *ApplicationController) ReadContent(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	pathfolder := payload["Path"].(string)
+	ID := payload["ID"].(string)
+	urlDir := filepath.Join(unzipDest, ID, pathfolder)
+	contentstring := ""
+	content, err := ioutil.ReadFile(urlDir)
+	if err != nil {
+		fmt.Println("Error : ", err)
+		contentstring = ""
+	} else {
+		contentstring = string(content)
+	}
+	return helper.CreateResult(true, contentstring, "")
+}
+
+func (a *ApplicationController) CreateNewFile(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	Type := payload["Type"].(string)
+	Filename := payload["Filename"].(string)
+	pathfolder := payload["Path"].(string)
+	ID := payload["ID"].(string)
+	if Type == "folder" {
+		os.MkdirAll(filepath.Join(unzipDest, ID, pathfolder, Filename), 0755)
+	} else {
+		content := []byte("")
+		if payload["Content"].(string) != "" {
+			content = []byte(payload["Content"].(string))
+		}
+		err = ioutil.WriteFile(filepath.Join(unzipDest, ID, pathfolder, Filename), content, 0644)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
-	cursor, err := colonycore.Find(new(colonycore.Application), query)
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) DeleteFileSelected(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	Filename := payload["Filename"].(string)
+	pathfolder := payload["Path"].(string)
+	ID := payload["ID"].(string)
+
+	err = os.RemoveAll(filepath.Join(unzipDest, ID, pathfolder, Filename))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data := []colonycore.Application{}
-	err = cursor.Fetch(&data, 0, false)
+	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	defer cursor.Close()
+	Filename := payload["Filename"].(string)
+	pathfolder := payload["Path"].(string)
+	ID := payload["ID"].(string)
 
-	return helper.CreateResult(true, data, "")
+	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), string(filepath.Separator))
+	pathlist = append(pathlist[:len(pathlist)-1])
+	path := strings.Join(pathlist, string(filepath.Separator))
+
+	err = os.Rename(filepath.Join(unzipDest, ID, pathfolder), filepath.Join(path, Filename))
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, err, "")
 }

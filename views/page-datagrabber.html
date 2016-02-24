@@ -1,6 +1,17 @@
 <!-- core -->
 <script src="/res/core/page-datagrabber.js"></script>
 
+<!-- jquery treegrid -->
+<script src="/res/jquery-treegrid/js/jquery.treegrid.min.js"></script>
+<link href="/res/jquery-treegrid/css/jquery.treegrid.css" rel="stylesheet">
+
+<style>
+	.table-tree-map .treegrid-expanded td:nth-child(4) *,
+	.table-tree-map .treegrid-expanded td:nth-child(5) * {
+		visibility: hidden;
+	}
+</style>
+
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
@@ -24,7 +35,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8">
-		    		<input class="form-control input-sm" type="text" data-bind="value: dg.valDataGrabberFilter, valueUpdate: 'afterkeydown', 'input', event: {'keyup': filterDataGrabber}" />
+		    		<input class="form-control input-sm" type="text" data-bind="value: dg.searchfield" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		</nav>
@@ -36,16 +47,17 @@
 		    <div class="panel-body">
 		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveDataGrabber">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveDataGrabber">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: runTransformation(configScrapper._id())">
+	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: runTransformationWhenEdit">
 	    		<span class="glyphicon glyphicon-play"></span> Execute Transformation
 	    	</button>
 	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataGrabber" data-bind="visible: dg.showDataGrabber">
@@ -53,7 +65,7 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 600px;">
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (dg.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
@@ -62,92 +74,78 @@
 		    </div>
 		    <div class="panel-body">
 		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" id="form-add-scrapper" novalidate>
-					<div class="col-md-12">
-						<div class="form-group">
-				        	<label class="col-md-4 filter-label">ID</label>
-				        	<div class="col-md-5">
-				        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
-								<span class="k-invalid-msg" data-for="ID"></span>
-				        	</div>
-				        </div>
-						<div class="form-group">
-				        	<label class="col-md-4 filter-label">Data Source Origin</label>
-				        	<div class="col-md-5">
-				        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one' }"></select>
-								<span class="k-invalid-msg" data-for="data-source-origin"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Data Source Destination</label>
-				        	<div class="col-md-5">
-				        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoDropDownList: { data: dg.dataSourcesData, value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one' }"></select>
-								<span class="k-invalid-msg" data-for="data-source-destination"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Ignored Fields</label>
-				        	<div class="col-md-5">
-				        		<select class="full-width" data-bind="kendoMultiSelect: { data: dg.fieldOfDataSource('destination'), value: IgnoreFieldsDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', enabled: dg.isDataSourceNotEmpty('destination') }"></select>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Interval Type</label>
-				        	<div class="col-md-5">
-				        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateIntervalType, value: IntervalType, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
-								<span class="k-invalid-msg" data-for="interval-type"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Interval Duration</label>
-				        	<div class="col-md-5">
-				        		<input class="full-width" name="interval-duration" required data-required-msg="Interval duration cannot be empty" data-bind="kendoNumericTextBox: { value: GrabInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
-								<span class="k-invalid-msg" data-for="interval-duration"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Timeout Duration</label>
-				        	<div class="col-md-5">
-				        		<input class="full-width" name="timeout-duration" required data-required-msg="Timeout duration cannot be empty" data-bind="kendoNumericTextBox: { value: TimeoutInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
-								<span class="k-invalid-msg" data-for="timeout-duration"></span>
-				        	</div>
-				        </div>
-				        <div class="form-group">
-				        	<label class="col-md-4 filter-label">Fields Mapping</label>
-				        	<div class="col-md-5">
-				        		<button class="btn btn-sm btn-primary" data-bind="click: dg.addMap">
-				        			<span class="glyphicon glyphicon-plus"></span> Add more
-				        		</button>
-				        	</div>
-				        </div>
+					<div class="col-md-12 no-padding no-margin">
+						<div class="col-md-12">
+							<div class="form-group">
+					        	<label class="col-md-3 filter-label">ID</label>
+					        	<div class="col-md-3">
+					        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
+									<span class="k-invalid-msg" data-for="ID"></span>
+					        	</div>
 
+					        	<label class="col-md-2 filter-label">Source</label>
+					        	<div class="col-md-3">
+					        		<select required data-required-msg="Data Source Origin cannot be empty" class="full-width" name="data-source-origin" data-bind="kendoDropDownList: { data: dg.dataSourcesDataForSourceAndDest('origin'), value: DataSourceOrigin, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceOrigin }"></select>
+									<span class="k-invalid-msg" data-for="data-source-origin"></span>
+					        	</div>
+					        </div>
+
+					        <div class="form-group">
+					        	<label class="col-md-3 col-md-offset-5 filter-label">Destination</label>
+					        	<div class="col-md-3">
+					        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoDropDownList: { data: dg.dataSourcesDataForSourceAndDest('destination'), value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceDestination }"></select>
+									<span class="k-invalid-msg" data-for="data-source-destination"></span>
+					        	</div>
+					        </div>
+
+					        <div class="form-group">
+					        	<label class="col-md-3 filter-label">Duration Type</label>
+					        	<div class="col-md-3">
+					        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateIntervalType, value: IntervalType, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
+									<span class="k-invalid-msg" data-for="interval-type"></span>
+					        	</div>
+					        	<label class="col-md-2 filter-label">Interval Duration</label>
+					        	<div class="col-md-1">
+						        	<input style="margin-top: 8px;" type="checkbox" data-bind="checked: UseInterval" />
+					        	</div>
+					        	<div class="col-md-3" data-bind="style: { 'visibility': UseInterval() ? 'visible' : 'hidden' }">
+					        		<input class="full-width" name="interval-duration" required data-required-msg="Interval duration cannot be empty" data-bind="kendoNumericTextBox: { value: GrabInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
+									<span class="k-invalid-msg" data-for="interval-duration"></span>
+					        	</div>
+					        </div>
+
+					        <div class="form-group">
+					        	<label class="col-md-3 col-md-offset-5 filter-label">Timeout Duration</label>
+					        	<div class="col-md-3">
+					        		<input class="full-width" name="timeout-duration" required data-required-msg="Timeout duration cannot be empty" data-bind="kendoNumericTextBox: { value: TimeoutInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
+									<span class="k-invalid-msg" data-for="timeout-duration"></span>
+					        	</div>
+					        </div>
+
+					        <div class="form-group">
+					        	<label class="col-md-3 filter-label">Pre Transfer Command</label>
+					        	<div class="col-md-8">
+						        	<input class="form-control input-sm full-width" type="text" data-bind="value: PreTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --pre --data %1" />
+					        	</div>
+					        </div>
+
+					        <div class="form-group">
+					        	<label class="col-md-3 filter-label">Post Transfer Command</label>
+					        	<div class="col-md-8">
+						        	<input class="form-control input-sm full-width" type="text" data-bind="value: PostTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --post --data %1" />
+					        	</div>
+					        </div>
+
+					        <div class="form-group no-padding">
+					        	<label class="col-md-2 filter-label">Fields Mapping</label>
+					        </div>
+				        </div>
+			        </div>
+			        
+					<div class="col-md-12">
 				        <div class="form-group">
 				        	<div class="col-md-12">
-								<table class="table">
-									<thead>
-										<tr>
-											<th>Field Origin</th>
-											<th>Field Destination</th>
-											<th>&nbsp;</th>
-										</tr>
-									</thead>
-									<tbody data-bind="foreach: dg.configScrapper.Map">
-										<tr>
-											<td>
-												<select required data-required-msg="Field Origin cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSource('origin'), value: FieldOrigin, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-origin-' + $index() }"></select>
-												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-origin-' + $index() }"></span>
-											</td>
-											<td>
-												<select required data-required-msg="Field Destination cannot be empty" class="full-width" data-bind="kendoComboBox: { data: dg.fieldOfDataSource('destination'), value: FieldDestination, dataValueField: '_id', dataTextField: 'Label', placeholder: 'Select one', filter: 'contains', suggest: true, minLength: 2 }, attr: { 'name': 'scrapper-map-field-destination-' + $index() }"></select>
-												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-map-field-destination-' + $index() }"></span>
-											</td>
-											<td>
-												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: dg.removeMap($index())">
-													<span class="glyphicon glyphicon-remove"></span>
-												</button>
-											</td>
-										</tr>
-									</tbody>
-								</table>
+				        		<table class="table tree table-tree-map"></table>
 				        	</div>
 				        </div>
 		        	</div>

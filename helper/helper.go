@@ -19,6 +19,10 @@ import (
 	"time"
 )
 
+var (
+	DebugMode bool
+)
+
 func GetFileExtension(file string) string {
 	fileComp := strings.Split(file, ".")
 	if len(fileComp) == 0 {
@@ -166,6 +170,9 @@ func FetchThenSaveFile(r *http.Request, sourceFileName string, destinationFileNa
 func CreateResult(success bool, data interface{}, message string) map[string]interface{} {
 	if !success {
 		fmt.Println("ERROR! ", message)
+		if DebugMode {
+			panic(message)
+		}
 	}
 
 	return map[string]interface{}{
@@ -289,7 +296,7 @@ func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string)
 	}
 	defer file.Close()
 
-	dstSource := dstpath + "\\" + handler.Filename
+	dstSource := dstpath + toolkit.PathSeparator + handler.Filename
 	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err, ""
