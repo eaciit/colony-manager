@@ -299,7 +299,7 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 
 	if o.Driver == "weblink" {
 		fileType := helper.GetFileExtension(o.Host)
-		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(AppBasePath, "config", "etc", o.ID), fileType)
+		fileLocation := fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 		file, err := os.Create(fileLocation)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
@@ -335,8 +335,18 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	search := payload["search"].(string)
+	driver := payload["driver"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search))
+
+	if driver != ""{
+		query = dbox.And(query, dbox.Eq("Driver", driver))
+	}
+
 	data := []colonycore.Connection{}
-	cursor, err := colonycore.Find(new(colonycore.Connection), nil)
+	cursor, err := colonycore.Find(new(colonycore.Connection), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -533,11 +543,18 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		}
 	}
 
+	metadata := d.parseMetadata(data)
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	return helper.CreateResult(true, metadata, "")
+}
+
+func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.FieldInfo {
 	metadata := []*colonycore.FieldInfo{}
+
 	for key, val := range data {
 		label := key
 
@@ -551,10 +568,40 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		meta.Format = ""
 		meta.Lookup = lookup
 
+		switch toolkit.TypeName(val) {
+		case "toolkit.M":
+			meta.Type = "object"
+
+			meta.Sub = d.parseMetadata(val.(toolkit.M))
+		case "[]interface {}":
+			meta.Type = "array"
+
+			valArray := val.([]interface{})
+			if len(valArray) > 0 {
+				if toolkit.TypeName(valArray[0]) == "toolkit.M" {
+					meta.Type = "array-objects"
+					meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))
+				} else {
+					switch target := toolkit.TypeName(valArray[0]); {
+					case strings.Contains(target, "interface"):
+					case strings.Contains(target, "string"):
+						meta.Type = "array-string"
+					case strings.Contains(target, "int"):
+						meta.Type = "array-int"
+					case strings.Contains(target, "float"):
+					case strings.Contains(target, "double"):
+						meta.Type = "array-double"
+					default:
+						meta.Type = "array-string"
+					}
+				}
+			}
+		}
+
 		metadata = append(metadata, meta)
 	}
 
-	return helper.CreateResult(true, metadata, "")
+	return metadata
 }
 
 func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{} {
@@ -746,7 +793,12 @@ func (d *DataSourceController) GetDataSources(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	cursor, err := colonycore.Find(new(colonycore.DataSource), nil)
+	search := payload["search"].(string)
+
+	var query *dbox.Filter
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("ConnectionID", search))
+
+	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -776,45 +828,6 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	return helper.CreateResult(true, data, "")
-}
-
-func (d *DataSourceController) FindDataSource(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	payload := map[string]interface{}{}
-
-	err := r.GetPayload(&payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	text := payload["inputText"].(string)
-	textLow := strings.ToLower(text)
-
-	// == try useing Contains for support autocomplite
-	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("ConnectionID", text), dbox.Contains("ConnectionID", textLow))
-
-	data := []colonycore.DataSource{}
-	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
-	cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	// == bug, i dont know what i can to do if find by database name.==
-	//~ if data == nil {
-	//~ query = dbox.Eq("Database",text)
-	//~ data := []colonycore.Connection{}
-	//~ cursor, err := colonycore.Find(new(colonycore.Connection), query)
-	//~ cursor.Fetch(&data, 0, false)
-	//~ if err != nil {
-	//~ return helper.CreateResult(false, nil, err.Error())
-	//~ }
-	//~ fmt.Printf("========asdasd=======%#v",data)
-	//~ }
-
-	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
 }

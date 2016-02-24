@@ -2,12 +2,10 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "weblink", text: "Weblink" },
+	{ value: "csv", text: "CSV" },
+	{ value: "json", text: "JSON" },
 	{ value: "mongo", text: "MongoDb" },
-	{ value: "mssql", text: "SQLServer" },
-	{ value: "mysql", text: "MySQL" },
-	{ value: "oracle", text: "Oracle" },
-	{ value: "erp", text: "ERP" }
+	{ value: "mysql", text: "MySQL" }
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -44,13 +42,11 @@ ds.templateLookup = {
 	DisplayField: "",
 	LookupFields: [],
 };
-
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
 ds.connectionListMode = ko.observable('');
 ds.dataSourceMode = ko.observable('');
-ds.valDataSourceFilter = ko.observable('');
 ds.valConnectionFilter = ko.observable('');
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
 ds.confDataSourceConnectionInfo = ko.mapping.fromJS(ds.templateConfig);
@@ -69,7 +65,7 @@ ds.dataSourceDataForLookup = ko.computed(function () {
 }, ds);
 ds.idThereAnyDataSourceResult = ko.observable(false);
 ds.connectionListColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='connectioncheckall' onclick=\"ds.checkDeleteData(this, 'connectionall', 'all')\"/>", width:25, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' class='connectioncheckall' onclick=\"ds.checkDeleteData(this, 'connectionall', 'all')\"/></center>", attributes: { style: "text-align: center;" }, width: 40, template: function (d) {
 		return [
 			"<input type='checkbox' class='connectioncheck' idcheck='"+d._id+"' onclick=\"ds.checkDeleteData(this, 'connection')\" />"
 		].join(" ");
@@ -80,17 +76,17 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Database", title: "Database" },
 	{ field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-play'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Connection' onclick='ds.editConnection(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Connection' onclick='ds.removeConnection(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
 		].join(" ");
 	} },
 ]);
 ds.filterDriver = ko.observable('');
+ds.searchfield = ko.observable('');
+ds.search2field = ko.observable('');
 ds.dataSourceColumns = ko.observableArray([
-	{ headerTemplate: "<input type='checkbox' class='datasourcecheckall' onclick=\"ds.checkDeleteData(this, 'datasourceall', 'all')\"/>", width:25, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' class='datasourcecheckall' onclick=\"ds.checkDeleteData(this, 'datasourceall', 'all')\"/></center>", attributes: { style: "text-align: center;" }, width: 40, template: function (d) {
 		return [
 			"<input type='checkbox' class='datasourcecheck' idcheck='"+d._id+"' onclick=\"ds.checkDeleteData(this, 'datasource')\" />"
 		].join(" ");
@@ -100,12 +96,6 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "QueryInfo", title: "Query", template: function (d) {
 		return "test"
 	} },
-	// { title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
-	// 	return [
-	// 		"<button class='btn btn-sm btn-default btn-text-primary tooltipster' title='Edit Data Source' onclick='ds.editDataSource(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
-	// 		"<button class='btn btn-sm btn-default btn-text-danger tooltipster' title='Delete Data Source' onclick='ds.removeDataSource(\"" + d._id + "\")'><span class='fa fa-remove'></span></button>"
-	// 	].join(" ");
-	// } },
 ]);
 ds.settingsColumns = ko.observableArray([
 	{ field: "key", title: "Key", template: function (d) {
@@ -219,15 +209,25 @@ ds.backToFrontPage = function () {
 };
 ds.populateGridConnections = function () {
 	var param = ko.mapping.toJS(ds.config);
-	app.ajaxPost("/datasource/getconnections", param, function (res) {
+	app.ajaxPost("/datasource/getconnections", {param, search: ds.searchfield, driver: ds.filterDriver}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		ds.connectionListData(res.data);
 	});
 };
 ds.saveNewConnection = function () {
+	var extension = (ds.config.Host()).split('.').pop();
+	if ((extension == "json") || (extension == "csv")){
+		if (extension !=  ds.config.Driver()){
+			sweetAlert("Oops...", ("Your Host file is on ." + extension + " and your Driver is " + ds.config.Driver()), "error");
+			return;
+		}
+	}
+	
 	if (!app.isFormValid("#form-add-connection")) {
 		if (ds.config.Driver() == "weblink") {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
@@ -293,7 +293,12 @@ ds.testConnection = function () {
 ds.selectGridConnection = function(e){
 	var grid = $(".grid-connection").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
-	ds.editConnection(selectedItem._id);
+	var target = $( event.target );
+	if ($(target).parents(".excludethis").length ) {
+	  	return false;
+	}else{
+		ds.editConnection(selectedItem._id);
+	}
 	ds.showConnection(true);
 };
 
@@ -445,13 +450,16 @@ ds.saveNewDataSource = function(){
 	});
 };
 ds.populateGridDataSource = function () {
-	app.ajaxPost("/datasource/getdatasources", {}, function (res) {
+	app.ajaxPost("/datasource/getdatasources", {search: ds.search2field}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data==null){
+			res.data="";
+		}
 		ds.dataSourcesData(res.data);
 	});
+	// filterDataSource();
 };
 ds.openDataSourceForm = function(){
 	app.mode('editDataSource');
@@ -705,20 +713,7 @@ ds.showLookupData = function (lookupID, lookupData) {
 		$("#grid-lookup-data").kendoGrid(gridConfig);
 	});
 };
-function filterDataSource(event) {
-	var fdatasource = ds.valDataSourceFilter();
-	app.ajaxPost("/datasource/finddatasource", {inputText : fdatasource}, function (res) 
-	{
-		if (!app.isFine(res)) {
-			return;
-		}
-		if (!res.data) {
-			res.data = [];
-		}
-		ds.dataSourcesData(res.data);
 
-	});
-}
 ds.checkDeleteData = function(elem, e){
 	if (e === 'connection'){
 		if ($(elem).prop('checked') === true){
@@ -772,7 +767,6 @@ function filterConnection(event) {
 	}
 	 	ds.connectionListData(res.data);
 	 });
-console.log(ds.valConnectionFilter());
 }
 
 $(function () {
