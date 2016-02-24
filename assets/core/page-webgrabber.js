@@ -290,46 +290,48 @@ wg.runBotStats = function () {
 
 	var isThereAnyError = false;
 
-	if(wg.scrapperData()!=""){
+	if (wg.scrapperData() != "") {
 		wg.scrapperData().forEach(function (each) {
-		var checkStat = function () {
-			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
-				if (res.success) {
-					var $grid = $(".grid-web-grabber").data("kendoGrid");
-					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+			var checkStat = function () {
+				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+					if (res.success) {
+						var $grid = $(".grid-web-grabber").data("kendoGrid");
+						var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
 
-					if (row != undefined) {
-						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+						if (row != undefined) {
+							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-						if (res.data.isRun) {
-							$tr.addClass("started");
-						} else {
-							$tr.removeClass("started");
+							if (res.data.isRun) {
+								$tr.addClass("started");
+							} else {
+								$tr.removeClass("started");
+							}
 						}
 					}
-				}
 
-				if (isThereAnyError) {
-					return;
-				}
+					if (isThereAnyError) {
+						return;
+					}
 
-				if (!app.isFine(res)) {
-					isThereAnyError = true;
-					return;
-				}
-			}, function (a) {
-		        sweetAlert("Oops...", a.statusText, "error");
-			}, {
-				withLoader: false
+					if (!app.isFine(res)) {
+						isThereAnyError = true;
+						return;
+					}
+				}, function (a) {
+			        sweetAlert("Oops...", a.statusText, "error");
+				}, {
+					withLoader: false
+				});
+			};
+
+			var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
+
+			wg.botStats.push({ 
+				_id: each._id,
+				interval: setInterval(checkStat, interval * 1000)
 			});
-		};
 
-		wg.botStats.push({ 
-			_id: each._id,
-			interval: setInterval(checkStat, each.grabinterval * 1000)
-		});
-
-		checkStat();
+			checkStat();
 		});
 	}
 	
