@@ -261,6 +261,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	destinationPath := filepath.Join(server.AppPath, "src")
 	destinationZipPath := filepath.Join(destinationPath, fmt.Sprintf("%s.zip", app.ID))
 
+
+
 	installerFile := ""
 
 	filepath.Walk(sourcePath, func(path string, f os.FileInfo, err error) error {
@@ -293,19 +295,18 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	fmt.Println(destinationZipPath)
 
-	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
+	destinationPath =strings.Replace(destinationPath,"\\","/",-1)
+	err = sshSetting.SshCopyByPath(sourceZipPath,destinationPath)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	
+	zipToExtract :="unzip "+destinationPath+"/"+app.ID+".zip "
+	ps := []string{"cd "+destinationPath,zipToExtract}
+	_, err = sshSetting.RunCommandSsh(ps...)
 
-	err = os.Remove(sourceZipPath)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	zipToExtract := fmt.Sprintf("unzip %s", destinationZipPath)
-	_, err = sshSetting.GetOutputCommandSsh(zipToExtract)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -319,6 +320,11 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	// err = os.Remove(sourceZipPath)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
 
 	return helper.CreateResult(true, nil, "")
 }
