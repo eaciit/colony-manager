@@ -118,9 +118,9 @@ wg.scrapperColumns = ko.observableArray([
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
 	{ field: "calltype", title: "Request Type", width: 150 },
@@ -934,20 +934,11 @@ wg.changeConnectionID = function (e) {
 	return true;
 };
 
-wg.selectGridWebGrabber = function(e){
-	var grid = $(".grid-web-grabber").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ( $(target).parents( ".excludethis" ).length ) {
-	    return false;
-	  }else if ($(target).parents(".notthis").length ) {
-	  	return false;
-	  }else if ($(target).parents(".neitherthis" ).length ) {
-	  	return false;
-	  }else{
-		wg.editScrapper(selectedItem._id);
-	  }
-	wg.showWebGrabber(true);
+wg.selectGridWebGrabber = function (e) {
+	app.wrapGridSelect(".grid-web-grabber", ".btn", function (d) {
+		wg.editScrapper(d._id);
+		wg.showWebGrabber(true);
+	});
 };
 
 wg.checkDeleteWebGrabber = function(elem, e){
