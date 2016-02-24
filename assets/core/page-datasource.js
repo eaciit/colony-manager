@@ -238,7 +238,7 @@ ds.populateGridConnections = function () {
 };
 ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		if (["json", "csv"].indexOf(ds.config.Driver()) > -1) {
+		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
 			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
 				// no problem

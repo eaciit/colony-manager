@@ -289,6 +289,9 @@
 						</div>
 					</div>
 					<div class="clearfix"></div>
+					<div class="form-group">
+						<p class="bg-danger bgcustom mgTop15" data-bind="visible: apl.showErrorDeploy()">You havent select any server(s) to deploy!</p>
+					</div>
 				</div>
 				<div class="modal-footer">
 					{{template "_loader.html"}}
