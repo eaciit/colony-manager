@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -221,9 +222,6 @@ func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
 
 	data := []colonycore.DataGrabber{}
 	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
 
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
@@ -594,7 +592,78 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 					eachTransformedData.Set(eachMap.Destination, valueObjects)
 				} else {
-					eachTransformedData.Set(eachMap.Destination, valueEachSourceField)
+					fmt.Println("tipe data : ", reflect.ValueOf(valueEachSourceField).Type())
+					fmt.Println("destination type data - >", eachMap.DestinationType)
+
+					var res interface{}
+					switch valueEachSourceField.(type) {
+					case string:
+						switch eachMap.DestinationType {
+						case "string":
+							fmt.Println("string : ", eachMap.DestinationType)
+							// res = strconv.Itoa(valueEachSourceField.(string))
+							res = valueEachSourceField
+							//eachTransformedData.Set(eachMap.Destination, numConvert)
+						case "int":
+							fmt.Println("int : ", eachMap.DestinationType)
+							res, err = strconv.Atoi(valueEachSourceField.(string))
+							if err != nil {
+								fmt.Println("== > error convert data from destination type string to int")
+								res = valueEachSourceField
+							}
+						case "double":
+							fmt.Println("double : ", eachMap.DestinationType)
+							res, err = strconv.ParseFloat(valueEachSourceField.(string), 32)
+							if err != nil {
+								fmt.Println("== > error convert data from destination type string to float or double")
+								res = valueEachSourceField
+							}
+						case "bool":
+							fmt.Println("bool : ", eachMap.DestinationType)
+							res, err = strconv.ParseBool(valueEachSourceField.(string))
+							if err != nil {
+								fmt.Println("== > error convert data from destination type string to bool")
+								res = valueEachSourceField
+							}
+
+						}
+						// eachTransformedData.Set(eachMap.Destination, res)
+						// fmt.Println(" -- > ", reflect.ValueOf(eachTransformedData.Get(eachMap.Destination)).Type())
+
+					case int:
+						switch eachMap.DestinationType {
+						case "string":
+							fmt.Println("string : ", eachMap.DestinationType)
+							res = strconv.Itoa(valueEachSourceField.(int))
+						case "int":
+							fmt.Println("int : ", eachMap.DestinationType)
+							res = valueEachSourceField
+						case "double":
+							fmt.Println("double : ", eachMap.DestinationType)
+							res = float64(valueEachSourceField.(int))
+						case "bool":
+							fmt.Println("== > error convert data from destination type int to bool")
+						}
+
+					case bool:
+						// switch eachMap.DestinationType {
+						// case "string":
+						// 	fmt.Println("string : ", eachMap.DestinationType)
+						// 	res = strconv.FormatBool(valueEachSourceField.(bool))
+						// case "int":
+						// 	fmt.Println("== > error convert data from destination type bool to int")
+						// case "double":
+						// 	fmt.Println("== > error convert data from destination type bool to double")
+						// case "bool":
+						// 	res = valueEachSourceField
+						// }
+
+					}
+					eachTransformedData.Set(eachMap.Destination, res)
+					fmt.Println(" -- > ", reflect.ValueOf(eachTransformedData.Get(eachMap.Destination)).Type())
+					fmt.Printf("eachMapDest : %s -> %s\n", eachMap.Destination, valueEachSourceField)
+
+					// eachTransformedData.Set(eachMap.Destination, valueEachSourceField)
 				}
 			} else {
 				prev := strings.Split(eachMap.Destination, "|")[0]
@@ -667,6 +736,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 
 		dataToSave := eachTransformedData
+
+		fmt.Println("< - > ", dataToSave, "\n\n")
 
 		// ================ post transfer command
 		if dataGrabber.PostTransferCommand != "" {
