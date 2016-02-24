@@ -23,9 +23,6 @@ ds.templateConfig = {
 	Settings: [],
 
 	FileLocation: "",
-
-	Delimiter: "",
-	Path: "",
 };
 ds.templateDataSource = {
 	_id: "",
@@ -88,7 +85,7 @@ ds.connectionListColumns = ko.observableArray([
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
 		].join(" ");
 	} },
 ]);
@@ -320,16 +317,11 @@ ds.testConnection = function () {
 	});
 };
 
-ds.selectGridConnection = function(e){
-	var grid = $(".grid-connection").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ($(target).parents(".excludethis").length ) {
-	  	return false;
-	}else{
-		ds.editConnection(selectedItem._id);
-	}
-	ds.showConnection(true);
+ds.selectGridConnection = function (e) {
+	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
+		ds.editConnection(d._id);
+		ds.showConnection(true);
+	});
 };
 
 ds.editConnection = function (_id) {
@@ -417,11 +409,11 @@ ds.removeDataSource = function (_id) {
 	}
 };
 
-ds.selectGridDataSource = function(e){
-	var grid = $(".grid-datasource").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	ds.editDataSource(selectedItem._id);
-	ds.showDataSource(true);
+ds.selectGridDataSource = function (e) {
+	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
+		ds.editDataSource(d._id);
+		ds.showDataSource(true);
+	});
 };
 
 ds.editDataSource = function (_id) {

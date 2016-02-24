@@ -58,7 +58,7 @@ srv.ServerColumns = ko.observableArray([
 	{ field: "sshtype", title: "SSH Type" },
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
 		].join(" ");
 	} },
 	// { field: "appPath", title: "App Path" },
@@ -137,17 +137,12 @@ srv.saveServer = function(){
 	});
 };
 
-srv.selectGridServer = function(e){
+srv.selectGridServer = function (e) {
 	srv.isNew(false);
-	var grid = $(".grid-server").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ($(target).parents(".excludethis").length ) {
-	  	return false;
-	}else{
-	srv.editServer(selectedItem._id);
-	}
-	srv.showServer(true);
+	app.wrapGridSelect(".grid-server", ".btn", function (d) {
+		srv.editServer(d._id);
+		srv.showServer(true);
+	});
 };
 
 srv.editServer = function (_id) {

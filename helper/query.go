@@ -7,7 +7,8 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	// _ "github.com/eaciit/dbox/dbc/mssql"
 	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/dbox/dbc/mysql"
+	_ "github.com/eaciit/dbox/dbc/hive"
+	_ "github.com/eaciit/dbox/dbc/mysql"
 	// _ "github.com/eaciit/dbox/dbc/oracle"
 	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"fmt"
@@ -51,10 +52,6 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	wrapper.err = wrapper.connection.Connect()
 	if wrapper.err != nil {
 		return &wrapper
-	}
-
-	if driver == "mysql" {
-		wrapper.err = wrapper.connection.(*mysql.Connection).Sql.Ping()
 	}
 
 	return &wrapper
@@ -196,5 +193,5 @@ func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
 		return Query(dataConn.Driver, dataConn.FileLocation)
 	}
 
-	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password)
+	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password, dataConn.Settings)
 }
