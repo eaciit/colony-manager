@@ -51,7 +51,7 @@ apl.applicationColumns = ko.observableArray([
 	// { field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
 		].join(" ");
 	} },
 ]);

@@ -141,7 +141,12 @@ srv.selectGridServer = function(e){
 	srv.isNew(false);
 	var grid = $(".grid-server").data("kendoGrid");
 	var selectedItem = grid.dataItem(grid.select());
+	var target = $( event.target );
+	if ($(target).parents(".excludethis").length ) {
+	  	return false;
+	}else{
 	srv.editServer(selectedItem._id);
+	}
 	srv.showServer(true);
 };
 
