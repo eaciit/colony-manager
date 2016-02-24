@@ -2,12 +2,10 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "weblink", text: "Weblink" },
+	{ value: "csv", text: "CSV" },
+	{ value: "json", text: "JSON" },
 	{ value: "mongo", text: "MongoDb" },
-	{ value: "mssql", text: "SQLServer" },
-	{ value: "mysql", text: "MySQL" },
-	{ value: "oracle", text: "Oracle" },
-	{ value: "erp", text: "ERP" }
+	{ value: "mysql", text: "MySQL" }
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -44,7 +42,6 @@ ds.templateLookup = {
 	DisplayField: "",
 	LookupFields: [],
 };
-
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
@@ -223,6 +220,14 @@ ds.populateGridConnections = function () {
 	});
 };
 ds.saveNewConnection = function () {
+	var extension = (ds.config.Host()).split('.').pop();
+	if ((extension == "json") || (extension == "csv")){
+		if (extension !=  ds.config.Driver()){
+			sweetAlert("Oops...", ("Your Host file is on ." + extension + " and your Driver is " + ds.config.Driver()), "error");
+			return;
+		}
+	}
+	
 	if (!app.isFormValid("#form-add-connection")) {
 		if (ds.config.Driver() == "weblink") {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
