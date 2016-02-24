@@ -15,6 +15,8 @@ apl.templateFile = {
 	Content: "",
 }
 apl.selectable = ko.observableArray([]);
+apl.tempCheckIdServer = ko.observableArray([]);
+apl.showErrorDeploy = ko.observable(false);
 apl.filterValue = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
@@ -37,14 +39,14 @@ apl.applicationColumns = ko.observableArray([
 	// { field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 100, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Deploy to servers' data-toggle='modal' data-target='.modal-deploy'><span class='glyphicon glyphicon-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' id='excludethis' title='Browse' onclick='apl.browse(\"" + d._id + "\")()'><span class='fa fa-eye'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Deploy to servers' data-toggle='modal' data-target='.modal-deploy' onclick='apl.openDeployModal()'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Browse' onclick='apl.browse(\"" + d._id + "\")()'><span class='fa fa-eye'></span></button>"
 		].join(" ");
 	} },
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 ]);
 apl.ServerColumns = ko.observableArray([
-	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
 		].join(" ");
@@ -61,12 +63,23 @@ apl.ServerColumns = ko.observableArray([
 	} },
 	{ field: "sshtype", title: "SSH Type" }
 ]);
+apl.openDeployModal = function () {
+	$('.selectall').prop("checked", false);
+	$('.servercheck').prop("checked", false);
+	apl.tempCheckIdServer().length = 0;
+	apl.showErrorDeploy(false);
+}
 apl.deploy = function (_id) {
-	app.isLoading(true);
-	$(".modal-deploy").unbind();
-	return function (e) {
+	if (apl.tempCheckIdServer().length > 0) {
+		apl.showErrorDeploy(false);
+		app.isLoading(true);
+		$(".modal-deploy").unbind();
+		return function (e) {
 
-	};
+		};
+	}else{
+		apl.showErrorDeploy(true);
+	}
 };
 apl.browse = function (_id) {
 	return function (e) {
@@ -77,7 +90,12 @@ apl.browse = function (_id) {
 apl.selectApps = function(e){
 	var tab = $(".grid-application").data("kendoGrid");
 	var data = tab.dataItem(tab.select());
-	apl.editApplication(data._id);
+	var target = $( event.target );
+	if ($(target).parents(".excludethis").length ) {
+	  	return false;
+	}else{
+		apl.editApplication(data._id);
+	}
 };
 
 apl.getApplications = function() {
@@ -431,13 +449,21 @@ apl.selectServer = function(elem, e){
 		if ($(elem).prop('checked') === true){
 			$('.servercheck').each(function(index) {
 				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));
 			});
 		} else {
 			var idtemp = '';
 			$('.servercheck').each(function(index) {
 				$(this).prop("checked", false);
 				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
 			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
+		} else {
+			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
 }
