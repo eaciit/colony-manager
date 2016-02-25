@@ -105,7 +105,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         app.isLoading(true);
     }
 
-    $.ajax(config);
+    return $.ajax(config);
 };
 app.isFine = function (res) {
     if (!res.success) {
@@ -179,6 +179,13 @@ app.gridBoundTooltipster = function (selector) {
         app.prepareTooltipster($(selector).find(".tooltipster"));
     };
 };
+app.registerSearchKeyup = function ($selector, callback) {
+    $selector.keyup(function (e) {
+        if (e.which == 13) {
+            callback();
+        }
+    });
+}
 
 $(function () {
 	app.applyNavigationActive();

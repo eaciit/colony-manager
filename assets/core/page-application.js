@@ -163,6 +163,9 @@ apl.getApplications = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
+		if (res.data==null){
+			res.data="";
+		}
 
 		apl.applicationData(res.data);
 	});
@@ -353,7 +356,7 @@ apl.removeFileDir = function(){
 				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
 				 apl.appTreeMode("");
 				 apl.appTreeSelected("");
-				 swal({title: "File / Folder successfully deleted", type: "success"});
+				 swal({title: "File / Folder successfully deleted", type: "success"});				 
 				});
 		},1000);
 	});
@@ -564,5 +567,5 @@ $(function () {
 	apl.codemirror();
 	apl.treeView("") ;
 	app.prepareTooltipster($(".tooltipster"));
-
+	app.registerSearchKeyup($(".search"), apl.getApplications);
 });

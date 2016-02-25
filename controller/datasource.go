@@ -340,7 +340,7 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 	driver := payload["driver"].(string)
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search))
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("Driver", search), dbox.Contains("Host", search), dbox.Contains("Database", search), dbox.Contains("UserName", search))
 
 	if driver != "" {
 		query = dbox.And(query, dbox.Eq("Driver", driver))
