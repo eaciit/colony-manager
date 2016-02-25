@@ -101,7 +101,16 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
-		return "test"
+		var q = JSON.parse(kendo.stringify(d.QueryInfo));
+		var r = [];
+
+		for (var k in q) {
+			if (q.hasOwnProperty(k)) {
+				r.push([k, q[k]].join(" : "));
+			}
+		}
+
+		return r.join(", ");
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
