@@ -51,7 +51,7 @@ apl.applicationColumns = ko.observableArray([
 	// { field: "Enable", title: "Enable", width: 50},
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
 		].join(" ");
 	} },
 ]);
@@ -142,15 +142,10 @@ apl.browse = function (_id) {
 	};
 };
 
-apl.selectApps = function(e){
-	var tab = $(".grid-application").data("kendoGrid");
-	var data = tab.dataItem(tab.select());
-	var target = $( event.target );
-	if ($(target).parents(".excludethis").length ) {
-	  	return false;
-	}else{
-		apl.editApplication(data._id);
-	}
+apl.selectApps = function (e) {
+	app.wrapGridSelect(".grid-application", ".btn", function (d) {
+		apl.editApplication(d._id);
+	});
 };
 
 apl.getApplications = function() {
