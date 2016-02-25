@@ -257,7 +257,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 	defer sshClient.Close()
 
-	serverPathSeparator := toolkit.PathSeparator
+	serverPathSeparator := `/`
 	if server.OS == "windows" {
 		serverPathSeparator = `\`
 	}
@@ -312,8 +312,9 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
-	_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
+	unzipCmd := fmt.Sprintf("sudo unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	// _, err = sshSetting.GetOutputCommandSsh(unzipCmd)
+	_, err = sshSetting.RunCommandSsh(unzipCmd)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
