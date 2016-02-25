@@ -25,15 +25,22 @@ wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
 wg.templateConfigScrapper = {
     _id: "",
-    sourcetype: "SourceType_Http",
+    sourcetype: "SourceType_HttpHtml",
     grabconf:
             {
                 "url": "http://www.google.com",
                 "calltype": "GET",
+                "authtype" : "AuthType_Basic",
+                "loginurl" : "", 
+                "logouturl" : "", 
+                "username" : "",
+                "password" : "", 
                 "formvalues": {},
-                "temp": {
-                    "parameters": []
-                },
+                "timeout" : 20,
+                "temp" : {
+                	"parameters" : []
+                }
+
             },
     intervalconf:
             {
@@ -136,11 +143,11 @@ wg.scrapperColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
-	{ field: "calltype", title: "Request Type", width: 150 },
+	{ field: "grabconf.calltype", title: "Request Type", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
-	{ field: "intervaltype", title: "Interval Unit", width: 150 },
-	{ field: "grabinterval", title: "Interval Duration", width: 150 },
-	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
+	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
+	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
 ]);
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
@@ -166,8 +173,9 @@ wg.historyColumns = ko.observableArray([
 wg.filterRequestTypes = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
-	{ value: "SourceType_Http", title: "HTTP / Web" },
-	{ value: "SourceType_Dbox", title: "Data File" },
+	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
+	{ value: "SourceType_HttpJson", title: "HTTP / Json" },
+	{ value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -183,6 +191,12 @@ wg.templateConfigConnection = {
 	Password: "",
 	Settings: []
 };
+
+wg.dataAuthType = ko.observableArray([
+	{value : "AuthType_Basic" , title : "Basic"},
+	{value : "AuthType_Cookie", title: "Cookie"},
+	{value : "AuthType_Session" , title : "Session"},
+]);
 wg.replaceEqWithNthChild = function (s) {
 	return s.replace(/eq\(([^)]+)\)/g, function (e) {
 		var i = parseInt(e.split("(").reverse()[0].split(")")[0]) + 1;
