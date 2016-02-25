@@ -130,18 +130,6 @@
 				            <input type="password" class="form-control input-sm" placeholder="Type password here" data-bind="value: Password">
 				        </div>
 				    </div>
-				    <div class="form-group" data-bind="visible: Driver() == 'hive'">
-				        <label class="col-sm-4 filter-label">Delimiter</label>
-				        <div class="col-sm-5">
-				        	<select name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.delimiterOptions, dataValueField: 'value', dataTextField: 'text', value: Delimiter, optionLabel: 'Select one' }"></select>
-				        </div>
-				    </div>
-				    <div class="form-group" data-bind="visible: Driver() == 'hive'">
-				        <label class="col-sm-4 filter-label">Path</label>
-				        <div class="col-sm-5">
-				            <input type="password" class="form-control input-sm" placeholder="Type path here" data-bind="value: Path">
-				        </div>
-				    </div>
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Settings</label>
 				        <div class="col-sm-8">
