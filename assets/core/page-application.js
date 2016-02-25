@@ -26,6 +26,10 @@ apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
 apl.showErrorDeploy = ko.observable(false);
 apl.filterValue = ko.observable('');
+apl.filterApplication = ko.observable({
+	search: '',
+	type: ''
+});
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');

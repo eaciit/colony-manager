@@ -52,7 +52,7 @@
 					Search
 				</label>
 				<div class="col-md-8">
-					<input class="form-control full-width input-sm search" type="text" data-bind="value: apl.searchfield" placeholder="Type keyword here" />
+					<input class="form-control full-width input-sm search" name="search" type="text" data-bind="value: apl.searchfield" placeholder="Type keyword here" />
 				</div>
 			</div>
 			<div class="col-md-4">
@@ -60,7 +60,7 @@
 		    		Type
 		    	</label>
 		    	<div class="col-md-8">
-		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', optionLabel: 'Select one' }"></select>
+		    		<select name="type" class="full-width" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		</nav>
