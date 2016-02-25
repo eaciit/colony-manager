@@ -250,19 +250,23 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	sshSetting, _, err := new(ServerController).SSHConnect(server)
+	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
 	if output, err := sshSetting.RunCommandSsh("unzip"); err != nil || strings.Contains(output, "not installed") {
 		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
 	}
+	defer sshClient.Close()
+
+	serverPathSeparator := toolkit.PathSeparator
+	if server.OS == "windows" {
+		serverPathSeparator = `\`
+	}
 
 	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
 	sourceZipPath := filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-	destinationPath := filepath.Join(server.AppPath, "src")
-	// destinationZipPath := filepath.Join(destinationPath, fmt.Sprintf("%s.zip", app.ID))
-	// fmt.Println(destinationPath)
-	// fmt.Println(destinationZipPath)
-
+	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
+	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
+	destinationZipPath := fmt.Sprintf("%s.zip", destinationZipPathOutput)
 
 	installerFile := ""
 
@@ -296,25 +300,20 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	destinationPath =strings.Replace(destinationPath,"\\","/",-1)
-	// destination:=strings.Replace(server.AppPath,"\\","/",-1)
-	// permisson := []string{"chmod -R 766"+destination}
-	// _, err = sshSetting.RunCommandSsh(permisson...)
 
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
-
-	err = sshSetting.SshCopyByPath(sourceZipPath,destinationPath)
+	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	
-	zipToExtract :="unzip "+destinationPath+"/"+app.ID+".zip "
-	changeDir :="cd "+destinationPath
-	ps := []string{changeDir,zipToExtract}
-	_, err = sshSetting.RunCommandSsh(ps...)
 
+	rmCmd := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+	_, err = sshSetting.RunCommandSsh(rmCmd)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -334,15 +333,14 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	find := []string{"find "+destinationPath+"/install.sh"}
-	res , err := sshSetting.RunCommandSsh(find...)
+	runCommand := "find " + installerFile
+	res, err := sshSetting.RunCommandSsh([]string{runCommand}...)
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
-	}else{
+	} else {
 		return helper.CreateResult(false, res, "")
 	}
-
 
 	return helper.CreateResult(true, nil, "")
 }
