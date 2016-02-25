@@ -404,7 +404,7 @@ ds.removeDataSource = function (_id) {
 		    closeOnConfirm: true
 		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/datasource/removemultipledataSource", { _id: ds.tempCheckIdDataSource() }, function (res) {
+				app.ajaxPost("/datasource/removemultipledatasource", { _id: ds.tempCheckIdDataSource() }, function (res) {
 					if (!app.isFine(res)) {
 						return;
 					}
