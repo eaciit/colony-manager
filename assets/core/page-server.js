@@ -23,7 +23,21 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "File", text: "File" }
 ]);
 srv.WizardColumns = ko.observableArray([
-	{ field: "host", title: "Host", width: 200 },
+	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkWizardServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='wizardcheck' idcheck='"+d._id+"' onclick=\"srv.checkWizardServer(this, 'server')\" />"
+		].join(" ");
+	} },
+	{ field: "host", title: "Host", width: 200, template: function (d) {
+		var comps = d.host.split(":");
+		if (comps.length > 1) {
+			if (comps[1] == "80") {
+				return comps[0];
+			}
+		} 
+
+		return d.host;
+	} },
 	{ field: "status", title: "Status" }
 ]);
 srv.isNew = ko.observable(false);
@@ -37,6 +51,7 @@ srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
+srv.tempCheckIdWizard = ko.observableArray([]);
 srv.searchfield = ko.observable('');
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -87,6 +102,7 @@ srv.getServers = function() {
 };
 
 srv.createNewServer = function () {
+	srv.isMultiServer(false);
 	srv.isNew(true);
 	$("#privatekey").replaceWith($("#privatekey").clone());
 	app.mode("editor");
@@ -146,6 +162,7 @@ srv.selectGridServer = function (e) {
 };
 
 srv.editServer = function (_id) {
+	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());
 
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
@@ -179,6 +196,30 @@ srv.doTestConnection = function (_id) {
 srv.testConnection = function () {
 	srv.doTestConnection(srv.configServer._id());
 };
+
+srv.checkWizardServer = function (elem, e) {
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.wizardcheck').each(function(index) {
+				$(this).prop("checked", true);
+				srv.tempCheckIdWizard.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.wizardcheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				srv.tempCheckIdWizard.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			srv.tempCheckIdWizard.push($(elem).attr('idcheck'));
+		} else {
+			srv.tempCheckIdWizard.remove( function (item) { return item === $(elem).attr('idcheck'); } );
+		}
+	}
+}
 
 srv.checkDeleteServer = function(elem, e){
 	if (e === 'serverall'){
@@ -260,12 +301,14 @@ function ServerFilter(event){
 }
 
 srv.backToFront = function () {
+	srv.isMultiServer(false);
 	srv.isNew(false);
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
 };
 srv.popupWizard = function () {
+	$(".modal-wizard").modal("show");
 	srv.showModal('modal1');
 	srv.txtWizard('');
 	srv.dataWizard([]);
@@ -338,10 +381,31 @@ srv.navModalWizard = function (status) {
 	}
 };
 
+srv.isMultiServer = ko.observable(false);
+srv.ipToRegister = ko.observableArray([]);
+srv.ipToRegisterAsString = ko.computed(function () {
+	return srv.ipToRegister().join("\n");
+});
+
 srv.finishButton = function () {
-	srv.showModal('modal1');
-	srv.txtWizard('');
-	srv.dataWizard([]);
+	srv.ipToRegister([]);
+
+	var $grid = $(".grid-wizard").data("kendoGrid");
+	$(".wizardcheck:checked").each(function (i, e) {
+		var uid = $(e).closest("tr").attr("data-uid");
+		var rowData = $grid.dataSource.getByUid(uid);
+
+		srv.ipToRegister.push(rowData.host);
+	});
+
+	if (srv.ipToRegister().length == 0) {
+		sweetAlert("Oops...", "Please check at least one IP address", "error");
+		return;
+	}
+
+	$(".modal-wizard").modal("hide");
+	srv.createNewServer();
+	srv.isMultiServer(true);
 };
 
 $(function () {
