@@ -81,7 +81,7 @@ br.DeleteBrowser = function(){
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/databrowser/deletebrowser", vals, function () {
+				app.ajaxPost("/databrowser/deletebrowser",{_id: vals}, function () {
 					if (!app.isFine) {
 						return;
 					}
