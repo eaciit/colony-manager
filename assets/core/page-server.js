@@ -112,7 +112,14 @@ srv.createNewServer = function () {
 };
 srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
-		var errors = Lazy($(".form-server").data("kendoValidator").errors()).filter(function (d) {
+		var errors = $(".form-server").data("kendoValidator").errors();
+		if (srv.isMultiServer()) {
+			errors = Lazy(errors).filter(function (d) {
+				return ["ID is required", "host is required"].indexOf(d) == -1;
+			}).toArray();
+		}
+
+		errors = Lazy(errors).filter(function (d) {
 			return ["user is required", "password is required"].indexOf(d) == -1;
 		}).toArray();
 
@@ -135,21 +142,68 @@ srv.doSaveServer = function (c) {
 		data.append("privatekey", file);
 	}
 
-	app.ajaxPost("/server/saveservers", data, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+	if (srv.isMultiServer()) {
+		var failedHosts = [];
+		var ajaxes = [];
 
-		srv.isNew(true);
-		if (typeof c != "undefined") {
-			c();
-		}
-	});
+		srv.ipToRegister().forEach(function (d) {
+			var eachData = $.extend(true, data, { });
+			eachData.host = d;
+			eachData._id = ["server", d, moment(new Date()).format("x")].join("-");
+
+			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
+				if (!res.success) {
+					return;
+				}
+
+				failedHosts.push(d);
+			}, function (a) {
+				failedHosts.push(d);
+			}, {
+				timeout: 5000
+			});
+
+			ajaxes.push(ajax);
+		});
+
+		var callback = function () {
+			srv.isNew(true);
+
+			if (failedHosts.length > 0) {
+				swal({
+					title: ["All servers registered! except", failedHosts.join(", ")].join(" "), 
+					type: "success",
+					closeOnConfirm: true
+				});
+				srv.backToFront();
+				return;
+			}
+
+			swal({
+				title: "All servers registered!", 
+				type: "success",
+				closeOnConfirm: true
+			});
+			srv.backToFront();
+		};
+
+		$.when.apply(undefined, ajaxes).then(callback, callback);
+	} else {
+		app.ajaxPost("/server/saveservers", data, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			srv.isNew(true);
+			if (typeof c != "undefined") {
+				c();
+			}
+		});
+	}
 }
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
-		swal({title: "Server successfully created", type: "success",closeOnConfirm: true});
-		srv.backToFront();
+		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };
 

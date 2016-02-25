@@ -1,3 +1,9 @@
+<style>
+	.no-left-padding {
+		padding-left: 0px;
+	}
+</style>
+
 <h1>Servers</h1>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
@@ -17,7 +23,7 @@
 
 <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 	<div class="col-md-4">
-		<label class="col-md-3 filter-label">
+		<label class="col-md-3 filter-label no-left-padding">
 			Search
 		</label>
 		<div class="col-md-8">
@@ -25,7 +31,7 @@
 		</div>
 	</div>
 	<div class="col-md-4">
-    	<label class="col-md-3 filter-label">
+    	<label class="col-md-3 filter-label no-left-padding">
     		OS
     	</label>
     	<div class="col-md-8">
@@ -33,7 +39,7 @@
     	</div>
     </div>
     <div class="col-md-4">
-    	<label class="col-md-3 filter-label">
+    	<label class="col-md-3 filter-label no-left-padding">
     		Type SSH
     	</label>
     	<div class="col-md-8">
@@ -143,7 +149,7 @@
 	    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
 		    		<label class="col-md-3 filter-label">User</label>
 		    		<div class="col-md-7">
-		    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the Username Here" data-bind="value: sshuser">
+		    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the username Here" data-bind="value: sshuser">
 						<span class="k-invalid-msg" data-for="user"></span>
 		    		</div>
 	    		</div>
@@ -170,7 +176,7 @@
 	    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
 		    		<label class="col-md-3 filter-label">Pass</label>
 		    		<div class="col-md-7">
-		    			<input required type="password" class="form-control input-sm" name="password" placeholder="Type the SSH Type Here" data-bind="value: sshpass">
+		    			<input type="password" class="form-control input-sm" name="password" placeholder="Type the password Here" data-bind="value: sshpass">
 						<span class="k-invalid-msg" data-for="password"></span>
 		    		</div>
 		    	</div>
