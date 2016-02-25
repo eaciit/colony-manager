@@ -163,10 +163,22 @@ apl.getApplications = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
+		if (res.data==null){
+			res.data="";
+		}
 
 		apl.applicationData(res.data);
 	});
 };
+
+apl.search = function (e) {
+	$(".search").keyup(function (e) {
+		if (e.which==13){
+			apl.getApplications();
+		}
+	});
+}
+
 
 apl.editApplication = function(_id) {
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
@@ -353,7 +365,7 @@ apl.removeFileDir = function(){
 				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
 				 apl.appTreeMode("");
 				 apl.appTreeSelected("");
-				 swal({title: "File / Folder successfully deleted", type: "success"});
+				 swal({title: "File / Folder successfully deleted", type: "success"});				 
 				});
 		},1000);
 	});

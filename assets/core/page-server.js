@@ -86,6 +86,14 @@ srv.getServers = function() {
 	});
 };
 
+srv.search = function (e) {
+	$(".search").keyup(function (e) {
+		if (e.which==13){
+			srv.getServers();
+		}
+	});
+}
+
 srv.createNewServer = function () {
 	srv.isNew(true);
 	$("#privatekey").replaceWith($("#privatekey").clone());
