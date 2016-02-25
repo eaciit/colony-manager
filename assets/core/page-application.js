@@ -171,15 +171,6 @@ apl.getApplications = function() {
 	});
 };
 
-apl.search = function (e) {
-	$(".search").keyup(function (e) {
-		if (e.which==13){
-			apl.getApplications();
-		}
-	});
-}
-
-
 apl.editApplication = function(_id) {
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
@@ -576,5 +567,5 @@ $(function () {
 	apl.codemirror();
 	apl.treeView("") ;
 	app.prepareTooltipster($(".tooltipster"));
-
+	app.registerSearchKeyup($(".search"), apl.getApplications);
 });

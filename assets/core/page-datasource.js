@@ -234,14 +234,6 @@ ds.populateGridConnections = function () {
 	});
 };
 
-ds.search = function (e) {
-	$(".search").keyup(function (e) {
-		if (e.which==13){
-			ds.populateGridConnections();
-		}
-	});
-}
-
 ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
@@ -492,14 +484,6 @@ ds.populateGridDataSource = function () {
 	});
 	// filterDataSource();
 };
-
-ds.searchds = function (e) {
-	$(".searchds").keyup(function (e) {
-		if (e.which==13){
-			ds.populateGridDataSource();
-		}
-	});
-}
 
 ds.openDataSourceForm = function(){
 	app.mode('editDataSource');
@@ -812,4 +796,6 @@ function filterConnection(event) {
 $(function () {
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	app.registerSearchKeyup($(".search"), ds.populateGridConnections);
+	app.registerSearchKeyup($(".searchds"), ds.populateGridDataSource);
 });
