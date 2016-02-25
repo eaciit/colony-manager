@@ -1,1 +1,1 @@
-viewModel.index = {}; var in = viewModel.index;
+viewModel.index = {}; var index = viewModel.index;

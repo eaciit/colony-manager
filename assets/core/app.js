@@ -26,6 +26,24 @@ app.prepareTooltipster = function ($o) {
         position: "top"
     });
 };
+app.wrapGridSelect = function (selector, excludeClassSelector, callback) {
+    var $grid = $(selector).data("kendoGrid");
+    if ($grid.select().size() == 0) {
+        return;
+    }
+    
+    var $target = $(event.target);
+    if ($target.hasClass(excludeClassSelector)) {
+        $grid.clearSelection();
+        return false;
+    } else if ($target.closest(excludeClassSelector).size() > 0) {
+        $grid.clearSelection();
+        return false;
+    }
+
+    var selectedItem = $grid.dataItem($grid.select());
+    callback(selectedItem);
+};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function (callback) {
@@ -161,6 +179,13 @@ app.gridBoundTooltipster = function (selector) {
         app.prepareTooltipster($(selector).find(".tooltipster"));
     };
 };
+app.registerSearchKeyup = function ($selector, callback) {
+    $selector.keyup(function (e) {
+        if (e.which == 13) {
+            callback();
+        }
+    });
+}
 
 $(function () {
 	app.applyNavigationActive();

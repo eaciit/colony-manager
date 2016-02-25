@@ -34,7 +34,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8 no-padding">
-		    		<input class="form-control input-sm" type="text" data-bind="value: wg.searchfield" placeholder="Type keyword here" />
+		    		<input class="form-control input-sm search" type="text" data-bind="value: wg.searchfield" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		    <div class="col-md-3 no-padding">
@@ -94,14 +94,14 @@
 
 				        	<label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
 				        	<div class="col-md-3">
-				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
+				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: wg.configScrapper.grabconf.calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
 								<span class="k-invalid-msg" data-for="source-type"></span>
 					        </div>
 				        </div>
 						<div class="form-group">
 				        	<label class="col-md-2 filter-label">URL</label>
 				        	<div class="col-md-10">
-				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: url">
+				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
 								<span class="k-invalid-msg" data-for="URL"></span>
 				        	</div>
 				        </div>
@@ -129,7 +129,7 @@
 											<th>&nbsp;</th>
 										</tr>
 									</thead>
-									<tbody data-bind="foreach: wg.configScrapper.temp.parameters">
+									<tbody data-bind="foreach: wg.configScrapper.grabconf.temp.parameters">
 										<tr>
 											<td>
 												<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
@@ -191,28 +191,28 @@
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Start Time</label>
 					        	<div class="col-md-6">
-									<input data-bind="kendoDateTimePicker: wg.starttime" />
-									<span class="k-invalid-msg" data-for="IntervalType"></span>
+									<input required data-bind="kendoDateTimePicker: {value:wg.configScrapper.intervalconf.starttime,format:'MM/dd/yyyy hh:mm tt'}" name ="StartTime"/>
+                                    <span class="k-invalid-msg" data-for="StartTime"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Interval Type</label>
 					        	<div class="col-md-6">
-									<select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: intervaltype}"></select>
+                                    <select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: wg.configScrapper.intervalconf.intervaltype}"></select>
 									<span class="k-invalid-msg" data-for="IntervalType"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Grap Interval</label>
 					        	<div class="col-md-6">
-					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: grabinterval, placeholder: 'Example: 2' }" />
+					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" />
 									<span class="k-invalid-msg" data-for="GrabInterval"></span>
 					        	</div>
 					        </div>
 					        <div class="row">
 					        	<label class="col-md-6 filter-label">Timeout Interval</label>
 					        	<div class="col-md-6">
-					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: timeoutinterval, placeholder: 'Example: 2' }" />
+					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" />
 									<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
 					        	</div>
 					        </div>
