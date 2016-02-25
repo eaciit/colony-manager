@@ -334,12 +334,9 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 
 	runCommand := "find " + installerFile
-	res, err := sshSetting.RunCommandSsh([]string{runCommand}...)
-
+	_, err = sshSetting.RunCommandSsh([]string{runCommand}...)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
-	} else {
-		return helper.CreateResult(false, res, "")
 	}
 
 	return helper.CreateResult(true, nil, "")
@@ -403,7 +400,7 @@ func (a *ApplicationController) GetApps(r *knot.WebContext) interface{} {
 	search := payload["search"].(string)
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search))
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search), dbox.Contains("Type", search))
 
 	cursor, err := colonycore.Find(new(colonycore.Application), query)
 	if err != nil {

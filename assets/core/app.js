@@ -179,6 +179,13 @@ app.gridBoundTooltipster = function (selector) {
         app.prepareTooltipster($(selector).find(".tooltipster"));
     };
 };
+app.registerSearchKeyup = function ($selector, callback) {
+    $selector.keyup(function (e) {
+        if (e.which == 13) {
+            callback();
+        }
+    });
+}
 
 $(function () {
 	app.applyNavigationActive();
