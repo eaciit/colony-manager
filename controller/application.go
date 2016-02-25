@@ -257,7 +257,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 	defer sshClient.Close()
 
-	serverPathSeparator := toolkit.PathSeparator
+	serverPathSeparator := `/`
 	if server.OS == "windows" {
 		serverPathSeparator = `\`
 	}
@@ -303,7 +303,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	fmt.Println(destinationZipPath)
 	fmt.Println(sourceZipPath)
 	fmt.Println(destinationPath)
-	destinationPath = strings.Replace(destinationPath, "\\", "/", -1)
+	// destinationPath = strings.Replace(destinationPath, "\\", "/", -1)
 	fmt.Println(destinationPath)
 
 	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
@@ -317,8 +317,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	unzipCmd := fmt.Sprintf("sudo unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
-	unzipCmd = strings.Replace(unzipCmd, "\\", "/", -1)
+	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	// unzipCmd = strings.Replace(unzipCmd, "\\", "/", -1)
 	
 	fmt.Println(unzipCmd)
 	_, err = sshSetting.RunCommandSsh(unzipCmd)
@@ -341,15 +341,22 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// runCommand := "find " + installerFile
-	// res, err := sshSetting.RunCommandSsh([]string{runCommand}...)
+	findCommand := "find " +destinationZipPathOutput +"/*install.sh"
+	chmodCommand := "chmod -R 777 " +destinationZipPathOutput +"/*install.sh"
+	runCommand := ". " +destinationZipPathOutput +"/*install.sh"	
 
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// } else {
-	// 	return helper.CreateResult(false, res, "")
-	// }
+	res, err := sshSetting.RunCommandSsh([]string{findCommand}...)
 
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}else{
+		if(!strings.Contains(string(res), "No such file or directory")){
+			res2, err := sshSetting.RunCommandSsh([]string{chmodCommand,runCommand}...)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			} 
+		}
+	} 
 	return helper.CreateResult(true, nil, "")
 }
 
