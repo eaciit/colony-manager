@@ -312,7 +312,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	unzipCmd := fmt.Sprintf("sudo unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
 	// _, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 	_, err = sshSetting.RunCommandSsh(unzipCmd)
 	if err != nil {
@@ -334,12 +334,22 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	runCommand := "find " + installerFile
-	_, err = sshSetting.RunCommandSsh([]string{runCommand}...)
+	findLocation := strings.Join([]string{destinationZipPathOutput, "*install.sh"}, serverPathSeparator)
+	findCommand := "find " + findLocation
+	chmodCommand := "chmod -R 777 " + findLocation
+	runCommand := ". " + findLocation
+	res, err := sshSetting.RunCommandSsh([]string{findCommand}...)
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	} else {
+		if !strings.Contains(string(res), "No such file or directory") {
+			_, err := sshSetting.RunCommandSsh([]string{chmodCommand, runCommand}...)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		}
 	}
-
 	return helper.CreateResult(true, nil, "")
 }
 
