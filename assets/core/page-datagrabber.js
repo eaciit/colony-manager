@@ -144,6 +144,7 @@ dg.getScrapperData = function (){
 		dg.checkTransformationStatus();
 	});
 };
+
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
 	dg.configScrapper.Map.push(o);
@@ -691,4 +692,5 @@ dg.checkDeleteDataGrabber = function(elem, e){
 $(function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
+	app.registerSearchKeyup($(".search"), dg.getScrapperData);
 });

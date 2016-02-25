@@ -983,4 +983,5 @@ wg.checkDeleteWebGrabber = function(elem, e){
 $(function () {
 	wg.getConnection();
 	wg.getScrapperData();
+	app.registerSearchKeyup($(".search"), wg.getScrapperData);
 });

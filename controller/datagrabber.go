@@ -218,7 +218,7 @@ func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
 	search := payload["search"].(string)
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search))
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("DataSourceOrigin", search), dbox.Contains("DataSourceDestination", search), dbox.Contains("IntervalType", search))
 
 	data := []colonycore.DataGrabber{}
 	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)

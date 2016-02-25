@@ -101,7 +101,16 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
-		return "test"
+		var q = JSON.parse(kendo.stringify(d.QueryInfo));
+		var r = [];
+
+		for (var k in q) {
+			if (q.hasOwnProperty(k)) {
+				r.push([k, q[k]].join(" : "));
+			}
+		}
+
+		return r.join(", ");
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -233,6 +242,7 @@ ds.populateGridConnections = function () {
 		ds.connectionListData(res.data);
 	});
 };
+
 ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
@@ -483,6 +493,7 @@ ds.populateGridDataSource = function () {
 	});
 	// filterDataSource();
 };
+
 ds.openDataSourceForm = function(){
 	app.mode('editDataSource');
 	ds.dataSourceMode('');
@@ -794,4 +805,6 @@ function filterConnection(event) {
 $(function () {
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	app.registerSearchKeyup($(".search"), ds.populateGridConnections);
+	app.registerSearchKeyup($(".searchds"), ds.populateGridDataSource);
 });

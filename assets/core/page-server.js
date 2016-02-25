@@ -346,4 +346,5 @@ srv.finishButton = function () {
 
 $(function () {
     srv.getServers();
+	app.registerSearchKeyup($(".searchsrv"), srv.getServers);
 });
