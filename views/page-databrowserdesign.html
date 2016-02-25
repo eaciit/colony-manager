@@ -1,94 +1,89 @@
-<!-- core -->
-<script src="/res/core/page-databrowserdesign.js"></script>
 
 <!-- main area -->
-<div class="col-xs-12 col-sm-12" id="content" >
-	<div class="col-md-12" data-bind="with: databrowserdesign, visible: (app.section() == 'databrowserdesign')" >
-		<h1>Data Browser Design</h1>
+<div class="col-md-12" >
 
-		<nav class="navbar" >
-            <button class="btn btn-sm btn-primary navbar-btn" >
-	    		<span class="glyphicon glyphicon-refresh"></span> Save and Back to List
-	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" >
-	    		<span class="glyphicon glyphicon-plus"></span> Save and Go to View
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" >
-	    		<span class="glyphicon glyphicon-remove"></span> Cancel
-	    	</button>
-		</nav>
+	<nav class="navbar" >
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.saveAndBack">
+    		<span class="glyphicon glyphicon-refresh"></span> Save and Back to List
+    	</button>
+        <button class="btn btn-sm btn-success navbar-btn" >
+    		<span class="glyphicon glyphicon-plus"></span> Save and Go to View
+    	</button>
+    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" >
+    		<span class="glyphicon glyphicon-remove"></span> Cancel
+    	</button>
+	</nav>
 
-		<div class="panel col-md-8" >
-			<div class="panel-heading">
-		        <h1 class="panel-title"><span >Data Browser Design</span>
-		        </h1>
-		    </div>
-			<div class="panel-body">
-		    	<form class="form-horizontal form-databrowserdesign"  novalidate>
+	<div class="panel col-md-8" >
+		<div class="panel-heading">
+	        <h1 class="panel-title"><span >Data Browser Design</span>
+	        </h1>
+	    </div>
+		<div class="panel-body">
+	    	<form class="form-horizontal form-databrowserdesign"  novalidate>
+		    	<div class="col-md-12">
+		    		<div class="col-md-12">
+			    		<div class="col-md-6">
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">ID</label>
+					    		<div class="col-md-7">
+					    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" >
+									<span class="k-invalid-msg" data-for="ID"></span>					    			
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Connection</label>
+					    		<div class="col-md-7">
+					    			<select id="connection" data-required-msg="Connection cannot be empty" name="connection" data-placeholder="Select Connection" class="form-control col-100" >
+							        </select>
+							        <span class="k-invalid-msg" data-for="connection"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Query Type</label>
+					    		<div class="col-md-7">
+						    		<select id="querytype" data-required-msg="Query Type cannot be empty" name="querytype" data-placeholder="Select Query Type" class="form-control col-100" data-bind="kendoDropDownList: { data: db.queryType, dataValueField: 'value', dataTextField: 'text', value: querytype, optionLabel: 'Select Query Type' }">
+							        </select>
+							        <span class="k-invalid-msg" data-for="querytype"></span>
+					    		</div>
+				    		</div>
+			    		</div>
+			    		<div class="col-md-6">
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Description</label>
+					    		<div class="col-md-7">
+					    			<input required type="text" class="form-control input-sm" name="description" placeholder="Type the description" >
+									<span class="k-invalid-msg" data-for="description"></span>   			
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Table</label>
+					    		<div class="col-md-7">
+						    		<select id="table" data-required-msg="Table cannot be empty" name="querytype" data-placeholder="Select table" class="form-control col-100" >
+							        </select>
+							        <span class="k-invalid-msg" data-for="table"></span>
+					    		</div>
+				    		</div>
+			    		</div>
+			    	</div>
 			    	<div class="col-md-12">
 			    		<div class="col-md-12">
-				    		<div class="col-md-6">
-					    		<div class="form-group">
-						    		<label class="col-md-3 databrowser-label">ID</label>
-						    		<div class="col-md-7">
-						    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" >
-										<span class="k-invalid-msg" data-for="ID"></span>					    			
-						    		</div>
-					    		</div>
-					    		<div class="form-group">
-						    		<label class="col-md-3 databrowser-label">Connection</label>
-						    		<div class="col-md-7">
-						    			<select id="connection" data-required-msg="Connection cannot be empty" name="connection" data-placeholder="Select Connection" class="form-control col-100" >
-								        </select>
-								        <span class="k-invalid-msg" data-for="connection"></span>
-						    		</div>
-					    		</div>
-					    		<div class="form-group">
-						    		<label class="col-md-3 databrowser-label">Query Type</label>
-						    		<div class="col-md-7">
-							    		<select id="querytype" data-required-msg="Query Type cannot be empty" name="querytype" data-placeholder="Select Query Type" class="form-control col-100" data-bind="kendoDropDownList: { data: db.queryType, dataValueField: 'value', dataTextField: 'text', value: querytype, optionLabel: 'Select Query Type' }">
-								        </select>
-								        <span class="k-invalid-msg" data-for="querytype"></span>
-						    		</div>
-					    		</div>
+			    			<div class="form-group">
+					    		<label class="col-md-2 databrowser-query-label query-text">Query Text</label>
+					    		<div class="input-group col-md-11">
+								<input type="text" class="form-control" placeholder="Query builder">
+									<span class="input-group-btn">
+									<button class="btn btn-primary" type="button">Builder</button>
+									</span>
+								</div>
 				    		</div>
-				    		<div class="col-md-6">
-					    		<div class="form-group">
-						    		<label class="col-md-3 databrowser-label">Description</label>
-						    		<div class="col-md-7">
-						    			<input required type="text" class="form-control input-sm" name="description" placeholder="Type the description" >
-										<span class="k-invalid-msg" data-for="description"></span>   			
-						    		</div>
-					    		</div>
-					    		<div class="form-group">
-						    		<label class="col-md-3 databrowser-label">Table</label>
-						    		<div class="col-md-7">
-							    		<select id="table" data-required-msg="Table cannot be empty" name="querytype" data-placeholder="Select table" class="form-control col-100" >
-								        </select>
-								        <span class="k-invalid-msg" data-for="table"></span>
-						    		</div>
-					    		</div>
-				    		</div>
-				    	</div>
-				    	<div class="col-md-12">
-				    		<div class="col-md-12">
-				    			<div class="form-group">
-						    		<label class="col-md-2 databrowser-query-label query-text">Query Text</label>
-						    		<div class="input-group col-md-11">
-									<input type="text" class="form-control" placeholder="Query builder">
-										<span class="input-group-btn">
-										<button class="btn btn-primary" type="button">Builder</button>
-										</span>
-									</div>
-					    		</div>
-				    		</div>
-				    	</div>
-				    </div>
-				    <div class="col-md-12">
-				    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
-				    </div>
-		    	</form>
-		    </div>
-		</div>
+			    		</div>
+			    	</div>
+			    </div>
+			    <div class="col-md-12">
+			    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
+			    </div>
+	    	</form>
+	    </div>
 	</div>
 </div>

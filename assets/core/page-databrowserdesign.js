@@ -1,7 +1,8 @@
-app.section('databrowserdesign');
+/*app.section('databrowserdesign');*/
 
 viewModel.databrowserdesign = {}; var db = viewModel.databrowserdesign;
 
+db.pageVisible = ko.observable("");
 var dummyobj1 = new Object()
 dummyobj1.field = "id"
 dummyobj1.label = "ID"
@@ -71,6 +72,5 @@ db.databrowserColumns = ko.observableArray([
 	{ title: "Advance Filter", template: "<input type='checkbox' #= advfilter ? \"checked='checked'\" : '' # class='chkbx' />"},
 	{ field: "aggregate", title: "Aggregate"},
 ]);
-
 
 db.databrowserData(dummyData);
