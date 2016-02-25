@@ -9,7 +9,7 @@ srv.templateConfigServer = {
 	appPath: "",
 	dataPath: "",
 	host: "",
-	sshtype: "",
+	sshtype: "Credentials",
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
@@ -55,7 +55,7 @@ srv.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
-	{ field: "sshtype", title: "SSH Type" },
+	{ field: "sshtype", title: "SSH Type"},
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
