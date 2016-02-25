@@ -24,27 +24,40 @@ wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
 wg.templateConfigScrapper = {
-	_id: "",
-	nameid: "",
-	calltype: "GET",
-	sourcetype: "SourceType_Http",
-	intervaltype: "seconds",
-	grabinterval: 20,
-	timeoutinterval: 20,
-	// url: "http://www.shfe.com.cn/en/products/Gold/",
-	url: "http://www.google.com",
-	logconf: {
-		"filename": "LOG-GRABDCE",
-		"filepattern": "",
-		"logpath": ""
-	},
-	datasettings: [],
-	grabconf: {
-		data: {}
-	},
-	temp: {
-		parameters: [],
-	}
+    _id: "",
+    sourcetype: "SourceType_Http",
+    grabconf:
+            {
+                "url": "http://www.google.com",
+                "calltype": "GET",
+                "formvalues": {},
+                "temp": {
+                    "parameters": []
+                },
+            },
+    intervalconf:
+            {
+                "starttime": new Date(),
+                "intervaltype": "seconds",
+                "grabinterval": 20,
+                "timeoutinterval": 20,
+                "cronconf": ""
+            },
+    logconf:
+            {
+                "logpath": "",
+                "filename": "LOG-GRABDCE",
+                "filepattern": ""
+            },
+    histconf:
+            {
+                "histpath": "",
+                "recpath": "",
+                "filename": "HIST-GRABDCE",
+                "filepattern": "YYYYMMDD"
+            },
+    datasettings: [],
+    running: true
 };
 wg.parametersPattern = ko.observableArray([
 	{ value: "", title: "-" },
@@ -273,7 +286,7 @@ wg.backToHistory = function () {
 	app.mode('history')
 };
 wg.writeContent = function (html) {
-	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
+	var baseURL = wg.configScrapper.grabconf.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/, '$1');
 	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
 	
 	var contentDoc = $("#content-preview")[0].contentWindow.document;
@@ -336,7 +349,7 @@ wg.runBotStats = function () {
 };
 wg.parsePayload = function () {
 	var parameters = {};
-	ko.mapping.toJS(wg.configScrapper).temp.parameters.forEach(function (each) {
+	ko.mapping.toJS(wg.configScrapper).grabconf.temp.parameters.forEach(function (each) {
 		if (each.key == "" || each.value == "") {
 			return;
 		}
@@ -344,15 +357,15 @@ wg.parsePayload = function () {
 		parameters[each.key] = each.value;
 	});
 
-	return (wg.configScrapper.calltype() == "GET") ? null : parameters;
+	return (wg.configScrapper.grabconf.calltype() == "GET") ? null : parameters;
 };
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
 	}
 	var param = {
-		URL: wg.configScrapper.url(),
-		Method: wg.configScrapper.calltype(),
+		URL: wg.configScrapper.grabconf.url(),
+        Method: wg.configScrapper.grabconf.calltype(),
 		Payloads: wg.parsePayload()
 	};
 
@@ -519,19 +532,19 @@ wg.CreateElementChild = function(selectorParent){
 };
 wg.addScrapperPayload = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, wg.templateScrapperPayload));
-	wg.configScrapper.temp.parameters.push(item);
+	wg.configScrapper.grabconf.temp.parameters.push(item);
 };
 wg.removeScrapperPayload = function (index) {
 	return function () {
-		var item = wg.configScrapper.temp.parameters()[index];
-		wg.configScrapper.temp.parameters.remove(item);
+		var item = wg.configScrapper.grabconf.temp.parameters()[index];
+        wg.configScrapper.grabconf.temp.parameters.remove(item);
 	};
 };
 wg.encodePayload = function () {
 	wg.configScrapper.Parameter({});
 
 	var p = {};
-	wg.configScrapper.temp.parameters().forEach(function (e) {
+	wg.configScrapper.grabconf.temp.parameters().forEach(function (e) {
 		p[e.key()] = app.couldBeNumber(e.value());
 	});
 	wg.configScrapper.Parameter(p);
@@ -746,11 +759,11 @@ wg.parseGrabConf = function () {
 
 		return item;
 	});
-	config.nameid = config._id;
+//	config.nameid = config._id;
 
 	var grabConfData = {};
 	var tempParameters = [];
-	config.temp.parameters.forEach(function (each) {
+	config.grabconf.temp.parameters.forEach(function (each) {
 		if (each.key == "" || each.value == "") {
 			return;
 		}
@@ -764,8 +777,8 @@ wg.parseGrabConf = function () {
 		}
 	});
 
-	config.grabconf.data = grabConfData;
-	config.temp.parameters = tempParameters;
+	//config.grabconf.data = grabConfData;
+	config.grabconf.temp.parameters = tempParameters;
 	return config;
 };
 wg.saveSelectorConf = function(){

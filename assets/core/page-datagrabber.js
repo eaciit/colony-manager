@@ -568,7 +568,7 @@ dg.prepareFieldsOrigin = function (_id) {
 
 					return space + sign + labelsComp[0] + ' (' + d.Type + ')';
 				},
-				change: function () {
+				change: function (e) {
 					if (this.value() == "") {
 						$typeDestination.closest("td").children().css("visibility", "hidden");
 						return;
@@ -579,16 +579,19 @@ dg.prepareFieldsOrigin = function (_id) {
 						_id: this.value()
 					});
 					
-					/*var $coba = valueObject.Type;					
-					var $coba1 = item.Type;
-					if ($coba != $coba1){
-						$typeDestination.closest("td").children().css("visibility", "hidden");
-						this.value("");
-						alert("salah!!");
-					}
-					*/
-					
 					if (valueObject != undefined) {
+						if (valueObject.Type != item.Type && e.sender.value() != '') {
+							var standardTypes = ["int", "string", "double", "bool"];
+							if (standardTypes.indexOf(item.Type) > -1 && standardTypes.indexOf(valueObject.Type) > -1) {
+
+							} else {
+								setTimeout(function () {
+									e.sender.value('');
+									sweetAlert("Oops...", 'Cannot select source type "' + item.Type + '" and destination type "' + valueObject.Type + '"', "error");
+								}, 100);
+							}
+						}
+
 						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
 							$typeDestination.closest("td").children().css("visibility", "hidden");
 							return;
@@ -599,7 +602,6 @@ dg.prepareFieldsOrigin = function (_id) {
 							}
 						}
 					}
-
 					$typeDestination.data("kendoDropDownList").value(valueObject.Type);
 				}
 			});
@@ -660,10 +662,6 @@ dg.parseMap = function () {
 	});
 
 	dg.configScrapper.Maps(maps);
-
-	var $coba = $(".table-tree-map").find("tr[data-type='array-objects'] td:eq(2)");
-	var $test = $coba.text();
-	console.log("isi coba "+$test);
 
 };
 dg.checkDeleteDataGrabber = function(elem, e){

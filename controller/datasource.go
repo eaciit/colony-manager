@@ -413,37 +413,6 @@ func (d *DataSourceController) SelectConnection(r *knot.WebContext) interface{} 
 	return helper.CreateResult(true, data, "")
 }
 
-func (d *DataSourceController) RemoveConnection(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	id := payload["_id"].(string)
-
-	ds := new(colonycore.DataSource)
-	cursor, err := colonycore.Find(ds, dbox.Eq("ConnectionID", id))
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	if cursor.Count() > 0 {
-		return helper.CreateResult(false, nil, "Cannot delete connection because used on data source")
-	}
-
-	o := new(colonycore.Connection)
-	o.ID = id
-	err = colonycore.Delete(o)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, nil, "")
-}
-
 func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -863,38 +832,6 @@ func (d *DataSourceController) SelectDataSource(r *knot.WebContext) interface{} 
 	}
 
 	return helper.CreateResult(true, data, "")
-}
-
-func (d *DataSourceController) RemoveDataSource(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	id := payload["_id"].(string)
-
-	dg := new(colonycore.DataGrabber)
-	filter := dbox.Or(dbox.Eq("DataSourceOrigin", id), dbox.Eq("DataSourceDestination", id))
-	cursor, err := colonycore.Find(dg, filter)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	if cursor.Count() > 0 {
-		return helper.CreateResult(false, nil, "Cannot delete data source because used on data grabber")
-	}
-
-	o := new(colonycore.DataSource)
-	o.ID = id
-	err = colonycore.Delete(o)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, nil, "")
 }
 
 func (d *DataSourceController) RemoveMultipleDataSource(r *knot.WebContext) interface{} {

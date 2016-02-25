@@ -123,6 +123,13 @@
 										<span class="k-invalid-msg" data-for="files"></span>
 									</div>
 					    		</div>
+					    		<div class="form-group row">
+						    		<label class="col-md-3 filter-label">Type</label>
+						    		<div class="col-md-3">
+						    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
+						    			<span class="k-invalid-msg" data-for="AppType"></span>
+						    		</div>
+					    		</div>
 					    		<!-- <div class="form-group row"> 
 					    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> 
 					    		</div> -->
@@ -290,7 +297,10 @@
 					</div>
 					<div class="clearfix"></div>
 					<div class="form-group">
-						<p class="bg-danger bgcustom mgTop15" data-bind="visible: apl.showErrorDeploy()">You havent select any server(s) to deploy!</p>
+						<p class="alert alert-danger bgcustom mgTop15" role="alert" data-bind="visible: apl.showErrorDeploy()">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							You havent select any server(s) to deploy!
+						</p>
 					</div>
 				</div>
 				<div class="modal-footer">
