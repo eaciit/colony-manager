@@ -96,17 +96,17 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
 	payload.LogConf.FileName = "LOG-" + payload.ID
 	payload.LogConf.LogPath = wgLogPath
 	payload.LogConf.FilePattern = "20060102"
 
+	payload.HistConf.FileName = "HIST-" + payload.ID
+	payload.HistConf.Histpath = wgHistoryPath
+	payload.HistConf.RecPath = wgHistoryRecPath
+
 	for i, each := range payload.DataSettings {
 		if each.DestType == "csv" {
-			payload.DataSettings[i].ConnectionInfo.Host = f.Join(wgOutputPath, each.Name)
-			payload.DataSettings[i].ConnectionInfo.Settings = toolkit.M{
-				"Timeout": each.ConnectionInfo.Settings,
-			}
+			payload.DataSettings[i].ConnectionInfo.Host = f.Join(wgOutputPath, payload.ID)
 		}
 	}
 

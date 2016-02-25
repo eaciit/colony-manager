@@ -8,7 +8,7 @@
 
 		<nav class="navbar" >
             <button class="btn btn-sm btn-primary navbar-btn" >
-	    		<span class="glyphicon glyphicon-refresh"></span> Save and Back to List
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Save and Back to List
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" >
 	    		<span class="glyphicon glyphicon-plus"></span> Save and Go to View
@@ -31,14 +31,14 @@
 					    		<div class="form-group">
 						    		<label class="col-md-3 databrowser-label">ID</label>
 						    		<div class="col-md-7">
-						    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" >
+						    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the the ID Here" >
 										<span class="k-invalid-msg" data-for="ID"></span>					    			
 						    		</div>
 					    		</div>
 					    		<div class="form-group">
 						    		<label class="col-md-3 databrowser-label">Connection</label>
 						    		<div class="col-md-7">
-						    			<select id="connection" data-required-msg="Connection cannot be empty" name="connection" data-placeholder="Select Connection" class="form-control col-100" >
+						    			<select id="connection" data-required-msg="Connection cannot be empty" name="connection" data-placeholder="Select Connection" class="form-control col-100" data-bind="kendoComboBox: {data: db.connectionList, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', change: '', value: '', filter: 'contains', suggest: true, minLength: 2}">
 								        </select>
 								        <span class="k-invalid-msg" data-for="connection"></span>
 						    		</div>
@@ -63,7 +63,7 @@
 					    		<div class="form-group">
 						    		<label class="col-md-3 databrowser-label">Table</label>
 						    		<div class="col-md-7">
-							    		<select id="table" data-required-msg="Table cannot be empty" name="querytype" data-placeholder="Select table" class="form-control col-100" >
+							    		<select id="table" data-required-msg="Table cannot be empty" name="querytype" data-placeholder="Select table" class="form-control col-100" data-bind="kendoComboBox: {data: db.tableList, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', change: '', value: '', filter: 'contains', suggest: true, minLength: 2}">
 								        </select>
 								        <span class="k-invalid-msg" data-for="table"></span>
 						    		</div>
@@ -85,7 +85,7 @@
 				    	</div>
 				    </div>
 				    <div class="col-md-12">
-				    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
+				    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { model: { id: 'Field', fields: { Field: { editable: false } } } } }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
 				    </div>
 		    	</form>
 		    </div>

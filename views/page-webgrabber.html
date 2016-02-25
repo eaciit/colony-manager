@@ -82,81 +82,128 @@
 		        	Grabber
 	        	</h1>
 		    </div>
-		    <div class="panel-body">
+		    <div class="clearfix">&nbsp;</div>
+		    <div class="col-md-11">
+			    <ul class="nav nav-tabs" role="tablist">
+			    	<li class="active"><a href="#form" data-toggle="tab" role="tab">Form</a></li>
+			    	<li data-bind="visible: (wg.dataSourceTypes() != 'SourceType_HttpJson')"><a href="#additionalInfo" data-toggle="tab" role="tab">Additional Info</a></li>
+			    </ul>
+			</div>
+		    <div class="panel-body" style="height: 400px">
 		    	<form class="form-horizontal form-scrapper-top" data-bind="with: configScrapper" novalidate>
-					<div class="col-md-11">
-						<div class="form-group">
-				        	<label class="col-md-2 filter-label">Source Type</label>
-				        	<div class="col-md-3">
-				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: sourcetype, dataValueField: 'value', dataTextField: 'title' }"></select>
-								<span class="k-invalid-msg" data-for="source-type"></span>
-				        	</div>
+		    	<div class="tab-content">
+		    			<div class="tab-pane fade in active" id="form" role="tabpanel">
+		    				<div class="col-md-11">
+		    					<div class="clearfix">&nbsp;</div>
+		    					<div class="form-group">
+						        	<label class="col-md-2 filter-label">Source Type</label>
+						        	<div class="col-md-3">
+						        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: sourcetype, dataValueField: 'value', dataTextField: 'title' }"></select>
+										<span class="k-invalid-msg" data-for="source-type"></span>
+						        	</div>
 
-				        	<label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
-				        	<div class="col-md-3">
-				        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: wg.configScrapper.grabconf.calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
-								<span class="k-invalid-msg" data-for="source-type"></span>
-					        </div>
-				        </div>
-						<div class="form-group">
-				        	<label class="col-md-2 filter-label">URL</label>
-				        	<div class="col-md-10">
-				        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
-								<span class="k-invalid-msg" data-for="URL"></span>
-				        	</div>
-				        </div>
-						<div class="form-group">
-				        	<label class="col-md-2 filter-label">Payload</label>
-				        	<div class="col-md-2">
-				        		<button class="btn btn-sm btn-success" data-bind="click: wg.addScrapperPayload">
-				        			<span class="glyphicon glyphicon-plus"></span> Add more
-				        		</button>
-				        	</div>
-				        	<div class="clearfix"></div>
-				        	<div class="col-md-10 col-md-offset-2">
-								<table class="table">
-									<col width="24%">
-									<col width="24%">
-									<col width="24%">
-									<col width="24%">
+						        	<label class="col-md-2 col-md-offset-2 filter-label">Request Type</label>
+						        	<div class="col-md-3">
+						        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, value: wg.configScrapper.grabconf.calltype, dataValueField: 'value', dataTextField: 'title' }"></select>
+										<span class="k-invalid-msg" data-for="source-type"></span>
+							        </div>
+						        </div>
+								<div class="form-group">
+						        	<label class="col-md-2 filter-label">URL</label>
+						        	<div class="col-md-10">
+						        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
+										<span class="k-invalid-msg" data-for="URL"></span>
+						        	</div>
+						        </div>
+						        <div class="form-group">
+						        	<label class="col-md-2 filter-label">Payload</label>
+						        	<div class="col-md-2">
+						        		<button class="btn btn-sm btn-success" data-bind="click: wg.addScrapperPayload">
+						        			<span class="glyphicon glyphicon-plus"></span> Add more
+						        		</button>
+						        	</div>
+						        	<div class="clearfix"></div>
+						        	<div class="col-md-10 col-md-offset-2">
+										<table class="table">
+											<thead>
+												<tr style="width: 100%;">
+													<th width="24%">Key</th>
+													<th width="24%">Value</th>
+													<th width="24%">Pattern</th>
+													<th width="24%">Format</th>
+													<th width="24%">&nbsp;</th>
+												</tr>
+											</thead>
+											<tbody data-bind="foreach: wg.configScrapper.grabconf.temp.parameters" style="overflow-y: auto;height: 150px;width: 100%;position: absolute;">
+												<tr style="width: 100%;display: inline-table;">
+													<td width="24%">
+														<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
+														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-key-' + $index() }"></span>
+													</td>
+													<td width="24%">
+														<input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
+														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
+													</td>
+													<td width="24%">
+														<select style="width: 100%;" data-bind="kendoDropDownList: { data: wg.parametersPattern, dataValueField: 'value', dataTextField: 'title', value: pattern}"></select>
+													</td>
+													<td width="24%">
+														<input class="form-control input-sm full-width" type="text" data-bind="value: format" placeholder="Type format here" />
+													</td>
+													<td width="24%">
+														<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeScrapperPayload($index())">
+															<span class="glyphicon glyphicon-remove"></span>
+														</button>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+						        	</div>
+						        </div>
+		    				</div>
+		    			</div>
+		    			<div class="tab-pane fade" id="additionalInfo" role="tabpanel">
+		    				<div class="col-md-11">
+		    					<div class="clearfix">&nbsp;</div>
+			    				<div class="form-group">
+								    <label class="col-md-2 filter-label">Auth Type</label>
+								    <div class="col-md-3">
+						        		<select class="full-width" name="authtype" data-bind="kendoDropDownList: { data: wg.dataAuthType, dataValueField: 'value', dataTextField: 'title', value : wg.configScrapper.grabconf.authtype}"></select>
+										<span class="k-invalid-msg" data-for="source-type"></span>
+						        	</div>
+								</div>
+								<div class="form-group">
+						        	<label class="col-md-2 filter-label">Login Url</label>
+						        	<div class="col-md-4">
+						        		<input class="form-control input-sm full-width" type="text" placeholder="Type Login URL here" data-bind="value: wg.configScrapper.grabconf.loginurl" />
+						        	</div>
 
-									<thead>
-										<tr>
-											<th>Key</th>
-											<th>Value</th>
-											<th>Pattern</th>
-											<th>Format</th>
-											<th>&nbsp;</th>
-										</tr>
-									</thead>
-									<tbody data-bind="foreach: wg.configScrapper.grabconf.temp.parameters">
-										<tr>
-											<td>
-												<input class="form-control input-sm full-width" type="text" data-required-msg="Key cannot be empty" placeholder="Type key here" data-bind="value: key, attr: { 'name': 'scrapper-payload-key-' + $index() }" />
-												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-key-' + $index() }"></span>
-											</td>
-											<td>
-												<input class="form-control input-sm full-width" type="text" data-required-msg="Value cannot be empty" placeholder="Type value here" data-bind="value: value, attr: { 'name': 'scrapper-payload-value-' + $index() }" />
-												<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'scrapper-payload-value-' + $index() }"></span>
-											</td>
-											<td>
-												<select style="width: 100%;" data-bind="kendoDropDownList: { data: wg.parametersPattern, dataValueField: 'value', dataTextField: 'title', value: pattern}"></select>
-											</td>
-											<td>
-												<input class="form-control input-sm full-width" type="text" data-bind="value: format" placeholder="Type format here" />
-											</td>
-											<td>
-												<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: wg.removeScrapperPayload($index())">
-													<span class="glyphicon glyphicon-remove"></span>
-												</button>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-				        	</div>
-				        </div>
-					</div>
-				</form>
+						        	<label class="col-md-2 filter-label">Logout Url</label>
+						        	<div class="col-md-4">
+						        		<input class="form-control input-sm full-width" type="text" placeholder="Type Logout URL here" data-bind="value: wg.configScrapper.grabconf.logouturl"/>
+							        </div>
+						        </div>
+						        <div class="form-group">
+						        	<label class="col-md-2 filter-label">Username</label>
+						        	<div class="col-md-4">
+						        		<input class="form-control input-sm full-width" type="text" placeholder="Type Username here" data-bind="value: wg.configScrapper.grabconf.username" />
+						        	</div>
+
+						        	<label class="col-md-2 filter-label">Password</label>
+						        	<div class="col-md-4">
+						        		<input class="form-control input-sm full-width" type="password" placeholder="Type Password here" data-bind="value: wg.configScrapper.grabconf.password" />
+							        </div>
+						        </div>
+						        <div class="form-group">
+								   	<label class="col-md-2 filter-label">Timeout</label>
+								   	<div class="col-md-3">
+								 		<input type="text" class="input-md full-width" data-bind="kendoNumericTextBox: { min: 0, format: '#', placeholder: 'Example: 2', value: wg.configScrapper.grabconf.timeout }" />
+								    </div>
+								</div>
+		    				</div>	
+		    			</div>
+		    		</div>
+		    	</form>
 		    </div>
 		</div>
 
@@ -246,7 +293,7 @@
 													<td>
 														<div>
 															<div class="input-group input-group-sm" style="width:150px;">
-																<input class="form-control input-sm disabled" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: rowselector, attr: { 'name': 'selector-setting-value-' + $index() }" />
+																<input class="form-control input-sm" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: rowselector, attr: { 'name': 'selector-setting-value-' + $index() }" />
 																<span class="input-group-btn">
 																	<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 																</span>
@@ -308,7 +355,7 @@
 													<td>
 														<div>
 															<div class="input-group input-group-sm" style="width:130px;">
-																<input class="form-control input-sm disabled" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'column-selector-value-' + $index() }" />
+																<input class="form-control input-sm" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'column-selector-value-' + $index() }" />
 																<span class="input-group-btn">
 																	<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
 																</span>

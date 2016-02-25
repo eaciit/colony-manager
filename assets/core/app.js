@@ -105,7 +105,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         app.isLoading(true);
     }
 
-    $.ajax(config);
+    return $.ajax(config);
 };
 app.isFine = function (res) {
     if (!res.success) {
