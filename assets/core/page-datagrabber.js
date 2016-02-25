@@ -47,7 +47,7 @@ dg.scrapperColumns = ko.observableArray([
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
@@ -196,21 +196,11 @@ dg.getDataSourceData = function () {
 		dg.dataSourcesData(res.data);
 	});
 };
-dg.selectGridDataGrabber = function(e){
-	var grid = $(".grid-data-grabber").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ( $(target).parents( ".excludethis" ).length ) {
-	    return false;
-	  }else if ($(target).parents(".notthis").length ) {
-	  	return false;
-	  }else if ($(target).parents(".neitherthis" ).length ) {
-	  	return false;
-	  }else{
-		dg.editScrapper(selectedItem._id);
-	  }
-
-	dg.showDataGrabber(true);
+dg.selectGridDataGrabber = function (e) {
+	app.wrapGridSelect(".grid-data-grabber", ".btn", function (d) {
+		dg.editScrapper(d._id);
+		dg.showDataGrabber(true);
+	});
 };
 dg.editScrapper = function (_id) {
 	dg.scrapperMode('edit');
@@ -568,7 +558,7 @@ dg.prepareFieldsOrigin = function (_id) {
 
 					return space + sign + labelsComp[0] + ' (' + d.Type + ')';
 				},
-				change: function () {
+				change: function (e) {
 					if (this.value() == "") {
 						$typeDestination.closest("td").children().css("visibility", "hidden");
 						return;
@@ -579,16 +569,19 @@ dg.prepareFieldsOrigin = function (_id) {
 						_id: this.value()
 					});
 					
-					/*var $coba = valueObject.Type;					
-					var $coba1 = item.Type;
-					if ($coba != $coba1){
-						$typeDestination.closest("td").children().css("visibility", "hidden");
-						this.value("");
-						alert("salah!!");
-					}
-					*/
-					
 					if (valueObject != undefined) {
+						if (valueObject.Type != item.Type && e.sender.value() != '') {
+							var standardTypes = ["int", "string", "double", "bool"];
+							if (standardTypes.indexOf(item.Type) > -1 && standardTypes.indexOf(valueObject.Type) > -1) {
+
+							} else {
+								setTimeout(function () {
+									e.sender.value('');
+									sweetAlert("Oops...", 'Cannot select source type "' + item.Type + '" and destination type "' + valueObject.Type + '"', "error");
+								}, 100);
+							}
+						}
+
 						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
 							$typeDestination.closest("td").children().css("visibility", "hidden");
 							return;
@@ -599,7 +592,6 @@ dg.prepareFieldsOrigin = function (_id) {
 							}
 						}
 					}
-
 					$typeDestination.data("kendoDropDownList").value(valueObject.Type);
 				}
 			});
@@ -660,10 +652,6 @@ dg.parseMap = function () {
 	});
 
 	dg.configScrapper.Maps(maps);
-
-	var $coba = $(".table-tree-map").find("tr[data-type='array-objects'] td:eq(2)");
-	var $test = $coba.text();
-	console.log("isi coba "+$test);
 
 };
 dg.checkDeleteDataGrabber = function(elem, e){

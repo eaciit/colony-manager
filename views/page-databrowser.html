@@ -1,0 +1,32 @@
+<!-- core -->
+<script type="text/javascript" src="/res/core/page-databrowser.js"></script>
+
+<!-- main -->
+<div class="col-xs-12 col-sm-12" id="content">
+	<div class="col-md-12">
+		<h1>Data Browser</h1>
+		<nav class="navbar">
+			<button class="btn btn-sm btn-success navbar-btn"><span class="glyphicon glyphicon-plus"></span> Add New</button>
+			<button class="btn btn-sm btn-danger navbar-btn"><span class="glyphicon glyphicon-remove"></span> Delete Selected
+	    	</button>
+		</nav>
+		<nav class="navbar">
+			<div class="col-md-4">
+				<label class="col-md-4 filter-label">
+					Search
+				</label>
+				<div class="col-md-8">
+					<input class="form-control input-sm"/>
+				</div>	
+			</div>
+		</nav>
+		<div class="panel">
+			<div class="panel-heading">
+				<h1 class="panel-title">All Data Browser</h1>
+			</div>
+			<div class="panel-body">
+				<div class="grid grid-databrowser" data-bind="kendoGrid: { dataSource:{ pageSize: 15 }, data: br.dataBrowser, selectable: 'multiple, row', columns: br.browserColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser') }"></div>
+			</div>
+		</div> 
+	</div>
+</div>
