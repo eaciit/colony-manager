@@ -400,7 +400,7 @@ func (a *ApplicationController) GetApps(r *knot.WebContext) interface{} {
 	search := payload["search"].(string)
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search))
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search), dbox.Contains("Type", search))
 
 	cursor, err := colonycore.Find(new(colonycore.Application), query)
 	if err != nil {
