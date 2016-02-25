@@ -144,6 +144,15 @@ dg.getScrapperData = function (){
 		dg.checkTransformationStatus();
 	});
 };
+
+dg.search = function (e) {
+	$(".search").keyup(function (e) {
+		if (e.which==13){
+			dg.getScrapperData();
+		}
+	});
+}
+
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
 	dg.configScrapper.Map.push(o);
