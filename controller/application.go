@@ -250,16 +250,23 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	sshSetting, _, err := new(ServerController).SSHConnect(server)
+	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
 	if output, err := sshSetting.RunCommandSsh("unzip"); err != nil || strings.Contains(output, "not installed") {
 		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
 	}
+	defer sshClient.Close()
+
+	serverPathSeparator := toolkit.PathSeparator
+	if server.OS == "windows" {
+		serverPathSeparator = `\`
+	}
 
 	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
 	sourceZipPath := filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-	destinationPath := filepath.Join(server.AppPath, "src")
-	destinationZipPath := filepath.Join(destinationPath, fmt.Sprintf("%s.zip", app.ID))
+	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
+	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
+	destinationZipPath := fmt.Sprintf("%s.zip", destinationZipPathOutput)
 
 	installerFile := ""
 
@@ -299,13 +306,14 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	err = os.Remove(sourceZipPath)
+	rmCmd := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+	_, err = sshSetting.RunCommandSsh(rmCmd)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	zipToExtract := fmt.Sprintf("unzip %s", destinationZipPath)
-	_, err = sshSetting.GetOutputCommandSsh(zipToExtract)
+	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -318,6 +326,20 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	err = colonycore.Save(app)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = os.Remove(sourceZipPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	runCommand := "find " + installerFile
+	res, err := sshSetting.RunCommandSsh([]string{runCommand}...)
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	} else {
+		return helper.CreateResult(false, res, "")
 	}
 
 	return helper.CreateResult(true, nil, "")

@@ -227,15 +227,20 @@ dg.editScrapper = function (_id) {
 
 		$.each(res.data.Maps, function(key,val){
 			var $valSource = $("tr[data-key= '"+ val.Source +"']");
+			var $valSourceType = $valSource.find("td:eq(2) select.type-origin").data("kendoDropDownList");
 			var $valDes = $valSource.find("td:eq(3) select.field-destination").data("kendoComboBox");
 			var $valDesType = $valSource.find("td:eq(4) select.type-destination").data("kendoDropDownList");
 			
 			if (val.SourceType != "object" && val.SourceType != "array-objects" && val.SourceType != "array-string"){
 				$valSource.find("td:eq(4) div").css("visibility","visible");	
 			}
+
+			if ($valSourceType != undefined) {
+				$valSourceType.value(val.SourceType);
+			}
 			
 			$valDes.value(val.Destination);
-			$valDesType.value(val.SourceType);
+			$valDesType.value(val.DestinationType);
 		})
 	});
 };
@@ -632,6 +637,7 @@ dg.parseMap = function () {
 	$(".table-tree-map tr:gt(0):visible").each(function (i, e) {
 		var $fd = $(e).find("select.field-destination").data("kendoComboBox");
 		var $td = $(e).find("select.type-destination").data("kendoDropDownList");
+		var $to = $(e).find("select.type-origin").data("kendoDropDownList");
 		
 		if ($fd.value() == "") {
 			return;
@@ -643,7 +649,11 @@ dg.parseMap = function () {
 			Destination: $fd.value(),
 			DestinationType: "",
 			Sub: []
-			};
+		};
+
+		if ($to != undefined) {
+			map.SourceType = $to.value();
+		}
 
 		var typeDestVisiblility = $(e).find("select.type-destination")
 			.closest("td")
@@ -652,7 +662,7 @@ dg.parseMap = function () {
 		if (typeDestVisiblility != "hidden") {
 			map.DestinationType = $td.value();
 		}
-		var destinationVisibility = $(e).find("select.field-destination").css("visibility")	;
+		var destinationVisibility = $(e).find("select.field-destination").css("visibility");
 		if (destinationVisibility == "hidden"){
 			return;
 		}
