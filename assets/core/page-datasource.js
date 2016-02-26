@@ -465,7 +465,6 @@ ds.removeEditDataSource = function (){
 					});
 				}, 1000);
 			});
-	ds.tempCheckIdDataSource().remove();
 }
 
 ds.selectGridDataSource = function (e) {
