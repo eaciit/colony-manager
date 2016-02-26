@@ -229,6 +229,8 @@ ds.backToFrontPage = function () {
 	app.mode('');
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	ds.tempCheckIdDataSource([]);
+	ds.tempCheckIdConnection([]);
 };
 ds.populateGridConnections = function () {
 	var param = ko.mapping.toJS(ds.config);
@@ -331,6 +333,7 @@ ds.selectGridConnection = function (e) {
 	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
 		ds.editConnection(d._id);
 		ds.showConnection(true);
+		ds.tempCheckIdConnection.push(d._id);
 	});
 };
 
@@ -376,7 +379,6 @@ ds.removeConnection = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					ds.backToFrontPage();
 					swal({ title: "Data connection(s) successfully deleted", type: "success" });
 				});
@@ -410,69 +412,19 @@ ds.removeDataSource = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					ds.backToFrontPage();
 					swal({ title: "Data source(s) successfully deleted", type: "success" });
 				});
 			}, 1000);
 		});
-	}
+	} 
 };
-
-ds.removeEditConnection = function (){
-	ds.tempCheckIdConnection.push(ds.config._id());
-	swal({
-			    title: "Are you sure?",
-			    // text: 'Data source with id "' + _id + '" will be deleted',
-			    text: 'Data connection(s) '+ ds.config._id() +' will be deleted',
-			    type: "warning",
-			    showCancelButton: true,
-			    confirmButtonColor: "#DD6B55",
-			    confirmButtonText: "Delete",
-			    closeOnConfirm: true
-			}, function() {
-				setTimeout(function () {
-					app.ajaxPost("/datasource/removemultipleconnection", { _id: ds.tempCheckIdConnection() }, function (res) {
-						if (!app.isFine(res)) {
-							return;
-						}
-						ds.backToFrontPage();
-						ds.tempCheckIdConnection.remove(ds.config._id());
-						swal({ title: "Data source(s) successfully deleted", type: "success" });
-					});
-				}, 1000);
-			});
-}
-
-ds.removeEditDataSource = function (){
-	ds.tempCheckIdDataSource.push(ds.confDataSource._id());
-	swal({
-			    title: "Are you sure?",
-			    // text: 'Data source with id "' + _id + '" will be deleted',
-			    text: 'Data source(s) '+ ds.confDataSource._id() +' will be deleted',
-			    type: "warning",
-			    showCancelButton: true,
-			    confirmButtonColor: "#DD6B55",
-			    confirmButtonText: "Delete",
-			    closeOnConfirm: true
-			}, function() {
-				setTimeout(function () {
-					app.ajaxPost("/datasource/removemultipledatasource", { _id: ds.tempCheckIdDataSource() }, function (res) {
-						if (!app.isFine(res)) {
-							return;
-						}
-						ds.backToFrontPage();
-						ds.tempCheckIdDataSource.remove(ds.confDataSource._id());
-						swal({ title: "Data source(s) successfully deleted", type: "success" });
-					});
-				}, 1000);
-			});
-}
 
 ds.selectGridDataSource = function (e) {
 	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
 		ds.editDataSource(d._id);
 		ds.showDataSource(true);
+		ds.tempCheckIdDataSource.push(d._id);
 	});
 };
 
