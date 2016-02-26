@@ -2,6 +2,31 @@ app.section('databrowserdesign');
 
 viewModel.databrowserdesign = {}; var db = viewModel.databrowserdesign;
 
+db.templateConfigProperties= {
+    field : "",
+    label : "",
+    format : "",
+    align : "",
+    showindex : 0,
+    sortable : false,
+    simplefilter : false,
+    advancefilter : false,
+    aggregate : ""
+}
+
+db.templateConfig= {
+    _id : "",
+    browsername : "",
+    iddetails : "",
+    description : "",
+    connection : "",
+    database : "",
+    tablename : "",
+    querytype : "",
+    querytext : "",
+    properties : []
+}
+
 var dummyobj1 = new Object()
 dummyobj1.Field = "id"
 dummyobj1.label = "ID"
@@ -93,6 +118,11 @@ db.alignOption = function (opt) {
         }
     }
 }
+
+db.addProperties = function () {
+    var property = $.extend(true, {}, ds.templateConfigSetting);    
+    db.config.Properties.push(property);
+};
 
 db.databrowserData(dummyData);
 
