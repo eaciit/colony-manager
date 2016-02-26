@@ -419,6 +419,55 @@ ds.removeDataSource = function (_id) {
 	}
 };
 
+ds.removeEditConnection = function (){
+	ds.tempCheckIdDataSource.push(ds.confDataSource._id());
+	swal({
+			    title: "Are you sure?",
+			    // text: 'Data source with id "' + _id + '" will be deleted',
+			    text: 'Data source(s) '+ ds.confDataSource._id() +' will be deleted',
+			    type: "warning",
+			    showCancelButton: true,
+			    confirmButtonColor: "#DD6B55",
+			    confirmButtonText: "Delete",
+			    closeOnConfirm: true
+			}, function() {
+				setTimeout(function () {
+					app.ajaxPost("/datasource/removemultipledatasource", { _id: ds.tempCheckIdDataSource() }, function (res) {
+						if (!app.isFine(res)) {
+							return;
+						}
+						ds.backToFrontPage();
+						swal({ title: "Data source(s) successfully deleted", type: "success" });
+					});
+				}, 1000);
+			});
+}
+
+ds.removeEditDataSource = function (){
+	ds.tempCheckIdDataSource.push(ds.confDataSource._id());
+	swal({
+			    title: "Are you sure?",
+			    // text: 'Data source with id "' + _id + '" will be deleted',
+			    text: 'Data source(s) '+ ds.confDataSource._id() +' will be deleted',
+			    type: "warning",
+			    showCancelButton: true,
+			    confirmButtonColor: "#DD6B55",
+			    confirmButtonText: "Delete",
+			    closeOnConfirm: true
+			}, function() {
+				setTimeout(function () {
+					app.ajaxPost("/datasource/removemultipledatasource", { _id: ds.tempCheckIdDataSource() }, function (res) {
+						if (!app.isFine(res)) {
+							return;
+						}
+						ds.backToFrontPage();
+						swal({ title: "Data source(s) successfully deleted", type: "success" });
+					});
+				}, 1000);
+			});
+	ds.tempCheckIdDataSource().remove();
+}
+
 ds.selectGridDataSource = function (e) {
 	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
 		ds.editDataSource(d._id);
