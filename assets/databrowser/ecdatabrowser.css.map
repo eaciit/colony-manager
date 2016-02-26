@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,UAAU;EACT,UAAU,EAAE,IAAI",
+"sources": ["ecdatabrowser.sass"],
+"names": [],
+"file": "ecdatabrowser.css"
+}
