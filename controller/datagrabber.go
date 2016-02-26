@@ -545,7 +545,11 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						}
 					}
 
-					eachPreTypeOrigin.Set(eachMap.Destination, valueObject)
+					//====pre transfer, change type field origin
+					if dataGrabber.PreTransferCommand != "" {
+						eachPreTypeOrigin.Set(eachMap.Destination, valueObject)
+					}
+					//=====================
 					eachTransformedData.Set(eachMap.Destination, valueObject)
 				} else if eachMap.SourceType == "array-objects" {
 					sourceObjects, _ := valueEachSourceField.([]interface{})
@@ -573,6 +577,11 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						valueObjects = append(valueObjects, valueObject)
 					}
 
+					//====pre transfer, change type field origin
+					if dataGrabber.PreTransferCommand != "" {
+						eachPreTypeOrigin.Set(eachMap.Destination, valueObjects)
+					}
+					//=====================
 					eachTransformedData.Set(eachMap.Destination, valueObjects)
 				} else {
 					//====pre transfer, change type field origin
@@ -610,10 +619,15 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						if temp, _ := valueEachSourceField.([]interface{}); temp != nil {
 							for i, eachVal := range temp {
 								valueObject := toolkit.M{}
+								valueObjectTemp := toolkit.M{}
+
 								if len(valueObjects) > i {
 									if temp2, _ := toolkit.ToM(valueObjects[i]); temp2 != nil {
 										valueObject = temp2
 										valueObject.Set(next, eachVal)
+										valueObjectTemp = valueObject
+
+										valueObjectTemp.Set(next, convertDataType(eachMap.DestinationType, next, valueObject))
 									}
 
 									valueObjects[i] = valueObject
@@ -625,7 +639,10 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 									}
 
 									valueObject.Set(next, eachVal)
-									valueObjects = append(valueObjects, valueObject)
+									valueObjectTemp = valueObject
+
+									valueObjectTemp.Set(next, convertDataType(eachMap.DestinationType, next, valueObject))
+									valueObjects = append(valueObjects, valueObjectTemp)
 								}
 							}
 						}
