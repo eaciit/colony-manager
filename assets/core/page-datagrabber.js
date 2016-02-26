@@ -185,7 +185,6 @@ dg.doSaveDataGrabber = function (c) {
 }
 dg.saveDataGrabber = function () {
 	dg.doSaveDataGrabber(function () {
-		dg.backToFront();
 		dg.getScrapperData();
 	});
 };

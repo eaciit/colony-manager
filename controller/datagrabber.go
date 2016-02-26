@@ -491,9 +491,12 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 		for _, eachMap := range dataGrabber.Maps {
 			var valueEachSourceField interface{}
 
+			// ============================================ SOURCE
 			if !strings.Contains(eachMap.Source, "|") {
+				// source could be: field, object, array
 				valueEachSourceField = each.Get(eachMap.Source)
 			} else {
+				// source could be: field of object, field of array-objects
 				prev := strings.Split(eachMap.Source, "|")[0]
 				next := strings.Split(eachMap.Source, "|")[1]
 
@@ -506,6 +509,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				}
 
 				if fieldInfoDes != nil {
+					// source is field of array-objects
 					if fieldInfoDes.Type == "array-objects" {
 						valueObjects := []interface{}{}
 						if temp, _ := each.Get(prev, nil).([]interface{}); temp != nil {
@@ -518,6 +522,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						}
 						valueEachSourceField = valueObjects
 					} else {
+						// source is field of object
 						valueObject := toolkit.M{}
 						if valueObject, _ = toolkit.ToM(each.Get(prev)); valueObject != nil {
 							valueEachSourceField = valueObject.Get(next)
@@ -526,8 +531,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				}
 			}
 
-			// fmt.Printf("---- SOURCE %#v\n", valueEachSourceField)
-
+			// ============================================ DESTINATION
 			if !strings.Contains(eachMap.Destination, "|") {
 				if eachMap.SourceType == "object" {
 					sourceObject, _ := toolkit.ToM(valueEachSourceField)
@@ -717,6 +721,22 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	fmt.Println(message)
 
 	return true, transformedData, ""
+}
+
+func (d *DataGrabberController) convertTo(value interface{}, tipe string) interface{} {
+	switch tipe {
+	case "int":
+		return toolkit.M{}.Set("k", value).GetInt("k")
+	case "double":
+		return toolkit.M{}.Set("k", value).GetFloat64("k")
+	case "bool":
+		res, _ := strconv.ParseBool(fmt.Sprintf("%v", value))
+		return res
+	case "string":
+		return fmt.Sprintf("%v", value)
+	}
+
+	return fmt.Sprintf("%v", value)
 }
 
 func convertDataType(typedt string, dtget string, toolmap toolkit.M) interface{} {
