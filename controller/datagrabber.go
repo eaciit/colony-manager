@@ -486,7 +486,6 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 	for _, each := range data {
 		eachTransformedData := toolkit.M{}
-		eachPreTypeOrigin := toolkit.M{}
 
 		for _, eachMap := range dataGrabber.Maps {
 			var valueEachSourceField interface{}
@@ -653,9 +652,11 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			}
 		}
 
+		transformedData = append(transformedData, eachTransformedData)
+		dataToSave := eachTransformedData
+
 		// ================ pre transfer command
 		if dataGrabber.PreTransferCommand != "" {
-			_ = eachPreTypeOrigin
 			// jsonTranformedDataBytes, err := json.Marshal(each)
 			jsonTranformedDataBytes, err := json.Marshal(eachTransformedData)
 			if err != nil {
@@ -668,22 +669,38 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				preCommand = strings.TrimSpace(strings.Replace(dataGrabber.PreTransferCommand, FLAG_ARG_DATA, "", -1))
 			}
 
+			dataToSave = toolkit.M{}
+
 			output, err := toolkit.RunCommand(preCommand, jsonTranformedData)
 			fmt.Printf("===> Pre Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", preCommand, jsonTranformedData, output)
+			if err == nil {
+				postData := toolkit.M{}
+				if err := json.Unmarshal([]byte(output), &postData); err == nil {
+					dataToSave = postData
+				}
+			}
 		}
 		// ================
 
-		transformedData = append(transformedData, eachTransformedData)
+		if len(dataToSave) == 0 {
+			continue
+		}
+
 		tableName := dsDestination.QueryInfo.GetString("from")
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
 
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 
-		dataToSave := eachTransformedData
+		err = queryWrapper.Save(tableName, dataToSave)
+		if err != nil {
+			logConf.AddLog(err.Error(), "ERROR")
+			return false, nil, err.Error()
+		}
 
 		// ================ post transfer command
 		if dataGrabber.PostTransferCommand != "" {
+			eachTransformedData = dataToSave
 			jsonTranformedDataBytes, err := json.Marshal(eachTransformedData)
 			if err != nil {
 				return false, nil, err.Error()
@@ -695,22 +712,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				postCommand = strings.TrimSpace(strings.Replace(dataGrabber.PostTransferCommand, FLAG_ARG_DATA, "", -1))
 			}
 
-			dataToSave = toolkit.M{}
-			postData := toolkit.M{}
-
 			output, err := toolkit.RunCommand(postCommand, jsonTranformedData)
 			fmt.Printf("===> Post Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", postCommand, jsonTranformedData, output)
-			if err == nil {
-				if err := json.Unmarshal([]byte(output), &postData); err == nil {
-					dataToSave = postData
-				}
-			}
-		}
-
-		err = queryWrapper.Save(tableName, dataToSave)
-		if err != nil {
-			logConf.AddLog(err.Error(), "ERROR")
-			return false, nil, err.Error()
 		}
 	}
 
