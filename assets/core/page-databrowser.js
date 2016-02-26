@@ -4,7 +4,7 @@ viewModel.databrowser ={}; var br = viewModel.databrowser;
 
 br.templateConfigDataBrowser= {
 	_id: "",
-	BrowserNmame: ""
+	BrowserName: ""
 }
 
 br.confirBrowser = ko.mapping.fromJS(br.templateConfigDataBrowser);
@@ -19,10 +19,14 @@ br.browserColumns = ko.observableArray([
 		].join(" ");
 	}},
 	{field:"_id", title: "ID", width: 80},
-	{field:"BrowserName", title: "Name", width: 130},
+	{title: "Name", width: 130, template: function(d){
+		return[
+			"<div onclick= 'db.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
+		]
+	}},
 	{title: "", width: 40, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<a href='#'>Design</a>"
+			"<div onclick= 'db.DesignDataBrowser(\"" + d._id + "\")' style= 'cursor: pointer;'>Design</div>"
 		].join(" ");
 	}}
 ]);
@@ -48,6 +52,7 @@ br.OpenBrowserForm = function(ID){
 	// })
 	
 }
+
 br.getAllbrowser = function(){
 	$("#selectall").change(function () {
 	    $("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
@@ -87,6 +92,7 @@ br.DeleteBrowser = function(){
 					}
 
 				 swal({title: "Application successfully deleted", type: "success"});
+				 br.getDataBrowser();
 				});
 			},1000);
 

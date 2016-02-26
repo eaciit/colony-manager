@@ -178,3 +178,19 @@ $(function () {
 		}
 	});
 });
+
+//create function klik view for databrowser grid
+db.ViewBrowserName = function(id){
+    alert("masuk "+id);
+}
+
+db.DesignDataBrowser = function(id){
+    br.pageVisible("editor");
+}
+
+// dummy table list
+var dummyTable = new Object()
+dummyTable._id = "mongo-students"
+var dataTable = new Array();
+dataTable.push(dummyTable)
+db.tableList(dataTable);
