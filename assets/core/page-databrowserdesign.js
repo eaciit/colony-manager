@@ -3,31 +3,31 @@ app.section('databrowserdesign');
 viewModel.databrowserdesign = {}; var db = viewModel.databrowserdesign;
 
 db.templateConfigProperties= {
-    field : "",
-    label : "",
-    format : "",
-    align : "",
-    showindex : 0,
-    sortable : false,
-    simplefilter : false,
-    advancefilter : false,
-    aggregate : ""
+    Field : "",
+    Label : "",
+    Format : "",
+    Align : "",
+    ShowIndex : 0,
+    Sortable : false,
+    SimpleFilter : false,
+    AdvanceFilter : false,
+    Aggregate : ""
 }
 
-db.templateConfig= {
+db.templateConfig = {
     _id : "",
-    browsername : "",
-    iddetails : "",
-    description : "",
-    connection : "",
-    database : "",
-    tablename : "",
-    querytype : "",
-    querytext : "",
-    properties : []
+    BrowserName : "",
+    IDDetails : "",
+    Description : "",
+    Connection : "",
+    DataBase : "",
+    TableName : "",
+    QueryType : "",
+    QueryText : "",
+    Struct : [],
 }
 
-var dummyobj1 = new Object()
+/*var dummyobj1 = new Object()
 dummyobj1.Field = "id"
 dummyobj1.label = "ID"
 dummyobj1.format = ""
@@ -37,7 +37,6 @@ dummyobj1.sortable = true
 dummyobj1.simplefilter = true
 dummyobj1.advfilter = true
 dummyobj1.aggregate =  ""
-
 var dummyobj2 = new Object()
 dummyobj2.Field = "name"
 dummyobj2.label = "Name"
@@ -48,7 +47,6 @@ dummyobj2.sortable = true
 dummyobj2.simplefilter = true
 dummyobj2.advfilter = true
 dummyobj2.aggregate =  ""
-
 var dummyobj3 = new Object()
 dummyobj3.Field = "DateOfBorn"
 dummyobj3.label = "Birth Date"
@@ -59,7 +57,6 @@ dummyobj3.sortable = true
 dummyobj3.simplefilter = false
 dummyobj3.advfilter = true
 dummyobj3.aggregate =  ""
-
 var dummyobj4 = new Object()
 dummyobj4.Field = "Salary"
 dummyobj4.label = "Salary"
@@ -70,10 +67,23 @@ dummyobj4.sortable = true
 dummyobj4.simplefilter = false
 dummyobj4.advfilter = true
 dummyobj4.aggregate =  "Sum"
-
-
 var dummyData = new Array();
-dummyData.push(dummyobj1, dummyobj2, dummyobj3, dummyobj4)
+dummyData.push(dummyobj1, dummyobj2, dummyobj3, dummyobj4)*/
+// db.databrowserData(dummyData);
+
+// dummy connection list
+// var dummyConn = new Object()
+// dummyConn._id = "connect_mongo"
+// var dataConn = new Array();
+// dataConn.push(dummyConn)
+// db.connectionList(dataConn);
+
+// dummy table list
+// var dummyTable = new Object()
+// dummyTable._id = "mongo-students"
+// var dataTable = new Array();
+// dataTable.push(dummyTable)
+// db.tableList(dataTable);
 
 db.alignList = ko.observableArray([
     { alignId: 1, name: "Left" },
@@ -84,9 +94,9 @@ db.queryType = ko.observableArray([
 	{ value: "SQL", text: "SQL" },
 	{ value: "Dbox", text: "Dbox" }
 ]);
-db.connectionList = ko.observableArray([]);
 db.tableList = ko.observableArray([]);
 db.databrowserData = ko.observableArray([]);
+db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
 db.databrowserColumns = ko.observableArray([
 	{ field: "Field", title: "Field", editable: false },
 	{ field: "label", title: "label"},
@@ -121,21 +131,50 @@ db.alignOption = function (opt) {
 
 db.addProperties = function () {
     var property = $.extend(true, {}, ds.templateConfigSetting);    
-    db.config.Properties.push(property);
+    db.config.Struct.push(property);
 };
 
-db.databrowserData(dummyData);
+db.getDesign = function(_id) {
+	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	app.ajaxPost("/databrowser/getdesignview", { _id: _id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
 
-// dummy connection list
-var dummyConn = new Object()
-dummyConn._id = "connect_mongo"
-var dataConn = new Array();
-dataConn.push(dummyConn)
-db.connectionList(dataConn);
+		br.pageVisible("editor");
+		app.mode('editor')
+		// console.log("data mapping",res.data)
+		// console.log("data design>",ko.mapping.fromJS(res.data, db.configDataBrowser))
+		ko.mapping.fromJS(res.data, db.configDataBrowser)
+		// br.dataBrowser(res.data);
+	});
+}
 
-// dummy table list
-var dummyTable = new Object()
-dummyTable._id = "mongo-students"
-var dataTable = new Array();
-dataTable.push(dummyTable)
-db.tableList(dataTable);
+// dg.addMap = function () {
+// 	var o = ko.mapping.fromJS($.extend(true, {}, db.templateConfigProperties));
+// 	db.templateConfig.Struct.push(o);
+// };
+
+db.backToFront = function() {
+	app.mode('');
+	br.pageVisible("");
+	$("#isFreetext").prop("checked", false);
+	$("#freeQuery").hide();
+	$("#fromTable").show();
+}
+
+$(function () {
+	$("#freeQuery").hide();
+	$("#isFreetext").change(function() {
+		if (this.checked){
+			$("#freeQuery").show();
+			$("#fromTable").hide();	
+		}else{
+			$("#freeQuery").hide();
+			$("#fromTable").show();
+		}
+	});
+});
