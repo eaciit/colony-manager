@@ -82,7 +82,7 @@
 	    	<button class="btn btn-sm btn-primary" data-bind="click: apl.saveApplication" >
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-	    	<button class="btn btn-sm btn-danger" data-bind="visible: (apl.applicationMode() != '')">
+	    	<button class="btn btn-sm btn-danger" data-bind="visible: (apl.applicationMode() != ''), click : apl.OnRemove">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
