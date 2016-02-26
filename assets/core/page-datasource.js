@@ -420,11 +420,11 @@ ds.removeDataSource = function (_id) {
 };
 
 ds.removeEditConnection = function (){
-	ds.tempCheckIdDataSource.push(ds.confDataSource._id());
+	ds.tempCheckIdConnection.push(ds.config._id());
 	swal({
 			    title: "Are you sure?",
 			    // text: 'Data source with id "' + _id + '" will be deleted',
-			    text: 'Data source(s) '+ ds.confDataSource._id() +' will be deleted',
+			    text: 'Data connection(s) '+ ds.config._id() +' will be deleted',
 			    type: "warning",
 			    showCancelButton: true,
 			    confirmButtonColor: "#DD6B55",
@@ -432,11 +432,12 @@ ds.removeEditConnection = function (){
 			    closeOnConfirm: true
 			}, function() {
 				setTimeout(function () {
-					app.ajaxPost("/datasource/removemultipledatasource", { _id: ds.tempCheckIdDataSource() }, function (res) {
+					app.ajaxPost("/datasource/removemultipleconnection", { _id: ds.tempCheckIdConnection() }, function (res) {
 						if (!app.isFine(res)) {
 							return;
 						}
 						ds.backToFrontPage();
+						ds.tempCheckIdConnection.remove(ds.config._id());
 						swal({ title: "Data source(s) successfully deleted", type: "success" });
 					});
 				}, 1000);
@@ -461,6 +462,7 @@ ds.removeEditDataSource = function (){
 							return;
 						}
 						ds.backToFrontPage();
+						ds.tempCheckIdDataSource.remove(ds.confDataSource._id());
 						swal({ title: "Data source(s) successfully deleted", type: "success" });
 					});
 				}, 1000);
