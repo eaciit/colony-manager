@@ -2,12 +2,11 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "weblink", text: "Weblink" },
+	{ value: "csv", text: "CSV (Weblink)" },
+	{ value: "json", text: "JSON (Weblink)" },
 	{ value: "mongo", text: "MongoDb" },
-	{ value: "mssql", text: "SQLServer" },
 	{ value: "mysql", text: "MySQL" },
-	{ value: "oracle", text: "Oracle" },
-	{ value: "erp", text: "ERP" }
+	{ value: "hive", text: "Hive" },
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -21,7 +20,9 @@ ds.templateConfig = {
 	Database: "",
 	UserName: "",
 	Password: "",
-	Settings: []
+	Settings: [],
+
+	FileLocation: "",
 };
 ds.templateDataSource = {
 	_id: "",
@@ -44,7 +45,10 @@ ds.templateLookup = {
 	DisplayField: "",
 	LookupFields: [],
 };
-
+ds.delimiterOptions = ko.observableArray([
+	{ value: "csv", text: "CSV" },
+	{ value: "tsv", text: "TSV" },
+])
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
@@ -81,7 +85,7 @@ ds.connectionListColumns = ko.observableArray([
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster excludethis' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
 		].join(" ");
 	} },
 ]);
@@ -97,7 +101,16 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
-		return "test"
+		var q = JSON.parse(kendo.stringify(d.QueryInfo));
+		var r = [];
+
+		for (var k in q) {
+			if (q.hasOwnProperty(k)) {
+				r.push([k, q[k]].join(" : "));
+			}
+		}
+
+		return r.join(", ");
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -121,6 +134,13 @@ ds.metadataColumns = ko.observableArray([
 		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Show Meta Data Lookup of \"" + d._id + "\"' onclick='ds.showMetadataLookup(\"" + d._id + "\", this)'><span class='fa fa-eye'></span></button>";
 	}, width: 60, attributes: { style: "text-align: center;" } },
 ]);
+ds.labelForHost = ko.computed(function () {
+	if (["csv", "json"].indexOf(ds.config.Driver()) > -1) {
+		return "File URL";
+	}
+
+	return "Host";
+}, ds);
 ds.gridMetaDataSchema = {
 	pageSize: 15,
 	schema: {
@@ -222,22 +242,40 @@ ds.populateGridConnections = function () {
 		ds.connectionListData(res.data);
 	});
 };
-ds.saveNewConnection = function () {
+
+ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		if (ds.config.Driver() == "weblink") {
+		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
 			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
 				// no problem
 			} else {
-				return;
+				return false;
 			}
 		} else {
-			return;
+			return false;
 		}
 	}
 
+	return true;
+}
+ds.saveNewConnection = function () {
+	var extension = (ds.config.Host()).split('.').pop();
+	if ((extension == "json") || (extension == "csv")){
+		if (extension !=  ds.config.Driver()){
+			sweetAlert("Oops...", ("Your Host file is on ." + extension + " and your Driver is " + ds.config.Driver()), "error");
+			return;
+		}
+	}
+	
+	if (!ds.isFormAddConnectionValid()) {
+		return;
+	}
+
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 	app.ajaxPost("/datasource/saveconnection", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -248,7 +286,9 @@ ds.saveNewConnection = function () {
 };
 ds.testConnectionFromGrid = function (_id) {
 	var param = $.extend(true, {}, Lazy(ds.connectionListData()).find({ _id: _id }));
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
@@ -264,12 +304,14 @@ ds.testConnectionFromGrid = function (_id) {
 	});
 };
 ds.testConnection = function () {
-	if (!app.isFormValid("#form-add-connection")) {
+	if (!ds.isFormAddConnectionValid()) {
 		return;
 	}
 
 	var param = ko.mapping.toJS(ds.config);
-	param.Settings = JSON.stringify(param.Settings);
+	param.Settings = JSON.stringify(Lazy(param.Settings).filter(function (e) { 
+		return e.key != "" && e.value != "" 
+	}).toArray());
 
 	app.ajaxPost("/datasource/testconnection", param, function (res) {
 		if (!app.isFine(res)) {
@@ -285,16 +327,11 @@ ds.testConnection = function () {
 	});
 };
 
-ds.selectGridConnection = function(e){
-	var grid = $(".grid-connection").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ($(target).parents(".excludethis").length ) {
-	  	return false;
-	}else{
-		ds.editConnection(selectedItem._id);
-	}
-	ds.showConnection(true);
+ds.selectGridConnection = function (e) {
+	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
+		ds.editConnection(d._id);
+		ds.showConnection(true);
+	});
 };
 
 ds.editConnection = function (_id) {
@@ -369,7 +406,7 @@ ds.removeDataSource = function (_id) {
 		    closeOnConfirm: true
 		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/datasource/removemultipledataSource", { _id: ds.tempCheckIdDataSource() }, function (res) {
+				app.ajaxPost("/datasource/removemultipledatasource", { _id: ds.tempCheckIdDataSource() }, function (res) {
 					if (!app.isFine(res)) {
 						return;
 					}
@@ -382,11 +419,11 @@ ds.removeDataSource = function (_id) {
 	}
 };
 
-ds.selectGridDataSource = function(e){
-	var grid = $(".grid-datasource").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	ds.editDataSource(selectedItem._id);
-	ds.showDataSource(true);
+ds.selectGridDataSource = function (e) {
+	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
+		ds.editDataSource(d._id);
+		ds.showDataSource(true);
+	});
 };
 
 ds.editDataSource = function (_id) {
@@ -456,6 +493,7 @@ ds.populateGridDataSource = function () {
 	});
 	// filterDataSource();
 };
+
 ds.openDataSourceForm = function(){
 	app.mode('editDataSource');
 	ds.dataSourceMode('');
@@ -767,4 +805,6 @@ function filterConnection(event) {
 $(function () {
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	app.registerSearchKeyup($(".search"), ds.populateGridConnections);
+	app.registerSearchKeyup($(".searchds"), ds.populateGridDataSource);
 });

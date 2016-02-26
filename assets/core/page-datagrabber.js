@@ -24,6 +24,7 @@ dg.templateIntervalType = [
 	{ value: "minutes", title: "Minutes" }, 
 	{ value: "hours", title: "Hours" }
 ];
+dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
 dg.showDataGrabber = ko.observable(true);
@@ -47,7 +48,7 @@ dg.scrapperColumns = ko.observableArray([
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")'><span class='glyphicon glyphicon-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Start Transformation Service' onclick='dg.runTransformation(\"" + d._id + "\")'><span class='glyphicon glyphicon-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='dg.stopTransformation(\"" + d._id + "\")()' title='Stop Transformation Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='dg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
@@ -144,6 +145,7 @@ dg.getScrapperData = function (){
 		dg.checkTransformationStatus();
 	});
 };
+
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
 	dg.configScrapper.Map.push(o);
@@ -180,12 +182,12 @@ dg.doSaveDataGrabber = function (c) {
 }
 dg.saveDataGrabber = function () {
 	dg.doSaveDataGrabber(function () {
-		dg.backToFront();
 		dg.getScrapperData();
 	});
 };
 dg.backToFront = function () {
 	app.mode("");
+	dg.tempCheckIdDataGrabber([]);
 };
 dg.getDataSourceData = function () {
 	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
@@ -196,21 +198,12 @@ dg.getDataSourceData = function () {
 		dg.dataSourcesData(res.data);
 	});
 };
-dg.selectGridDataGrabber = function(e){
-	var grid = $(".grid-data-grabber").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ( $(target).parents( ".excludethis" ).length ) {
-	    return false;
-	  }else if ($(target).parents(".notthis").length ) {
-	  	return false;
-	  }else if ($(target).parents(".neitherthis" ).length ) {
-	  	return false;
-	  }else{
-		dg.editScrapper(selectedItem._id);
-	  }
-
-	dg.showDataGrabber(true);
+dg.selectGridDataGrabber = function (e) {
+	app.wrapGridSelect(".grid-data-grabber", ".btn", function (d) {
+		dg.editScrapper(d._id);
+		dg.showDataGrabber(true);
+		dg.tempCheckIdDataGrabber.push(d._id);
+	});
 };
 dg.editScrapper = function (_id) {
 	dg.scrapperMode('edit');
@@ -228,15 +221,20 @@ dg.editScrapper = function (_id) {
 
 		$.each(res.data.Maps, function(key,val){
 			var $valSource = $("tr[data-key= '"+ val.Source +"']");
+			var $valSourceType = $valSource.find("td:eq(2) select.type-origin").data("kendoDropDownList");
 			var $valDes = $valSource.find("td:eq(3) select.field-destination").data("kendoComboBox");
 			var $valDesType = $valSource.find("td:eq(4) select.type-destination").data("kendoDropDownList");
 			
 			if (val.SourceType != "object" && val.SourceType != "array-objects" && val.SourceType != "array-string"){
 				$valSource.find("td:eq(4) div").css("visibility","visible");	
 			}
+
+			if ($valSourceType != undefined) {
+				$valSourceType.value(val.SourceType);
+			}
 			
 			$valDes.value(val.Destination);
-			$valDesType.value(val.SourceType);
+			$valDesType.value(val.DestinationType);
 		})
 	});
 };
@@ -278,6 +276,7 @@ dg.backToFrontPage = function () {
 	app.mode('');
 	dg.getScrapperData();
 	dg.getDataSourceData();
+	dg.tempCheckIdDataGrabber([]);
 };
 
 dg.runTransformationWhenEdit = function () {
@@ -568,7 +567,7 @@ dg.prepareFieldsOrigin = function (_id) {
 
 					return space + sign + labelsComp[0] + ' (' + d.Type + ')';
 				},
-				change: function () {
+				change: function (e) {
 					if (this.value() == "") {
 						$typeDestination.closest("td").children().css("visibility", "hidden");
 						return;
@@ -579,16 +578,19 @@ dg.prepareFieldsOrigin = function (_id) {
 						_id: this.value()
 					});
 					
-					/*var $coba = valueObject.Type;					
-					var $coba1 = item.Type;
-					if ($coba != $coba1){
-						$typeDestination.closest("td").children().css("visibility", "hidden");
-						this.value("");
-						alert("salah!!");
-					}
-					*/
-					
 					if (valueObject != undefined) {
+						if (valueObject.Type != item.Type && e.sender.value() != '') {
+							var standardTypes = ["int", "string", "double", "bool"];
+							if (standardTypes.indexOf(item.Type) > -1 && standardTypes.indexOf(valueObject.Type) > -1) {
+
+							} else {
+								setTimeout(function () {
+									e.sender.value('');
+									sweetAlert("Oops...", 'Cannot select source type "' + item.Type + '" and destination type "' + valueObject.Type + '"', "error");
+								}, 100);
+							}
+						}
+
 						if (["array-objects", "array", "object"].indexOf(valueObject.Type) > -1) {
 							$typeDestination.closest("td").children().css("visibility", "hidden");
 							return;
@@ -599,7 +601,6 @@ dg.prepareFieldsOrigin = function (_id) {
 							}
 						}
 					}
-
 					$typeDestination.data("kendoDropDownList").value(valueObject.Type);
 				}
 			});
@@ -631,6 +632,7 @@ dg.parseMap = function () {
 	$(".table-tree-map tr:gt(0):visible").each(function (i, e) {
 		var $fd = $(e).find("select.field-destination").data("kendoComboBox");
 		var $td = $(e).find("select.type-destination").data("kendoDropDownList");
+		var $to = $(e).find("select.type-origin").data("kendoDropDownList");
 		
 		if ($fd.value() == "") {
 			return;
@@ -642,7 +644,11 @@ dg.parseMap = function () {
 			Destination: $fd.value(),
 			DestinationType: "",
 			Sub: []
-			};
+		};
+
+		if ($to != undefined) {
+			map.SourceType = $to.value();
+		}
 
 		var typeDestVisiblility = $(e).find("select.type-destination")
 			.closest("td")
@@ -651,7 +657,7 @@ dg.parseMap = function () {
 		if (typeDestVisiblility != "hidden") {
 			map.DestinationType = $td.value();
 		}
-		var destinationVisibility = $(e).find("select.field-destination").css("visibility")	;
+		var destinationVisibility = $(e).find("select.field-destination").css("visibility");
 		if (destinationVisibility == "hidden"){
 			return;
 		}
@@ -660,10 +666,6 @@ dg.parseMap = function () {
 	});
 
 	dg.configScrapper.Maps(maps);
-
-	var $coba = $(".table-tree-map").find("tr[data-type='array-objects'] td:eq(2)");
-	var $test = $coba.text();
-	console.log("isi coba "+$test);
 
 };
 dg.checkDeleteDataGrabber = function(elem, e){
@@ -693,4 +695,5 @@ dg.checkDeleteDataGrabber = function(elem, e){
 $(function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
+	app.registerSearchKeyup($(".search"), dg.getScrapperData);
 });

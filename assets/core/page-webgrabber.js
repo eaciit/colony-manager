@@ -24,27 +24,47 @@ wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
 wg.templateConfigScrapper = {
-	_id: "",
-	nameid: "",
-	calltype: "GET",
-	sourcetype: "SourceType_Http",
-	intervaltype: "seconds",
-	grabinterval: 20,
-	timeoutinterval: 20,
-	// url: "http://www.shfe.com.cn/en/products/Gold/",
-	url: "http://www.google.com",
-	logconf: {
-		"filename": "LOG-GRABDCE",
-		"filepattern": "",
-		"logpath": ""
-	},
-	datasettings: [],
-	grabconf: {
-		data: {}
-	},
-	temp: {
-		parameters: [],
-	}
+    _id: "",
+    sourcetype: "SourceType_HttpHtml",
+    grabconf:
+            {
+                "url": "http://www.google.com",
+                "calltype": "GET",
+                "authtype" : "AuthType_Basic",
+                "loginurl" : "", 
+                "logouturl" : "", 
+                "username" : "",
+                "password" : "", 
+                "formvalues": {},
+                "timeout" : 20,
+                "temp" : {
+                	"parameters" : []
+                }
+
+            },
+    intervalconf:
+            {
+                "starttime": new Date(),
+                "intervaltype": "seconds",
+                "grabinterval": 20,
+                "timeoutinterval": 20,
+                "cronconf": ""
+            },
+    logconf:
+            {
+                "logpath": "",
+                "filename": "LOG-GRABDCE",
+                "filepattern": ""
+            },
+    histconf:
+            {
+                "histpath": "",
+                "recpath": "",
+                "filename": "HIST-GRABDCE",
+                "filepattern": "YYYYMMDD"
+            },
+    datasettings: [],
+    running: true
 };
 wg.parametersPattern = ko.observableArray([
 	{ value: "", title: "-" },
@@ -118,16 +138,16 @@ wg.scrapperColumns = ko.observableArray([
 	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster excludethis' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster notthis' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-primary tooltipster neitherthis' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
-	{ field: "calltype", title: "Request Type", width: 150 },
+	{ field: "grabconf.calltype", title: "Request Type", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
-	{ field: "intervaltype", title: "Interval Unit", width: 150 },
-	{ field: "grabinterval", title: "Interval Duration", width: 150 },
-	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
+	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
+	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
 ]);
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
@@ -153,8 +173,9 @@ wg.historyColumns = ko.observableArray([
 wg.filterRequestTypes = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
-	{ value: "SourceType_Http", title: "HTTP / Web" },
-	{ value: "SourceType_Dbox", title: "Data File" },
+	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
+	{ value: "SourceType_HttpJson", title: "HTTP / Json" },
+	{ value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -170,6 +191,12 @@ wg.templateConfigConnection = {
 	Password: "",
 	Settings: []
 };
+
+wg.dataAuthType = ko.observableArray([
+	{value : "AuthType_Basic" , title : "Basic"},
+	{value : "AuthType_Cookie", title: "Cookie"},
+	{value : "AuthType_Session" , title : "Session"},
+]);
 wg.replaceEqWithNthChild = function (s) {
 	return s.replace(/eq\(([^)]+)\)/g, function (e) {
 		var i = parseInt(e.split("(").reverse()[0].split(")")[0]) + 1;
@@ -273,7 +300,7 @@ wg.backToHistory = function () {
 	app.mode('history')
 };
 wg.writeContent = function (html) {
-	var baseURL = wg.configScrapper.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/,'$1');
+	var baseURL = wg.configScrapper.grabconf.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/, '$1');
 	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
 	
 	var contentDoc = $("#content-preview")[0].contentWindow.document;
@@ -290,53 +317,55 @@ wg.runBotStats = function () {
 
 	var isThereAnyError = false;
 
-	if(wg.scrapperData()!=""){
+	if (wg.scrapperData() != "") {
 		wg.scrapperData().forEach(function (each) {
-		var checkStat = function () {
-			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
-				if (res.success) {
-					var $grid = $(".grid-web-grabber").data("kendoGrid");
-					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+			var checkStat = function () {
+				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+					if (res.success) {
+						var $grid = $(".grid-web-grabber").data("kendoGrid");
+						var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
 
-					if (row != undefined) {
-						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+						if (row != undefined) {
+							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-						if (res.data.isRun) {
-							$tr.addClass("started");
-						} else {
-							$tr.removeClass("started");
+							if (res.data.isRun) {
+								$tr.addClass("started");
+							} else {
+								$tr.removeClass("started");
+							}
 						}
 					}
-				}
 
-				if (isThereAnyError) {
-					return;
-				}
+					if (isThereAnyError) {
+						return;
+					}
 
-				if (!app.isFine(res)) {
-					isThereAnyError = true;
-					return;
-				}
-			}, function (a) {
-		        sweetAlert("Oops...", a.statusText, "error");
-			}, {
-				withLoader: false
+					if (!app.isFine(res)) {
+						isThereAnyError = true;
+						return;
+					}
+				}, function (a) {
+			        sweetAlert("Oops...", a.statusText, "error");
+				}, {
+					withLoader: false
+				});
+			};
+
+			var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
+
+			wg.botStats.push({ 
+				_id: each._id,
+				interval: setInterval(checkStat, interval * 1000)
 			});
-		};
 
-		wg.botStats.push({ 
-			_id: each._id,
-			interval: setInterval(checkStat, each.grabinterval * 1000)
-		});
-
-		checkStat();
+			checkStat();
 		});
 	}
 	
 };
 wg.parsePayload = function () {
 	var parameters = {};
-	ko.mapping.toJS(wg.configScrapper).temp.parameters.forEach(function (each) {
+	ko.mapping.toJS(wg.configScrapper).grabconf.temp.parameters.forEach(function (each) {
 		if (each.key == "" || each.value == "") {
 			return;
 		}
@@ -344,15 +373,15 @@ wg.parsePayload = function () {
 		parameters[each.key] = each.value;
 	});
 
-	return (wg.configScrapper.calltype() == "GET") ? null : parameters;
+	return (wg.configScrapper.grabconf.calltype() == "GET") ? null : parameters;
 };
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
 		return;
 	}
 	var param = {
-		URL: wg.configScrapper.url(),
-		Method: wg.configScrapper.calltype(),
+		URL: wg.configScrapper.grabconf.url(),
+        Method: wg.configScrapper.grabconf.calltype(),
 		Payloads: wg.parsePayload()
 	};
 
@@ -519,19 +548,19 @@ wg.CreateElementChild = function(selectorParent){
 };
 wg.addScrapperPayload = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, wg.templateScrapperPayload));
-	wg.configScrapper.temp.parameters.push(item);
+	wg.configScrapper.grabconf.temp.parameters.push(item);
 };
 wg.removeScrapperPayload = function (index) {
 	return function () {
-		var item = wg.configScrapper.temp.parameters()[index];
-		wg.configScrapper.temp.parameters.remove(item);
+		var item = wg.configScrapper.grabconf.temp.parameters()[index];
+        wg.configScrapper.grabconf.temp.parameters.remove(item);
 	};
 };
 wg.encodePayload = function () {
 	wg.configScrapper.Parameter({});
 
 	var p = {};
-	wg.configScrapper.temp.parameters().forEach(function (e) {
+	wg.configScrapper.grabconf.temp.parameters().forEach(function (e) {
 		p[e.key()] = app.couldBeNumber(e.value());
 	});
 	wg.configScrapper.Parameter(p);
@@ -746,11 +775,11 @@ wg.parseGrabConf = function () {
 
 		return item;
 	});
-	config.nameid = config._id;
+//	config.nameid = config._id;
 
 	var grabConfData = {};
 	var tempParameters = [];
-	config.temp.parameters.forEach(function (each) {
+	config.grabconf.temp.parameters.forEach(function (each) {
 		if (each.key == "" || each.value == "") {
 			return;
 		}
@@ -764,8 +793,8 @@ wg.parseGrabConf = function () {
 		}
 	});
 
-	config.grabconf.data = grabConfData;
-	config.temp.parameters = tempParameters;
+	//config.grabconf.data = grabConfData;
+	config.grabconf.temp.parameters = tempParameters;
 	return config;
 };
 wg.saveSelectorConf = function(){
@@ -934,20 +963,11 @@ wg.changeConnectionID = function (e) {
 	return true;
 };
 
-wg.selectGridWebGrabber = function(e){
-	var grid = $(".grid-web-grabber").data("kendoGrid");
-	var selectedItem = grid.dataItem(grid.select());
-	var target = $( event.target );
-	if ( $(target).parents( ".excludethis" ).length ) {
-	    return false;
-	  }else if ($(target).parents(".notthis").length ) {
-	  	return false;
-	  }else if ($(target).parents(".neitherthis" ).length ) {
-	  	return false;
-	  }else{
-		wg.editScrapper(selectedItem._id);
-	  }
-	wg.showWebGrabber(true);
+wg.selectGridWebGrabber = function (e) {
+	app.wrapGridSelect(".grid-web-grabber", ".btn", function (d) {
+		wg.editScrapper(d._id);
+		wg.showWebGrabber(true);
+	});
 };
 
 wg.checkDeleteWebGrabber = function(elem, e){
@@ -977,4 +997,5 @@ wg.checkDeleteWebGrabber = function(elem, e){
 $(function () {
 	wg.getConnection();
 	wg.getScrapperData();
+	app.registerSearchKeyup($(".search"), wg.getScrapperData);
 });

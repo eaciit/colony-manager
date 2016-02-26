@@ -1,0 +1,47 @@
+<!-- core -->
+<script src="/res/core/page-databrowser.js"></script>
+<script src="/res/core/page-databrowserdesign.js"></script>
+
+<!-- main -->
+<div class="col-xs-12 col-sm-12" id="content">
+	<div class="col-md-12">
+		<h1>Data Browser</h1>
+		<div data-bind="visible: (br.pageVisible() === '')">
+			<nav class="navbar">
+				<button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.OpenBrowserForm"><span class="glyphicon glyphicon-plus"></span> Add New</button>
+				<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: br.DeleteBrowser"><span class="glyphicon glyphicon-remove"></span> Delete Selected
+		    	</button>
+			</nav>
+
+			<nav class="navbar">
+				<div class="col-md-4">
+					<label class="col-md-4 filter-label">
+						Search
+					</label>
+					<div class="col-md-8">
+						<!-- <div class="input-group">
+							<input type="text" class="form-control input-sm" data-bind="value: br.searchfield" placeholder="Type keyword here"><button class="btn btn-sm btn-primary" data-bind="click: br.getDataBrowser" ><span class="glyphicon glyphicon-search"></span> </button>
+						</div> -->
+						<div class="input-group">
+							<input type="text" class="form-control" data-bind="value: br.searchfield" placeholder="Type keyword here">
+							<span class="input-group-btn">
+								<button class="btn btn-primary btn-secondary" data-bind="click: br.getDataBrowser" type="button"><span class="glyphicon glyphicon-search"></span></button>
+							</span>
+						</div>	
+					</div>
+				</div>
+			</nav>
+			<div class="panel">
+				<div class="panel-heading">
+					<h1 class="panel-title">All Data Browser</h1>
+				</div>
+				<div class="panel-body">
+					<div class="grid grid-databrowser" data-bind="kendoGrid: { dataSource:{ pageSize: 15 }, data: br.dataBrowser, columns: br.browserColumns, change: br.selectBrowser, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser') }"></div>
+				</div>
+			</div> 
+		</div>
+		<div data-bind="visible: (br.pageVisible() != '')">
+			{{template "page-databrowserdesign.html"}}
+		</div>
+	</div>
+</div>
