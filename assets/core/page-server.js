@@ -302,7 +302,6 @@ srv.checkDeleteServer = function(elem, e){
 	}
 }
 
-var vals = [];
 srv.removeServer = function(){
 	if (srv.tempCheckIdServer().length === 0) {
 		swal({
@@ -314,9 +313,6 @@ srv.removeServer = function(){
 			closeOnConfirm: true
 		});
 	} else {
-		// vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-		// return this.value;
-		// }).get();
 		swal({
 			title: "Are you sure?",
 			text: 'Server with id "' + srv.tempCheckIdServer().toString() + '" will be deleted',
