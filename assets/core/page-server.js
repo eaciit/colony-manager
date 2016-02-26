@@ -205,6 +205,7 @@ srv.doSaveServer = function (c) {
 }
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
+		srv.getServers();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };

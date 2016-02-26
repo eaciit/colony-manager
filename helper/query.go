@@ -42,7 +42,6 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	if len(other) > 3 {
 		wrapper.ci.Settings = other[3].(toolkit.M)
 	}
-	fmt.Printf("--- %#v\n", wrapper.ci)
 
 	wrapper.connection, wrapper.err = dbox.NewConnection(driver, wrapper.ci)
 	if wrapper.err != nil {
