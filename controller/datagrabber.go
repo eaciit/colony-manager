@@ -543,13 +543,13 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 					for _, desMeta := range dsDestination.MetaData {
 						if desMeta.ID == eachMap.Destination {
 							for _, eachMetaSub := range desMeta.Sub {
-								valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+								// valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+								valueObject.Set(eachMetaSub.ID, d.convertTo(sourceObject.Get(eachMetaSub.ID), eachMap.DestinationType))
 							}
 							break
 						}
 					}
 
-					eachPreTypeOrigin.Set(eachMap.Destination, valueObject)
 					eachTransformedData.Set(eachMap.Destination, valueObject)
 				} else if eachMap.SourceType == "array-objects" {
 					sourceObjects, _ := valueEachSourceField.([]interface{})
@@ -568,7 +568,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						for _, desMeta := range dsDestination.MetaData {
 							if desMeta.ID == eachMap.Destination {
 								for _, eachMetaSub := range desMeta.Sub {
-									valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+									// valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+									valueObject.Set(eachMetaSub.ID, d.convertTo(sourceObject.Get(eachMetaSub.ID), eachMap.DestinationType))
 								}
 								break
 							}
@@ -579,13 +580,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 					eachTransformedData.Set(eachMap.Destination, valueObjects)
 				} else {
-					//====pre transfer, change type field origin
-					if dataGrabber.PreTransferCommand != "" {
-						eachPreTypeOrigin.Set(eachMap.Source, convertDataType(eachMap.SourceType, eachMap.Source, each))
-					}
-					//=====================
-
-					eachTransformedData.Set(eachMap.Destination, convertDataType(eachMap.DestinationType, eachMap.Source, each))
+					// eachTransformedData.Set(eachMap.Destination, convertDataType(eachMap.DestinationType, eachMap.Source, each))
+					eachTransformedData.Set(eachMap.Destination, d.convertTo(each.Get(eachMap.Source), eachMap.DestinationType))
 				}
 			} else {
 				prev := strings.Split(eachMap.Destination, "|")[0]
@@ -617,7 +613,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 								if len(valueObjects) > i {
 									if temp2, _ := toolkit.ToM(valueObjects[i]); temp2 != nil {
 										valueObject = temp2
-										valueObject.Set(next, eachVal)
+										// valueObject.Set(next, eachVal)
+										valueObject.Set(next, d.convertTo(eachVal, eachMap.DestinationType))
 									}
 
 									valueObjects[i] = valueObject
@@ -628,7 +625,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 										}
 									}
 
-									valueObject.Set(next, eachVal)
+									// valueObject.Set(next, eachVal)
+									valueObject.Set(next, d.convertTo(eachVal, eachMap.DestinationType))
 									valueObjects = append(valueObjects, valueObject)
 								}
 							}
@@ -647,19 +645,19 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						mval, _ := toolkit.ToM(each.Get(prevSource, nil))
 
 						//========
-						valueObject.Set(next, convertDataType(eachMap.DestinationType, nextSource, mval))
+						valueObject.Set(next, d.convertTo(mval.Get(nextSource), eachMap.DestinationType))
+						// valueObject.Set(next, convertDataType(eachMap.DestinationType, nextSource, mval))
 						eachTransformedData.Set(prev, valueObject)
 					}
 				}
 			}
 		}
 
-		// fmt.Println("\n :: ", each, "\n")
-
 		// ================ pre transfer command
 		if dataGrabber.PreTransferCommand != "" {
+			_ = eachPreTypeOrigin
 			// jsonTranformedDataBytes, err := json.Marshal(each)
-			jsonTranformedDataBytes, err := json.Marshal(eachPreTypeOrigin)
+			jsonTranformedDataBytes, err := json.Marshal(eachTransformedData)
 			if err != nil {
 				return false, nil, err.Error()
 			}
