@@ -24,10 +24,7 @@ dg.templateIntervalType = [
 	{ value: "minutes", title: "Minutes" }, 
 	{ value: "hours", title: "Hours" }
 ];
-dg.filterDataGrabber = ko.observable({
-	search: '',
-	intervalunit: ''
-});
+dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
 dg.showDataGrabber = ko.observable(true);
@@ -190,6 +187,7 @@ dg.saveDataGrabber = function () {
 };
 dg.backToFront = function () {
 	app.mode("");
+	dg.tempCheckIdDataGrabber([]);
 };
 dg.getDataSourceData = function () {
 	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
@@ -204,6 +202,7 @@ dg.selectGridDataGrabber = function (e) {
 	app.wrapGridSelect(".grid-data-grabber", ".btn", function (d) {
 		dg.editScrapper(d._id);
 		dg.showDataGrabber(true);
+		dg.tempCheckIdDataGrabber.push(d._id);
 	});
 };
 dg.editScrapper = function (_id) {
@@ -277,6 +276,7 @@ dg.backToFrontPage = function () {
 	app.mode('');
 	dg.getScrapperData();
 	dg.getDataSourceData();
+	dg.tempCheckIdDataGrabber([]);
 };
 
 dg.runTransformationWhenEdit = function () {
