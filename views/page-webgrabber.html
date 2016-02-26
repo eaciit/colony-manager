@@ -110,10 +110,14 @@
 						        </div>
 								<div class="form-group">
 						        	<label class="col-md-2 filter-label">URL</label>
-						        	<div class="col-md-10">
-						        		<input required type="text" class="form-control input-sm" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
+						        	<div class="col-md-5">
+						        		<input required type="text" class="form-control input-sm full-width" name="URL" placeholder="Type URL here" data-bind="value: wg.configScrapper.grabconf.url">
 										<span class="k-invalid-msg" data-for="URL"></span>
 						        	</div>
+						        	<label class="col-md-2 filter-label">Timeout</label>
+						        	<div class="col-md-3">
+						        		<input type="text" class="input-md full-width" data-bind="kendoNumericTextBox: { min: 0, format: '#', placeholder: 'Example: 2', value: wg.configScrapper.grabconf.timeout }" />
+							        </div>
 						        </div>
 						        <div class="form-group">
 						        	<label class="col-md-2 filter-label">Payload</label>
@@ -168,38 +172,35 @@
 			    				<div class="form-group">
 								    <label class="col-md-2 filter-label">Auth Type</label>
 								    <div class="col-md-3">
-						        		<select class="full-width" name="authtype" data-bind="kendoDropDownList: { data: wg.dataAuthType, dataValueField: 'value', dataTextField: 'title', value : wg.configScrapper.grabconf.authtype}"></select>
-										<span class="k-invalid-msg" data-for="source-type"></span>
+						        		<select class="full-width" name="authtype" data-bind="kendoDropDownList: { data: wg.dataAuthType, dataValueField: 'value', dataTextField: 'title'}"></select>
+										<span class="k-invalid-msg" data-for="authtype"></span>
 						        	</div>
 								</div>
 								<div class="form-group">
 						        	<label class="col-md-2 filter-label">Login Url</label>
 						        	<div class="col-md-4">
-						        		<input class="form-control input-sm full-width" type="text" placeholder="Type Login URL here" data-bind="value: wg.configScrapper.grabconf.loginurl" />
+						        		<input name="loginurl" class="authconf form-control input-sm full-width" type="text" placeholder="Type Login URL here" data-bind="value: wg.configScrapper.grabconf.loginurl")/>
+						        		<span class="k-invalid-msg" data-for="loginurl"></span>
 						        	</div>
 
 						        	<label class="col-md-2 filter-label">Logout Url</label>
 						        	<div class="col-md-4">
-						        		<input class="form-control input-sm full-width" type="text" placeholder="Type Logout URL here" data-bind="value: wg.configScrapper.grabconf.logouturl"/>
+						        		<input class="authconf form-control input-sm full-width" type="text" placeholder="Type Logout URL here" data-bind="value: wg.configScrapper.grabconf.logouturl"/>
 							        </div>
 						        </div>
 						        <div class="form-group">
 						        	<label class="col-md-2 filter-label">Username</label>
 						        	<div class="col-md-4">
-						        		<input class="form-control input-sm full-width" type="text" placeholder="Type Username here" data-bind="value: wg.configScrapper.grabconf.username" />
+						        		<input name="username" class="authconf form-control input-sm full-width" type="text" placeholder="Type Username here" data-bind="value: wg.configScrapper.grabconf.username" />
+						        		<span class="k-invalid-msg" data-for="username"></span>
 						        	</div>
 
 						        	<label class="col-md-2 filter-label">Password</label>
 						        	<div class="col-md-4">
-						        		<input class="form-control input-sm full-width" type="password" placeholder="Type Password here" data-bind="value: wg.configScrapper.grabconf.password" />
+						        		<input name="password" class="authconf form-control input-sm full-width" type="password" placeholder="Type Password here" data-bind="value: wg.configScrapper.grabconf.password" />
+						        		<span class="k-invalid-msg" data-for="password"></span>
 							        </div>
 						        </div>
-						        <div class="form-group">
-								   	<label class="col-md-2 filter-label">Timeout</label>
-								   	<div class="col-md-3">
-								 		<input type="text" class="input-md full-width" data-bind="kendoNumericTextBox: { min: 0, format: '#', placeholder: 'Example: 2', value: wg.configScrapper.grabconf.timeout }" />
-								    </div>
-								</div>
 		    				</div>	
 		    			</div>
 		    		</div>
@@ -287,7 +288,7 @@
 											<tbody data-bind="foreach: wg.selectorRowSetting">
 												<tr>
 													<td>
-														<input required="" class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 													</td>
 													<td>
