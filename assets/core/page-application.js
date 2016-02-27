@@ -26,10 +26,7 @@ apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
 apl.showErrorDeploy = ko.observable(false);
 apl.filterValue = ko.observable('');
-apl.filterApplication = ko.observable({
-	search: '',
-	type: ''
-});
+apl.filterAplType = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');
@@ -44,9 +41,9 @@ apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.searchfield = ko.observable('');
 apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' id='selectall' onclick='\" apl.checkDelData(this, 'aplAll', 'all') \"' ></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
+			"<input type='checkbox' id='select' class='aplCheck' idcheck=" + d._id + " onclick='\" apl.checkDelData(this, 'aplCheck') />"
 		].join(" ");
 	}},
 	{ field: "_id", title: "ID", width: 80 },
@@ -140,15 +137,11 @@ apl.deploy = function () {
 		});
 	})
 };
-apl.browse = function (_id) {
-	return function (e) {
-		
-	};
-};
 
 apl.selectApps = function (e) {
 	app.wrapGridSelect(".grid-application", ".btn", function (d) {
 		apl.editApplication(d._id);
+		apl.tempCheckIdServer.push(d._id);
 	});
 };
 
@@ -248,15 +241,8 @@ apl.getUploadFile = function() {
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
+	apl.tempCheckIdServer([]);
 };
-
-// apl.getDirectory = function(){
-// 	app.ajaxPost("/application/readdirectory", {}, function(res) {
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
-// 	});
-// }
 
 apl.treeView = function (id) {
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
@@ -473,47 +459,38 @@ function ApplicationFilter(event){
 	});
 }
 
-var vals = [];
-apl.OnRemove = function(){
-	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+apl.OnRemove = function (_id) {
+	if (apl.tempCheckIdServer().length === 0) {
 		swal({
-		title: "",
-		text: 'You havent choose any application to delete',
-		type: "warning",
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "OK",
-		closeOnConfirm: true
+			title: "",
+			text: 'You havent choose any Application to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
 		});
-	} else {
-		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-			return this.value;
-		}).get();
-
+	}else{
 		swal({
-		title: "Are you sure?",
-		text: 'Application with id "' + vals + '" will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: true
-		},
-		function() {
+			title: "Are you sure?",
+			text: 'Application with id '+apl.tempCheckIdServer().toString()+' will be deleted',
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Delete",
+			closeOnConfirm: true
+		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/application/deleteapps", vals, function () {
-					if (!app.isFine) {
+				app.ajaxPost("/application/deleteapps", { _id: apl.tempCheckIdServer() }, function (res) {
+					if (!app.isFine(res)) {
 						return;
 					}
-
-				 apl.backToFront();
-				 swal({title: "Application successfully deleted", type: "success"});
+					swal({ title: "Data successfully deleted", type: "success" });
+					apl.backToFront();
 				});
-			},1000);
-
+			}, 1000);
 		});
- 	} 
- 
-}
+	}
+};
 
 apl.modalRenameFile =  function(){
 	$('.modal-new-file').modal('show');
@@ -541,28 +518,33 @@ apl.renameFile = function(){
 	});
 }
 
-apl.selectServer = function(elem, e){
-	if (e === 'serverall'){
+apl.checkDelData = function (elem,e ){
+	if ( e === 'aplAll'){
 		if ($(elem).prop('checked') === true){
-			$('.servercheck').each(function(index) {
+			$('.aplCheckAll').each(function (index) {
 				$(this).prop("checked", true);
-				apl.tempCheckIdServer.push($(this).attr('idcheck'));
-			});
+				apl.tempCheckIdServer.push($(elem).attr('idcheck'));	
+			})
 		} else {
 			var idtemp = '';
-			$('.servercheck').each(function(index) {
-				$(this).prop("checked", false);
+			$('.aplCheckAll').each(function (index){
+				$(this).prop("checked", false );
 				idtemp = $(this).attr('idcheck');
-				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
+				apl.tempCheckIdServer.remove( function (item) {
+					return item === idtemp;
+				});
 			});
 		}
-	}else {
-		if ($(elem).prop('checked') === true){
-			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
-		} else {
-			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
-		}
 	}
+
+	if ( e === 'aplCheck') {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));		
+		} else {
+			apl.tempCheckIdServer.remove(function (item) { return item === $(elem).attr('idcheck'); });		
+		}	
+	}
+
 }
 
 $(function () {

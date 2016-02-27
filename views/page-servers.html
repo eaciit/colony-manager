@@ -21,13 +21,13 @@
 	</button>
 </nav>
 
-<nav class="navbar no-padding" data-bind="visible: (app.mode() == ''),with: srv.filterServer">
+<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 	<div class="col-md-4">
 		<label class="col-md-3 filter-label no-left-padding">
 			Search
 		</label>
 		<div class="col-md-8">
-			<input class="form-control full-width input-sm searchsrv" name="search" type="text" data-bind="value: search" placeholder="Type keyword here" />
+			<input class="form-control full-width input-sm searchsrv" name="search" type="text" data-bind="value: srv.searchfield" placeholder="Type keyword here" />
 		</div>
 	</div>
 	<div class="col-md-4">
@@ -35,7 +35,7 @@
     		OS
     	</label>
     	<div class="col-md-8">
-    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Select one' }, value: os"></select>
+    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvOS, optionLabel: 'Select one' }"></select>
     	</div>
     </div>
     <div class="col-md-4">
@@ -43,7 +43,7 @@
     		Type SSH
     	</label>
     	<div class="col-md-8">
-    		<select name="sshtype" class="full-width" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Select one' }, value: sshtype"></select>
+    		<select name="sshtype" class="full-width" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvSSHType, optionLabel: 'Select one' }"></select>
     	</div>
     </div>
 </nav>

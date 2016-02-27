@@ -301,13 +301,19 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
+	_, err = sshSetting.RunCommandSsh(rmCmdZip)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	rmCmd := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
-	_, err = sshSetting.RunCommandSsh(rmCmd)
+	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+	_, err = sshSetting.RunCommandSsh(rmCmdZipOutput)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
