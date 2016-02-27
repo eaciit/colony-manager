@@ -113,3 +113,19 @@ func (d *DataBrowserController) DeleteBrowser(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, nil, "")
 }
+
+func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.DataBrowser)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	return helper.CreateResult(true, payload, "")
+}

@@ -643,7 +643,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						nextSource := strings.Split(eachMap.Source, "|")[1]
 						mval, _ := toolkit.ToM(each.Get(prevSource, nil))
 
-						//========
+						//=========
 						valueObject.Set(next, d.convertTo(mval.Get(nextSource), eachMap.DestinationType))
 						// valueObject.Set(next, convertDataType(eachMap.DestinationType, nextSource, mval))
 						eachTransformedData.Set(prev, valueObject)
