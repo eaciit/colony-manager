@@ -254,7 +254,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
-	if output, err := sshSetting.RunCommandSsh("unzip"); err != nil || strings.Contains(output, "not installed") {
+	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
 		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
 	}
 	defer sshClient.Close()
@@ -320,7 +320,9 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	//unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	unzipCmd :=server.CmdExtract+" "+destinationZipPath+" -d "+destinationZipPathOutput
+	
 	// _, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 	_, err = sshSetting.RunCommandSsh(unzipCmd)
 	if err != nil {
