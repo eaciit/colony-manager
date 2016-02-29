@@ -14,7 +14,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -366,18 +365,25 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	}
 
 	o := new(colonycore.Application)
-	o.ID = r.Request.FormValue("id")
-	o.AppsName = r.Request.FormValue("AppsName")
-	enable, err := strconv.ParseBool(r.Request.FormValue("Enable"))
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	o.Enable = enable
+	o.ID = r.Request.FormValue("_id")
 	o.AppsName = r.Request.FormValue("AppsName")
 	o.Type = r.Request.FormValue("Type")
+	o.Port = r.Request.FormValue("Port")
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	cursor, err := colonycore.Find(new(colonycore.Application), dbox.Eq("Port", o.Port))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	data := []colonycore.Application{}
+	err = cursor.Fetch(&data, 0, false)
+	if len(data) > 0 {
+		return helper.CreateResult(false, nil, fmt.Sprintf("Port %s already in use", o.Port))
 	}
 
 	err = colonycore.Save(o)

@@ -47,10 +47,10 @@ apl.applicationColumns = ko.observableArray([
 			"<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>"
 		].join(" ");
 	}},
-	{ field: "_id", title: "ID", width: 80 },
+	{ field: "_id", title: "ID" },
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
-	// { field: "Enable", title: "Enable", width: 50},
+	{ field: "Port", title: "Running Port" },
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
@@ -253,8 +253,9 @@ apl.saveApplication = function() {
 	formData.append("Enable", data.Enable);
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
-	formData.append("id", data._id);
+	formData.append("_id", data._id);
 	formData.append("Type", data.Type);
+	formData.append("Port", data.Port);
 	
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
