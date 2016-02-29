@@ -320,14 +320,30 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	//unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
-	unzipCmd :=server.CmdExtract+" "+destinationZipPath+" -d "+destinationZipPathOutput
-	
-	// _, err = sshSetting.GetOutputCommandSsh(unzipCmd)
+	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
 	_, err = sshSetting.RunCommandSsh(unzipCmd)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	err = os.Remove(sourceZipPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	chmodCommand := "chmod -R 755 " + installerFile
+	_, err = sshSetting.RunCommandSsh(chmodCommand)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	installCommand := ". " + installerFile
+	_, err = sshSetting.RunCommandSsh(installCommand)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	fmt.Printf("----- %s\n", chmodCommand)
 
 	if app.DeployedTo == nil {
 		app.DeployedTo = []string{}
@@ -339,33 +355,11 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	err = os.Remove(sourceZipPath)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	findLocation := strings.Join([]string{destinationZipPathOutput, "*install.sh"}, serverPathSeparator)
-	findCommand := "find " + findLocation
-	chmodCommand := "chmod -R 777 " + findLocation
-	runCommand := ". " + findLocation
-	res, err := sshSetting.RunCommandSsh([]string{findCommand}...)
-
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	} else {
-		if !strings.Contains(string(res), "No such file or directory") {
-			_, err := sshSetting.RunCommandSsh([]string{chmodCommand, runCommand}...)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		}
-	}
 	return helper.CreateResult(true, nil, "")
 }
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	// upload handler
-	fmt.Printf("-------- %s\n", zipSource)
 	err, fileName := helper.UploadHandler(r, "userfile", zipSource)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())

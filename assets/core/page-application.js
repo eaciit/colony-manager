@@ -6,6 +6,7 @@ apl.templateConfigApplication = {
 	AppsName: "",
 	Enable: ko.observable(false),
 	Type: "web",
+	Port: "8080",
 	AppPath: "",
 	DeployedTo: [],
 };

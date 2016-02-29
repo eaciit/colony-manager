@@ -101,47 +101,46 @@
 			    <div id="myTabContent" class="tab-content">
 			    	<div class="tab-pane fade in active" id="Form">
 			    		<form class="form-horizontal form-application" id="form-add-Application" data-bind="with: configApplication" novalidate>
-				    		<div class="col-md-12">
-					    		<div class="form-group row">
+				    		<div class="col-md-6">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">ID</label>
-						    		<div class="col-md-3">
+						    		<div class="col-md-6">
 						    			<input required class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')"/>
 						    			<span class="k-invalid-msg" data-for="ID"></span>
 						    		</div>
-						    		<!-- <label class="col-md-2 filter-label">Enable</label>
-						    		<div class="col-md-2">
-						    			<input required type="checkbox" id="Enable" data-bind="checked: Enable" />
-						    			<span class="k-invalid-msg" data-for="Enable"></span>
-						    		</div> -->
 					    		</div>
-					    		<div class="form-group row">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">Name</label>
-						    		<div class="col-md-3">
+						    		<div class="col-md-6">
 						    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" />
 						    			<span class="k-invalid-msg" data-for="name"></span>
 						    		</div>
-						    		<div class="col-sm-4 btn-upload">
-							    		<div>
-							    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
-											    <span class="fa fa-file"></span> Upload .zip file 
-											    <input required id="files" name="files" type="file" accept=".zip">
-											</span>
-											<span id="nama" data-bind="value:AppPath"></span>
-							    		</div>
-										<span class="k-invalid-msg" data-for="files"></span>
-									</div>
 					    		</div>
-					    		<div class="form-group row">
+				    		</div>
+				    		<div class="col-md-6">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">Type</label>
-						    		<div class="col-md-3">
+						    		<div class="col-md-6">
 						    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
 						    			<span class="k-invalid-msg" data-for="AppType"></span>
 						    		</div>
 					    		</div>
-					    		<!-- <div class="form-group row"> 
-					    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> 
-					    		</div> -->
-
+					    		<div class="form-group">
+						    		<label class="col-md-3 filter-label">Running Port</label>
+						    		<div class="col-md-6">
+						    			<input class="full-width" type="number" name="Port" required data-bind="kendoNumericTextBox: { min: 0, placeholder: 'Example: 8080', value: Port, format: '#' }" />
+						    			<span class="k-invalid-msg" data-for="Port"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<div class="col-md-6 col-md-offset-3">
+						    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
+										    <span class="fa fa-file"></span> Upload .zip file 
+										    <input required id="files" name="files" type="file" accept=".zip">
+										</span>
+										<span class="k-invalid-msg" data-for="files"></span>
+						    		</div>
+								</div>
 				    		</div>
 				    	</form>
 			    	</div>
