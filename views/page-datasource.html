@@ -73,7 +73,7 @@
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: testConnection">
 	    		<span class="fa fa-info-circle"></span> Test Connection
 	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditConnection" data-bind="visible: showConnection">
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditConnection" data-bind="visible: showConnection, click : ds.removeConnection">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
@@ -207,7 +207,7 @@
 	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: testQuery">
 	    		<span class="glyphicon glyphicon-play"></span> Run Query
 	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataSource" data-bind="visible: showDataSource">
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataSource" data-bind="visible: showDataSource, click : ds.removeDataSource">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>

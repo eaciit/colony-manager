@@ -46,6 +46,8 @@ srv.validator = ko.observable('');
 srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.filterValue = ko.observable('');
+srv.filterSrvSSHType = ko.observable('');
+srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
@@ -203,6 +205,7 @@ srv.doSaveServer = function (c) {
 }
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
+		srv.getServers();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };
@@ -299,7 +302,6 @@ srv.checkDeleteServer = function(elem, e){
 	}
 }
 
-var vals = [];
 srv.removeServer = function(){
 	if (srv.tempCheckIdServer().length === 0) {
 		swal({
@@ -311,9 +313,6 @@ srv.removeServer = function(){
 			closeOnConfirm: true
 		});
 	} else {
-		// vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-		// return this.value;
-		// }).get();
 		swal({
 			title: "Are you sure?",
 			text: 'Server with id "' + srv.tempCheckIdServer().toString() + '" will be deleted',
