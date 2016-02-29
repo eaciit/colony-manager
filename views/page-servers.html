@@ -32,7 +32,7 @@
 	</div>
 	<div class="col-md-4">
     	<label class="col-md-3 filter-label no-left-padding">
-    		OS
+    		Server OS
     	</label>
     	<div class="col-md-8">
     		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvOS, optionLabel: 'Select one' }"></select>
@@ -88,18 +88,18 @@
 						<span class="k-invalid-msg" data-for="ID"></span>					    			
 		    		</div>
 	    		</div>
-	    		<!-- <div class="form-group">
-		    		<label class="col-md-3 filter-label">Type</label>
-		    		<div class="col-md-7">
-		    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
-				        </select>
-				        <span class="k-invalid-msg" data-for="type"></span>
-		    		</div>
-	    		</div> -->
 	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">OS</label>
+		    		<label class="col-md-3 filter-label">Server Type</label>
 		    		<div class="col-md-7">
-		    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os}">
+		    			<select id="server-type" data-required-msg="Server type cannot be empty" name="server-type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeServer, dataValueField: 'value', dataTextField: 'text', value: serverType, change: srv.changeServerOS }">
+				        </select>
+				        <span class="k-invalid-msg" data-for="server-type"></span>
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Server OS</label>
+		    		<div class="col-md-7">
+		    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, enabled: srv.isServerTypeNode }">
 				        </select>
 				        <span class="k-invalid-msg" data-for="os"></span>
 		    		</div>
@@ -189,7 +189,7 @@
 		    		<div class="form-group">
 			    		<label class="col-md-2 filter-label">Extract</label>
 			    		<div class="col-md-9">
-			    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract">
+			    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract" value="unzip %1">
 							<span class="k-invalid-msg" data-for="extract"></span>
 			    		</div>
 		    		</div>
