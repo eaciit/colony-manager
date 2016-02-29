@@ -398,6 +398,9 @@ srv.navModalWizard = function (status) {
 		srv.dataWizard([]);
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
 			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
+			var pattern = srv.txtWizard().replace(/\]|\[/g, "").split('.')[3];
+			var firstPattern = pattern.split('-')[0];
+			var secondPattern = pattern.split('-')[1];
 			
 			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
 				app.isLoading(true);

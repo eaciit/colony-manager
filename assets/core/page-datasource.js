@@ -7,6 +7,9 @@ ds.templateDrivers = ko.observableArray([
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mysql", text: "MySQL" },
 	{ value: "hive", text: "Hive" },
+	{ value: "oracle", text: "Oracle*" },
+	{ value: "sqlserver", text: "SQL Servrer*" },
+	{ value: "postresql", text: "PostreSQL*" },
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -65,6 +68,17 @@ ds.collectionNames = ko.observableArray([]);
 ds.lokupModalLabel = ko.observable("");
 ds.tempCheckIdConnection = ko.observableArray([]);
 ds.tempCheckIdDataSource = ko.observableArray([]);
+ds.computedDrivers = ko.computed(
+	function() {
+		var temp = [];
+		var search = ko.utils.arrayFilter(ds.templateDrivers(),function (item) {
+           if (item.text.indexOf('*') < 0){
+				temp.push(item);
+			}
+       	}); 
+        return temp;
+    }
+);
 ds.dataSourceDataForLookup = ko.computed(function () {
 	return Lazy(ds.dataSourcesData()).where(function (e) {
 		return e._id != ds.confDataSource._id();
