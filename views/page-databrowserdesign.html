@@ -1,7 +1,7 @@
 <!-- core -->
 <!-- <script src="/res/core/page-databrowserdesign.js"></script> -->
 <script src="/res/core/page-datasource.js"></script>
-<script src="/res/core/page-datasource-query.js"></script>
+<!-- <script src="/res/core/page-datasource-query.js"></script> -->
 
 <!-- main area -->
 <div class="col-md-12">
@@ -35,18 +35,16 @@
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Connection</label>
+					    		<label class="col-md-3 databrowser-label">Name</label>
 					    		<div class="col-md-7">
-					    			<select id="connection" data-required-msg="Connection cannot be empty" name="connection" data-placeholder="Select Connection" class="form-control col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', change: '', value: Connection, filter: 'contains', suggest: true, minLength: 2}">
-							        </select>
-							        <span class="k-invalid-msg" data-for="connection"></span>
+					    			<input required type="text" class="form-control input-sm" name="BrowserName" placeholder="Type the the browser name Here" data-bind="value: BrowserName">
+									<span class="k-invalid-msg" data-for="BrowserName"></span>					    			
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Free Text Query</label>
 					    		<div class="col-md-7">
 						    		<input type="checkbox" id="isFreetext">
-							        <span class="k-invalid-msg" data-for="table"></span>
 					    		</div>
 				    		</div>
 			    		</div>
@@ -59,11 +57,11 @@
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Query Type</label>
+					    		<label class="col-md-3 databrowser-label">Connection</label>
 					    		<div class="col-md-7">
-						    		<select id="querytype" data-required-msg="Query Type cannot be empty" name="querytype" data-placeholder="Select Query Type" class="form-control col-100" data-bind="kendoDropDownList: { data: db.queryType, dataValueField: 'value', dataTextField: 'text', value: QueryType, optionLabel: 'Select Query Type' }">
+					    			<select required id="connectionlist" data-required-msg="Connection cannot be empty" name="connectionlist" data-placeholder="Select Connection" class="form-control col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: db.populateTable, filter: 'contains', suggest: true, minLength: 2}">
 							        </select>
-							        <span class="k-invalid-msg" data-for="querytype"></span>
+							        <span class="k-invalid-msg" data-for="connectionlist"></span>
 					    		</div>
 				    		</div>
 			    		</div>
@@ -72,10 +70,26 @@
 			    		<div class="col-md-6" id="fromTable">
 			    			<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Table</label>
-					    		<div class="col-md-7">
-						    		<select id="table" data-required-msg="Table cannot be empty" name="querytype" data-placeholder="Select table" class="form-control col-100" data-bind="kendoComboBox: {data: db.tableList, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', change: '', value: '', filter: 'contains', suggest: true, minLength: 2}">
+					    		<div class="input-group col-md-7">
+						    		<select required id="table" data-required-msg="Table cannot be empty" name="table" class="form-control col-100" data-bind="kendoDropDownList: { data: db.collectionListData, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Select one', filter: 'contains', suggest: true, minLength: 2 }">
 							        </select>
-							        <span class="k-invalid-msg" data-for="table"></span>
+							        <span class="k-invalid-msg" data-for="table"></span> 
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+				    			<label class="col-md-3"></label>
+				    			<div class="col-md-7">
+				    				 <button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
+				    			</div>
+				    		</div>
+			    		</div>
+			    		<div class="col-md-6" id="querytype">
+			    			<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Query Type</label>
+					    		<div class="col-md-7">
+						    		<select id="querytype" data-required-msg="Query Type cannot be empty" name="querytype" data-placeholder="Select Query Type" class="form-control col-100" data-bind="kendoDropDownList: { data: db.queryType, dataValueField: 'value', dataTextField: 'text', value: QueryType, optionLabel: 'Select Query Type' }">
+							        </select>
+							        <span class="k-invalid-msg" data-for="querytype"></span>
 					    		</div>
 				    		</div>
 			    		</div>
@@ -83,7 +97,7 @@
 			    			<div class="form-group">
 					    		<label class="col-md-2 databrowser-query-label query-text">Query Text</label>
 					    		<div class="input-group col-md-11">
-								<input type="text" class="form-control" placeholder="Query builder">
+								<input type="textquery" name="textquery" class="form-control" placeholder="Query builder">
 									<span class="input-group-btn">
 									<button class="btn btn-primary" type="button">Builder</button>
 									</span>
