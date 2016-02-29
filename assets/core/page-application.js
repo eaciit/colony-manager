@@ -41,9 +41,9 @@ apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.searchfield = ko.observable('');
 apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
-	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' id='selectall' onclick='\" apl.checkDelData(this, 'aplAll', 'all') \"' ></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' onclick=\" apl.checkDelData(this, 'aplAll', 'all') \"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='select' class='aplCheck' idcheck=" + d._id + " onclick='\" apl.checkDelData(this, 'aplCheck') />"
+			"<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>"
 		].join(" ");
 	}},
 	{ field: "_id", title: "ID", width: 80 },
@@ -480,7 +480,7 @@ apl.OnRemove = function (_id) {
 			closeOnConfirm: true
 		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/application/deleteapps", { _id: apl.tempCheckIdServer() }, function (res) {
+				app.ajaxPost("/application/deleteapps", apl.tempCheckIdServer(), function (res) {
 					if (!app.isFine(res)) {
 						return;
 					}
@@ -519,32 +519,28 @@ apl.renameFile = function(){
 }
 
 apl.checkDelData = function (elem,e ){
-	if ( e === 'aplAll'){
-		if ($(elem).prop('checked') === true){
-			$('.aplCheckAll').each(function (index) {
-				$(this).prop("checked", true);
-				apl.tempCheckIdServer.push($(elem).attr('idcheck'));	
-			})
-		} else {
-			var idtemp = '';
-			$('.aplCheckAll').each(function (index){
-				$(this).prop("checked", false );
-				idtemp = $(this).attr('idcheck');
-				apl.tempCheckIdServer.remove( function (item) {
-					return item === idtemp;
-				});
-			});
-		}
-	}
-
-	if ( e === 'aplCheck') {
+	if ( e === 'apl') {
 		if ($(elem).prop('checked') === true){
 			apl.tempCheckIdServer.push($(elem).attr('idcheck'));		
 		} else {
 			apl.tempCheckIdServer.remove(function (item) { return item === $(elem).attr('idcheck'); });		
 		}	
 	}
-
+	if ( e === 'aplAll'){
+		if ($(elem).prop('checked') === true){
+			$('.aplCheck').each(function (index) {
+				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));	
+			})
+		} else {
+			var idtemp = '';
+			$('.aplCheck').each(function (index){
+				$(this).prop("checked", false );
+				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; });
+			});
+		}
+	}
 }
 
 $(function () {
