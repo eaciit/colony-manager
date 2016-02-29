@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	tk "github.com/eaciit/toolkit"
 	// "io"
 	// "net/http"
 	// "os"
@@ -113,3 +113,25 @@ func (d *DataBrowserController) DeleteBrowser(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, nil, "")
 }
+
+func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result := tk.M{}
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	id := payload["id"].(string)
+
+	getFunc := DataSourceController{}
+	data, dataDS, err := getFunc.ConnectToDataSourceDB(id)
+
+	result.Set("DataValue", data)
+	result.Set("dataresult", dataDS)
+
+	return helper.CreateResult(true, result, "")
+}
+
