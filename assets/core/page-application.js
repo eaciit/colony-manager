@@ -157,8 +157,14 @@ apl.deploy = function () {
 				return;
 			}
 
-			apl.refreshGridModalDeploy();
-			console.log(res);
+			apl.getApplications(function () {
+				apl.appIDToDeploy(param._id);
+				apl.refreshGridModalDeploy();
+
+				setTimeout(function () {
+					$(".modal-deploy").modal("hide");
+				}, 1000);
+			});
 		});
 	})
 };
@@ -170,7 +176,7 @@ apl.selectApps = function (e) {
 	});
 };
 
-apl.getApplications = function() {
+apl.getApplications = function(c) {
 	apl.applicationData([]);
 	apl.appIDToDeploy('');
 
@@ -190,6 +196,9 @@ apl.getApplications = function() {
 		}
 
 		apl.applicationData(res.data);
+		if (c != undefined) {
+			c();
+		}
 	});
 };
 
