@@ -46,11 +46,8 @@ srv.validator = ko.observable('');
 srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
 srv.filterValue = ko.observable('');
-srv.filterServer = ko.observable({
-	search: '',
-	os: '',
-	sshtype: ''	
-});
+srv.filterSrvSSHType = ko.observable('');
+srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
@@ -208,6 +205,7 @@ srv.doSaveServer = function (c) {
 }
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
+		srv.getServers();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };

@@ -133,6 +133,15 @@ var dataConn = new Array();
 dataConn.push(dummyConn)
 db.connectionList(dataConn);
 
+//create function klik view for databrowser grid
+db.ViewBrowserName = function(id){
+    alert("masuk "+id);
+}
+
+db.DesignDataBrowser = function(id){
+    br.pageVisible("editor");
+}
+
 // dummy table list
 var dummyTable = new Object()
 dummyTable._id = "mongo-students"
