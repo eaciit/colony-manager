@@ -84,7 +84,7 @@ srv.ServerColumns = ko.observableArray([
 	// { field: "enable", title: "Enable" },
 ]);
 
-srv.getServers = function() {
+srv.getServers = function(c) {
 	srv.ServerData([]);
 	app.ajaxPost("/server/getservers", {search: srv.searchfield}, function (res) {
 		if (!app.isFine(res)) {
@@ -101,6 +101,10 @@ srv.getServers = function() {
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
 		});
+
+		if (c != undefined) {
+			c(res);
+		}
 	});
 };
 
@@ -215,6 +219,7 @@ srv.changeServerOS = function () {
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
 		srv.getServers();
+		apl.getApplications();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };
