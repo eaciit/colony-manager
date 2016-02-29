@@ -77,7 +77,7 @@ ds.computedDrivers = ko.computed(
 			}
        	}); 
         return temp;
-    }
+    }, ds
 );
 ds.dataSourceDataForLookup = ko.computed(function () {
 	return Lazy(ds.dataSourcesData()).where(function (e) {

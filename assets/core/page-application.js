@@ -61,6 +61,10 @@ apl.ServerColumns = ko.observableArray([
 		var disabled = false;
 		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
 		if (baseData != undefined) {
+			if (baseData.DeployedTo == null) {
+				baseData.DeployedTo = [];
+			}
+			
 			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
 		}
 
