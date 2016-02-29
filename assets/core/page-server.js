@@ -63,7 +63,7 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	// { field: "type", title: "Type" },
+	{ field: "serverType", title: "Type", template: "#: serverType # server" },
 	{ field: "host", title: "Host" },
 	{ field: "os", title: "OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
@@ -204,6 +204,14 @@ srv.doSaveServer = function (c) {
 		});
 	}
 }
+srv.isServerTypeNode = ko.computed(function () {
+	return srv.configServer.serverType() == "node";
+}, srv);
+srv.changeServerOS = function () {
+	if (this.value() == "node") {
+		srv.configServer.os("linux");
+	}
+};
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
 		srv.getServers();
