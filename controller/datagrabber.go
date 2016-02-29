@@ -740,11 +740,11 @@ func (d *DataGrabberController) convertTo(value interface{}, tipe string) interf
 	return fmt.Sprintf("%v", value)
 }
 
-func (d *DataGrabberController) GetSampleDataForAddWizard() toolkit.M {
+func (d *DataGrabberController) GetSampleDataForAddWizard() colonycore.DataGrabberWizardPayload {
 	s := `{ "ConnectionSource": "200_eccolmag", "ConnectionDestination": "200_eccolmag", "Transformations": [ { "TableSource": "source", "TableDestination": "destination" }, { "TableSource": "students", "TableDestination": "users" } ] }`
 
 	r := colonycore.DataGrabberWizardPayload{}
-	json.Unmarshal([]byte(), &r)
+	json.Unmarshal([]byte(s), &r)
 
 	return r
 }
