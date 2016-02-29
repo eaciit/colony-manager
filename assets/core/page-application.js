@@ -568,6 +568,30 @@ apl.checkDelData = function (elem,e ){
 	}
 }
 
+apl.selectServer = function(elem, e){
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
+		} else {
+			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
+		}
+	}
+}
+
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
