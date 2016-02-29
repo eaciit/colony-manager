@@ -88,14 +88,14 @@
 						<span class="k-invalid-msg" data-for="ID"></span>					    			
 		    		</div>
 	    		</div>
-	    		<!-- <div class="form-group">
-		    		<label class="col-md-3 filter-label">Type</label>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Server Type</label>
 		    		<div class="col-md-7">
-		    			<select id="type" data-required-msg="Type cannot be empty" name="type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetype, dataValueField: 'value', dataTextField: 'text', value: type, optionLabel: 'Select one' }">
+		    			<select id="server-type" data-required-msg="Server type cannot be empty" name="server-type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeServer, dataValueField: 'value', dataTextField: 'text', value: serverType, optionLabel: 'Select one' }">
 				        </select>
-				        <span class="k-invalid-msg" data-for="type"></span>
+				        <span class="k-invalid-msg" data-for="server-type"></span>
 		    		</div>
-	    		</div> -->
+	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">OS</label>
 		    		<div class="col-md-7">
@@ -189,7 +189,7 @@
 		    		<div class="form-group">
 			    		<label class="col-md-2 filter-label">Extract</label>
 			    		<div class="col-md-9">
-			    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract">
+			    			<input required type="text" class="form-control input-sm" name="extract" placeholder="Type Extract Here" data-bind="value: cmdextract" value="unzip %1">
 							<span class="k-invalid-msg" data-for="extract"></span>
 			    		</div>
 		    		</div>

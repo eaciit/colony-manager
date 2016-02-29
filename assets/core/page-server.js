@@ -9,14 +9,15 @@ srv.templateConfigServer = {
 	appPath: "",
 	dataPath: "",
 	host: "",
+	serverType: "node",
 	sshtype: "Credentials",
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
 };
-srv.templatetype = ko.observableArray([
-	{ value: "Local", text: "Local" },
-	{ value: "Remote", text: "Remote" }
+srv.templatetypeServer = ko.observableArray([
+	{ value: "node", text: "Node Server" },
+	{ value: "hadoop", text: "Hadoop Server" }
 ]);
 srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
