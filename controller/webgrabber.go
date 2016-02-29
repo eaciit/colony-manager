@@ -6,11 +6,13 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/sedotan/sedotan.v1/webapps/modules"
+	"github.com/eaciit/sedotan/sedotan.v2"
 	"github.com/eaciit/toolkit"
 	f "path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -96,17 +98,17 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
 	payload.LogConf.FileName = "LOG-" + payload.ID
 	payload.LogConf.LogPath = wgLogPath
-	payload.LogConf.FilePattern = "20060102"
+	payload.LogConf.FilePattern = sedotan.DateToString(time.Now())
+
+	payload.HistConf.FileName = "HIST-" + payload.ID
+	payload.HistConf.Histpath = wgHistoryPath
+	payload.HistConf.RecPath = wgHistoryRecPath
 
 	for i, each := range payload.DataSettings {
 		if each.DestType == "csv" {
-			payload.DataSettings[i].ConnectionInfo.Host = f.Join(wgOutputPath, each.Name)
-			payload.DataSettings[i].ConnectionInfo.Settings = toolkit.M{
-				"Timeout": each.ConnectionInfo.Settings,
-			}
+			payload.DataSettings[i].ConnectionInfo.Host = f.Join(wgOutputPath, payload.ID)
 		}
 	}
 
@@ -232,10 +234,13 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-	module := modules.NewHistory(payload.ID)
+	module := modules.NewHistory(payload.HistConf.FileName)
 	history := module.OpenHistory()
-
 	if reflect.ValueOf(history).Kind() == reflect.String {
 		if strings.Contains(history.(string), "Cannot Open File") {
 			return helper.CreateResult(false, nil, "Cannot Open File")

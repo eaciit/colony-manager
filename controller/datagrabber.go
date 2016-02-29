@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -218,7 +217,7 @@ func (d *DataGrabberController) GetDataGrabber(r *knot.WebContext) interface{} {
 	search := payload["search"].(string)
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search))
+	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("DataSourceOrigin", search), dbox.Contains("DataSourceDestination", search), dbox.Contains("IntervalType", search))
 
 	data := []colonycore.DataGrabber{}
 	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)
@@ -486,32 +485,17 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	transformedData := []toolkit.M{}
 
 	for _, each := range data {
-		// ================ pre transfer command
-		if dataGrabber.PreTransferCommand != "" {
-			jsonTranformedDataBytes, err := json.Marshal(each)
-			if err != nil {
-				return false, nil, err.Error()
-			}
-			jsonTranformedData := string(jsonTranformedDataBytes)
-
-			var preCommand = dataGrabber.PreTransferCommand
-			if strings.Contains(dataGrabber.PreTransferCommand, FLAG_ARG_DATA) {
-				preCommand = strings.TrimSpace(strings.Replace(dataGrabber.PreTransferCommand, FLAG_ARG_DATA, "", -1))
-			}
-
-			output, err := toolkit.RunCommand(preCommand, jsonTranformedData)
-			fmt.Printf("===> Pre Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", preCommand, jsonTranformedData, output)
-		}
-		// ================
-
 		eachTransformedData := toolkit.M{}
 
 		for _, eachMap := range dataGrabber.Maps {
 			var valueEachSourceField interface{}
 
+			// ============================================ SOURCE
 			if !strings.Contains(eachMap.Source, "|") {
+				// source could be: field, object, array
 				valueEachSourceField = each.Get(eachMap.Source)
 			} else {
+				// source could be: field of object, field of array-objects
 				prev := strings.Split(eachMap.Source, "|")[0]
 				next := strings.Split(eachMap.Source, "|")[1]
 
@@ -524,6 +508,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				}
 
 				if fieldInfoDes != nil {
+					// source is field of array-objects
 					if fieldInfoDes.Type == "array-objects" {
 						valueObjects := []interface{}{}
 						if temp, _ := each.Get(prev, nil).([]interface{}); temp != nil {
@@ -536,6 +521,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						}
 						valueEachSourceField = valueObjects
 					} else {
+						// source is field of object
 						valueObject := toolkit.M{}
 						if valueObject, _ = toolkit.ToM(each.Get(prev)); valueObject != nil {
 							valueEachSourceField = valueObject.Get(next)
@@ -544,8 +530,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				}
 			}
 
-			// fmt.Printf("---- SOURCE %#v\n", valueEachSourceField)
-
+			// ============================================ DESTINATION
 			if !strings.Contains(eachMap.Destination, "|") {
 				if eachMap.SourceType == "object" {
 					sourceObject, _ := toolkit.ToM(valueEachSourceField)
@@ -557,7 +542,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 					for _, desMeta := range dsDestination.MetaData {
 						if desMeta.ID == eachMap.Destination {
 							for _, eachMetaSub := range desMeta.Sub {
-								valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+								// valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+								valueObject.Set(eachMetaSub.ID, d.convertTo(sourceObject.Get(eachMetaSub.ID), eachMap.DestinationType))
 							}
 							break
 						}
@@ -581,7 +567,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						for _, desMeta := range dsDestination.MetaData {
 							if desMeta.ID == eachMap.Destination {
 								for _, eachMetaSub := range desMeta.Sub {
-									valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+									// valueObject.Set(eachMetaSub.ID, sourceObject.Get(eachMetaSub.ID))
+									valueObject.Set(eachMetaSub.ID, d.convertTo(sourceObject.Get(eachMetaSub.ID), eachMap.DestinationType))
 								}
 								break
 							}
@@ -592,78 +579,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 					eachTransformedData.Set(eachMap.Destination, valueObjects)
 				} else {
-					fmt.Println("tipe data : ", reflect.ValueOf(valueEachSourceField).Type())
-					fmt.Println("destination type data - >", eachMap.DestinationType)
-
-					var res interface{}
-					switch valueEachSourceField.(type) {
-					case string:
-						switch eachMap.DestinationType {
-						case "string":
-							fmt.Println("string : ", eachMap.DestinationType)
-							// res = strconv.Itoa(valueEachSourceField.(string))
-							res = valueEachSourceField
-							//eachTransformedData.Set(eachMap.Destination, numConvert)
-						case "int":
-							fmt.Println("int : ", eachMap.DestinationType)
-							res, err = strconv.Atoi(valueEachSourceField.(string))
-							if err != nil {
-								fmt.Println("== > error convert data from destination type string to int")
-								res = valueEachSourceField
-							}
-						case "double":
-							fmt.Println("double : ", eachMap.DestinationType)
-							res, err = strconv.ParseFloat(valueEachSourceField.(string), 32)
-							if err != nil {
-								fmt.Println("== > error convert data from destination type string to float or double")
-								res = valueEachSourceField
-							}
-						case "bool":
-							fmt.Println("bool : ", eachMap.DestinationType)
-							res, err = strconv.ParseBool(valueEachSourceField.(string))
-							if err != nil {
-								fmt.Println("== > error convert data from destination type string to bool")
-								res = valueEachSourceField
-							}
-
-						}
-						// eachTransformedData.Set(eachMap.Destination, res)
-						// fmt.Println(" -- > ", reflect.ValueOf(eachTransformedData.Get(eachMap.Destination)).Type())
-
-					case int:
-						switch eachMap.DestinationType {
-						case "string":
-							fmt.Println("string : ", eachMap.DestinationType)
-							res = strconv.Itoa(valueEachSourceField.(int))
-						case "int":
-							fmt.Println("int : ", eachMap.DestinationType)
-							res = valueEachSourceField
-						case "double":
-							fmt.Println("double : ", eachMap.DestinationType)
-							res = float64(valueEachSourceField.(int))
-						case "bool":
-							fmt.Println("== > error convert data from destination type int to bool")
-						}
-
-					case bool:
-						// switch eachMap.DestinationType {
-						// case "string":
-						// 	fmt.Println("string : ", eachMap.DestinationType)
-						// 	res = strconv.FormatBool(valueEachSourceField.(bool))
-						// case "int":
-						// 	fmt.Println("== > error convert data from destination type bool to int")
-						// case "double":
-						// 	fmt.Println("== > error convert data from destination type bool to double")
-						// case "bool":
-						// 	res = valueEachSourceField
-						// }
-
-					}
-					eachTransformedData.Set(eachMap.Destination, res)
-					fmt.Println(" -- > ", reflect.ValueOf(eachTransformedData.Get(eachMap.Destination)).Type())
-					fmt.Printf("eachMapDest : %s -> %s\n", eachMap.Destination, valueEachSourceField)
-
-					// eachTransformedData.Set(eachMap.Destination, valueEachSourceField)
+					// eachTransformedData.Set(eachMap.Destination, convertDataType(eachMap.DestinationType, eachMap.Source, each))
+					eachTransformedData.Set(eachMap.Destination, d.convertTo(each.Get(eachMap.Source), eachMap.DestinationType))
 				}
 			} else {
 				prev := strings.Split(eachMap.Destination, "|")[0]
@@ -695,7 +612,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 								if len(valueObjects) > i {
 									if temp2, _ := toolkit.ToM(valueObjects[i]); temp2 != nil {
 										valueObject = temp2
-										valueObject.Set(next, eachVal)
+										// valueObject.Set(next, eachVal)
+										valueObject.Set(next, d.convertTo(eachVal, eachMap.DestinationType))
 									}
 
 									valueObjects[i] = valueObject
@@ -706,7 +624,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 										}
 									}
 
-									valueObject.Set(next, eachVal)
+									// valueObject.Set(next, eachVal)
+									valueObject.Set(next, d.convertTo(eachVal, eachMap.DestinationType))
 									valueObjects = append(valueObjects, valueObject)
 								}
 							}
@@ -719,28 +638,69 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 							valueObject = toolkit.M{}
 						}
 
-						valueObject.Set(next, valueEachSourceField)
+						//tambahan
+						prevSource := strings.Split(eachMap.Source, "|")[0]
+						nextSource := strings.Split(eachMap.Source, "|")[1]
+						mval, _ := toolkit.ToM(each.Get(prevSource, nil))
+
+						//=========
+						valueObject.Set(next, d.convertTo(mval.Get(nextSource), eachMap.DestinationType))
+						// valueObject.Set(next, convertDataType(eachMap.DestinationType, nextSource, mval))
 						eachTransformedData.Set(prev, valueObject)
 					}
 				}
 			}
 		}
 
-		// fmt.Printf("==== %#v\n", eachTransformedData)
-
 		transformedData = append(transformedData, eachTransformedData)
+		dataToSave := eachTransformedData
+
+		// ================ pre transfer command
+		if dataGrabber.PreTransferCommand != "" {
+			// jsonTranformedDataBytes, err := json.Marshal(each)
+			jsonTranformedDataBytes, err := json.Marshal(eachTransformedData)
+			if err != nil {
+				return false, nil, err.Error()
+			}
+			jsonTranformedData := string(jsonTranformedDataBytes)
+
+			var preCommand = dataGrabber.PreTransferCommand
+			if strings.Contains(dataGrabber.PreTransferCommand, FLAG_ARG_DATA) {
+				preCommand = strings.TrimSpace(strings.Replace(dataGrabber.PreTransferCommand, FLAG_ARG_DATA, "", -1))
+			}
+
+			dataToSave = toolkit.M{}
+
+			output, err := toolkit.RunCommand(preCommand, jsonTranformedData)
+			fmt.Printf("===> Pre Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", preCommand, jsonTranformedData, output)
+			if err == nil {
+				postData := toolkit.M{}
+				if err := json.Unmarshal([]byte(output), &postData); err == nil {
+					dataToSave = postData
+				}
+			}
+		}
+		// ================
+
+		if len(dataToSave) == 0 {
+			continue
+		}
+
 		tableName := dsDestination.QueryInfo.GetString("from")
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
 
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 
-		dataToSave := eachTransformedData
-
-		fmt.Println("< - > ", dataToSave, "\n\n")
+		err = queryWrapper.Save(tableName, dataToSave)
+		if err != nil {
+			logConf.AddLog(err.Error(), "ERROR")
+			return false, nil, err.Error()
+		}
 
 		// ================ post transfer command
 		if dataGrabber.PostTransferCommand != "" {
+			eachTransformedData = dataToSave
 			jsonTranformedDataBytes, err := json.Marshal(eachTransformedData)
 			if err != nil {
 				return false, nil, err.Error()
@@ -752,22 +712,8 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 				postCommand = strings.TrimSpace(strings.Replace(dataGrabber.PostTransferCommand, FLAG_ARG_DATA, "", -1))
 			}
 
-			dataToSave = toolkit.M{}
-			postData := toolkit.M{}
-
 			output, err := toolkit.RunCommand(postCommand, jsonTranformedData)
 			fmt.Printf("===> Post Transfer Command Result\n  COMMAND -> %s %s\n  OUTPUT  -> %s\n", postCommand, jsonTranformedData, output)
-			if err == nil {
-				if err := json.Unmarshal([]byte(output), &postData); err == nil {
-					dataToSave = postData
-				}
-			}
-		}
-
-		err = queryWrapper.Save(tableName, dataToSave)
-		if err != nil {
-			logConf.AddLog(err.Error(), "ERROR")
-			return false, nil, err.Error()
 		}
 	}
 
@@ -776,4 +722,51 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	fmt.Println(message)
 
 	return true, transformedData, ""
+}
+
+func (d *DataGrabberController) convertTo(value interface{}, tipe string) interface{} {
+	switch tipe {
+	case "int":
+		return toolkit.M{}.Set("k", value).GetInt("k")
+	case "double":
+		return toolkit.M{}.Set("k", value).GetFloat64("k")
+	case "bool":
+		res, _ := strconv.ParseBool(fmt.Sprintf("%v", value))
+		return res
+	case "string":
+		return fmt.Sprintf("%v", value)
+	}
+
+	return fmt.Sprintf("%v", value)
+}
+
+func (d *DataGrabberController) GetSampleDataForAddWizard() colonycore.DataGrabberWizardPayload {
+	s := `{ "ConnectionSource": "200_eccolmag", "ConnectionDestination": "200_eccolmag", "Transformations": [ { "TableSource": "source", "TableDestination": "destination" }, { "TableSource": "students", "TableDestination": "users" } ] }`
+
+	r := colonycore.DataGrabberWizardPayload{}
+	json.Unmarshal([]byte(s), &r)
+
+	return r
+}
+
+func convertDataType(typedt string, dtget string, toolmap toolkit.M) interface{} {
+	var resValueEachSF interface{}
+	switch typedt {
+	case "string":
+		resValueEachSF = fmt.Sprintf("%v", toolmap.Get(dtget))
+	case "int":
+		var resDefault int
+		resDefault = toolmap.GetInt(dtget)
+		resValueEachSF = resDefault
+	case "double":
+		var resDefault float32
+		resDefault = toolmap.GetFloat32(dtget)
+		resValueEachSF = resDefault
+	case "bool":
+		var resDefault bool
+		resDefault, _ = strconv.ParseBool(toolmap.GetString(dtget))
+		resValueEachSF = resDefault
+	}
+
+	return resValueEachSF
 }

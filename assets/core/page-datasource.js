@@ -101,7 +101,16 @@ ds.dataSourceColumns = ko.observableArray([
 	{ field: "_id", title: "Data Source ID" },
 	{ field: "ConnectionID", title: "Connection" },
 	{ field: "QueryInfo", title: "Query", template: function (d) {
-		return "test"
+		var q = JSON.parse(kendo.stringify(d.QueryInfo));
+		var r = [];
+
+		for (var k in q) {
+			if (q.hasOwnProperty(k)) {
+				r.push([k, q[k]].join(" : "));
+			}
+		}
+
+		return r.join(", ");
 	} },
 ]);
 ds.settingsColumns = ko.observableArray([
@@ -220,6 +229,8 @@ ds.backToFrontPage = function () {
 	app.mode('');
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	ds.tempCheckIdDataSource([]);
+	ds.tempCheckIdConnection([]);
 };
 ds.populateGridConnections = function () {
 	var param = ko.mapping.toJS(ds.config);
@@ -233,6 +244,7 @@ ds.populateGridConnections = function () {
 		ds.connectionListData(res.data);
 	});
 };
+
 ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
 		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
@@ -321,6 +333,7 @@ ds.selectGridConnection = function (e) {
 	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
 		ds.editConnection(d._id);
 		ds.showConnection(true);
+		ds.tempCheckIdConnection.push(d._id);
 	});
 };
 
@@ -366,7 +379,6 @@ ds.removeConnection = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					ds.backToFrontPage();
 					swal({ title: "Data connection(s) successfully deleted", type: "success" });
 				});
@@ -400,19 +412,19 @@ ds.removeDataSource = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					ds.backToFrontPage();
 					swal({ title: "Data source(s) successfully deleted", type: "success" });
 				});
 			}, 1000);
 		});
-	}
+	} 
 };
 
 ds.selectGridDataSource = function (e) {
 	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
 		ds.editDataSource(d._id);
 		ds.showDataSource(true);
+		ds.tempCheckIdDataSource.push(d._id);
 	});
 };
 
@@ -483,6 +495,7 @@ ds.populateGridDataSource = function () {
 	});
 	// filterDataSource();
 };
+
 ds.openDataSourceForm = function(){
 	app.mode('editDataSource');
 	ds.dataSourceMode('');
@@ -794,4 +807,6 @@ function filterConnection(event) {
 $(function () {
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	app.registerSearchKeyup($(".search"), ds.populateGridConnections);
+	app.registerSearchKeyup($(".searchds"), ds.populateGridDataSource);
 });

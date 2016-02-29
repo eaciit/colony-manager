@@ -25,15 +25,22 @@ wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
 wg.templateConfigScrapper = {
     _id: "",
-    sourcetype: "SourceType_Http",
+    sourcetype: "SourceType_HttpHtml",
     grabconf:
             {
                 "url": "http://www.google.com",
                 "calltype": "GET",
+                "authtype" : "AuthType_Basic",
+                "loginurl" : "", 
+                "logouturl" : "", 
+                "username" : "",
+                "password" : "", 
                 "formvalues": {},
-                "temp": {
-                    "parameters": []
-                },
+                "timeout" : 20,
+                "temp" : {
+                	"parameters" : []
+                }
+
             },
     intervalconf:
             {
@@ -73,8 +80,6 @@ wg.templateConfigSelector = {
 	rowselector: "",
 	filtercond: "",
 	conditionlist: [],
-	// rowdeletecond: {},
-	// rowincludecond: {},
 	destoutputtype: "database",
 	desttype: "mongo",
 	columnsettings: [],
@@ -136,11 +141,11 @@ wg.scrapperColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
 	} },
-	{ field: "calltype", title: "Request Type", width: 150 },
+	{ field: "grabconf.calltype", title: "Request Type", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
-	{ field: "intervaltype", title: "Interval Unit", width: 150 },
-	{ field: "grabinterval", title: "Interval Duration", width: 150 },
-	{ field: "timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
+	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
+	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
 ]);
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
@@ -166,8 +171,9 @@ wg.historyColumns = ko.observableArray([
 wg.filterRequestTypes = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
-	{ value: "SourceType_Http", title: "HTTP / Web" },
-	{ value: "SourceType_Dbox", title: "Data File" },
+	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
+	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
+	// { value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -183,6 +189,12 @@ wg.templateConfigConnection = {
 	Password: "",
 	Settings: []
 };
+
+wg.dataAuthType = ko.observableArray([
+	{value : "AuthType_Basic" , title : "Basic"},
+	{value : "AuthType_Cookie", title: "Cookie"},
+	{value : "AuthType_Session" , title : "Session"},
+]);
 wg.replaceEqWithNthChild = function (s) {
 	return s.replace(/eq\(([^)]+)\)/g, function (e) {
 		var i = parseInt(e.split("(").reverse()[0].split(")")[0]) + 1;
@@ -303,50 +315,50 @@ wg.runBotStats = function () {
 
 	var isThereAnyError = false;
 
-	if (wg.scrapperData() != "") {
-		wg.scrapperData().forEach(function (each) {
-			var checkStat = function () {
-				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
-					if (res.success) {
-						var $grid = $(".grid-web-grabber").data("kendoGrid");
-						var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+	// if (wg.scrapperData() != "") {
+	// 	wg.scrapperData().forEach(function (each) {
+	// 		var checkStat = function () {
+	// 			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+	// 				if (res.success) {
+	// 					var $grid = $(".grid-web-grabber").data("kendoGrid");
+	// 					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
 
-						if (row != undefined) {
-							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+	// 					if (row != undefined) {
+	// 						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-							if (res.data.isRun) {
-								$tr.addClass("started");
-							} else {
-								$tr.removeClass("started");
-							}
-						}
-					}
+	// 						if (res.data.isRun) {
+	// 							$tr.addClass("started");
+	// 						} else {
+	// 							$tr.removeClass("started");
+	// 						}
+	// 					}
+	// 				}
 
-					if (isThereAnyError) {
-						return;
-					}
+	// 				if (isThereAnyError) {
+	// 					return;
+	// 				}
 
-					if (!app.isFine(res)) {
-						isThereAnyError = true;
-						return;
-					}
-				}, function (a) {
-			        sweetAlert("Oops...", a.statusText, "error");
-				}, {
-					withLoader: false
-				});
-			};
+	// 				if (!app.isFine(res)) {
+	// 					isThereAnyError = true;
+	// 					return;
+	// 				}
+	// 			}, function (a) {
+	// 		        sweetAlert("Oops...", a.statusText, "error");
+	// 			}, {
+	// 				withLoader: false
+	// 			});
+	// 		};
 
-			var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
+	// 		var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
 
-			wg.botStats.push({ 
-				_id: each._id,
-				interval: setInterval(checkStat, interval * 1000)
-			});
+	// 		wg.botStats.push({ 
+	// 			_id: each._id,
+	// 			interval: setInterval(checkStat, interval * 1000)
+	// 		});
 
-			checkStat();
-		});
-	}
+	// 		checkStat();
+	// 	});
+	// }
 	
 };
 wg.parsePayload = function () {
@@ -601,6 +613,14 @@ wg.removeSelectorSetting = function(each){
 	var item = wg.selectorRowSetting()[each];
 	wg.selectorRowSetting.remove(item);
 }
+
+wg.authtypeValidation = function(authtype){
+	if(authtype != 'AuthType_Basic'){
+		$('.authconf').prop('required',true);
+	}else{
+		$('.authconf').prop('required',false);
+	}
+}
 wg.showSelectorSetting = function(index,nameSelector){
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
@@ -779,7 +799,7 @@ wg.parseGrabConf = function () {
 		}
 	});
 
-	//config.grabconf.data = grabConfData;
+	config.grabconf.formvalues = grabConfData;
 	config.grabconf.temp.parameters = tempParameters;
 	return config;
 };
@@ -983,4 +1003,5 @@ wg.checkDeleteWebGrabber = function(elem, e){
 $(function () {
 	wg.getConnection();
 	wg.getScrapperData();
+	app.registerSearchKeyup($(".search"), wg.getScrapperData);
 });

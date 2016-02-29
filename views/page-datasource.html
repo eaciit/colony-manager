@@ -40,7 +40,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8">
-		    		<input class="form-control input-sm" type="text" data-bind="value: ds.searchfield" placeholder="Type keyword here" />
+		    		<input class="form-control input-sm search" type="text" data-bind="value: ds.searchfield" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		    <div class="col-md-4">
@@ -73,7 +73,7 @@
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: testConnection">
 	    		<span class="fa fa-info-circle"></span> Test Connection
 	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditConnection" data-bind="visible: showConnection">
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditConnection" data-bind="visible: showConnection, click : ds.removeConnection">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
@@ -189,7 +189,7 @@
 		    		Search
 		    	</label>
 		    	<div class="col-md-8">
-		    		<input class="form-control input-sm" type="text" data-bind="value: ds.search2field" placeholder="Type keyword here" />
+		    		<input class="form-control input-sm searchds" type="text" data-bind="value: ds.search2field" placeholder="Type keyword here" />
 		    	</div>
 		    </div>
 		</nav>
@@ -207,7 +207,7 @@
 	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: testQuery">
 	    		<span class="glyphicon glyphicon-play"></span> Run Query
 	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataSource" data-bind="visible: showDataSource">
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataSource" data-bind="visible: showDataSource, click : ds.removeDataSource">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>

@@ -26,6 +26,7 @@ apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
 apl.showErrorDeploy = ko.observable(false);
 apl.filterValue = ko.observable('');
+apl.filterAplType = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.applicationMode = ko.observable('');
@@ -40,9 +41,9 @@ apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.searchfield = ko.observable('');
 apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' onclick=\" apl.checkDelData(this, 'aplAll', 'all') \"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
+			"<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>"
 		].join(" ");
 	}},
 	{ field: "_id", title: "ID", width: 80 },
@@ -57,9 +58,17 @@ apl.applicationColumns = ko.observableArray([
 ]);
 apl.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
-		].join(" ");
+		var disabled = false;
+		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (baseData != undefined) {
+			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
+		}
+
+		if (!disabled) {
+			return "<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />";
+		}
+
+		return "";
 	} },
 	{ field: "_id", title: "ID" },
 	{ field: "host", title: "Host" },
@@ -102,13 +111,29 @@ apl.gridServerDeployDataBound = function () {
 		}
 	});
 };
+apl.refreshGridModalDeploy = function () {
+	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
+	$(".grid-server-deploy").kendoGrid({
+		dataSource: { 
+			pageSize: 15,
+			data: srv.ServerData()
+		}, 
+		columns: apl.ServerColumns(),
+		filterfable: false,
+		pageable: true,
+		dataBound: apl.gridServerDeployDataBound
+	});
+};
 apl.showModalDeploy = function (_id) {
 	return function () {
-		apl.appIDToDeploy(_id);
-		$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
-			$(e).prop("checked", false);
+		srv.getServers(function () {
+			$(".modal-deploy").modal("show");
+			apl.appIDToDeploy(_id);
+			apl.refreshGridModalDeploy();
+			$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
+				$(e).prop("checked", false);
+			});
 		});
-		$(".modal-deploy").modal("show");
 	};
 };
 apl.deploy = function () {
@@ -132,23 +157,26 @@ apl.deploy = function () {
 				return;
 			}
 
-			console.log(res);
+			apl.getApplications(function () {
+				apl.appIDToDeploy(param._id);
+				apl.refreshGridModalDeploy();
+
+				setTimeout(function () {
+					$(".modal-deploy").modal("hide");
+				}, 1000);
+			});
 		});
 	})
-};
-apl.browse = function (_id) {
-	return function (e) {
-		
-	};
 };
 
 apl.selectApps = function (e) {
 	app.wrapGridSelect(".grid-application", ".btn", function (d) {
 		apl.editApplication(d._id);
+		apl.tempCheckIdServer.push(d._id);
 	});
 };
 
-apl.getApplications = function() {
+apl.getApplications = function(c) {
 	apl.applicationData([]);
 	apl.appIDToDeploy('');
 
@@ -163,8 +191,14 @@ apl.getApplications = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
+		if (res.data==null){
+			res.data="";
+		}
 
 		apl.applicationData(res.data);
+		if (c != undefined) {
+			c();
+		}
 	});
 };
 
@@ -241,15 +275,8 @@ apl.getUploadFile = function() {
 apl.backToFront = function () {
 	app.mode('');
 	apl.getApplications();
+	apl.tempCheckIdServer([]);
 };
-
-// apl.getDirectory = function(){
-// 	app.ajaxPost("/application/readdirectory", {}, function(res) {
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
-// 	});
-// }
 
 apl.treeView = function (id) {
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
@@ -353,7 +380,7 @@ apl.removeFileDir = function(){
 				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
 				 apl.appTreeMode("");
 				 apl.appTreeSelected("");
-				 swal({title: "File / Folder successfully deleted", type: "success"});
+				 swal({title: "File / Folder successfully deleted", type: "success"});				 
 				});
 		},1000);
 	});
@@ -466,47 +493,38 @@ function ApplicationFilter(event){
 	});
 }
 
-var vals = [];
-apl.OnRemove = function(){
-	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+apl.OnRemove = function (_id) {
+	if (apl.tempCheckIdServer().length === 0) {
 		swal({
-		title: "",
-		text: 'You havent choose any application to delete',
-		type: "warning",
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "OK",
-		closeOnConfirm: true
+			title: "",
+			text: 'You havent choose any Application to delete',
+			type: "warning",
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
 		});
-	} else {
-		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
-			return this.value;
-		}).get();
-
+	}else{
 		swal({
-		title: "Are you sure?",
-		text: 'Application with id "' + vals + '" will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: true
-		},
-		function() {
+			title: "Are you sure?",
+			text: 'Application with id '+apl.tempCheckIdServer().toString()+' will be deleted',
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Delete",
+			closeOnConfirm: true
+		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/application/deleteapps", vals, function () {
-					if (!app.isFine) {
+				app.ajaxPost("/application/deleteapps", apl.tempCheckIdServer(), function (res) {
+					if (!app.isFine(res)) {
 						return;
 					}
-
-				 apl.backToFront();
-				 swal({title: "Application successfully deleted", type: "success"});
+					swal({ title: "Data successfully deleted", type: "success" });
+					apl.backToFront();
 				});
-			},1000);
-
+			}, 1000);
 		});
- 	} 
- 
-}
+	}
+};
 
 apl.modalRenameFile =  function(){
 	$('.modal-new-file').modal('show');
@@ -532,6 +550,31 @@ apl.renameFile = function(){
 		apl.appTreeSelected("");
 		swal({title: "File / Folder successfully renamed", type: "success"});
 	});
+}
+
+apl.checkDelData = function (elem,e ){
+	if ( e === 'apl') {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));		
+		} else {
+			apl.tempCheckIdServer.remove(function (item) { return item === $(elem).attr('idcheck'); });		
+		}	
+	}
+	if ( e === 'aplAll'){
+		if ($(elem).prop('checked') === true){
+			$('.aplCheck').each(function (index) {
+				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));	
+			})
+		} else {
+			var idtemp = '';
+			$('.aplCheck').each(function (index){
+				$(this).prop("checked", false );
+				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; });
+			});
+		}
+	}
 }
 
 apl.selectServer = function(elem, e){
@@ -564,5 +607,5 @@ $(function () {
 	apl.codemirror();
 	apl.treeView("") ;
 	app.prepareTooltipster($(".tooltipster"));
-
+	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
