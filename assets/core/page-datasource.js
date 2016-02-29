@@ -229,6 +229,8 @@ ds.backToFrontPage = function () {
 	app.mode('');
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	ds.tempCheckIdDataSource([]);
+	ds.tempCheckIdConnection([]);
 };
 ds.populateGridConnections = function () {
 	var param = ko.mapping.toJS(ds.config);
@@ -331,6 +333,7 @@ ds.selectGridConnection = function (e) {
 	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
 		ds.editConnection(d._id);
 		ds.showConnection(true);
+		ds.tempCheckIdConnection.push(d._id);
 	});
 };
 
@@ -376,7 +379,6 @@ ds.removeConnection = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					ds.backToFrontPage();
 					swal({ title: "Data connection(s) successfully deleted", type: "success" });
 				});
@@ -410,19 +412,19 @@ ds.removeDataSource = function (_id) {
 					if (!app.isFine(res)) {
 						return;
 					}
-
 					ds.backToFrontPage();
 					swal({ title: "Data source(s) successfully deleted", type: "success" });
 				});
 			}, 1000);
 		});
-	}
+	} 
 };
 
 ds.selectGridDataSource = function (e) {
 	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
 		ds.editDataSource(d._id);
 		ds.showDataSource(true);
+		ds.tempCheckIdDataSource.push(d._id);
 	});
 };
 
