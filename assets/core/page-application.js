@@ -58,9 +58,17 @@ apl.applicationColumns = ko.observableArray([
 ]);
 apl.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
-		].join(" ");
+		var disabled = false;
+		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (baseData != undefined) {
+			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
+		}
+
+		if (!disabled) {
+			return "<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />";
+		}
+
+		return "";
 	} },
 	{ field: "_id", title: "ID" },
 	{ field: "host", title: "Host" },
@@ -103,13 +111,29 @@ apl.gridServerDeployDataBound = function () {
 		}
 	});
 };
+apl.refreshGridModalDeploy = function () {
+	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
+	$(".grid-server-deploy").kendoGrid({
+		dataSource: { 
+			pageSize: 15,
+			data: srv.ServerData()
+		}, 
+		columns: apl.ServerColumns(),
+		filterfable: false,
+		pageable: true,
+		dataBound: apl.gridServerDeployDataBound
+	});
+};
 apl.showModalDeploy = function (_id) {
 	return function () {
-		apl.appIDToDeploy(_id);
-		$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
-			$(e).prop("checked", false);
+		srv.getServers(function () {
+			$(".modal-deploy").modal("show");
+			apl.appIDToDeploy(_id);
+			apl.refreshGridModalDeploy();
+			$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
+				$(e).prop("checked", false);
+			});
 		});
-		$(".modal-deploy").modal("show");
 	};
 };
 apl.deploy = function () {
@@ -133,7 +157,14 @@ apl.deploy = function () {
 				return;
 			}
 
-			console.log(res);
+			apl.getApplications(function () {
+				apl.appIDToDeploy(param._id);
+				apl.refreshGridModalDeploy();
+
+				setTimeout(function () {
+					$(".modal-deploy").modal("hide");
+				}, 1000);
+			});
 		});
 	})
 };
@@ -145,7 +176,7 @@ apl.selectApps = function (e) {
 	});
 };
 
-apl.getApplications = function() {
+apl.getApplications = function(c) {
 	apl.applicationData([]);
 	apl.appIDToDeploy('');
 
@@ -165,6 +196,9 @@ apl.getApplications = function() {
 		}
 
 		apl.applicationData(res.data);
+		if (c != undefined) {
+			c();
+		}
 	});
 };
 
@@ -539,6 +573,30 @@ apl.checkDelData = function (elem,e ){
 				idtemp = $(this).attr('idcheck');
 				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; });
 			});
+		}
+	}
+}
+
+apl.selectServer = function(elem, e){
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
+		} else {
+			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
 }
