@@ -70,7 +70,7 @@ var methodsDB = {
 
 			$Field.attr("placeholder","Fill "+ data[i].Label);
 
-			var dtype = data[i].Format.indexOf("N0") > -1 ? "int" : data[i].Format.indexOf("N") > -1 ? "float" : data[i].Format.toLowerCase().indexOf("m") > -1 || data[i].Format.toLowerCase().indexOf("d") > -1 || data[i].Format.toLowerCase().indexOf("y") > -1 ? "date":data[i].Format.toLowerCase().indexOf("bool") > -1? "bool":"string";
+			var dtype = data[i].Format.toLowerCase().indexOf("n0") > -1 ? "int" : data[i].Format.toLowerCase().indexOf("n") > -1 ? "float" : data[i].Format.toLowerCase().indexOf("m") > -1 || data[i].Format.toLowerCase().indexOf("d") > -1 || data[i].Format.toLowerCase().indexOf("y") > -1 ? "date":data[i].Format.toLowerCase().indexOf("bool") > -1? "bool":"string";
 			if(dtype.toLowerCase() == "bool"){
 				$Field.attr("type","checkbox");
 			}else if(dtype.toLowerCase() =="float" || dtype.toLowerCase() =="double"){
@@ -107,6 +107,8 @@ var methodsDB = {
 			if(!data[i].SimpleFilter && data[i].AdvanceFilter){
 				$str.hide();
 				$str.attr("class",$str.attr("class")+" advance-filter")
+			}else if(!data[i].SimpleFilter){
+				$str.hide();
 			}
 		}
 
@@ -234,16 +236,6 @@ $("#TestFilter").ecDataBrowserFilter({
 			"Aggregate":"",
 		}
 			]},
-	maxColumn:3
-	});
-
-
-	$("#TestFilter2").ecDataBrowserFilter({
-	dataSource:{
-			url: 'https://gist.githubusercontent.com/yanda15/2d7147452690a5bbaf96/raw/5a365c260025480ea3ae689ade4681f4e6b91e29/gistfile1.txt',
-			call: 'GET',
-			callData: 'search'
-	}, 
 	maxColumn:3
 	});
 */
