@@ -238,4 +238,13 @@ $("#TestFilter").ecDataBrowserFilter({
 			]},
 	maxColumn:3
 	});
+	
+	$("#TestFilter2").ecDataBrowserFilter({		
+-	dataSource:{		
+-			url: 'https://gist.githubusercontent.com/yanda15/2d7147452690a5bbaf96/raw/5a365c260025480ea3ae689ade4681f4e6b91e29/gistfile1.txt',		
+-			call: 'GET',		
+-			callData: 'search'		
+-	}, 		
+-	maxColumn:3		
+-	});
 */
