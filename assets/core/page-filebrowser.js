@@ -17,22 +17,5 @@ $("#FileBrowser").ecFileBrowser({
         }
     });
 
-$("#FileBrowser2").ecFileBrowser({
-        dataSource:{
-            url: '//demos.telerik.com/kendo-ui/service/Employees',
-            call: 'GET',
-            callData: 'search',
-            pathField: "EmployeeId",
-            hasChildrenField:"HasEmployees",
-            nameField:"FullName"
-        }, 
-        serverSource:{
-             data:[
-                { "text": "Server c"},
-                { "text": "Server d"}
-            ]
-        }
-    });
-
 });
     
