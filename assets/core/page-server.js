@@ -13,7 +13,11 @@ srv.templateConfigServer = {
 	sshtype: "Credentials",
 	sshfile: "",
 	sshuser: "",
-	sshpass:  "",
+	sshpass:  "",	
+	cmdextract:"",
+	cmdnewfile :"",
+	cmdcopy:"",
+	cmdmkdir:"",
 };
 srv.templatetypeServer = ko.observableArray([
 	{ value: "node", text: "Node Server" },

@@ -15,6 +15,7 @@ dg.templateConfigScrapper = {
 	PreTransferCommand: "",
 	PostTransferCommand: ""
 };
+
 dg.templateMap = {
 	FieldOrigin: "",
 	FieldDestination: ""
@@ -24,6 +25,7 @@ dg.templateIntervalType = [
 	{ value: "minutes", title: "Minutes" }, 
 	{ value: "hours", title: "Hours" }
 ];
+
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
@@ -146,6 +148,18 @@ dg.getScrapperData = function (){
 	});
 };
 
+function courseViewModel (){
+	this.textValue = ko.observableArray('');
+}
+
+function ceremonyViewModel (){
+	this.courses = ko.observableArray([new courseViewModel()]);
+	this.addCourse = function (){
+		this.courses.push(new courseViewModel());
+	};
+}
+
+
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
 	dg.configScrapper.Map.push(o);
@@ -163,6 +177,12 @@ dg.createNewScrapper = function () {
 	dg.addMap();
 	dg.showDataGrabber(false);
 };
+
+dg.addWizard = function (){
+	app.mode('addWizard');
+
+}
+
 dg.doSaveDataGrabber = function (c) {
 	if (!app.isFormValid(".form-datagrabber")) {
 		return;

@@ -749,6 +749,36 @@ func (d *DataGrabberController) GetSampleDataForAddWizard() colonycore.DataGrabb
 	return r
 }
 
+func (d *DataGrabberController) SaveDataGrabberWizard(r *knot.WebContext) interface{} {
+	payload := d.GetSampleDataForAddWizard()
+
+	for i, each := range payload.Transformations {
+		owiz := new(colonycore.DataGrabber)
+		owiz.ID = "GRAB_TEST_" + strconv.Itoa(i)
+		owiz.ConnectionOrigin = payload.ConnectionSource
+		owiz.ConnectionDestination = payload.ConnectionDestination
+		owiz.TableOrigin = each.TableSource
+		owiz.TableDestination = each.TableDestination
+		owiz.IsFromWizard = false
+
+		owiz.GrabInterval = 20
+		owiz.IntervalType = "seconds"
+		owiz.Maps = nil
+		owiz.PostTransferCommand = ""
+		owiz.PreTransferCommand = ""
+		owiz.TimeoutInterval = 20
+		owiz.UseInterval = false
+		owiz.RunAt = []string{}
+
+		err := colonycore.Save(owiz)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, payload, "")
+}
+
 func convertDataType(typedt string, dtget string, toolmap toolkit.M) interface{} {
 	var resValueEachSF interface{}
 	switch typedt {
