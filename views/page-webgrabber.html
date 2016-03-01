@@ -96,6 +96,13 @@
 		    				<div class="col-md-11">
 		    					<div class="clearfix">&nbsp;</div>
 		    					<div class="form-group">
+						        	<label class="col-md-2 filter-label">ID</label>
+						        	<div class="col-md-3">
+						        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+										<span class="k-invalid-msg" data-for="ID"></span>
+						        	</div>
+						        </div>
+		    					<div class="form-group">
 						        	<label class="col-md-2 filter-label">Source Type</label>
 						        	<div class="col-md-3">
 						        		<select required class="full-width" name="source-type" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, value: sourcetype, dataValueField: 'value', dataTextField: 'title' }"></select>
@@ -217,54 +224,160 @@
 		    <div class="panel-body">
 		    	<div class="row">
 		    		<div class="col-md-4 vv-padding-right" data-bind="with:wg.configScrapper">
-		    			<div class="col-md-12 sub-title-content">
-		    				<span data-bind="text:wg.templateStepSetting()[wg.modeSetting()-1]"></span>
-		    			</div>
 		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == ''">
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
 		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
 		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() == 2, click: wg.saveSelectorConf"><span class="glyphicon glyphicon-save"></span> Save</button>
 		    			</div>
-
+		    			<div class="col-md-12 vv-padding-left" data-bind="visible: wg.modeSetting() == 1">
+		    				<div class="form-group">
+							    <label class="col-md-4 filter-label">Setting Option</label>
+							    <div class="col-md-8">
+						       		<select class="input-md" id="settingOptions" name="setup" data-bind="kendoDropDownList: { data: wg.configSetup, dataValueField: 'value', dataTextField: 'title', value: wg.modeSetup}"></select>
+									<span class="k-invalid-msg" data-for="setup"></span>
+						       	</div>
+							</div>
+		    			</div>
+		    		<!-- 	<hr style="width: 100%; color: #FDFDFD; height: 1px;" /> -->
+		    		<!-- 	<div class="col-md-12 sub-title-content">
+		    				<span data-bind="text:wg.templateStepSetting()[wg.modeSetting()-1]"></span>
+		    			</div> -->
 		    			<!-- Form Set Up -->
-	    				<div class="col-md-12 form-row form-row-1" data-bind="visible: wg.modeSetting() == 1">
-	    					<div class="row">
-					        	<label class="col-md-6 filter-label">ID</label>
-					        	<div class="col-md-6">
-					        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
-									<span class="k-invalid-msg" data-for="ID"></span>
-					        	</div>
-					        </div>
-					        <div class="row">
-					        	<label class="col-md-6 filter-label">Start Time</label>
-					        	<div class="col-md-6">
-									<input required data-bind="kendoDateTimePicker: {value:wg.configScrapper.intervalconf.starttime,format:'MM/dd/yyyy hh:mm tt'}" name ="StartTime"/>
-                                    <span class="k-invalid-msg" data-for="StartTime"></span>
-					        	</div>
-					        </div>
-					        <div class="row">
-					        	<label class="col-md-6 filter-label">Interval Type</label>
-					        	<div class="col-md-6">
-                                    <select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: wg.configScrapper.intervalconf.intervaltype}"></select>
-									<span class="k-invalid-msg" data-for="IntervalType"></span>
-					        	</div>
-					        </div>
-					        <div class="row">
-					        	<label class="col-md-6 filter-label">Grap Interval</label>
-					        	<div class="col-md-6">
-					        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" />
-									<span class="k-invalid-msg" data-for="GrabInterval"></span>
-					        	</div>
-					        </div>
-					        <div class="row">
-					        	<label class="col-md-6 filter-label">Timeout Interval</label>
-					        	<div class="col-md-6">
-					        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" />
-									<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
-					        	</div>
-					        </div>
-	    				</div>
+		    			<div class="clearfix">&nbsp;</div>
+		    			<div id="Onetime" data-bind="visible: wg.modeSetting() == 1 && wg.configSetup() == 'onetime'">
+		    				<div class="col-md-12 vv-padding-left">
+			    				<div class="form-group">
+								    <label class="col-md-4 filter-label">Start Time</label>
+								    <div class="col-md-8">
+							       		<input required data-bind="kendoDateTimePicker: {value: wg.configScrapper.intervalconf.starttime, format:'MM/dd/yyyy hh:mm tt'}" name ="StartTimeOneTime"/>
+		                                    <span class="k-invalid-msg" data-for="StartTimeOneTime"></span> 
+							       	</div>
+								</div>
+		    				</div>
+		    			</div>
+
+		    			<div id="IntervalMode" data-bind="visible: wg.modeSetting() == 1 && wg.configSetup() == 'interval'">
+		    				<div class="col-md-12 sub-title-content">
+		    					<span>Interval Config</span>
+			    			</div>
+			    			<hr style="width: 100%; color: #FDFDFD; height: 1px;" />
+		    				<div class="col-md-12 form-row form-row-1">
+						        <div class="row">
+						        	<label class="col-md-4 filter-label">Start Time</label>
+						        	<div class="col-md-8">
+										<input required data-bind="kendoDateTimePicker: {value:wg.configScrapper.intervalconf.starttime,format:'MM/dd/yyyy hh:mm tt'}" name ="StartTime"/>
+	                                    <span class="k-invalid-msg" data-for="StartTime"></span>
+						        	</div>
+						        </div>
+						        <div class="row">
+							       	<label class="col-md-4 filter-label">Expired Time</label>
+							       	<div class="col-md-8">
+										<input required data-bind="kendoDateTimePicker: {value:wg.configScrapper.intervalconf.expiredtime,format:'MM/dd/yyyy hh:mm tt'}" name ="ExpiredTime"/>
+		                                   <span class="k-invalid-msg" data-for="ExpiredTime"></span>
+							        </div>
+							    </div>
+						        <div class="row">
+						        	<label class="col-md-4 filter-label">Interval Type</label>
+						        	<div class="col-md-8">
+	                                    <select required data-required-msg="Interval Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateIntervalType, dataValueField: 'key', dataTextField: 'value', value: wg.configScrapper.intervalconf.intervaltype}"></select>
+										<span class="k-invalid-msg" data-for="IntervalType"></span>
+						        	</div>
+						        </div>
+						        <div class="row">
+						        	<label class="col-md-4 filter-label">Grap Interval</label>
+						        	<div class="col-md-8">
+						        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" style="100px"/>
+										<span class="k-invalid-msg" data-for="GrabInterval"></span>
+						        	</div>
+						        </div>
+						        <div class="row">
+						        	<label class="col-md-4 filter-label">Timeout Interval</label>
+						        	<div class="col-md-8">
+						        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" style="100px" />
+										<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
+						        	</div>
+						        </div>
+		    				</div>
+		    			</div>
+		    			<div id="ScheduleMode" data-bind="visible: wg.modeSetting() == 1 && wg.configSetup() == 'schedule'">
+		    				<div class="col-md-12 sub-title-content">
+		    					<span>Task Scheduler</span>
+			    			</div>
+			    			<hr style="width: 100%; color: #FDFDFD; height: 1px;" />
+			    			<section class="form-horizontal">
+			    				<div class="col-md-12">
+								    <label class="col-md-4 filter-label">Time Presets</label>
+								    <div class="col-md-8">
+							       		<select class="input-md" name="setup" data-bind="kendoDropDownList: { data: wg.taskMode, dataValueField: 'value', dataTextField: 'title'}"></select>
+										<span class="k-invalid-msg" data-for="setup"></span>
+							       	</div>
+							       <div data-bind="with: wg.configCron">
+							       		<div class="clearfix">&nbsp;</div>
+							       		<div class="form-group">
+							       		<label class="col-md-3 filter-label">Month</label>
+							       			<div class="col-md-3">
+							       				<select id="dropdownHour" name="month" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month, optionLabel: 'Month...'}" style="width: 100px"></select>
+							       			</div>
+							       	</div>
+							       	<div class="form-group">
+							       		<label class="col-md-3 filter-label">Day</label>
+							       			<div class="col-md-3">
+							       				<select id="dropdownHour" name="day" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek, optionLabel: 'Day...'}" style="width: 100px"></select>
+							       			</div>
+							       		<label class="col-md-3 filter-label">Date</label>
+							       			<div class="col-md-3">
+							       				<select id="dropdownHour" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Date...'}" style="width: 90px"></select>
+							       			</div>
+							       	</div>
+							       	<div class="form-group">
+							       			<label class="col-md-3 filter-label">Hour</label>
+							       			<div class="col-md-3">
+							       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...' }" style="width: 100px"></select>
+							       			</div>
+							       			<label class="col-md-3 filter-label">Minute</label>
+							       			<div class="col-md-3">
+								       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min }" style="width: 80px"></select>
+							       			</div>
+										       	</div>
+										       	<div class="row" id="custom" data-bind="visible: wg.taskMode() == 'custom'">
+										       	<div class="row">
+												    <label class="col-md-4 filter-label">Minutes</label>
+												    <div class="col-md-8">
+										        		<select data-bind="kendoMultiSelect: { data: wg.minutes, value: wg.configCron.min, placeholder: 'Select minutes...' }"></select>
+										        	</div>
+												</div>
+											    <div class="row">
+												    <label class="col-md-4 filter-label">Hour</label>
+												    <div class="col-md-8">
+										        		<select data-bind="kendoMultiSelect: { data: wg.hours, value: wg.configCron.hour, placeholder: 'Select hour...' }"></select>
+										        	</div>
+												</div>
+												<div class="row">
+												    <label class="col-md-4 filter-label">Day of Month</label>
+												    <div class="col-md-8">
+										        		<select data-bind="kendoMultiSelect: { data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Select date...' }"></select>
+										        	</div>
+												</div>
+												<div class="row">
+												    <label class="col-md-4 filter-label">Month</label>
+												    <div class="col-md-8">
+										        		<select data-bind="kendoMultiSelect: { dataTextField: 'title', dataValueField: 'value', data: wg.months,
+				               value: wg.configCron.month, placeholder: 'Select month...'}"></select>
+										        	</div>
+												</div>
+												<div class="row">
+												    <label class="col-md-4 filter-label">Day of Week</label>
+												    <div class="col-md-8">
+										        		<select data-bind="kendoMultiSelect: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek,
+				               value: wg.configCron.dayofweek, placeholder: 'Select day of week...'}"></select>
+										        	</div>
+												</div>
+							       </div>
+							    </div>   	 	
+			    			</section>
+		    			</div>
+	    				
 
 	    				<!-- Form Selector -->
 	    				<div class="col-md-12" data-bind="visible:wg.modeSetting() == 2 && wg.modeSelector() == ''">
@@ -288,7 +401,7 @@
 											<tbody data-bind="foreach: wg.selectorRowSetting">
 												<tr>
 													<td>
-														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: id, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 													</td>
 													<td>
