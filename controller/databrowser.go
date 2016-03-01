@@ -152,13 +152,31 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 	}
 	defer cursor.Close()
 
-	dataFetch := []toolkit.M{}
-	err = cursor.Fetch(&dataFetch, 0, false)
+	dataFetch := toolkit.M{}
+	err = cursor.Fetch(&dataFetch, 1, false)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	toolkit.Printf("data: %v\n", dataFetch)
-	return helper.CreateResult(true, dataFetch, "")
+
+	metadata := []*colonycore.StructInfo{}
+	x := 1
+	for keyField, _ := range dataFetch {
+		sInfo := &colonycore.StructInfo{}
+		sInfo.Field = keyField
+		sInfo.Label = keyField
+		sInfo.Format = ""
+		sInfo.Align = "Left"
+		sInfo.ShowIndex = toolkit.ToInt(x, toolkit.RoundingAuto)
+		sInfo.Sortable = false
+		sInfo.SimpleFilter = false
+		sInfo.AdvanceFilter = false
+		sInfo.Aggregate = ""
+		metadata = append(metadata, sInfo)
+		x++
+	}
+	// toolkit.Printf("metadata:%v\n", toolkit.JsonString(metadata))
+	data.MetaData = metadata
+	return helper.CreateResult(true, data, "")
 }
 
 func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, error) {
