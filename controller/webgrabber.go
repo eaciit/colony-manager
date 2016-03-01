@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/eaciit/cast"
 	"github.com/eaciit/colony-core/v0"
@@ -13,7 +14,6 @@ import (
 	"os"
 	"os/exec"
 	f "path/filepath"
-	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -59,36 +59,36 @@ func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 func (w *WebGrabberController) PrepareHistoryPath() {
 }
 
-func (w *WebGrabberController) OpenHistory() interface{} {
+func (w *WebGrabberController) OpenHistory() ([]interface{}, error) {
+	var history = []interface{}{} //toolkit.M{}
 	var config = map[string]interface{}{"useheader": true, "delimiter": ",", "dateformat": "MM-dd-YYYY"}
 
 	ci := &dbox.ConnectionInfo{w.filepathName, "", "", "", config}
 	c, err := dbox.NewConnection("csv", ci)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 
 	err = c.Connect()
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 	defer c.Close()
 
 	csr, err := c.NewQuery().Select("*").Cursor(nil)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 	if csr == nil {
-		return helper.CreateResult(false, nil, "Cursor not initialized")
+		return history, errors.New("Cursor not initialized")
 	}
 	defer csr.Close()
 	ds := []toolkit.M{}
 	err = csr.Fetch(&ds, 0, false)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 
-	var history = []interface{}{} //toolkit.M{}
 	for i, v := range ds {
 		castDate, _ := time.Parse(time.RFC3339, v.Get("grabdate").(string))
 		w.humanDate = cast.Date2String(castDate, "YYYY/MM/dd HH:mm:ss")
@@ -108,7 +108,7 @@ func (w *WebGrabberController) OpenHistory() interface{} {
 
 		history = append(history, addToMap)
 	}
-	return history
+	return history, nil
 }
 
 func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) interface{} {
@@ -436,11 +436,9 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	}
 
 	module := NewHistory(payload.HistConf.FileName)
-	history := module.OpenHistory()
-	if reflect.ValueOf(history).Kind() == reflect.String {
-		if strings.Contains(history.(string), "Cannot Open File") {
-			return helper.CreateResult(false, nil, "Cannot Open File")
-		}
+	history, err := module.OpenHistory()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, history, "")
