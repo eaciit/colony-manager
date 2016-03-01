@@ -29,12 +29,12 @@ srv.WizardColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "host", title: "Host", width: 200, template: function (d) {
-		var comps = d.host.split(":");
-		if (comps.length > 1) {
-			if (comps[1] == "80") {
-				return comps[0];
-			}
-		} 
+		// var comps = d.host.split(":");
+		// if (comps.length > 1) {
+		// 	if (comps[1] == "80") {
+		// 		return comps[0];
+		// 	}
+		// } 
 
 		return d.host;
 	} },
@@ -396,16 +396,29 @@ srv.navModalWizard = function (status) {
 		}	
 
 		srv.dataWizard([]);
+		var ip = [];
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
-			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
-			var pattern = srv.txtWizard().replace(/\]|\[/g, "").split('.')[3];
-			var firstPattern = pattern.split('-')[0];
-			var secondPattern = pattern.split('-')[1];
-			
-			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
+			if (e.indexOf('[') == -1) {
+				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;				
+				ip.push(ip1);
+			}else{
+				var pattern = e.split('.')[3];
+				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
+				var secondPattern = pattern.replace(/\]/g, "").split('-')[1];
+				for (i = firstPattern; i <= secondPattern; i++) { 
+					patternIP = e.replace( pattern, i )
+					var ip2 = (patternIP.indexOf(":") == -1) ? (patternIP + ":80") : patternIP;
+					ip.push(ip2);
+				}
+			}
+		});
+				
+		for (var i in ip){
+			app.ajaxPost("/server/checkping", { ip: ip[i] }, function (res) {
 				app.isLoading(true);
+				console.log(ip[i]);
 				var o = { 
-					host: ip, 
+					host: ip[i],
 					status: res.data 
 				};
 
@@ -414,9 +427,9 @@ srv.navModalWizard = function (status) {
 				}
 
 				srv.dataWizard.push(o);
-			}, function () { 
+			}, function () {
 				var o = { 
-					host: ip, 
+					host: ip[i], 
 					status: "request timeout"
 				};
 
@@ -424,8 +437,8 @@ srv.navModalWizard = function (status) {
 			}, {
 				timeout: 5000
 			});
-		});
-		
+		};
+
 		$(document).ajaxStop(function() {
 		  app.isLoading(false);
 		});
