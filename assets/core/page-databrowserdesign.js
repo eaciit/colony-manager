@@ -152,7 +152,43 @@ db.addProperties = function () {
 db.saveAndBack = function() {
 	 var param = ko.mapping.toJS(db.configDataBrowser);
 	 grid = $(".grid-databrowser-design").data("kendoGrid");
-	 console.log(grid.dataSource.data())
+	 console.log(grid.dataSource.data());
+
+	 var idsToSend = [];         	
+     var grids = $(".grid-databrowser-design").data("kendoGrid")
+     var ds = grids.dataSource.view();
+                    
+     for (var i = 0; i < ds.length; i++) {
+        var row = grids.table.find("tr[data-uid='" + ds[i].uid + "']");
+        var cbsort = $(row).find(".cbSort");
+        var cbsimple = $(row).find(".cbSimpleFilter");
+        var cbadvance = $(row).find(".cbAdvFilter");
+        var format = $(row).find(".Format");
+        param.MetaData[i].Label = ds[i].Label
+        param.MetaData[i].Format = ds[i].Format
+        param.MetaData[i].Align = ds[i].Align
+        param.MetaData[i].Aggregate = ds[i].Aggregate
+                      
+        if (cbsort.is(":checked")) {
+        	param.MetaData[i].Sortable = true
+        } else {
+        	param.MetaData[i].Sortable = false
+        }
+
+        if (cbsimple.is(":checked")) {
+        	param.MetaData[i].SimpleFilter = true
+        } else {
+        	param.MetaData[i].SimpleFilter = false
+        }
+
+        if (cbadvance.is(":checked")) {
+        	param.MetaData[i].AdvanceFilter = true
+        } else {
+        	param.MetaData[i].AdvanceFilter = false
+        }
+
+    }
+
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
@@ -238,7 +274,9 @@ db.testQuery = function() {
 			if (!app.isFine(res)) {
 				return;
 			}
-			// console.log(db.configDataBrowser)
+			
+			console.log("res.data test query >>", res.data)
+
 			ko.mapping.fromJS(res.data, db.configDataBrowser)
 			db.configDataBrowser.MetaData([]);
 			db.databrowserData(res.data.MetaData);
