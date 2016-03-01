@@ -864,11 +864,12 @@ wg.viewData = function (id) {
 		Username: "",
 		Password: ""
 	};
+
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
 		param.Driver = baseSetting.desttype;
 		if (baseSetting.destoutputtype == "database") {
-			param.Host = baseSetting.Host;
+			param.Host = baseSetting.connectioninfo.host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
 			param.Username = baseSetting.connectioninfo.username;
@@ -879,7 +880,6 @@ wg.viewData = function (id) {
 			param.Delimiter = baseSetting.connectioninfo.delimiter;
 		}
 	}
-
 	$(".grid-data").replaceWith('<div class="grid-data"></div>');
 	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
 		if (!app.isFine(res)) {
