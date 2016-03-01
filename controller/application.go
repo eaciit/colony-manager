@@ -254,6 +254,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
+
 	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
 		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
 	}
@@ -265,11 +266,28 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 
 	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
-	sourceZipPath := filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
 	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
 	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
-	destinationZipPath := fmt.Sprintf("%s.zip", destinationZipPathOutput)
-
+    sourceZipPath :=""
+    extractCmd:=""
+    // destinationZipPath:=""
+	if(strings.Contains(server.CmdExtract, "tar")){
+		// TargetPath :=filepath.Join(EC_APP_PATH, "src")
+		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
+		extractCmd =server.CmdExtract+" "+destinationZipPathOutput+".tar -C "+destinationPath+"/"+app.ID
+		err = toolkit.TarCompress2(sourcePath, sourceZipPath)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}else if(strings.Contains(server.CmdExtract, "zip")){
+		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+		extractCmd =server.CmdExtract+" "+destinationPath+".zip -d "+destinationZipPathOutput
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+	
 	installerFile := ""
 
 	filepath.Walk(sourcePath, func(path string, f os.FileInfo, err error) error {
@@ -296,35 +314,32 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		return nil
-	})
+	 })
 
-	err = toolkit.ZipCompress(sourcePath, sourceZipPath)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
+	fmt.Println(destinationPath)	
 
-	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
-	_, err = sshSetting.RunCommandSsh(rmCmdZip)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
+	// rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
+	// fmt.Println()
+	// _, err = sshSetting.RunCommandSsh(rmCmdZip)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
 
 	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
+	fmt.Println(sourceZipPath+" - "+destinationPath)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
-	_, err = sshSetting.RunCommandSsh(rmCmdZipOutput)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
+	// rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+	// _, err = sshSetting.RunCommandSsh(rmCmdZipOutput)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
 
-	//unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
-	unzipCmd :=server.CmdExtract+" "+destinationZipPath+" -d "+destinationZipPathOutput
-	
-	// _, err = sshSetting.GetOutputCommandSsh(unzipCmd)
-	_, err = sshSetting.RunCommandSsh(unzipCmd)
+	createExtractDir := "sudo mkdir "+destinationPath+"/"+app.ID
+	perExtractDire := "sudo chmod -R 777 "+destinationPath+"/"+app.ID
+	_, err = sshSetting.RunCommandSsh([]string{createExtractDir,perExtractDire,extractCmd}...)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
