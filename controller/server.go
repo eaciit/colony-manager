@@ -58,7 +58,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	r.Request.ParseForm()
 
 	path := filepath.Join(EC_DATA_PATH, "server", "log")
-	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-150405")
+	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-1504")
 
 	data := new(colonycore.Server)
 	if r.Request.FormValue("sshtype") == "File" {

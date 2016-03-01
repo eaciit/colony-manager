@@ -232,7 +232,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	path := filepath.Join(EC_DATA_PATH, "application", "log")
-	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-150405")
+	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-1504")
 
 	log.AddLog("Get payload", "INFO")
 	payload := struct {
@@ -328,7 +328,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
 	log.AddLog(rmCmdZip, "INFO")
-	_, err = sshSetting.RunCommandSsh(rmCmdZip)
+	_, err = sshSetting.GetOutputCommandSsh(rmCmdZip)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
@@ -345,7 +345,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
 	log.AddLog(rmCmdZipOutput, "INFO")
-	_, err = sshSetting.RunCommandSsh(rmCmdZipOutput)
+	_, err = sshSetting.GetOutputCommandSsh(rmCmdZipOutput)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
@@ -372,6 +372,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	findCommand := fmt.Sprintf(`find %s -name "*install.sh"`, destinationZipPathOutput)
 	log.AddLog(findCommand, "INFO")
 	installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
+	installerPath = strings.TrimSpace(installerPath)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
@@ -380,7 +381,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	chmodCommand := fmt.Sprintf("chmod 755 %s", installerPath)
 	log.AddLog(chmodCommand, "INFO")
-	_, err = sshSetting.RunCommandSsh(chmodCommand)
+	_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
@@ -399,7 +400,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	go func() {
 		runCommand := fmt.Sprintf("cd %s && ./%s &", installerBasePath, installerFile)
 		log.AddLog(runCommand, "INFO")
-		_, err = sshSetting.GetOutputCommandSsh(runCommand)
+		_, err = sshSetting.RunCommandSsh(runCommand)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			cRunCommand <- err.Error()
