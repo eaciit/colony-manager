@@ -118,8 +118,10 @@ func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) i
 
 		logConf := vMap["logconf"].(map[string]interface{})
 		dateNowFormat := logConf["filepattern"].(string)
-		fileName := fmt.Sprintf("%s-%s", logConf["filename"], dateNowFormat)
-		w.logPath = f.Join(logConf["logpath"].(string), fileName)
+		theDate := cast.String2Date(date, "YYYY/MM/dd HH:mm:ss")
+		theDateString := cast.Date2String(theDate, dateNowFormat)
+		fileName := fmt.Sprintf("%s-%s", logConf["filename"], theDateString)
+		w.logPath = f.Join(EC_DATA_PATH, "webgrabber", "log", fileName)
 	}
 
 	file, err := os.Open(w.logPath)
@@ -138,6 +140,15 @@ func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) i
 	lines := 0
 	containLines := 0
 	logsseparator := ""
+
+	add7Hours := func(s string) string {
+		t, _ := time.Parse("2006/01/02 15:04", s)
+		t = t.Add(time.Hour * 7)
+		return t.Format("2006/01/02 15:04")
+	}
+
+	containString = add7Hours(containString)
+	containString2 = add7Hours(containString2)
 
 	var logs []interface{}
 	for scanner.Scan() {
