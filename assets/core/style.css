@@ -237,7 +237,7 @@ table.table tr:hover td {
   z-index: 1; }
   .daemon-container label {
     margin-right: 5px; }
-  .daemon-container .btn-primary,
+  .daemon-container .btn-success,
   .daemon-container .btn-danger {
     pointer-events: none; }
 
