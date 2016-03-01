@@ -201,7 +201,7 @@ apl.getApplications = function(c) {
 		}
 
 		apl.applicationData(res.data);
-		if (c != undefined) {
+		if (typeof c === "function") {
 			c();
 		}
 	});
