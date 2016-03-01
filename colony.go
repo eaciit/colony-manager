@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/yanda15/colony-core/v0"
+	"github.com/yanda15/colony-manager/controller"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -32,6 +32,7 @@ func main() {
 	server.Register(controller.CreateDataSourceController(server), "")
 	server.Register(controller.CreateDataGrabberController(server), "")
 	server.Register(controller.CreateDataBrowserController(server), "")
+	server.Register(controller.CreateFileBrowserController(server), "")
 	server.Register(controller.CreateWebGrabberController(server), "")
 	server.Register(controller.CreateApplicationController(server), "")
 	server.Register(controller.CreateServerController(server), "")
