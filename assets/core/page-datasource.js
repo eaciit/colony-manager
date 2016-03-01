@@ -65,9 +65,10 @@ ds.connectionListData = ko.observableArray([]);
 ds.lookupFields = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
 ds.collectionNames = ko.observableArray([]);
-ds.lokupModalLabel = ko.observable("");
+ds.lookupSubModalLabel = ko.observable("");
 ds.tempCheckIdConnection = ko.observableArray([]);
 ds.tempCheckIdDataSource = ko.observableArray([]);
+ds.subData = ko.observableArray([]);
 ds.computedDrivers = ko.computed(
 	function() {
 		var temp = [];
@@ -589,6 +590,14 @@ ds.testQuery = function () {
 						columnConfig.template = function (f) {
 							return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
 						}
+					} else if ((e.Type === "object") || (e.Type === "array-objects") || (e.Type.indexOf("array") > -1)) {
+						columnConfig.template = function (f) {
+							if (f[e._id] === undefined){
+								return "";
+							}else{
+								return "<a title='show lookup data for " + f._id + "' onclick='ds.showSubData(\"" + e._id + "\", \"" + f._id + "\")'>" + "Show details" + "</a>";
+							}
+						}
 					}
 
 					return columnConfig;
@@ -722,9 +731,9 @@ ds.saveLookup = function () {
 	});
 };
 ds.showLookupData = function (lookupID, lookupData) {
-	ds.lokupModalLabel("");
-	$(".modal-lookup-data").modal("show");
-	$("#grid-lookup-data").replaceWith("<div id='grid-lookup-data'></div>");
+	ds.lookupSubModalLabel("Lookup Data");
+	$(".modal-sub-lookup-data").modal("show");
+	$("#grid-sub-lookup-data").replaceWith("<div id='grid-sub-lookup-data'></div>");
 
 	var param = {
 		_id: ds.confDataSource._id(),
@@ -759,7 +768,49 @@ ds.showLookupData = function (lookupID, lookupData) {
 			filterfable: false
 		};
 
-		$("#grid-lookup-data").kendoGrid(gridConfig);
+		$("#grid-sub-lookup-data").kendoGrid(gridConfig);
+	});
+};
+
+ds.showSubData = function (subID, subData) {
+	ds.lookupSubModalLabel("Sub Data");
+	$(".modal-sub-lookup-data").modal("show");
+	$("#grid-sub-lookup-data").replaceWith("<div id='grid-sub-lookup-data'></div>");
+
+	var param = {
+		_id: ds.confDataSource._id(),
+		lookupID: subID,
+		lookupData: subData
+	};
+	app.ajaxPost("/datasource/fetchdatasourcesubdata", param, function (res) {
+		if ((!app.isFine(res)) || (res.data.data === null)){
+			return;
+		}
+
+		if ($.isArray(res.data.data)){
+			if(typeof(res.data.data) === "object"){
+				ds.subData(res.data.data);
+
+				if (ds.subData().length > 0) {
+					if (!(ds.subData()[0] instanceof Object)) {
+						var values = [];
+						for (var ln = 0; ln < ds.subData().length; ln++) {
+						    var item1 = {
+						        "List" : ds.subData()[ln]
+						    };
+					    	values.push(item1);
+						}
+						ds.subData(values);
+					}
+				}
+			}
+		}else{
+			ds.subData([res.data.data]);
+		}
+
+		$("#grid-sub-lookup-data").kendoGrid({
+			dataSource: ds.subData()
+		});
 	});
 };
 

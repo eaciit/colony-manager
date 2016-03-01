@@ -787,6 +787,69 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 	return helper.CreateResult(true, result, "")
 }
 
+func (d *DataSourceController) FetchDataSourceSubData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	_id := payload["_id"].(string)
+	lookupID := payload["lookupID"].(string)
+	lookupData := payload["lookupData"].(string)
+
+	dataDS := new(colonycore.DataSource)
+	err = colonycore.Get(dataDS, _id)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	for _, meta := range dataDS.MetaData {
+		if meta.ID == lookupID {
+			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(_id)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer lookupConn.Close()
+
+			_ = dataLookupDS
+			_ = metaSave
+
+			lookupCursor, err := lookupQuery.Cursor(nil)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer lookupCursor.Close()
+
+			lookupResultDataRaw := []toolkit.M{}
+			err = lookupCursor.Fetch(&lookupResultDataRaw, 0, false)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			lookupResultData := []toolkit.M{}
+			for _, each := range lookupResultDataRaw {
+				if fmt.Sprintf("%v", each["_id"]) == lookupData {
+					datas := toolkit.M{"data": each[lookupID]}
+					return helper.CreateResult(true, datas, "")
+				}
+			}
+
+			lookupResultColumns := []string{meta.Lookup.DisplayField}
+			if len(meta.Lookup.LookupFields) > 0 {
+				lookupResultColumns = meta.Lookup.LookupFields
+			}
+
+			result := toolkit.M{"data": lookupResultData, "columns": lookupResultColumns}
+			return helper.CreateResult(true, result, "")
+		}
+	}
+
+	result := toolkit.M{"data": []toolkit.M{}, "columns": []toolkit.M{}}
+	return helper.CreateResult(true, result, "")
+}
+
 func (d *DataSourceController) SaveDataSource(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
