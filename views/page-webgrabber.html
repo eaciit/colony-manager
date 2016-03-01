@@ -16,7 +16,7 @@
 	<div class="daemon-container">
 		<label>Sedotan Daemon Status</label>
 		<div class="btn-group">
-			<button class="btn btn-sm btn btn-default" data-bind="css: { 'btn-primary' : !wg.isDaemonRunning(), 'btn-default' : wg.isDaemonRunning() }, click: wg.toggleDaemon('off')">Off</button>
+			<button class="btn btn-sm btn btn-default" data-bind="css: { 'btn-danger' : !wg.isDaemonRunning(), 'btn-default' : wg.isDaemonRunning() }, click: wg.toggleDaemon('off')">Off</button>
 			<button class="btn btn-sm btn btn-primary" data-bind="css: { 'btn-primary' : wg.isDaemonRunning(), 'btn-default' : !wg.isDaemonRunning() }, click: wg.toggleDaemon('on')">On</button>
 		</div>
 	</div>
