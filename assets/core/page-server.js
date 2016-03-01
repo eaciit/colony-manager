@@ -9,14 +9,15 @@ srv.templateConfigServer = {
 	appPath: "",
 	dataPath: "",
 	host: "",
+	serverType: "node",
 	sshtype: "Credentials",
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",
 };
-srv.templatetype = ko.observableArray([
-	{ value: "Local", text: "Local" },
-	{ value: "Remote", text: "Remote" }
+srv.templatetypeServer = ko.observableArray([
+	{ value: "node", text: "Node Server" },
+	{ value: "hadoop", text: "Hadoop Server" }
 ]);
 srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
@@ -62,7 +63,7 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	// { field: "type", title: "Type" },
+	{ field: "serverType", title: "Type", template: "#: serverType # server" },
 	{ field: "host", title: "Host" },
 	{ field: "os", title: "OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
@@ -83,7 +84,7 @@ srv.ServerColumns = ko.observableArray([
 	// { field: "enable", title: "Enable" },
 ]);
 
-srv.getServers = function() {
+srv.getServers = function(c) {
 	srv.ServerData([]);
 	app.ajaxPost("/server/getservers", {search: srv.searchfield}, function (res) {
 		if (!app.isFine(res)) {
@@ -100,6 +101,10 @@ srv.getServers = function() {
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
 		});
+
+		if (c != undefined) {
+			c(res);
+		}
 	});
 };
 
@@ -203,9 +208,18 @@ srv.doSaveServer = function (c) {
 		});
 	}
 }
+srv.isServerTypeNode = ko.computed(function () {
+	return srv.configServer.serverType() == "node";
+}, srv);
+srv.changeServerOS = function () {
+	if (this.value() == "node") {
+		srv.configServer.os("linux");
+	}
+};
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
 		srv.getServers();
+		apl.getApplications();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };
@@ -398,6 +412,9 @@ srv.navModalWizard = function (status) {
 		srv.dataWizard([]);
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
 			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
+			var pattern = srv.txtWizard().replace(/\]|\[/g, "").split('.')[3];
+			var firstPattern = pattern.split('-')[0];
+			var secondPattern = pattern.split('-')[1];
 			
 			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
 				app.isLoading(true);
