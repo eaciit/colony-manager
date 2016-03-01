@@ -57,21 +57,27 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	r.Request.ParseMultipartForm(32 << 20)
 	r.Request.ParseForm()
 
+	path := filepath.Join(EC_DATA_PATH,"server","log")
+	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-150405")
+
 	data := new(colonycore.Server)
 	if r.Request.FormValue("sshtype") == "File" {
 		dataRaw := map[string]interface{}{}
 		err := r.GetForms(&dataRaw)
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
 		err = toolkit.Serde(dataRaw, &data, "json")
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	} else {
 		err := r.GetPayload(&data)
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
@@ -80,6 +86,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		reqFileName := "privatekey"
 		file, _, err := r.Request.FormFile(reqFileName)
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
@@ -87,6 +94,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			data.SSHFile = filepath.Join(EC_DATA_PATH, "server", "privatekeys", data.ID)
 			_, _, err = helper.FetchThenSaveFile(r.Request, reqFileName, data.SSHFile)
 			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
 			}
 		}
@@ -95,11 +103,13 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 	cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", data.ID))
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	oldDataAll := []colonycore.Server{}
 	err = cursor.Fetch(&oldDataAll, 0, false)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer cursor.Close()
@@ -110,16 +120,19 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 	err = colonycore.Delete(data)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	err = colonycore.Save(data)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	sshSetting, client, err := s.SSHConnect(data)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer client.Close()
@@ -130,7 +143,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			sshSetting.GetOutputCommandSsh(`sed -i '/export EC_DATA_PATH/d' ~/.bashrc`)
 			sshSetting.GetOutputCommandSsh("echo 'export EC_APP_PATH=" + data.AppPath + "' >> ~/.bashrc")
 			sshSetting.GetOutputCommandSsh("echo 'export EC_DATA_PATH=" + data.DataPath + "' >> ~/.bashrc")
-
+			log.AddLog("echo 'export EC_APP_PATH=" + data.AppPath + "' >> ~/.bashrc", "SSHSETTING")
+			log.AddLog("echo 'export EC_DATA_PATH=" + data.DataPath + "' >> ~/.bashrc", "SSHSETTING")
 			return nil
 		}
 
@@ -151,7 +165,9 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "log")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "output")),
 			)
+
 			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
 			}
 
@@ -160,8 +176,10 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 		} else if oldData.AppPath != data.AppPath {
 			moveDir := fmt.Sprintf(`mv %s %s`, oldData.AppPath, data.AppPath)
+			log.AddLog(moveDir, "MOVEDIR")
 			_, err := sshSetting.GetOutputCommandSsh(moveDir)
 			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
 			}
 
@@ -170,8 +188,10 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 		} else if oldData.DataPath != data.DataPath {
 			moveDir := fmt.Sprintf(`mv %s %s`, oldData.DataPath, data.DataPath)
+			log.AddLog(moveDir, "MOVEDIR")
 			_, err := sshSetting.GetOutputCommandSsh(moveDir)
 			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
 			}
 
