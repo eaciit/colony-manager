@@ -49,7 +49,7 @@ wg.templateConfigScrapper = {
                 "intervaltype": "seconds",
                 "grabinterval": 20,
                 "timeoutinterval": 20,
-                "cronconf": ""
+                "cronconf": {}
             },
     logconf:
             {
@@ -248,7 +248,7 @@ wg.editScrapper = function (_id) {
 
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
-			item.filtercond = "";
+			item.filtercond = {};
 			item["conditionlist"] = [];
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
@@ -780,7 +780,7 @@ wg.parseGrabConf = function () {
 		
 		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
 		condition[item.filtercond] = [];
-		if (item.filtercond != ''){
+		if (item.filtercond.length > 0){
 			for (var key in conditionlist){
 				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
 				obj[col] = {};
@@ -799,15 +799,15 @@ wg.parseGrabConf = function () {
 						break;
 				}
 				condition[item.filtercond].push(obj);
+
 			}
 			item.filtercond = condition;
-		} else {
-			item.filtercond = {};
 		}
 		delete item["conditionlist"];
-
-		return item;
+		delete item["__ko_mapping__"];
+		return JSON.parse(ko.mapping.toJSON(item));
 	});
+	return config;
 //	config.nameid = config._id;
 
 	var grabConfData = {};
@@ -839,6 +839,8 @@ wg.saveSelectorConf = function(){
 	}
 
 	var config = wg.parseGrabConf();
+	console.log("Old Json",config)
+	
 	app.ajaxPost("/webgrabber/savescrapperdata", config, function (res) {
 		if(!app.isFine(res)) {
 			return;
@@ -864,11 +866,13 @@ wg.viewData = function (id) {
 		Username: "",
 		Password: ""
 	};
+
+
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
 		param.Driver = baseSetting.desttype;
 		if (baseSetting.destoutputtype == "database") {
-			param.Host = baseSetting.Host;
+			param.Host = baseSetting.connectioninfo.host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
 			param.Username = baseSetting.connectioninfo.username;
@@ -879,7 +883,6 @@ wg.viewData = function (id) {
 			param.Delimiter = baseSetting.connectioninfo.delimiter;
 		}
 	}
-
 	$(".grid-data").replaceWith('<div class="grid-data"></div>');
 	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
 		if (!app.isFine(res)) {
