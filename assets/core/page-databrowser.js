@@ -7,10 +7,13 @@ br.templateConfigDataBrowser= {
 	BrowserName: ""
 }
 
-br.confirBrowser = ko.mapping.fromJS(br.templateConfigDataBrowser);
-br.dataBrowser = ko.observableArray([]);
-br.searchfield = ko.observable("");
-br.pageVisible = ko.observable("");
+//br.confirBrowser= ko.mapping.fromJS(br.templateConfigDataBrowser);
+br.dataBrowser 	= ko.observableArray([]);
+br.dataBrowserDesc = ko.observableArray([]);
+br.dataBrowserDescColumns = ko.observableArray([]);
+br.searchfield 	= ko.observable("");
+br.pageVisible	= ko.observable("");
+br.onVisible 	= ko.observable("");
 
 br.browserColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 5, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -21,7 +24,7 @@ br.browserColumns = ko.observableArray([
 	{field:"_id", title: "ID", width: 80},
 	{title: "Name", width: 130, template: function(d){
 		return[
-			"<div onclick= 'db.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
+			"<div onclick= 'br.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
 		]
 	}},
 	{title: "", width: 40, attributes:{class:"align-center"}, template: function(d){
@@ -101,11 +104,41 @@ br.DeleteBrowser = function(){
  
 }
 
-//SELECTING ON GRID
-br.selectBrowser = function(e){
-	app.wrapGridSelect(".grid-application", ".btn", function (d) {
-		console.log(d._id);
+br.ViewBrowserName = function(id){
+	var datacol =[];
+	br.dataBrowserDescColumns([]);
+	app.ajaxPost("/databrowser/detaildb", {id: id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+		var ondata = res.data;
+		var ondataval =ondata.DataValue;
+		var ondatacol = ondata.dataresult.MetaData;
+		for(var i=0; i< ondatacol.length; i++){
+			datacol.push({field: ondatacol[i].Field , title: ondatacol[i].Label})
+		}
+		//br.dataBrowserDescColumns(datacol);
+		br.dataBrowserDesc(ondataval);
+		br.dataBrowserDescColumns(datacol);
+		
+		br.pageVisible("view");
+		br.onVisible("simple");
+
+		$("#grid-databrowser-decription").kendoGrid({
+            columns: datacol,
+            dataSource: {  	
+                data: ondataval,
+                pageSize: 10,
+            },
+            pageable: true,
+        });
 	});
+
+	
 }
 
 br.saveAndBack = function (){
@@ -113,6 +146,15 @@ br.saveAndBack = function (){
 	br.pageVisible("");
 }
 
+br.filterAdvance = function(){
+	//alert("masuk advance");
+	br.onVisible("advance");
+}
+
+br.filterSimple = function(){
+	//alert("masuk advance");
+	br.onVisible("simple");
+}
 
 $(function (){
 	br.getDataBrowser();
