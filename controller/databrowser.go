@@ -213,16 +213,20 @@ func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
 
 	result := toolkit.M{}
 
-	payload := map[string]interface{}{}
+	payload := toolkit.M{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	id := payload["id"].(string)
+
+	// id := payload["id"].(string)
+	// take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
+	// skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
 
 	getFunc := DataSourceController{}
-	data, dataDS, err := getFunc.ConnectToDataSourceDB(id)
+	count, data, dataDS, err := getFunc.ConnectToDataSourceDB(payload)
 
+	result.Set("DataCount", count)
 	result.Set("DataValue", data)
 	result.Set("dataresult", dataDS)
 
