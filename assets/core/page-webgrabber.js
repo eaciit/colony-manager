@@ -128,7 +128,7 @@ wg.taskMode = ko.observableArray([
 	{value: "custom", title: "Custom" },
 ]);
 wg.templateCron = {
-	second : "",
+	second : "*",
 	min: "",
 	hour: "",
 	dayofmonth: "",
@@ -854,12 +854,12 @@ wg.parseGrabConf = function () {
 	if(modeSetup == 'schedule'){
 		var cron =ko.mapping.toJS(wg.configCron);
 		var cronconf = {
-			second : (cron == ""? "*" : cron.second),
-			min: (cron == ""? "*" : cron.min),
-			hour: (cron == ""? "*" : cron.min),
-			dayofmonth: (cron == "" ? "*" : cron.dayofmonth),
-			month: (cron == "" ? "*" : cron.month),
-			dayofweek: (cron == ""? "*" : cron.dayofweek)
+			second : (cron.second),
+			min: (cron.min == "" ? "*" : cron.min),
+			hour: (cron.hour == "" ? "*" : cron.hour),
+			dayofmonth: (cron.dayofmonth == "" ? "*" : cron.dayofmonth),
+			month: (cron.month == "" ? "*" : cron.month),
+			dayofweek: (cron.dayofweek == "" ? "*" : cron.dayofweek)
 		};
 		config.intervalconf.cronconf = cronconf;
 	}
