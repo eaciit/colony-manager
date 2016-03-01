@@ -58,7 +58,7 @@ br.OpenBrowserForm = function(ID){
 
 br.getAllbrowser = function(){
 	$("#selectall").change(function () {
-	    $("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
+		$("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
 	});
 }
 
@@ -100,7 +100,7 @@ br.DeleteBrowser = function(){
 			},1000);
 
 		});
- 	} 
+	} 
  
 }
 
@@ -130,14 +130,72 @@ br.ViewBrowserName = function(id){
 
 		$("#grid-databrowser-decription").kendoGrid({
             columns: datacol,
-            dataSource: {  	
-                data: ondataval,
-                pageSize: 10,
-            },
+            // dataSource: {  	
+            //     // data: ondataval,
+            //     pageSize: 5,
+            // },
+            dataSource: {
+				   transport: {
+					   read:function(options){
+                        var parm = {
+                        		id: id
+                        	};
+                        for(var i in options.data){
+                            parm[i] = options.data[i];
+                        }
+                        app.ajaxPost("/databrowser/detaildb",parm, function (res){
+	                          	options.success(res);
+	                          	console.log(res.data)
+	                        });
+	                     },
+				   },
+				   schema: {
+					   data: "data.DataValue",
+					   total: "data.DataCount",
+				   },
+				   pageSize: 5,
+				   serverPaging: true, 
+				   serverSorting: true,
+				   serverFiltering: true,
+			   },
             pageable: true,
+            columns:datacol
         });
 	});
 
+
+	
+   // var parm = {
+   // 		id: id
+   // }
+   // var url = "/databrowser/detaildb";
+   // $("#gridUser").kendoGrid({
+	  //  dataSource: {
+		 //   transport: {
+			//    read: {
+			// 	   url: url,
+			// 	   data: parm,
+			// 	   dataType: "json"
+			//    }
+		 //   },
+		 //   schema: {
+			//    data: "Data",
+			//    total: "Total",
+		 //   },
+		 //   pageSize: 5,
+		 //   serverPaging: true, 
+		 //   serverSorting: true,
+		 //   serverFiltering: true,
+	  //  },
+	  //  resizable: true,
+	  //  sortable: true,
+	  //  pageable: {
+		 //   refresh: true,
+		 //   pageSizes: true,
+		 //   buttonCount: 5
+	  //  },
+	  //  columns: datacol
+   // });
 	
 }
 
