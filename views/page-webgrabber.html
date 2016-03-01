@@ -534,7 +534,29 @@
 		        </h1>
 		    </div>
 		    <div class="panel-body">
-            	<div class="col-md-12" data-bind="html: wg.logData"></div>
+            	<!-- <div class="col-md-12" data-bind="html: wg.logData"></div> -->
+            	<div class="navbar no-padding" >
+            		<div class="col-md-3 no-padding">
+				    	<label class="col-md-5 filter-label">
+				    		Source Type
+				    	</label>
+				    	<div class="col-md-7 no-padding">
+				    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestLogView, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestLogView, optionLabel: 'Select one' }"></select>
+				    	</div>
+				    </div>
+            		<div class="col-md-3 no-padding">
+				    	<label class="col-md-4 filter-label">
+				    		Search
+				    	</label>
+				    	<div class="input-group">
+							<input type="text" class="form-control" data-bind="value:wg.searchRequestLogView" placeholder="Type keyword here">
+							<span class="input-group-btn">
+								<button class="btn btn-primary btn-secondary" data-bind="click: findLogView" type="button"><span class="glyphicon glyphicon-search"></span></button>
+							</span>
+						</div>
+				    </div>
+            	</div>
+            	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: logData, columns: viewLogColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
 		    </div>
 		</div>
 

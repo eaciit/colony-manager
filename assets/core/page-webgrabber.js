@@ -11,6 +11,7 @@ wg.tempIndexColumn = ko.observable(0);
 wg.tempIndexSetting = ko.observable(0);
 wg.scrapperData = ko.observableArray([]);
 wg.historyData = ko.observableArray([]);
+wg.viewLogData = ko.observableArray([]);
 wg.isContentFetched = ko.observable(false);
 wg.selectedID = ko.observable('');
 wg.selectedItem = ko.observable('');
@@ -168,7 +169,14 @@ wg.historyColumns = ko.observableArray([
 		].join(" ");
 	}, filterable: false }
 ]);
+wg.viewLogColumns = ko.observableArray([
+	{ field: "Type",title: "Type", filterable: false, width: 30}, 
+	{ field: "Date",title: "Date", filterable: false, width: 30, attributes: { class: "align-center" }}, 
+	{ field: "Desc",title: "Description", filterable: false, width: 200}, 
+	]);
 wg.filterRequestTypes = ko.observable('');
+wg.filterRequestLogView = ko.observable('');
+wg.searchRequestLogView = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
@@ -194,6 +202,10 @@ wg.dataAuthType = ko.observableArray([
 	{value : "AuthType_Basic" , title : "Basic"},
 	{value : "AuthType_Cookie", title: "Cookie"},
 	{value : "AuthType_Session" , title : "Session"},
+]);
+wg.dataRequestLogView = ko.observableArray([
+	{ value: "Type", title: "Type" },
+	{ value: "Desc", title: "Description" },
 ]);
 wg.replaceEqWithNthChild = function (s) {
 	return s.replace(/eq\(([^)]+)\)/g, function (e) {
@@ -315,50 +327,50 @@ wg.runBotStats = function () {
 
 	var isThereAnyError = false;
 
-	// if (wg.scrapperData() != "") {
-	// 	wg.scrapperData().forEach(function (each) {
-	// 		var checkStat = function () {
-	// 			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
-	// 				if (res.success) {
-	// 					var $grid = $(".grid-web-grabber").data("kendoGrid");
-	// 					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+	if (wg.scrapperData() != "") {
+		wg.scrapperData().forEach(function (each) {
+			var checkStat = function () {
+				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+					if (res.success) {
+						var $grid = $(".grid-web-grabber").data("kendoGrid");
+						var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
 
-	// 					if (row != undefined) {
-	// 						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+						if (row != undefined) {
+							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-	// 						if (res.data.isRun) {
-	// 							$tr.addClass("started");
-	// 						} else {
-	// 							$tr.removeClass("started");
-	// 						}
-	// 					}
-	// 				}
+							if (res.data.isRun) {
+								$tr.addClass("started");
+							} else {
+								$tr.removeClass("started");
+							}
+						}
+					}
 
-	// 				if (isThereAnyError) {
-	// 					return;
-	// 				}
+					if (isThereAnyError) {
+						return;
+					}
 
-	// 				if (!app.isFine(res)) {
-	// 					isThereAnyError = true;
-	// 					return;
-	// 				}
-	// 			}, function (a) {
-	// 		        sweetAlert("Oops...", a.statusText, "error");
-	// 			}, {
-	// 				withLoader: false
-	// 			});
-	// 		};
+					if (!app.isFine(res)) {
+						isThereAnyError = true;
+						return;
+					}
+				}, function (a) {
+			        sweetAlert("Oops...", a.statusText, "error");
+				}, {
+					withLoader: false
+				});
+			};
 
-	// 		var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
+			var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
 
-	// 		wg.botStats.push({ 
-	// 			_id: each._id,
-	// 			interval: setInterval(checkStat, interval * 1000)
-	// 		});
+			wg.botStats.push({ 
+				_id: each._id,
+				interval: setInterval(checkStat, interval * 1000)
+			});
 
-	// 		checkStat();
-	// 	});
-	// }
+			checkStat();
+		});
+	}
 	
 };
 wg.parsePayload = function () {
@@ -826,7 +838,7 @@ wg.saveSelectorConf = function(){
 	});
 }
 wg.viewData = function (id) {
-	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
+	var base = Lazy(wg.scrapperData()).find({ _id: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
 
 	var param = {
@@ -837,12 +849,10 @@ wg.viewData = function (id) {
 		Username: "",
 		Password: ""
 	};
-
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
-		param.Driver = baseSetting.destoutputtype;
-
-		if (baseSetting.desttype == "database") {
+		param.Driver = baseSetting.desttype;
+		if (baseSetting.destoutputtype == "database") {
 			param.Host = baseSetting.Host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
@@ -856,7 +866,6 @@ wg.viewData = function (id) {
 	}
 
 	$(".grid-data").replaceWith('<div class="grid-data"></div>');
-	
 	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -913,19 +922,30 @@ wg.viewLog = function (date) {
 		app.mode('log');
 
 		try {
-			wg.logData(res.data.logs.join(''));
+			// wg.logData(res.data.logs.join(''));
+			wg.logData(res.data.logs);
 		} catch (err) {
 
 		}
 	});
 };
 
+wg.findLogView = function(){
+	var obj = wg.logData();
+	var key = wg.filterRequestLogView();
+	var val = wg.searchRequestLogView();
+	var returnedData = $.grep(obj, function (element, index) {
+	    return element.key == val;
+	});
+	wg.logData([]);
+    wg.logData(returnedData);
+
+}
 function filterWebGrabber(event) {
 	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		console.log(res.data);
 		wg.scrapperData(res.data);
 	});
 }
