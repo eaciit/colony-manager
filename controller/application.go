@@ -261,7 +261,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		if status {
-			app.DeployedTo = append(app.DeployedTo, server.ID)
+			app.DeployedTo = append(deployedTo, server.ID)
 		}
 		colonycore.Save(app)
 	}
