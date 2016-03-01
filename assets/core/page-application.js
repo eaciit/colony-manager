@@ -69,9 +69,9 @@ apl.ServerColumns = ko.observableArray([
 			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
 		}
 
-		if (!disabled) {
+		// if (!disabled) {
 			return "<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />";
-		}
+		// }
 
 		return "";
 	} },
