@@ -231,24 +231,30 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	path := filepath.Join(EC_DATA_PATH,"application","log")
+	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-150405")
+
 	payload := struct {
 		ID     string `json:"_id",bson:"_id"`
 		Server string
 	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	app := new(colonycore.Application)
 	err = colonycore.Get(app, payload.ID)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	server := new(colonycore.Server)
 	err = colonycore.Get(server, payload.Server)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -269,9 +275,12 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
 	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
+		log.AddLog(err.Error(), "ERROR")
+		log.AddLog("Need to install unzip on the server!", "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
 	}
+	
 	defer sshClient.Close()
 
 	serverPathSeparator := `/`
@@ -287,32 +296,40 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	err = toolkit.ZipCompress(sourcePath, sourceZipPath)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	getPIDofPrevProccessCmd := fmt.Sprintf("lsof -i:%s -t", app.Port)
+	log.AddLog(getPIDofPrevProccessCmd, "SUCCESS")
 	pid, err := sshSetting.GetOutputCommandSsh(getPIDofPrevProccessCmd)
+	log.AddLog(pid, "SUCCESS")
 
 	if strings.TrimSpace(pid) != "" {
 		killProcessCmd := fmt.Sprintf("sudo kill -9 %s", pid)
+		log.AddLog(killProcessCmd, "SUCCESS")
 		_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
 		fmt.Println("------ ", killProcessCmd, "|", err)
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
 			changeDeploymentStatus(false)
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
 
 	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
+	log.AddLog(rmCmdZip, "SUCCESS")
 	_, err = sshSetting.RunCommandSsh(rmCmdZip)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -320,33 +337,41 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
 	_, err = sshSetting.RunCommandSsh(rmCmdZipOutput)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+	log.AddLog(unzipCmd, "SUCCESS")
 	_, err = sshSetting.RunCommandSsh(unzipCmd)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	err = os.Remove(sourceZipPath)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	findCommand := fmt.Sprintf(`find %s -name "*install.sh"`, destinationZipPathOutput)
+	log.AddLog(findCommand, "SUCCESS")
 	installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	chmodCommand := fmt.Sprintf("chmod 755 %s", installerPath)
+	log.AddLog(chmodCommand, "SUCCESS")
 	_, err = sshSetting.RunCommandSsh(chmodCommand)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -362,8 +387,10 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	cRunCommand := make(chan string, 1)
 	go func() {
 		runCommand := fmt.Sprintf("cd %s && ./%s &", installerBasePath, installerFile)
+		log.AddLog(runCommand, "SUCCESS")
 		_, err = sshSetting.GetOutputCommandSsh(runCommand)
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
 			cRunCommand <- err.Error()
 		} else {
 			cRunCommand <- ""
@@ -374,11 +401,13 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	select {
 	case receiveRunCommandOutput := <-cRunCommand:
 		errorMessage = receiveRunCommandOutput
+		log.AddLog(errorMessage, "ERROR")
 	case <-time.After(time.Second * 3):
 		errorMessage = ""
 	}
 
 	if errorMessage != "" {
+		log.AddLog(errorMessage, "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, errorMessage)
 	}
