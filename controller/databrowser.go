@@ -69,9 +69,9 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if err := colonycore.Delete(payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
+	// if err := colonycore.Delete(payload); err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
 
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -127,6 +127,7 @@ func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	toolkit.Printf("metadata:%#v\n", payload)
 	return helper.CreateResult(true, payload, "")
 }
 
@@ -139,7 +140,7 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	conn, err := d.connToDatabase(data.ConnectionID)
+	conn, datacon, err := d.connToDatabase(data.ConnectionID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -152,48 +153,61 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 	}
 	defer cursor.Close()
 
-	dataFetch := toolkit.M{}
-	err = cursor.Fetch(&dataFetch, 1, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	// toolkit.Printf("datacon:%#v\n", datacon.Driver)
+	dataFetch := []toolkit.M{}
+	if datacon.Driver == "mongo" {
+		result := toolkit.M{}
+		err = cursor.Fetch(&result, 1, false)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		dataFetch = append(dataFetch, result)
+	} else {
+		err = cursor.Fetch(&dataFetch, 1, false)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	metadata := []*colonycore.StructInfo{}
 	x := 1
-	for keyField, _ := range dataFetch {
-		sInfo := &colonycore.StructInfo{}
-		sInfo.Field = keyField
-		sInfo.Label = keyField
-		sInfo.Format = ""
-		sInfo.Align = "Left"
-		sInfo.ShowIndex = toolkit.ToInt(x, toolkit.RoundingAuto)
-		sInfo.Sortable = false
-		sInfo.SimpleFilter = false
-		sInfo.AdvanceFilter = false
-		sInfo.Aggregate = ""
-		metadata = append(metadata, sInfo)
-		x++
+	for _, dataFields := range dataFetch {
+		for keyField, _ := range dataFields {
+			sInfo := &colonycore.StructInfo{}
+			sInfo.Field = keyField
+			sInfo.Label = keyField
+			sInfo.Format = ""
+			sInfo.Align = "Left"
+			sInfo.ShowIndex = toolkit.ToInt(x, toolkit.RoundingAuto)
+			sInfo.Sortable = false
+			sInfo.SimpleFilter = false
+			sInfo.AdvanceFilter = false
+			sInfo.Aggregate = ""
+			metadata = append(metadata, sInfo)
+			x++
+		}
 	}
-	// toolkit.Printf("metadata:%v\n", toolkit.JsonString(metadata))
+
 	data.MetaData = metadata
+
 	return helper.CreateResult(true, data, "")
 }
 
-func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, error) {
+func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, *colonycore.Connection, error) {
 	// var query dbox.IQuery
 
 	dataConn := new(colonycore.Connection)
 	err := colonycore.Get(dataConn, _id)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return connection, nil
+	return connection, dataConn, nil
 }
 
 func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser) dbox.IQuery {

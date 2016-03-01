@@ -26,7 +26,7 @@ br.browserColumns = ko.observableArray([
 	}},
 	{title: "", width: 40, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<div onclick= 'db.DesignDataBrowser(\"" + d._id + "\")' style= 'cursor: pointer;'>Design</div>"
+			"<div onclick= 'db.designDataBrowser(\"" + d._id + "\")' style= 'cursor: pointer;'>Design</div>"
 		].join(" ");
 	}}
 ]);
@@ -45,6 +45,8 @@ br.getDataBrowser = function(){
 
 br.OpenBrowserForm = function(ID){
 	br.pageVisible("editor");
+	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	$("#grid-databrowser-design").data('kendoGrid').dataSource.data([]);
 	// app.ajaxPost("/databrowser/gobrowser", {id: ID}, function (){
 	// 	if (!app.isFine) {
 	// 		return;
