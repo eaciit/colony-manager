@@ -43,7 +43,7 @@ func DateToString(tm time.Time) string {
 func NewHistory(nameid string) *WebGrabberController {
 	w := new(WebGrabberController)
 
-	dateNow := cast.Date2String(time.Now(), "YYYYMM") //time.Now()
+	dateNow := cast.Date2String(time.Now(), "YYYYMMdd") //time.Now()
 	path := wgHistoryPath + nameid + "-" + dateNow + ".csv"
 	w.filepathName = path
 	w.nameid = nameid
