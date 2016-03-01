@@ -106,10 +106,10 @@
 			    		</div>
 			    	</div>
 			    </div>
-			    <div class="col-md-12">
-			    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { model: { id: 'Field', fields: { Field: { editable: false } } } } }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
-			    </div>
-	    	</form>
+		    </form>
+		    <div class="col-md-12">
+		    	<div class="grid grid-databrowser-design" id="grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { model: { id: 'Field', fields: { Field: { editable: false }, ShowIndex: { type: 'number', editable: false, validation: { required: true, min: 1} } } } } }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div> 
+		    </div>
 	    </div>
 	</div>
 </div>
