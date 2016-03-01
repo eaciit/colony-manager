@@ -108,7 +108,7 @@ apl.ServerColumns = ko.observableArray([
 apl.gridServerDeployDataBound = function () {
 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
 		var $td = $(e).find("td:eq(4)");
-		if ($td.html() == "DEPLOYED") {
+		if ($td.text() == "DEPLOYED") {
 			$td.css("background-color", "#5cb85c");
 			$td.css("color", "white");
 		} else {
