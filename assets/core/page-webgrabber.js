@@ -865,6 +865,7 @@ wg.viewData = function (id) {
 		Password: ""
 	};
 
+
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
 		param.Driver = baseSetting.desttype;
