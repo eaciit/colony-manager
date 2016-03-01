@@ -101,6 +101,52 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 	query, metaSave := d.parseQuery(connection.NewQuery(), dataDS.QueryInfo)
 	return dataDS, dataConn, connection, query, metaSave, nil
 }
+
+func (d *DataSourceController) ConnectToDataSourceDB(_id string) ([]toolkit.M, *colonycore.DataBrowser, error) {
+
+	TblName := toolkit.M{}
+
+	dataDS := new(colonycore.DataBrowser)
+	err := colonycore.Get(dataDS, _id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dataConn := new(colonycore.Connection)
+	err = colonycore.Get(dataConn, dataDS.ConnectionID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
+		return nil, nil, err
+	}
+
+	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	TblName.Set("from", dataDS.TableNames)
+
+	query, metaSave := d.parseQuery(connection.NewQuery(), TblName)
+	fmt.Println(metaSave)
+
+	cursor, err := query.Cursor(nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer cursor.Close()
+
+	data := []toolkit.M{}
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return data, dataDS, nil
+}
+
 func (d *DataSourceController) filterParse(where toolkit.M) *dbox.Filter {
 	field := where.Get("field", "").(string)
 	value := fmt.Sprintf("%v", where["value"])

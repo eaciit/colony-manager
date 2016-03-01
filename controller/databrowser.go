@@ -189,3 +189,24 @@ func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colon
 	}
 	return dataQuery
 }
+
+func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result := toolkit.M{}
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	id := payload["id"].(string)
+
+	getFunc := DataSourceController{}
+	data, dataDS, err := getFunc.ConnectToDataSourceDB(id)
+
+	result.Set("DataValue", data)
+	result.Set("dataresult", dataDS)
+
+	return helper.CreateResult(true, result, "")
+}
