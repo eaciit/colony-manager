@@ -68,6 +68,7 @@ ds.collectionNames = ko.observableArray([]);
 ds.lokupModalLabel = ko.observable("");
 ds.tempCheckIdConnection = ko.observableArray([]);
 ds.tempCheckIdDataSource = ko.observableArray([]);
+ds.datas = ko.observableArray([]);
 ds.computedDrivers = ko.computed(
 	function() {
 		var temp = [];
@@ -584,13 +585,15 @@ ds.testQuery = function () {
 			if (metadata.length > 0) {
 				columns = columns.concat(metadata.map(function (e) {
 					var columnConfig = { field: e._id, title: e.Label, width: 150 };
-
-					if (e.Lookup._id != "") {
+					if ((e.Type === "object") || (e.Type === "array-objects") || (e.Type === "array-string")) {
 						columnConfig.template = function (f) {
-							return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
+							if (f[e._id] === undefined){
+								return "";
+							}else{
+								return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + "Click for full details" + "</a>";
+							}
 						}
 					}
-
 					return columnConfig;
 				}));
 			} else if (res.data.data.length > 0) {
@@ -722,7 +725,7 @@ ds.saveLookup = function () {
 	});
 };
 ds.showLookupData = function (lookupID, lookupData) {
-	ds.lokupModalLabel("");
+	ds.lokupModalLabel(lookupID);
 	$(".modal-lookup-data").modal("show");
 	$("#grid-lookup-data").replaceWith("<div id='grid-lookup-data'></div>");
 
@@ -732,34 +735,31 @@ ds.showLookupData = function (lookupID, lookupData) {
 		lookupData: lookupData
 	};
 	app.ajaxPost("/datasource/fetchdatasourcelookupdata", param, function (res) {
-		if (!app.isFine(res)) {
+		if ((!app.isFine(res)) || (res.data.data === null)){
 			return;
 		}
 
-		var columns = [{
-			title: "&nbsp;",
-			width: 20,
-			locked: true
-		}].concat(res.data.columns.map(function (e) {
-			return { field: e, title: e, width: 150 };
-		}));
-
-		if (columns.length == 1) {
-			columns[0].locked = false;
+		if ($.isArray(res.data.data)){
+			if(typeof(res.data.data) === "object"){
+				ds.datas = res.data.data;
+				if (typeof(ds.datas[0]) === "string") {
+					var values = [];
+					for (var ln = 0; ln < ds.datas.length; ln++) {
+					    var item1 = {
+					        "List" : ds.datas[ln]
+					    };
+				    	values.push(item1);
+					}
+					ds.datas = values;
+				}
+			}
+		}else{
+			ds.datas = [res.data.data];
 		}
 
-		var gridConfig = {
-			columns: columns,
-			dataSource: {
-				data: res.data.data,
-				pageSize: 10
-			},
-			sortable: true,
-			pageable: true,
-			filterfable: false
-		};
-
-		$("#grid-lookup-data").kendoGrid(gridConfig);
+		$("#grid-lookup-data").kendoGrid({
+			dataSource: ds.datas
+		});
 	});
 };
 

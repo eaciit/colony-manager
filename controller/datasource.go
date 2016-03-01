@@ -730,7 +730,8 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 
 	for _, meta := range dataDS.MetaData {
 		if meta.ID == lookupID {
-			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(meta.Lookup.DataSourceID)
+			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(_id)
+			// dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(meta.Lookup.DataSourceID)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
@@ -756,20 +757,23 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 
 			lookupResultData := []toolkit.M{}
 			for _, each := range lookupResultDataRaw {
-				if fmt.Sprintf("%v", each[meta.Lookup.IDField]) == lookupData {
-					eachResult := toolkit.M{}
+				// if fmt.Sprintf("%v", each[meta.Lookup.IDField]) == lookupData {
+				if fmt.Sprintf("%v", each["_id"]) == lookupData {
+					datas := toolkit.M{"data": each[lookupID]}
+					return helper.CreateResult(true, datas, "");
+					// eachResult := toolkit.M{}
 
-					if len(meta.Lookup.LookupFields) == 0 {
-						valueDisplayField := helper.ForceAsString(each, meta.Lookup.DisplayField)
-						eachResult.Set(meta.Lookup.DisplayField, valueDisplayField)
-					} else {
-						for _, lookupField := range meta.Lookup.LookupFields {
-							valueDisplayField := helper.ForceAsString(each, lookupField)
-							eachResult.Set(lookupField, valueDisplayField)
-						}
-					}
+					// if len(meta.Lookup.LookupFields) == 0 {
+					// 	valueDisplayField := helper.ForceAsString(each, meta.Lookup.DisplayField)
+					// 	eachResult.Set(meta.Lookup.DisplayField, valueDisplayField)
+					// } else {
+					// 	for _, lookupField := range meta.Lookup.LookupFields {
+					// 		valueDisplayField := helper.ForceAsString(each, lookupField)
+					// 		eachResult.Set(lookupField, valueDisplayField)
+					// 	}
+					// }
 
-					lookupResultData = append(lookupResultData, eachResult)
+					// lookupResultData = append(lookupResultData, eachResult)
 				}
 			}
 
