@@ -2,7 +2,7 @@ app.section('scrapper');
 
 viewModel.webGrabber = {}; var wg = viewModel.webGrabber;
 
-
+wg.isDaemonRunning = ko.observable(false);
 wg.logData = ko.observable('');
 wg.scrapperMode = ko.observable('');
 wg.modeSetting = ko.observable(0);
@@ -203,6 +203,22 @@ wg.replaceEqWithNthChild = function (s) {
 }
 wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 
+wg.checkDaemonStatus = function () {
+	app.ajaxPost("/webgrabber/daemonstat", {}, function (res) {
+		wg.isDaemonRunning(res.data);
+	});
+};
+wg.toggleDaemon = function (to) {
+	return function () {
+		app.ajaxPost("/webgrabber/daemontoggle", { op: to }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			wg.checkDaemonStatus();
+		});
+	};
+};
 wg.editScrapper = function (_id) {
 	wg.scrapperMode('edit');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -315,51 +331,50 @@ wg.runBotStats = function () {
 
 	var isThereAnyError = false;
 
-	// if (wg.scrapperData() != "") {
-	// 	wg.scrapperData().forEach(function (each) {
-	// 		var checkStat = function () {
-	// 			app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
-	// 				if (res.success) {
-	// 					var $grid = $(".grid-web-grabber").data("kendoGrid");
-	// 					var row = Lazy($grid.dataSource.data()).find({ _id: res.data.name });
+	if (wg.scrapperData() != "") {
+		wg.scrapperData().forEach(function (each) {
+			var checkStat = function () {
+				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
+					if (res.success) {
+						var $grid = $(".grid-web-grabber").data("kendoGrid");
+						var row = Lazy($grid.dataSource.data()).find({ _id: each._id });
 
-	// 					if (row != undefined) {
-	// 						var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+						if (row != undefined) {
+							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
-	// 						if (res.data.isRun) {
-	// 							$tr.addClass("started");
-	// 						} else {
-	// 							$tr.removeClass("started");
-	// 						}
-	// 					}
-	// 				}
+							if (res.data) {
+								$tr.addClass("started");
+							} else {
+								$tr.removeClass("started");
+							}
+						}
+					}
 
-	// 				if (isThereAnyError) {
-	// 					return;
-	// 				}
+					if (isThereAnyError) {
+						return;
+					}
 
-	// 				if (!app.isFine(res)) {
-	// 					isThereAnyError = true;
-	// 					return;
-	// 				}
-	// 			}, function (a) {
-	// 		        sweetAlert("Oops...", a.statusText, "error");
-	// 			}, {
-	// 				withLoader: false
-	// 			});
-	// 		};
+					if (!app.isFine(res)) {
+						isThereAnyError = true;
+						return;
+					}
+				}, function (a) {
+			        sweetAlert("Oops...", a.statusText, "error");
+				}, {
+					withLoader: false
+				});
+			};
 
-	// 		var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
+			var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
 
-	// 		wg.botStats.push({ 
-	// 			_id: each._id,
-	// 			interval: setInterval(checkStat, interval * 1000)
-	// 		});
+			wg.botStats.push({ 
+				_id: each._id,
+				interval: setInterval(checkStat, interval * 1000)
+			});
 
-	// 		checkStat();
-	// 	});
-	// }
-	
+			checkStat();
+		});
+	}
 };
 wg.parsePayload = function () {
 	var parameters = {};
@@ -1004,4 +1019,6 @@ $(function () {
 	wg.getConnection();
 	wg.getScrapperData();
 	app.registerSearchKeyup($(".search"), wg.getScrapperData);
+	wg.checkDaemonStatus();
+	setInterval(wg.checkDaemonStatus, 1000 * 10);
 });

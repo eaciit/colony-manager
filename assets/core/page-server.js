@@ -206,7 +206,7 @@ srv.doSaveServer = function (c) {
 			}
 
 			srv.isNew(true);
-			if (typeof c != "undefined") {
+			if (typeof c == "function") {
 				c();
 			}
 		});
