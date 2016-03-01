@@ -230,6 +230,16 @@ table.table tr:hover td {
 .lbl {
   margin-left: -12%; }
 
+.daemon-container {
+  position: absolute;
+  right: 16px;
+  top: 11px;
+  z-index: 1; }
+  .daemon-container label {
+    margin-right: 5px; }
+  .daemon-container .btn-primary {
+    pointer-events: none; }
+
 .intext {
   width: 100%;
   height: 350px; }
@@ -279,6 +289,9 @@ table.table tr:hover td {
   margin-left: 15px;
   width: 300px; }
 
+.mgTop5 {
+  margin-top: 15px; }
+
 .mgTop15 {
   margin-top: 15px; }
 
@@ -317,9 +330,6 @@ table.table tr:hover td {
 
 .btn-ongrup {
   margin-left: 1px; }
-
-.DB-margin {
-  margin-top: 10px; }
 
 .onbutton {
   background-color: #3A8BDF;

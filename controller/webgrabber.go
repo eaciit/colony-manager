@@ -11,10 +11,13 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"os"
+	"os/exec"
 	f "path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -345,6 +348,66 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, payload.Running, "")
+}
+
+func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	byts, _ := exec.Command("pgrep", "sedotand").Output()
+	if string(byts) == "" {
+		return helper.CreateResult(true, false, "")
+	}
+
+	return helper.CreateResult(true, true, "")
+}
+
+func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		OP string `json:"op"`
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if runtime.GOOS == "windows" {
+		return helper.CreateResult(false, false, "Not yet supported for windows")
+	} else {
+		if payload.OP == "off" {
+			byts, err := exec.Command("pgrep", "sedotand").Output()
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+
+			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
+				pid := toolkit.ToInt(pidOfSedotanD, toolkit.RoundingAuto)
+				err := syscall.Kill(pid, 15)
+				if err != nil {
+					return helper.CreateResult(false, false, err.Error())
+				}
+
+				return helper.CreateResult(true, true, "")
+			}
+		} else {
+			sedotanPath := f.Join(EC_APP_PATH, "daemon", "sedotand")
+			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
+			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
+			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
+			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
+
+			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
+			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+
+			return helper.CreateResult(true, true, "")
+		}
+	}
+
+	return helper.CreateResult(false, false, "Internal server error")
 }
 
 func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
