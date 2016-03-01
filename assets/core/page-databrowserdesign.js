@@ -2,7 +2,7 @@ app.section('databrowserdesign');
 
 viewModel.databrowserdesign = {}; var db = viewModel.databrowserdesign;
 
-db.templateConfigProperties= {
+db.templateConfigMetaData = {
     Field : "",
     Label : "",
     Format : "",
@@ -17,73 +17,13 @@ db.templateConfigProperties= {
 db.templateConfig = {
     _id : "",
     BrowserName : "",
-    IDDetails : "",
     Description : "",
-    Connection : "",
-    DataBase : "",
+    ConnectionID : "",
     TableName : "",
     QueryType : "",
     QueryText : "",
-    Struct : [],
+    MetaData : [],
 }
-
-/*var dummyobj1 = new Object()
-dummyobj1.Field = "id"
-dummyobj1.label = "ID"
-dummyobj1.format = ""
-dummyobj1.align = 1
-dummyobj1.showindex = 1
-dummyobj1.sortable = true
-dummyobj1.simplefilter = true
-dummyobj1.advfilter = true
-dummyobj1.aggregate =  ""
-var dummyobj2 = new Object()
-dummyobj2.Field = "name"
-dummyobj2.label = "Name"
-dummyobj2.format = ""
-dummyobj2.align = 2
-dummyobj2.showindex = 2
-dummyobj2.sortable = true
-dummyobj2.simplefilter = true
-dummyobj2.advfilter = true
-dummyobj2.aggregate =  ""
-var dummyobj3 = new Object()
-dummyobj3.Field = "DateOfBorn"
-dummyobj3.label = "Birth Date"
-dummyobj3.format = "dd-MMM-yyy"
-dummyobj3.align = 1
-dummyobj3.showindex = 3
-dummyobj3.sortable = true
-dummyobj3.simplefilter = false
-dummyobj3.advfilter = true
-dummyobj3.aggregate =  ""
-var dummyobj4 = new Object()
-dummyobj4.Field = "Salary"
-dummyobj4.label = "Salary"
-dummyobj4.format = "N0"
-dummyobj4.align = 3
-dummyobj4.showindex = 4
-dummyobj4.sortable = true
-dummyobj4.simplefilter = false
-dummyobj4.advfilter = true
-dummyobj4.aggregate =  "Sum"
-var dummyData = new Array();
-dummyData.push(dummyobj1, dummyobj2, dummyobj3, dummyobj4)*/
-// db.databrowserData(dummyData);
-
-// dummy connection list
-// var dummyConn = new Object()
-// dummyConn._id = "connect_mongo"
-// var dataConn = new Array();
-// dataConn.push(dummyConn)
-// db.connectionList(dataConn);
-
-// dummy table list
-// var dummyTable = new Object()
-// dummyTable._id = "mongo-students"
-// var dataTable = new Array();
-// dataTable.push(dummyTable)
-// db.tableList(dataTable);
 
 db.alignList = ko.observableArray([
     { alignId: 1, name: "Left" },
@@ -94,7 +34,8 @@ db.queryType = ko.observableArray([
 	{ value: "SQL", text: "SQL" },
 	{ value: "Dbox", text: "Dbox" }
 ]);
-db.tableList = ko.observableArray([]);
+db.connectionID = ko.observable('');
+db.collectionListData = ko.observableArray([]);
 db.databrowserData = ko.observableArray([]);
 db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
 db.databrowserColumns = ko.observableArray([
@@ -153,10 +94,67 @@ db.getDesign = function(_id) {
 	});
 }
 
-// dg.addMap = function () {
-// 	var o = ko.mapping.fromJS($.extend(true, {}, db.templateConfigProperties));
-// 	db.templateConfig.Struct.push(o);
+db.populateTable = function () {
+	var param = { connectionID: this.value() };
+	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (res.data.length==0){
+			res.data="";
+			db.collectionListData([{value:"", text: ""}]);
+		} else {
+			var datavalue = [];
+			if (res.data.length > 0) {
+				$.each(res.data, function(key, val) {
+					data = {};
+					data.value = val;
+					data.text = val;
+					datavalue.push(data);
+				});
+			}
+
+			db.collectionListData(datavalue);
+		}
+		
+		
+	});
+};
+
+// db.templateDataSource = {
+// 	_id: "",
+// 	ConnectionID: "",
+// 	QueryInfo : {},
+// 	MetaData: [],
 // };
+// db.confDataSource = ko.mapping.fromJS(db.templateDataSource);
+db.testQuery = function() {
+	if (!app.isFormValid(".form-databrowserdesign")) {
+		return;
+	}
+
+	if (db.configDataBrowser._id() == '' || db.configDataBrowser.Description() == '') {
+		swal({ title: "Warning", text: "Please save the datasource first", type: "warning" });
+		return;
+	}
+
+	var param = ko.mapping.toJS(db.configDataBrowser); //{};
+	var isChecked = $("#isFreetext").prop("checked")
+	if (!isChecked) { //if false by default query with dbox
+		param.QueryType = "nonQueryText";
+		param.QueryText = JSON.stringify({"from": $("#table").data("kendoDropDownList").value()});
+		param.TableName = $("#table").data("kendoDropDownList").value();
+		// console.log(param)
+		app.ajaxPost("/databrowser/testquery", param, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			console.log(res)
+		});
+	}
+};
 
 db.backToFront = function() {
 	app.mode('');
@@ -164,16 +162,19 @@ db.backToFront = function() {
 	$("#isFreetext").prop("checked", false);
 	$("#freeQuery").hide();
 	$("#fromTable").show();
-}
+};
 
 $(function () {
 	$("#freeQuery").hide();
+	$("#querytype").hide();
 	$("#isFreetext").change(function() {
 		if (this.checked){
 			$("#freeQuery").show();
+			$("#querytype").show();
 			$("#fromTable").hide();	
 		}else{
 			$("#freeQuery").hide();
+			$("#querytype").hide();
 			$("#fromTable").show();
 		}
 	});
@@ -187,10 +188,3 @@ db.ViewBrowserName = function(id){
 db.DesignDataBrowser = function(id){
     br.pageVisible("editor");
 }
-
-// dummy table list
-var dummyTable = new Object()
-dummyTable._id = "mongo-students"
-var dataTable = new Array();
-dataTable.push(dummyTable)
-db.tableList(dataTable);
