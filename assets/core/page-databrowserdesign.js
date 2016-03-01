@@ -57,9 +57,9 @@ db.databrowserColumns = ko.observableArray([
 	// { field: "ShowIndex", title: "Position"},
 	// { field: "ShowIndex", title: "Position", command: [ { text: "Up", click: db.moveUp }, { text: "Down", click: db.moveDown } ]},
 	{ title: "Position", template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'>Up</a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'>Down</a><span style='margin-left: 20px;''>#= ShowIndex #</span>"},
-	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' />"},
-	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' />"},
-	{ title: "Advance Filter", template: "<input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' />"},
+	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ title: "Advance Filter", template: "<input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
 	{ field: "Aggregate", title: "Aggregate"},
 ]);
 
@@ -124,11 +124,10 @@ db.moveRow = function(grid, dataItem,direction) {
     db.swap(grid.dataSource._data[newIndex],grid.dataSource._data[index],'ShowIndex');
     grid.dataSource.remove(record);
     grid.dataSource.insert(newIndex, record);
-    db.databrowserData(grid.dataSource.data())
+    db.databrowserData(grid.dataSource.data());
+    db.setDataSource();
     
     db.addProperties();
- //    console.log(grid.dataSource.data())
-	// console.log(db.databrowserData())
 }
 
 db.addProperties = function () {
@@ -149,45 +148,37 @@ db.addProperties = function () {
     });
 };
 
+db.changeCheckboxOnGrid = function (o) {
+	var $grid = $(".grid-databrowser-design").data("kendoGrid");
+	var value = $(o).is(":checked");
+	var $tr = $(o).closest("tr");
+	var uid = $tr.attr("data-uid");
+	var field = $(o).attr("data-field");
+
+	var data = $grid.dataSource.data();
+	var rowData = $grid.dataSource.getByUid(uid);
+	var rowDataIndex = data.indexOf(rowData);
+
+	rowData[field] = value;
+	data[rowDataIndex] = rowData;
+
+	var plainData = JSON.parse(kendo.stringify(data));
+	db.databrowserData(plainData);
+	db.setDataSource();
+
+	return true;
+}
+
 db.saveAndBack = function() {
-	 var param = ko.mapping.toJS(db.configDataBrowser);
-	 grid = $(".grid-databrowser-design").data("kendoGrid");
-	 console.log(grid.dataSource.data());
+	var param = ko.mapping.toJS(db.configDataBrowser);
+	grid = $(".grid-databrowser-design").data("kendoGrid");
 
-	 var idsToSend = [];         	
-     var grids = $(".grid-databrowser-design").data("kendoGrid")
-     var ds = grids.dataSource.view();
-                    
-     for (var i = 0; i < ds.length; i++) {
-        var row = grids.table.find("tr[data-uid='" + ds[i].uid + "']");
-        var cbsort = $(row).find(".cbSort");
-        var cbsimple = $(row).find(".cbSimpleFilter");
-        var cbadvance = $(row).find(".cbAdvFilter");
-        var format = $(row).find(".Format");
-        param.MetaData[i].Label = ds[i].Label
-        param.MetaData[i].Format = ds[i].Format
-        param.MetaData[i].Align = ds[i].Align
-        param.MetaData[i].Aggregate = ds[i].Aggregate
-                      
-        if (cbsort.is(":checked")) {
-        	param.MetaData[i].Sortable = true
-        } else {
-        	param.MetaData[i].Sortable = false
-        }
+	var idsToSend = [];         	
+	var grids = $(".grid-databrowser-design").data("kendoGrid")
+	var ds = grids.dataSource.data();
+	param.MetaData = JSON.parse(kendo.stringify(ds));
 
-        if (cbsimple.is(":checked")) {
-        	param.MetaData[i].SimpleFilter = true
-        } else {
-        	param.MetaData[i].SimpleFilter = false
-        }
-
-        if (cbadvance.is(":checked")) {
-        	param.MetaData[i].AdvanceFilter = true
-        } else {
-        	param.MetaData[i].AdvanceFilter = false
-        }
-
-    }
+    console.log(param);
 
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
@@ -198,9 +189,6 @@ db.saveAndBack = function() {
 		}
 		
 		db.backToFront();
-		// br.pageVisible("editor");
-		// app.mode('editor')
-		// ko.mapping.fromJS(res.data, db.configDataBrowser)
 	});
 }
 
@@ -220,6 +208,7 @@ db.designDataBrowser = function(_id) {
 		br.pageVisible("editor");
 		app.mode('editor')
 		db.databrowserData(res.data.MetaData);
+		db.setDataSource();
 		if (typeof _id === "function") {
 			_id();
 		}
@@ -280,6 +269,7 @@ db.testQuery = function() {
 			ko.mapping.fromJS(res.data, db.configDataBrowser)
 			db.configDataBrowser.MetaData([]);
 			db.databrowserData(res.data.MetaData);
+			db.setDataSource();
 			$("#grid-databrowser-design").kendoGrid(res.data.MetaData);
 		});
 	}
@@ -294,7 +284,48 @@ db.backToFront = function() {
 	br.getDataBrowser();
 };
 
+db.setDataSource = function () {
+	var ds = new kendo.data.DataSource({
+		pageSize: 15, 
+		batch: true,
+		schema: { 
+			model: { 
+	    		id: 'Field', 
+    			fields: { 
+    				Field: { editable: false }, 
+    				Label: { type: 'string' },
+    				Format: { type: 'string' },
+    				Align: { type: 'string' },
+    				ShowIndex: { 
+    					type: 'number', 
+    					editable: false
+					},
+					Sortable: { type: 'boolean' }, 
+					SimpleFilter: { type: 'boolean' }, 
+					AdvanceFilter: { type: 'boolean' }, 
+					Aggregate: { type: 'string' }
+				} 
+			} 
+		},
+		data: db.databrowserData()
+	});
+
+	$(".grid-databrowser-design").data("kendoGrid").setDataSource(ds);
+};
+db.prepareGrid = function () {
+	$(".grid-databrowser-design").kendoGrid({ 
+		selectable: 'multiple, row', 
+		columns: db.databrowserColumns(), 
+		editable: true, 
+		filterfable: false, 
+		pageable: true, 
+		dataBound: app.gridBoundTooltipster('.grid-databrowser-design')
+	});
+	db.setDataSource();
+}
+
 $(function () {
+	db.prepareGrid();
 	$("#freeQuery").hide();
 	$("#querytype").hide();
 	$("#isFreetext").change(function() {

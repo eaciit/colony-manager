@@ -108,30 +108,7 @@
 			    </div>
 		    </form>
 		    <div class="col-md-12">
-		    	<div class="grid grid-databrowser-design" id="grid-databrowser-design" data-bind="kendoGrid: { 
-			    	dataSource: { 
-			    		pageSize: 15, 
-			    		batch: true,
-			    		schema: { 
-			    			model: { 
-			    			id: 'Field', 
-			    			fields: { 
-			    				Field: { editable: false }, 
-			    				Label: { type: 'string' },
-			    				Format: { type: 'string' },
-			    				Align: { type: 'string' },
-			    				ShowIndex: { 
-			    					type: 'number', 
-			    					editable: false
-		    					},
-		    					Sortable: { type: 'boolean' }, 
-		    					SimpleFilter: { type: 'boolean' }, 
-		    					AdvanceFilter: { type: 'boolean' }, 
-		    					Aggregate: { type: 'string' }
-		    				} 
-	    				} 
-					} 
-				}, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div> 
+		    	<div class="grid grid-databrowser-design" id="grid-databrowser-design"></div> 
 		    </div>
 	    </div>
 	</div>
