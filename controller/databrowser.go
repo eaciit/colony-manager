@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	"github.com/eaciit/toolkit"
 	// "io"
 	// "net/http"
 	// "os"
@@ -128,4 +128,85 @@ func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	return helper.CreateResult(true, payload, "")
+}
+
+func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := colonycore.DataBrowser{} //map[string]interface{}{}
+	err := r.GetPayload(&data)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	conn, err := d.connToDatabase(data.ConnectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	query := d.parseQuery(conn, data)
+
+	cursor, err := query.Cursor(nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	dataFetch := []toolkit.M{}
+	err = cursor.Fetch(&dataFetch, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	toolkit.Printf("data: %v\n", dataFetch)
+	return helper.CreateResult(true, dataFetch, "")
+}
+
+func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, error) {
+	// var query dbox.IQuery
+
+	dataConn := new(colonycore.Connection)
+	err := colonycore.Get(dataConn, _id)
+	if err != nil {
+		return nil, err
+	}
+
+	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	return connection, nil
+}
+
+func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser) dbox.IQuery {
+	var dataQuery dbox.IQuery
+	if dbrowser.QueryType == "nonQueryText" {
+		result := toolkit.M{}
+		toolkit.UnjsonFromString(dbrowser.QueryText, &result)
+		if qFrom := result.Get("from", "").(string); qFrom != "" {
+			dataQuery = conn.NewQuery().From(qFrom)
+		}
+	}
+	return dataQuery
+}
+
+func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result := toolkit.M{}
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	id := payload["id"].(string)
+
+	getFunc := DataSourceController{}
+	data, dataDS, err := getFunc.ConnectToDataSourceDB(id)
+
+	result.Set("DataValue", data)
+	result.Set("dataresult", dataDS)
+
+	return helper.CreateResult(true, result, "")
 }
