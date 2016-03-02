@@ -53,7 +53,7 @@ apl.applicationColumns = ko.observableArray([
 	{ field: "Port", title: "Running Port" },
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deployment information' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
 		].join(" ");
 	} },
 ]);
@@ -69,9 +69,9 @@ apl.ServerColumns = ko.observableArray([
 			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
 		}
 
-		if (!disabled) {
+		// if (!disabled) {
 			return "<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />";
-		}
+		// }
 
 		return "";
 	} },
@@ -86,19 +86,20 @@ apl.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ field: "status", width: 100, headerTemplate: "<center>status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		if (baseData == undefined) {
+		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (app == undefined) {
 			return "";
 		}
 
-		var deployedTo = baseData.DeployedTo;
+		var deployedTo = app.DeployedTo;
 
 		if (deployedTo == null) {
 			deployedTo = [];
 		}
 
 		if (deployedTo.indexOf(d._id) != -1) {
-			return "DEPLOYED";
+			var target = [d.host.split(":")[0], app.Port].join(":");
+			return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
 		}
 
 		return "UNDEPLOYED";
@@ -107,7 +108,7 @@ apl.ServerColumns = ko.observableArray([
 apl.gridServerDeployDataBound = function () {
 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
 		var $td = $(e).find("td:eq(4)");
-		if ($td.html() == "DEPLOYED") {
+		if ($td.text() == "DEPLOYED") {
 			$td.css("background-color", "#5cb85c");
 			$td.css("color", "white");
 		} else {

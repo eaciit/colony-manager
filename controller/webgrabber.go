@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/eaciit/cast"
 	"github.com/eaciit/colony-core/v0"
@@ -11,10 +12,12 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"os"
+	"os/exec"
 	f "path/filepath"
-	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -40,7 +43,7 @@ func DateToString(tm time.Time) string {
 func NewHistory(nameid string) *WebGrabberController {
 	w := new(WebGrabberController)
 
-	dateNow := cast.Date2String(time.Now(), "YYYYMM") //time.Now()
+	dateNow := cast.Date2String(time.Now(), "YYYYMMdd") //time.Now()
 	path := wgHistoryPath + nameid + "-" + dateNow + ".csv"
 	w.filepathName = path
 	w.nameid = nameid
@@ -56,36 +59,36 @@ func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 func (w *WebGrabberController) PrepareHistoryPath() {
 }
 
-func (w *WebGrabberController) OpenHistory() interface{} {
+func (w *WebGrabberController) OpenHistory() ([]interface{}, error) {
+	var history = []interface{}{} //toolkit.M{}
 	var config = map[string]interface{}{"useheader": true, "delimiter": ",", "dateformat": "MM-dd-YYYY"}
 
 	ci := &dbox.ConnectionInfo{w.filepathName, "", "", "", config}
 	c, err := dbox.NewConnection("csv", ci)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 
 	err = c.Connect()
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 	defer c.Close()
 
 	csr, err := c.NewQuery().Select("*").Cursor(nil)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 	if csr == nil {
-		return helper.CreateResult(false, nil, "Cursor not initialized")
+		return history, errors.New("Cursor not initialized")
 	}
 	defer csr.Close()
 	ds := []toolkit.M{}
 	err = csr.Fetch(&ds, 0, false)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return history, err
 	}
 
-	var history = []interface{}{} //toolkit.M{}
 	for i, v := range ds {
 		castDate, _ := time.Parse(time.RFC3339, v.Get("grabdate").(string))
 		w.humanDate = cast.Date2String(castDate, "YYYY/MM/dd HH:mm:ss")
@@ -105,7 +108,7 @@ func (w *WebGrabberController) OpenHistory() interface{} {
 
 		history = append(history, addToMap)
 	}
-	return history
+	return history, nil
 }
 
 func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) interface{} {
@@ -115,8 +118,10 @@ func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) i
 
 		logConf := vMap["logconf"].(map[string]interface{})
 		dateNowFormat := logConf["filepattern"].(string)
-		fileName := fmt.Sprintf("%s-%s", logConf["filename"], dateNowFormat)
-		w.logPath = f.Join(logConf["logpath"].(string), fileName)
+		theDate := cast.String2Date(date, "YYYY/MM/dd HH:mm:ss")
+		theDateString := cast.Date2String(theDate, dateNowFormat)
+		fileName := fmt.Sprintf("%s-%s", logConf["filename"], theDateString)
+		w.logPath = f.Join(EC_DATA_PATH, "webgrabber", "log", fileName)
 	}
 
 	file, err := os.Open(w.logPath)
@@ -135,6 +140,15 @@ func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) i
 	lines := 0
 	containLines := 0
 	logsseparator := ""
+
+	add7Hours := func(s string) string {
+		t, _ := time.Parse("2006/01/02 15:04", s)
+		t = t.Add(time.Hour * 7)
+		return t.Format("2006/01/02 15:04")
+	}
+
+	containString = add7Hours(containString)
+	containString2 = add7Hours(containString2)
 
 	var logs []interface{}
 	for scanner.Scan() {
@@ -347,6 +361,66 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload.Running, "")
 }
 
+func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	byts, _ := exec.Command("pgrep", "sedotand").Output()
+	if string(byts) == "" {
+		return helper.CreateResult(true, false, "")
+	}
+
+	return helper.CreateResult(true, true, "")
+}
+
+func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		OP string `json:"op"`
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if runtime.GOOS == "windows" {
+		return helper.CreateResult(false, false, "Not yet supported for windows")
+	} else {
+		if payload.OP == "off" {
+			byts, err := exec.Command("pgrep", "sedotand").Output()
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+
+			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
+				pid := toolkit.ToInt(pidOfSedotanD, toolkit.RoundingAuto)
+				err := syscall.Kill(pid, 15)
+				if err != nil {
+					return helper.CreateResult(false, false, err.Error())
+				}
+
+				return helper.CreateResult(true, true, "")
+			}
+		} else {
+			sedotanPath := f.Join(EC_APP_PATH, "daemon", "sedotand")
+			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
+			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
+			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
+			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
+
+			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
+			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+
+			return helper.CreateResult(true, true, "")
+		}
+	}
+
+	return helper.CreateResult(false, false, "Internal server error")
+}
+
 func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	w.PrepareHistoryPath()
@@ -362,11 +436,9 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	}
 
 	module := NewHistory(payload.HistConf.FileName)
-	history := module.OpenHistory()
-	if reflect.ValueOf(history).Kind() == reflect.String {
-		if strings.Contains(history.(string), "Cannot Open File") {
-			return helper.CreateResult(false, nil, "Cannot Open File")
-		}
+	history, err := module.OpenHistory()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, history, "")

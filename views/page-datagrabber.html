@@ -183,7 +183,7 @@
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'addWizard')">
-			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
 	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="">
@@ -198,13 +198,13 @@
 				</h1>
 			</div>
 			<div class="panel-body" >
-				<form class="form-horizontal form-addWizard" id="form-add-wizard">
+				<form class="form-horizontal" id="form-add-wizard" data-bind ="with:config" novalidate>
 					<div class="col-md-12 no-padding no-margin">
 						<div class="col-md-12">
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Connection Source</label>
 								<div class=" col-md-4">
-									<select required data-required-msg="Data connection source cannot be empty" class="full-width" name="data-connection-source" data-bind = "kendoDropDownList : {data : dg.dataSourcesDataForSourceAndDest('origin'), optionLabel: 'Select One'}">
+									<select required data-required-msg="Data connection source cannot be empty" class="full-width" data-bind = "kendoDropDownList : {data : dg.dataSourcesDataForSourceAndDest('origin'), optionLabel: 'Select One'}">
 									</select>
 								</div>	
 							</div>
@@ -212,14 +212,14 @@
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Connection Destination</label>
 								<div class="col-md-4">
-									<select required data-required-msg="Data connection source cannot be empty" class="full-width" name="data-connection-source" data-bind = "kendoDropDownList : {data : dg.dataSourcesDataForSourceAndDest('origin'), optionLabel: 'Select One'}">
+									<select required data-required-msg="Data connection source cannot be empty" class="full-width" data-bind = "kendoDropDownList : {data : dg.dataSourcesDataForSourceAndDest('origin'), optionLabel: 'Select One'}">
 									</select>
 								</div>	
 							</div>
 							
 							<div class="form-group">
 								<div class="nav">
-									<button class="btn btn-sm btn-success" data-bind="click: dg.addTableWizard">
+									<button class="btn btn-sm btn-success" data-bind="click: dg.addtable">
 										<span class="glyphicon glyphicon-plus"></span> Add More
 									</button>
 								</div>	
@@ -232,18 +232,19 @@
 											<th style="border-bottom: none;">Table Source</th>
 											<th style="border-bottom: none;">Table Destination</th>
 										</thead>
-										<tbody data-bind ="">
+										<tbody data-bind ="foreach:Transformation">
 											<tr>
 												<td>
-													<select required data-required-msg="table Source cannot be empty" class="full-width" data-bind="kendoDropDownList : {optionLabel : 'Select One'}" >
+													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {optionLabel : 'select One'}" >
 													</select>
 												</td>
 												<td>
-													<select required data-required-msg="table Source cannot be empty" class="full-width" data-bind="kendoDropDownList : {optionLabel : 'Select One'}" >
+													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {optionLabel : 'select One'}" >
 													</select>
 												</td>
 												<td>
-													<button class="btn btn-sm btn-danger" data-bind=""><span class="glyphicon glyphicon-remove" data-bind=""></span>
+													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 )">
+													<span class="glyphicon glyphicon-remove" data-bind="click : dg.removetable($data)"></span>
 													</button>
 												</td>
 											</tr>	
@@ -251,7 +252,6 @@
 									</table>
 								</div>
 							</div>
-
 						</div>
 					</div>	
 				</form>

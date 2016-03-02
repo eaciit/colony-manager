@@ -6,7 +6,7 @@
 <!-- main area -->
 <div class="col-md-12">
 	<nav class="navbar" >
-        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.saveAndBack">
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.saveAndBack">
     		<span class="glyphicon glyphicon-chevron-left"></span> Save and Back to List
     	</button>
         <button class="btn btn-sm btn-success navbar-btn" >
@@ -106,10 +106,10 @@
 			    		</div>
 			    	</div>
 			    </div>
-			    <div class="col-md-12">
-			    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { model: { id: 'Field', fields: { Field: { editable: false } } } } }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
-			    </div>
-	    	</form>
+		    </form>
+		    <div class="col-md-12">
+		    	<div class="grid grid-databrowser-design" id="grid-databrowser-design"></div> 
+		    </div>
 	    </div>
 	</div>
 </div>

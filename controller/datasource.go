@@ -102,49 +102,81 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 	return dataDS, dataConn, connection, query, metaSave, nil
 }
 
-func (d *DataSourceController) ConnectToDataSourceDB(_id string) ([]toolkit.M, *colonycore.DataBrowser, error) {
+func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []toolkit.M, *colonycore.DataBrowser, error) {
+
+	_id := toolkit.ToString(payload.Get("id", ""))
+	take := toolkit.ToInt(payload.Get("take", ""), toolkit.RoundingAuto)
+	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
 	TblName := toolkit.M{}
 
 	dataDS := new(colonycore.DataBrowser)
 	err := colonycore.Get(dataDS, _id)
 	if err != nil {
-		return nil, nil, err
+		return 0, nil, nil, err
 	}
+
+	fmt.Printf("----- %#v\n", dataDS)
 
 	dataConn := new(colonycore.Connection)
 	err = colonycore.Get(dataConn, dataDS.ConnectionID)
 	if err != nil {
-		return nil, nil, err
+		return 0, nil, nil, err
 	}
 
 	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
-		return nil, nil, err
+		return 0, nil, nil, err
 	}
 
 	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
 	if err != nil {
-		return nil, nil, err
+		return 0, nil, nil, err
 	}
 
 	TblName.Set("from", dataDS.TableNames)
 
-	query, metaSave := d.parseQuery(connection.NewQuery(), TblName)
-	fmt.Println(metaSave)
+	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
+	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take), TblName)
+	_ = metaSave
+	// fmt.Println("Meta Save : ", metaSave)
+
+	for _, metadata := range dataDS.MetaData {
+		tField := metadata.Field
+		if payload.Has(tField) {
+			switch toolkit.TypeName(payload[tField]) {
+			case "int":
+				query = query.Where(dbox.Eq(tField, payload[tField]))
+				qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
+			case "float":
+				query = query.Where(dbox.Eq(tField, payload[tField]))
+				qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
+			default:
+				query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+				qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+			}
+		}
+	}
+
+	ccount, err := qcount.Cursor(nil)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+
+	dcount := ccount.Count()
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
-		return nil, nil, err
+		return 0, nil, nil, err
 	}
 	defer cursor.Close()
 
 	data := []toolkit.M{}
 	cursor.Fetch(&data, 0, false)
 	if err != nil {
-		return nil, nil, err
+		return 0, nil, nil, err
 	}
 
-	return data, dataDS, nil
+	return dcount, data, dataDS, nil
 }
 
 func (d *DataSourceController) filterParse(where toolkit.M) *dbox.Filter {
@@ -770,6 +802,69 @@ func (d *DataSourceController) FetchDataSourceLookupData(r *knot.WebContext) int
 					}
 
 					lookupResultData = append(lookupResultData, eachResult)
+				}
+			}
+
+			lookupResultColumns := []string{meta.Lookup.DisplayField}
+			if len(meta.Lookup.LookupFields) > 0 {
+				lookupResultColumns = meta.Lookup.LookupFields
+			}
+
+			result := toolkit.M{"data": lookupResultData, "columns": lookupResultColumns}
+			return helper.CreateResult(true, result, "")
+		}
+	}
+
+	result := toolkit.M{"data": []toolkit.M{}, "columns": []toolkit.M{}}
+	return helper.CreateResult(true, result, "")
+}
+
+func (d *DataSourceController) FetchDataSourceSubData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	_id := payload["_id"].(string)
+	lookupID := payload["lookupID"].(string)
+	lookupData := payload["lookupData"].(string)
+
+	dataDS := new(colonycore.DataSource)
+	err = colonycore.Get(dataDS, _id)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	for _, meta := range dataDS.MetaData {
+		if meta.ID == lookupID {
+			dataLookupDS, _, lookupConn, lookupQuery, metaSave, err := d.ConnectToDataSource(_id)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer lookupConn.Close()
+
+			_ = dataLookupDS
+			_ = metaSave
+
+			lookupCursor, err := lookupQuery.Cursor(nil)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer lookupCursor.Close()
+
+			lookupResultDataRaw := []toolkit.M{}
+			err = lookupCursor.Fetch(&lookupResultDataRaw, 0, false)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			lookupResultData := []toolkit.M{}
+			for _, each := range lookupResultDataRaw {
+				if fmt.Sprintf("%v", each["_id"]) == lookupData {
+					datas := toolkit.M{"data": each[lookupID]}
+					return helper.CreateResult(true, datas, "")
 				}
 			}
 

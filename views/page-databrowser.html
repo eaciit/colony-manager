@@ -40,8 +40,77 @@
 				</div>
 			</div> 
 		</div>
-		<div data-bind="visible: (br.pageVisible() != '')">
+		<div data-bind="visible: (br.pageVisible() == 'editor')">
 			{{template "page-databrowserdesign.html"}}
+		</div>
+		<div data-bind="visible: (br.pageVisible() == 'view')">
+			<nav class="navbar" >
+				<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.backToFront">
+		    		<span class="glyphicon glyphicon-chevron-left"></span> Back to List
+		    	</button>
+		        <button class="btn btn-sm btn-primary navbar-btn" >
+		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+		    	</button>
+		        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.filterSimple, visible: (br.onVisible() == 'advance')">
+		    		Simple Filter
+		    	</button>
+		    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.filterAdvance, visible: (br.onVisible() == 'simple')">
+		    		Advance Filter
+		    	</button>
+			</nav>
+			<div class="panel">
+				<div class="panel-heading">
+					<h1 class="panel-title">Data Browser <span data-bind="text: br.selectedID"></span></h1>
+				</div>
+				<div class="panel-body">
+					<form class="form-horizontal" >
+						<div class="col-md-12">
+							<div class="col-md-12">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="col-md-2 databrowser-label">ID</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm" placeholder="Type ID's Here">
+											<span class="k-invalid-msg" data-for="ID"></span>
+										</div>
+									</div>
+									<div class="form-group" data-bind="visible: (br.onVisible() == 'advance')">
+										<label class="col-md-2 databrowser-label">Date</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm">
+											<span class="k-invalid-msg" data-for="Date"></span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="col-md-3 databrowser-label">Name</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm" placeholder="Type Name's Here">
+											<span class="k-invalid-msg" data-for="Name"></span>
+										</div>
+									</div>
+									<div class="form-group" data-bind="visible: (br.onVisible() == 'advance')">
+										<label class="col-md-3 databrowser-label">Salary</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm">
+											<span class="k-invalid-msg" data-for="Salary"></span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12">
+									<div class="form-group">
+										<!-- <div class="grid grid-databrowser-decription" data-bind="kendoGrid: {dataSource :{ pageSize: 10 }, data: br.dataBrowserDesc, serverPaging: true, columns: br.dataBrowserDescColumns, selectable: 'multiple, row', filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-decription') }"></div> -->
+										<div id="grid-databrowser-decription"></div>
+									</div>
+
+									
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
