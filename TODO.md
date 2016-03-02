@@ -65,3 +65,4 @@ This is what we do!
 
 - [ ] sedotan could be placed on server
 - [ ] decouple the query builder on data source, so it can be used on data browser
+- [ ] create stable branch every week
