@@ -82,33 +82,46 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 			path = payload["path"].(string)
 		}
 
+		var result []colonycore.FileInfo
+
 		if server.ServerType == SERVER_NODE {
-			setting, err := sshConnect(&server)
-
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
 			if len(strings.TrimSpace(path)) == 0 {
-				path = server.DataPath
+				appFolder := colonycore.FileInfo{
+					Name:  "APP",
+					Path:  server.AppPath,
+					IsDir: true,
+				}
+
+				dataFolder := colonycore.FileInfo{
+					Name:  "DATA",
+					Path:  server.DataPath,
+					IsDir: true,
+				}
+
+				result = append(result, appFolder)
+				result = append(result, dataFolder)
+			} else {
+				setting, err := sshConnect(&server)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				list, err := sshclient.List(setting, path, true)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				result, err = colonycore.ConstructFileInfo(list, path)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 			}
-
-			list, err := sshclient.List(setting, path, true)
-
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			result, err := colonycore.ConstructFileInfo(list, path)
-
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			return helper.CreateResult(true, result, "")
 		} else if server.ServerType == SERVER_HDFS {
 
 		}
+
+		return helper.CreateResult(true, result, "")
 	}
 
 	return helper.CreateResult(false, nil, "")
