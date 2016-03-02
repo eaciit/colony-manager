@@ -3,17 +3,17 @@ $(document).ready(function(){
 
 $("#FileBrowser").ecFileBrowser({
         dataSource:{
-            url: '//demos.telerik.com/kendo-ui/service/Employees',
-            call: 'GET',
-            pathField: "EmployeeId",
-            hasChildrenField:"HasEmployees",
-            nameField:"FullName"
+            url: '/filebrowser/getdir',
+            call: 'POST',
+            pathField: "path",
+            hasChildrenField:"isdir",
+            nameField:"name"
         }, 
         serverSource:{
-             url: 'https://gist.githubusercontent.com/yanda15/cfcc16748f09bc6518fd/raw/2dab77f5b2b3ad3ec7e4edee31d04a11da17abdc/Sample%2520Server%2520Data',
-             call: 'GET',
-             dataTextField:"text",
-             dataValueField:"text"
+             url: '/filebrowser/getservers',
+             call: 'POST',
+             dataTextField:"_id",
+             dataValueField:"_id"
         }
     });
 
