@@ -45,6 +45,9 @@
 		</div>
 		<div data-bind="visible: (br.pageVisible() == 'view')">
 			<nav class="navbar" >
+				<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.backToFront">
+		    		<span class="glyphicon glyphicon-chevron-left"></span> Back to List
+		    	</button>
 		        <button class="btn btn-sm btn-primary navbar-btn" >
 		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 		    	</button>
@@ -57,7 +60,7 @@
 			</nav>
 			<div class="panel">
 				<div class="panel-heading">
-					<h1 class="panel-title">Data Browser Description</h1>
+					<h1 class="panel-title">Data Browser <span data-bind="text: br.selectedID"></span></h1>
 				</div>
 				<div class="panel-body">
 					<form class="form-horizontal" >
