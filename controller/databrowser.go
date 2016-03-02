@@ -127,7 +127,7 @@ func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	toolkit.Printf("metadata:%#v\n", payload)
+	// toolkit.Printf("metadata:%#v\n", payload)
 	return helper.CreateResult(true, payload, "")
 }
 
@@ -174,14 +174,14 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 			break
 		}
 
-		j := 0
+		j := 1
 		for keyField, _ := range dataFields {
 			sInfo := &colonycore.StructInfo{}
 			sInfo.Field = keyField
 			sInfo.Label = keyField
 			sInfo.Format = ""
 			sInfo.Align = "Left"
-			sInfo.ShowIndex = int32(toolkit.ToInt(j, toolkit.RoundingAuto))
+			sInfo.ShowIndex = toolkit.ToInt(j, toolkit.RoundingAuto)
 			sInfo.Sortable = false
 			sInfo.SimpleFilter = false
 			sInfo.AdvanceFilter = false

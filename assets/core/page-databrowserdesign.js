@@ -258,19 +258,15 @@ db.testQuery = function() {
 		param.QueryType = "nonQueryText";
 		param.QueryText = JSON.stringify({"from": $("#table").data("kendoDropDownList").value()});
 		param.TableNames = $("#table").data("kendoDropDownList").value();
-		// console.log(param)
 		app.ajaxPost("/databrowser/testquery", param, function (res) {
 			if (!app.isFine(res)) {
 				return;
 			}
 			
-			console.log("res.data test query >>", res.data)
-
 			ko.mapping.fromJS(res.data, db.configDataBrowser)
 			db.configDataBrowser.MetaData([]);
 			db.databrowserData(res.data.MetaData);
 			db.setDataSource();
-			$("#grid-databrowser-design").kendoGrid(res.data.MetaData);
 		});
 	}
 };
@@ -324,8 +320,7 @@ db.prepareGrid = function () {
 	db.setDataSource();
 }
 
-$(function () {
-	db.prepareGrid();
+db.showHideFreeQuery = function() {
 	$("#freeQuery").hide();
 	$("#querytype").hide();
 	$("#isFreetext").change(function() {
@@ -339,6 +334,11 @@ $(function () {
 			$("#fromTable").show();
 		}
 	});
+};
+
+$(function () {
+	db.prepareGrid();
+	db.showHideFreeQuery();
 });
 
 //create function klik view for databrowser grid
