@@ -5,9 +5,8 @@ $("#FileBrowser").ecFileBrowser({
         dataSource:{
             url: '/filebrowser/getdir',
             call: 'POST',
-            callData: {ServerID: ""},
-            pathField: "name",
-            hasChildrenField:"",
+            pathField: "path",
+            hasChildrenField:"isdir",
             nameField:"name"
         }, 
         serverSource:{

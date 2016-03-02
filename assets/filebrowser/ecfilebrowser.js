@@ -144,6 +144,7 @@ var methodsFB = {
 	            }
 	        },
 	        schema: {
+	        	data: "data",
 	            model: {
 	                id: options.dataSource.pathField,
 	                hasChildren: options.dataSource.hasChildrenField,

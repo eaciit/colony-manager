@@ -73,7 +73,12 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	search := payload["ServerID"].(string)
-	path := payload["path"].(string)
+
+	path := ""
+
+	if payload["path"] != nil {
+		path = payload["path"].(string)
+	}
 
 	query := dbox.Eq("_id", search)
 
@@ -98,7 +103,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		if path == "" {
+		if len(strings.TrimSpace(path)) == 0 {
 			path = server.DataPath
 		}
 
@@ -109,7 +114,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 
-			result, err := colonycore.ConstructFileInfo(list)
+			result, err := colonycore.ConstructFileInfo(list, path)
 
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
