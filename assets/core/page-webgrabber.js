@@ -151,7 +151,7 @@ wg.scrapperColumns = ko.observableArray([
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
 	{ field: "grabstatus", title: "STATUS", attributes: { class: "align-center" }, template: function (d) {
-		if (d.grabstatus == "SUCCESS") {
+		if (["SUCCESS", "done"].indexOf(d.grabstatus) > -1) {
 			return '<i class="fa fa-check fa-2x color-green"></i>';
 		} else {
 			return '<i class="fa fa-times fa-2x color-red"></i>';
@@ -870,17 +870,17 @@ wg.viewData = function (id) {
 
 	if (base.datasettings.length > 0) {
 		var baseSetting = base.datasettings[0];
-		param.Driver = baseSetting.desttype;
-		if (baseSetting.destoutputtype == "database") {
+		if (baseSetting.desttype == "csv") {
+			param.FileName = baseSetting.connectioninfo.filename;
+			param.UseHeader = baseSetting.connectioninfo.useheader;
+			param.Delimiter = baseSetting.connectioninfo.delimiter;
+		} else {
+			param.Driver = baseSetting.desttype;
 			param.Host = baseSetting.connectioninfo.host;
 			param.Database = baseSetting.connectioninfo.database;
 			param.Collection = baseSetting.connectioninfo.collection;
 			param.Username = baseSetting.connectioninfo.username;
 			param.Password = baseSetting.connectioninfo.password;
-		} else {
-			param.FileName = baseSetting.connectioninfo.filename;
-			param.UseHeader = baseSetting.connectioninfo.useheader;
-			param.Delimiter = baseSetting.connectioninfo.delimiter;
 		}
 	}
 	$(".grid-data").replaceWith('<div class="grid-data"></div>');
