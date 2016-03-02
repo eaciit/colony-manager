@@ -27,6 +27,27 @@
 	margin-bottom: 10px;
 }
 
+.fb-ed-btn{
+	background-color: #3A8BDF!important;
+	border-color: #3282D6!important;
+	    color: #fff!important;   
+
+}	
+
+.fb-ed-btn:hover {
+    background-color: #4F9AE6!important;
+    border-color: #3282D6!important;
+}
+
+.fb-filename{
+	width: 200%;
+	color: #777;
+	margin:10px;
+}
+
+.dropdown-menu .divider{
+	margin: 3px 0 !important;
+}
 
 .k-sprite {
             background-image: url("/res/img/coloricons-sprite.png");
