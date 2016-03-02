@@ -164,7 +164,7 @@ wg.historyColumns = ko.observableArray([
 	{ field: "notehistory", title: "NOTE" },
 	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(" + d.id + ")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewHistoryRecord(" + d.id + ")'><span class='fa fa-file-text'></span> View Records</button>",
 			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
 		].join(" ");
 	}, filterable: false }
@@ -854,37 +854,12 @@ wg.saveSelectorConf = function(){
 		wg.modeSelector("");
 	});
 }
-wg.viewData = function (id) {
+wg.viewHistoryRecord = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ _id: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
 
-	var param = {
-		Driver: "csv",
-		Host: row.recfile,
-		Database: "",
-		Collection: "",
-		Username: "",
-		Password: ""
-	};
-
-
-	if (base.datasettings.length > 0) {
-		var baseSetting = base.datasettings[0];
-		if (baseSetting.desttype == "csv") {
-			param.FileName = baseSetting.connectioninfo.filename;
-			param.UseHeader = baseSetting.connectioninfo.useheader;
-			param.Delimiter = baseSetting.connectioninfo.delimiter;
-		} else {
-			param.Driver = baseSetting.desttype;
-			param.Host = baseSetting.connectioninfo.host;
-			param.Database = baseSetting.connectioninfo.database;
-			param.Collection = baseSetting.connectioninfo.collection;
-			param.Username = baseSetting.connectioninfo.username;
-			param.Password = baseSetting.connectioninfo.password;
-		}
-	}
 	$(".grid-data").replaceWith('<div class="grid-data"></div>');
-	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
+	app.ajaxPost("/webgrabber/getfetcheddata", { recfile: row.recfile }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
