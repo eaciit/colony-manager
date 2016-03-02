@@ -14,6 +14,7 @@ br.dataBrowserDescColumns = ko.observableArray([]);
 br.searchfield 	= ko.observable("");
 br.pageVisible	= ko.observable("");
 br.onVisible 	= ko.observable("");
+br.selectedID = ko.observable("");
 
 br.browserColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 5, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -107,6 +108,7 @@ br.DeleteBrowser = function(){
 }
 
 br.ViewBrowserName = function(id){
+	br.selectedID(id);
 	var datacol =[];
 	br.dataBrowserDescColumns([]);
 	app.ajaxPost("/databrowser/detaildb", {id: id}, function(res){
