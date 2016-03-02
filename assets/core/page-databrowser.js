@@ -163,6 +163,8 @@ br.ViewBrowserName = function(id){
 				   serverFiltering: true,
 			   },
             pageable: true,
+            scrollable: true,
+			sortable: true,
             columns:datacol
         });
 	});
