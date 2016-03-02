@@ -181,7 +181,7 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 			sInfo.Label = keyField
 			sInfo.Format = ""
 			sInfo.Align = "Left"
-			sInfo.ShowIndex = int32(toolkit.ToInt(j, toolkit.RoundingAuto))
+			sInfo.ShowIndex = toolkit.ToInt(j, toolkit.RoundingAuto)
 			sInfo.Sortable = false
 			sInfo.SimpleFilter = false
 			sInfo.AdvanceFilter = false
