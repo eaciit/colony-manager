@@ -420,7 +420,10 @@ srv.navModalWizard = function (status) {
 				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;				
 				allIP.push({ ip: ip1, label: e });
 			}else{
-				var pattern = e.split('.')[3];
+				var patterns = e.match(/\[(.*?)\]/g);
+				if patterns.length > 0{
+					pattern = patterns[0];
+				}
 				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
 				var secondPattern = pattern.replace(/\]/g, "").split('-')[1];
 				for (i = firstPattern; i <= secondPattern; i++) { 
