@@ -247,3 +247,23 @@ func (d *FileBrowserController) Download(Server, SourcePath, DestPath string) er
 	}
 	return e
 }
+
+func (d *FileBrowserController) SetPermission(Server, FilePath, Permission string) error {
+	h := SetHDFSConnection(Server, USER)
+
+	e := h.SetPermission(FilePath, Permission)
+	if e != nil {
+		fmt.Println(e)
+	}
+	return e
+}
+
+func (d *FileBrowserController) Rename(Server, FilePath, NewName string) error {
+	h := SetHDFSConnection(Server, USER)
+
+	e := h.Rename(FilePath, NewName)
+	if e != nil {
+		fmt.Println(e)
+	}
+	return e
+}
