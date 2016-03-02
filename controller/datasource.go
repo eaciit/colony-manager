@@ -116,6 +116,8 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		return 0, nil, nil, err
 	}
 
+	fmt.Printf("----- %#v\n", dataDS)
+
 	dataConn := new(colonycore.Connection)
 	err = colonycore.Get(dataConn, dataDS.ConnectionID)
 	if err != nil {

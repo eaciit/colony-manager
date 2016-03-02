@@ -77,7 +77,7 @@ wg.useHeaderOptions = ko.observableArray([
 	{ value: false, title: 'NO' }
 ]);
 wg.templateConfigSelector = {
-	name: "",
+	_id: "",
 	rowselector: "",
 	filtercond: "",
 	conditionlist: [],
@@ -151,7 +151,7 @@ wg.scrapperColumns = ko.observableArray([
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
 	{ field: "grabstatus", title: "STATUS", attributes: { class: "align-center" }, template: function (d) {
-		if (d.grabstatus == "SUCCESS") {
+		if (["SUCCESS", "done"].indexOf(d.grabstatus) > -1) {
 			return '<i class="fa fa-check fa-2x color-green"></i>';
 		} else {
 			return '<i class="fa fa-times fa-2x color-red"></i>';
@@ -164,7 +164,7 @@ wg.historyColumns = ko.observableArray([
 	{ field: "notehistory", title: "NOTE" },
 	{ title: "&nbsp;", width: 200, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewData(" + d.id + ")'><span class='fa fa-file-text'></span> View Data</button>",
+			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewHistoryRecord(" + d.id + ")'><span class='fa fa-file-text'></span> View Records</button>",
 			"<button class='btn btn-sm btn-default btn-text-primary' onclick='wg.viewLog(\"" + kendo.toString(d.grabdate, 'yyyy/MM/dd HH:mm:ss') + "\")'><span class='fa fa-file-text-o'></span> View Log</button>"
 		].join(" ");
 	}, filterable: false }
@@ -305,7 +305,6 @@ wg.getScrapperData = function () {
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
-	ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
 	wg.addScrapperPayload();
@@ -803,12 +802,15 @@ wg.parseGrabConf = function () {
 			}
 			item.filtercond = condition;
 		}
+		if (item.filtercond == "") {
+			item.filtercond = {};
+		}
+
 		delete item["conditionlist"];
 		delete item["__ko_mapping__"];
 		return JSON.parse(ko.mapping.toJSON(item));
 	});
 	return config;
-//	config.nameid = config._id;
 
 	var grabConfData = {};
 	var tempParameters = [];
@@ -854,37 +856,12 @@ wg.saveSelectorConf = function(){
 		wg.modeSelector("");
 	});
 }
-wg.viewData = function (id) {
+wg.viewHistoryRecord = function (id) {
 	var base = Lazy(wg.scrapperData()).find({ _id: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
 
-	var param = {
-		Driver: "csv",
-		Host: row.recfile,
-		Database: "",
-		Collection: "",
-		Username: "",
-		Password: ""
-	};
-
-
-	if (base.datasettings.length > 0) {
-		var baseSetting = base.datasettings[0];
-		param.Driver = baseSetting.desttype;
-		if (baseSetting.destoutputtype == "database") {
-			param.Host = baseSetting.connectioninfo.host;
-			param.Database = baseSetting.connectioninfo.database;
-			param.Collection = baseSetting.connectioninfo.collection;
-			param.Username = baseSetting.connectioninfo.username;
-			param.Password = baseSetting.connectioninfo.password;
-		} else {
-			param.FileName = baseSetting.connectioninfo.filename;
-			param.UseHeader = baseSetting.connectioninfo.useheader;
-			param.Delimiter = baseSetting.connectioninfo.delimiter;
-		}
-	}
 	$(".grid-data").replaceWith('<div class="grid-data"></div>');
-	app.ajaxPost("/webgrabber/getfetcheddata", param, function (res) {
+	app.ajaxPost("/webgrabber/getfetcheddata", { recfile: row.recfile }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
