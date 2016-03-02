@@ -61,8 +61,8 @@ var methodsFB = {
 
 		$($(elem).find(".fb-server")).kendoDropDownList({
 			dataSource : options.serverSource.data,
-			dataTextField: "text",
-			dataValueField:"text",
+			dataTextField: "_id",
+			dataValueField:"_id",
 			change: function(){
 				methodsFB.CallAjax(elem,$(elem).data("ecFileBrowser"), $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value());
 			}
@@ -127,58 +127,103 @@ var methodsFB = {
 	},
 	CallAjax:function(elem,options,server){
 		if(options.dataSource.data.length==0|| options.dataSource.url!=""){
-		var ds = options.dataSource;
-		var url = ds.url;
-		var data = ds.callData;
-		var call = ds.call;
-		var contentType = "";
-		if (options.dataSource.call.toLowerCase() == 'post'){
-			contentType = 'application/json; charset=utf-8';
-		}
-		 $.ajax({
-                url: url,
-                type: call,
-                dataType: 'json',
-                data : data,
-                contentType: contentType,
-                success : function(res) {
-                	$(elem).data('ecFileBrowser').dataSource.callOK(res);
-					options.dataSource.data = res;
-					$(elem).data("ecFileBrowser", options);
-					if($(elem).html()!=""){
-						var parent = $($(elem).find(".k-treeview")).parent();
-						$($(elem).find(".k-treeview")).remove();
+			var ds = options.dataSource;
+			var url = ds.url;
+			var data = ds.callData;
+			var call = ds.call;
+			var contentType = "";
+			if (options.dataSource.call.toLowerCase() == 'post'){
+				contentType = 'application/json; charset=utf-8';
+			}
 
-						strtree = "<div></div>"
-						$strtree = $(strtree);
-						$strtree.appendTo($(parent));
 
-						var datatree = new kendo.data.HierarchicalDataSource({
-				                    data: options.dataSource.data
-				                });
+			app.ajaxPost(url, {search: ""}, function (res) {
 
-						$strtree.kendoTreeView({
-							dataSource: datatree
-						});
+				if (!app.isFine(res)) {
+					return;
+				}
+				if (res.data==null){
+					res.data="";
+				}
 
-						$strtree.data("kendoTreeView").expand(".k-item");
+				$(elem).data('ecFileBrowser').dataSource.callOK(res);
+				options.dataSource.data = res;
+				$(elem).data("ecFileBrowser", options);
+				if($(elem).html()!=""){
+					var parent = $($(elem).find(".k-treeview")).parent();
+					$($(elem).find(".k-treeview")).remove();
 
-						$strtree.find("span").each(function(){
-							if($(this).html()!=""){
-								var type = methodsFB.DetectType(this,$(this).html());
-								var sp = "<span class='k-sprite "+type+"'></span>";
-								$sp = $(sp);
-								$sp.prependTo($(this));
-							}
-						});
-					}else{
-						methodsFB.BuildFileExplorer(elem, options);
-					}
-                },
-                error: function (a, b, c) {
-					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
-			},
-        });
+					strtree = "<div></div>"
+					$strtree = $(strtree);
+					$strtree.appendTo($(parent));
+
+					var datatree = new kendo.data.HierarchicalDataSource({
+			                    data: options.dataSource.data
+			                });
+
+					$strtree.kendoTreeView({
+						dataSource: datatree
+					});
+
+					$strtree.data("kendoTreeView").expand(".k-item");
+
+					$strtree.find("span").each(function(){
+						if($(this).html()!=""){
+							var type = methodsFB.DetectType(this,$(this).html());
+							var sp = "<span class='k-sprite "+type+"'></span>";
+							$sp = $(sp);
+							$sp.prependTo($(this));
+						}
+					});
+				}else{
+					methodsFB.BuildFileExplorer(elem, options);
+				}
+			});
+
+			/*$.ajax({
+	                url: url,
+	                type: call,
+	                dataType: 'json',
+	                data : data,
+	                contentType: contentType,
+	                success : function(res) {
+	                	$(elem).data('ecFileBrowser').dataSource.callOK(res);
+						options.dataSource.data = res;
+						$(elem).data("ecFileBrowser", options);
+						if($(elem).html()!=""){
+							var parent = $($(elem).find(".k-treeview")).parent();
+							$($(elem).find(".k-treeview")).remove();
+
+							strtree = "<div></div>"
+							$strtree = $(strtree);
+							$strtree.appendTo($(parent));
+
+							var datatree = new kendo.data.HierarchicalDataSource({
+					                    data: options.dataSource.data
+					                });
+
+							$strtree.kendoTreeView({
+								dataSource: datatree
+							});
+
+							$strtree.data("kendoTreeView").expand(".k-item");
+
+							$strtree.find("span").each(function(){
+								if($(this).html()!=""){
+									var type = methodsFB.DetectType(this,$(this).html());
+									var sp = "<span class='k-sprite "+type+"'></span>";
+									$sp = $(sp);
+									$sp.prependTo($(this));
+								}
+							});
+						}else{
+							methodsFB.BuildFileExplorer(elem, options);
+						}
+	                },
+	                error: function (a, b, c) {
+						$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
+				},
+	        });*/
 		}else{
 			if($(elem).html()==""){
 				methodsFB.BuildFileExplorer(elem, options);
@@ -194,39 +239,37 @@ var methodsFB = {
 		if (options.serverSource.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		 $.ajax({
-                url: url,
-                type: call,
-                dataType: 'json',
-                data : data,
-                contentType: contentType,
-                success : function(res) {
-                	$(elem).data('ecFileBrowser').serverSource.callOK(res);
-					options.serverSource.data = res;
-					$(elem).data("ecFileBrowser", options);
-					methodsFB.CallAjax(elem, options,options.serverSource.data[0]["text"]);
-					if($(elem).html()!=""){
-						var parent = $($($(elem).find(".fb-server")).parent()[0]);
-						$($(elem).find(".fb-server")).remove();
 
-						strserv = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label'>Server</label></div><div class='col-md-9'><input class='fb-server'></input></div></div>";
-						$strserv = $(strserv);
-						$strserv.appendTo($(parent));
+		app.ajaxPost(url, {search: ""}, function (res) {
 
-						$($(elem).find(".fb-server")).kendoDropDownList({
-							dataSource : options.serverSource.data,
-							dataTextField: "text",
-							dataValueField:"text",
-							change: function(){
-								methodsFB.CallAjax(elem,$(elem).data("ecFileBrowser"), $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value());
-							}
-						});
+			if (!app.isFine(res)) {
+				return;
+			}
+			if (res.data==null){
+				res.data="";
+			}
+
+			$(elem).data('ecFileBrowser').serverSource.callOK(res);
+			options.serverSource.data = res.data;
+			$(elem).data("ecFileBrowser", options);
+			methodsFB.CallAjax(elem, options,options.serverSource.data[0]["_id"]);
+			if($(elem).html()!=""){
+				var parent = $($($(elem).find(".fb-server")).parent()[0]);
+				$($(elem).find(".fb-server")).remove();
+
+				strserv = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label'>Server</label></div><div class='col-md-9'><input class='fb-server'></input></div></div>";
+				$strserv = $(strserv);
+				$strserv.appendTo($(parent));
+				$($(elem).find(".fb-server")).kendoDropDownList({
+					dataSource : options.serverSource.data,
+					dataTextField: "_id",
+					dataValueField:"_id",
+					change: function(){
+						methodsFB.CallAjax(elem,$(elem).data("ecFileBrowser"), $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value());
 					}
-                },
-                error: function (a, b, c) {
-					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
-			},
-        });
+				});
+			}
+		});
 	},
 	DetectType:function(elem,name){
 		name = name.toLowerCase();
