@@ -5,6 +5,13 @@ viewModel.dataGrabber = {}; var dg = viewModel.dataGrabber;
 dg.templateConfigScrapper = {
 	_id: "",
 	DataSourceOrigin: "",
+
+	IsFromWizard:"",
+	ConnectionOrigin : "",
+	ConnectionDestination : "",
+	TableOrigin : "",
+	TableDestination : "",
+	
 	DataSourceDestination: "",
 	UseInterval: false,
 	IntervalType: "seconds",
@@ -15,6 +22,7 @@ dg.templateConfigScrapper = {
 	PreTransferCommand: "",
 	PostTransferCommand: ""
 };
+
 dg.templateMap = {
 	FieldOrigin: "",
 	FieldDestination: ""
@@ -24,6 +32,20 @@ dg.templateIntervalType = [
 	{ value: "minutes", title: "Minutes" }, 
 	{ value: "hours", title: "Hours" }
 ];
+
+dg.templatewizard = {
+	ConnectionSource : "",
+	ConnectionDestination : "",
+	Transformation : [],
+};
+
+dg.templateWizardTable = {
+	id : "",
+	TableSource :"",
+	TableDestination: ""
+}
+
+dg.config = ko.mapping.fromJS(dg.templatewizard);
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
@@ -146,6 +168,19 @@ dg.getScrapperData = function (){
 	});
 };
 
+dg.addtable = function (){
+	var table = $.extend(true, {}, dg.templateWizardTable);
+	table.id = "s"+ moment.now();
+	dg.config.Transformation.push(table);
+}
+
+dg.removetable = function (each){
+	return function (){
+		console.log(each);
+		dg.config.Transformation.remove(each);
+	}
+}
+
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
 	dg.configScrapper.Map.push(o);
@@ -163,6 +198,14 @@ dg.createNewScrapper = function () {
 	dg.addMap();
 	dg.showDataGrabber(false);
 };
+
+dg.addWizard = function (){
+	app.mode('addWizard');
+	ko.mapping.fromJS(dg.templatewizard, dg.config)
+	app.resetValidation("#form-add-wizard");
+	dg.addtable();
+}
+
 dg.doSaveDataGrabber = function (c) {
 	if (!app.isFormValid(".form-datagrabber")) {
 		return;
@@ -367,6 +410,8 @@ dg.checkTransformationStatus = function () {
 				var $row = $grid.find("tr[data-uid='" + row.uid + "']");
 
 				$row.removeClass("started");
+			}, {
+				withLoader: false
 			});
 		};
 

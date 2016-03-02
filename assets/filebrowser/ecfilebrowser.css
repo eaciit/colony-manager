@@ -1,0 +1,77 @@
+
+.btn-cont > button{
+	margin-left: 5px;
+}
+
+.btn-cont{
+	margin-bottom: 10px;
+}
+
+.k-treeview{
+	border: solid 0.1px #e6e6e6 !important;
+	margin-top: 10px!important;
+	padding:10px;
+}
+
+.fb-pre{
+	margin-top: 10px;
+}
+
+.fb-pre > .col-md-12{
+	margin-left: 0px!important;
+	margin-right: 0px!important;
+
+	padding-left: 0px!important;
+	padding-right: 0px!important;
+
+	margin-bottom: 10px;
+}
+
+.fb-ed-btn{
+	background-color: #3A8BDF!important;
+	border-color: #3282D6!important;
+	    color: #fff!important;   
+
+}	
+
+.modal-body{
+	overflow: auto;
+}
+
+.modal-body input{
+	width: 	70%;
+}
+
+.modal-body .checkbox input{
+	width: 	120%;
+}
+
+.perm-label{
+	    width: 74%;
+    text-align: center;
+}
+
+.fb-ed-btn:hover {
+    background-color: #4F9AE6!important;
+    border-color: #3282D6!important;
+}
+
+.fb-filename{
+	width: 200%;
+	color: #777;
+	margin:10px;
+}
+
+.dropdown-menu .divider{
+	margin: 3px 0 !important;
+}
+
+.k-sprite {
+            background-image: url("/res/img/coloricons-sprite.png");
+ }
+
+.rootfolder { background-position: 0 0; }
+.folder { background-position: 0 -16px; }
+.pdf { background-position: 0 -32px; }
+.html { background-position: 0 -48px; }
+.image { background-position: 0 -64px; }

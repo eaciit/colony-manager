@@ -9,14 +9,19 @@ srv.templateConfigServer = {
 	appPath: "",
 	dataPath: "",
 	host: "",
+	serverType: "node",
 	sshtype: "Credentials",
 	sshfile: "",
 	sshuser: "",
-	sshpass:  "",
+	sshpass:  "",	
+	cmdextract:"",
+	cmdnewfile :"",
+	cmdcopy:"",
+	cmdmkdir:"",
 };
-srv.templatetype = ko.observableArray([
-	{ value: "Local", text: "Local" },
-	{ value: "Remote", text: "Remote" }
+srv.templatetypeServer = ko.observableArray([
+	{ value: "node", text: "Node Server" },
+	{ value: "hadoop", text: "Hadoop Server" }
 ]);
 srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
@@ -62,7 +67,7 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	// { field: "type", title: "Type" },
+	{ field: "serverType", title: "Type", template: "#: serverType # server" },
 	{ field: "host", title: "Host" },
 	{ field: "os", title: "OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
@@ -83,7 +88,7 @@ srv.ServerColumns = ko.observableArray([
 	// { field: "enable", title: "Enable" },
 ]);
 
-srv.getServers = function() {
+srv.getServers = function(c) {
 	srv.ServerData([]);
 	app.ajaxPost("/server/getservers", {search: srv.searchfield}, function (res) {
 		if (!app.isFine(res)) {
@@ -100,6 +105,10 @@ srv.getServers = function() {
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
 		});
+
+		if (c != undefined) {
+			c(res);
+		}
 	});
 };
 
@@ -197,15 +206,24 @@ srv.doSaveServer = function (c) {
 			}
 
 			srv.isNew(true);
-			if (typeof c != "undefined") {
+			if (typeof c == "function") {
 				c();
 			}
 		});
 	}
 }
+srv.isServerTypeNode = ko.computed(function () {
+	return srv.configServer.serverType() == "node";
+}, srv);
+srv.changeServerOS = function () {
+	if (this.value() == "node") {
+		srv.configServer.os("linux");
+	}
+};
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
 		srv.getServers();
+		apl.getApplications();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
 	});
 };
@@ -396,33 +414,44 @@ srv.navModalWizard = function (status) {
 		}	
 
 		srv.dataWizard([]);
+		var allIP = [];
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
-			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
-			
-			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
+			if (e.indexOf('[') == -1) {
+				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;				
+				allIP.push({ ip: ip1, label: e });
+			}else{
+				var patterns = e.match(/\[(.*?)\]/g);
+				if patterns.length > 0{
+					pattern = patterns[0];
+				}
+				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
+				var secondPattern = pattern.replace(/\]/g, "").split('-')[1];
+				for (i = firstPattern; i <= secondPattern; i++) { 
+					patternIP = e.replace( pattern, i )
+					var ip2 = (patternIP.indexOf(":") == -1) ? (patternIP + ":80") : patternIP;
+					allIP.push({ ip: ip2, label: patternIP });
+				}
+			}
+		});
+
+		allIP.forEach(function (ip) {
+			app.ajaxPost("/server/checkping", { ip: ip.ip }, function (res) {
 				app.isLoading(true);
-				var o = { 
-					host: ip, 
-					status: res.data 
-				};
+				var o = { host: ip.label, status: res.data };
 
 				if (!res.success) {
 					o.status = res.message;
 				}
 
 				srv.dataWizard.push(o);
-			}, function () { 
-				var o = { 
-					host: ip, 
-					status: "request timeout"
-				};
-
+			}, function () {
+				var o = { host: ip.label, status: "request timeout" };
 				srv.dataWizard.push(o);
 			}, {
 				timeout: 5000
 			});
 		});
-		
+
 		$(document).ajaxStop(function() {
 		  app.isLoading(false);
 		});

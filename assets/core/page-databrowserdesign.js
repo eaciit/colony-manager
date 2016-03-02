@@ -2,7 +2,7 @@ app.section('databrowserdesign');
 
 viewModel.databrowserdesign = {}; var db = viewModel.databrowserdesign;
 
-db.templateConfigProperties= {
+db.templateConfigMetaData = {
     Field : "",
     Label : "",
     Format : "",
@@ -17,146 +17,259 @@ db.templateConfigProperties= {
 db.templateConfig = {
     _id : "",
     BrowserName : "",
-    IDDetails : "",
     Description : "",
-    Connection : "",
-    DataBase : "",
-    TableName : "",
+    ConnectionID : "",
+    TableNames : "",
     QueryType : "",
     QueryText : "",
-    Struct : [],
+    MetaData : [],
 }
 
-/*var dummyobj1 = new Object()
-dummyobj1.Field = "id"
-dummyobj1.label = "ID"
-dummyobj1.format = ""
-dummyobj1.align = 1
-dummyobj1.showindex = 1
-dummyobj1.sortable = true
-dummyobj1.simplefilter = true
-dummyobj1.advfilter = true
-dummyobj1.aggregate =  ""
-var dummyobj2 = new Object()
-dummyobj2.Field = "name"
-dummyobj2.label = "Name"
-dummyobj2.format = ""
-dummyobj2.align = 2
-dummyobj2.showindex = 2
-dummyobj2.sortable = true
-dummyobj2.simplefilter = true
-dummyobj2.advfilter = true
-dummyobj2.aggregate =  ""
-var dummyobj3 = new Object()
-dummyobj3.Field = "DateOfBorn"
-dummyobj3.label = "Birth Date"
-dummyobj3.format = "dd-MMM-yyy"
-dummyobj3.align = 1
-dummyobj3.showindex = 3
-dummyobj3.sortable = true
-dummyobj3.simplefilter = false
-dummyobj3.advfilter = true
-dummyobj3.aggregate =  ""
-var dummyobj4 = new Object()
-dummyobj4.Field = "Salary"
-dummyobj4.label = "Salary"
-dummyobj4.format = "N0"
-dummyobj4.align = 3
-dummyobj4.showindex = 4
-dummyobj4.sortable = true
-dummyobj4.simplefilter = false
-dummyobj4.advfilter = true
-dummyobj4.aggregate =  "Sum"
-var dummyData = new Array();
-dummyData.push(dummyobj1, dummyobj2, dummyobj3, dummyobj4)*/
-// db.databrowserData(dummyData);
-
-// dummy connection list
-// var dummyConn = new Object()
-// dummyConn._id = "connect_mongo"
-// var dataConn = new Array();
-// dataConn.push(dummyConn)
-// db.connectionList(dataConn);
-
-// dummy table list
-// var dummyTable = new Object()
-// dummyTable._id = "mongo-students"
-// var dataTable = new Array();
-// dataTable.push(dummyTable)
-// db.tableList(dataTable);
-
 db.alignList = ko.observableArray([
-    { alignId: 1, name: "Left" },
-    { alignId: 2, name: "Center" },
-    { alignId: 3, name: "Right" }
+    { Align: "Left", name: "Left" },
+    { Align: "Center", name: "Center" },
+    { Align: "Right", name: "Right" }
 ]);
 db.queryType = ko.observableArray([
 	{ value: "SQL", text: "SQL" },
 	{ value: "Dbox", text: "Dbox" }
 ]);
-db.tableList = ko.observableArray([]);
+db.connectionID = ko.observable('');
+db.collectionListData = ko.observableArray([]);
 db.databrowserData = ko.observableArray([]);
+// db.configMetaData = ko.mapping.fromJS(db.templateConfigMetaData);
 db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
 db.databrowserColumns = ko.observableArray([
 	{ field: "Field", title: "Field", editable: false },
-	{ field: "label", title: "label"},
-	{ field: "format", title: "Format"},
-	{ title: "Align", field: "align", template: "#= db.alignOption(align) #",
+	{ field: "Label", title: "label"},
+	{ field: "Format", title: "Format"},
+	{ title: "Align", field: "Align", template: "#= db.alignOption(Align) #",
 		editor: function(container, options) {
             var input = $('<input id="alignId" name="alignId" data-bind="value:' + options.field + '">');
             input.appendTo(container);
             input.kendoDropDownList({
                 dataTextField: "name",
-                dataValueField: "alignId",
-                //cascadeFrom: "brandId", // cascade from the brands dropdownlist
+                dataValueField: "Align",
                 dataSource: db.alignList() // bind it to the models array
             }).appendTo(container);
         }
     },
-	{ field: "showindex", title: "Show Index"},
-	{ title: "Sortable", template: "<input type='checkbox' #= sortable ? \"checked='checked'\" : '' # class='chkbx' />"},
-	{ title: "Simple Filter", template: "<input type='checkbox' #= simplefilter ? \"checked='checked'\" : '' # class='chkbx' />"},
-	{ title: "Advance Filter", template: "<input type='checkbox' #= advfilter ? \"checked='checked'\" : '' # class='chkbx' />"},
-	{ field: "aggregate", title: "Aggregate"},
+	// { field: "ShowIndex", title: "Position"},
+	// { field: "ShowIndex", title: "Position", command: [ { text: "Up", click: db.moveUp }, { text: "Down", click: db.moveDown } ]},
+	{ title: "Position", template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'>Up</a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'>Down</a><span style='margin-left: 20px;''>#= ShowIndex #</span>"},
+	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ title: "Advance Filter", template: "<input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ field: "Aggregate", title: "Aggregate"},
 ]);
 
 
 db.alignOption = function (opt) {
+	grid = $(".grid-databrowser-design").data("kendoGrid");
 	for (var i = 0; i < db.alignList().length; i++) {
-        if (db.alignList()[i].alignId == opt) {
+		// console.log(db.alignList()[i].Align)
+        if (db.alignList()[i].Align == opt) {
             return db.alignList()[i].name;
         }
     }
 }
 
+db.moveUp = function(e) {
+	// console.log(this)
+	var dataItem, grid;
+	grid = $(".grid-databrowser-design").data("kendoGrid");
+	if(e.currentTarget === undefined){
+		grid = $(e).closest(".k-grid").data('kendoGrid');
+		dataItem = grid.dataItem($(e).closest("tr"));
+	}
+	else{
+		e.preventDefault()
+		dataItem = grid.dataItem($(e.currentTarget).closest("tr"));
+	}
+ 	
+    db.moveRow(grid, dataItem, -1);
+}
+
+db.moveDown = function(e) {
+	var dataItem, grid;
+	grid = $(".grid-databrowser-design").data("kendoGrid");
+	if(e.currentTarget === undefined){
+		grid = $(e).closest(".k-grid").data('kendoGrid');
+		dataItem = grid.dataItem($(e).closest("tr"));
+	}
+	else{
+		e.preventDefault()
+		dataItem = grid.dataItem($(e.currentTarget).closest("tr"));
+	}
+ 	
+    db.moveRow(grid, dataItem, 1);
+}
+
+db.swap = function(a,b,propertyName) {
+	var temp=a[propertyName];
+	a[propertyName]=b[propertyName];
+	b[propertyName]=temp;
+}
+
+db.moveRow = function(grid, dataItem,direction) {
+    var record = dataItem;
+    if (!record) {
+        return;
+    }
+    var newIndex = index = grid.dataSource.indexOf(record);
+    direction < 0?newIndex--:newIndex++;
+    if (newIndex < 0 || newIndex >= grid.dataSource.total()) {
+        return;
+    }
+    db.swap(grid.dataSource._data[newIndex],grid.dataSource._data[index],'ShowIndex');
+    grid.dataSource.remove(record);
+    grid.dataSource.insert(newIndex, record);
+    db.databrowserData(grid.dataSource.data());
+    db.setDataSource();
+    
+    db.addProperties();
+}
+
 db.addProperties = function () {
-    var property = $.extend(true, {}, ds.templateConfigSetting);    
-    db.config.Struct.push(property);
+	grid = $(".grid-databrowser-design").data("kendoGrid");
+	db.configDataBrowser.MetaData([]);
+    $.each(grid.dataSource.data(), function(key, val) {
+    	var property = $.extend(true, {}, db.templateConfigMetaData);
+    	property.Field = val.Field
+    	property.Label = val.Label
+    	property.Format = val.Format
+    	property.Align = val.Align
+    	property.ShowIndex = val.ShowIndex
+    	property.Sortable = val.Sortable
+    	property.SimpleFilter = val.SimpleFilter
+    	property.AdvanceFilter  = val.AdvanceFilter
+    	property.Aggregate = val.Aggregate
+    	db.configDataBrowser.MetaData.push(property);
+    });
 };
 
-db.getDesign = function(_id) {
-	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
-	app.ajaxPost("/databrowser/getdesignview", { _id: _id}, function(res){
+db.changeCheckboxOnGrid = function (o) {
+	var $grid = $(".grid-databrowser-design").data("kendoGrid");
+	var value = $(o).is(":checked");
+	var $tr = $(o).closest("tr");
+	var uid = $tr.attr("data-uid");
+	var field = $(o).attr("data-field");
+
+	var data = $grid.dataSource.data();
+	var rowData = $grid.dataSource.getByUid(uid);
+	var rowDataIndex = data.indexOf(rowData);
+
+	rowData[field] = value;
+	data[rowDataIndex] = rowData;
+
+	var plainData = JSON.parse(kendo.stringify(data));
+	db.databrowserData(plainData);
+	db.setDataSource();
+
+	return true;
+}
+
+db.saveAndBack = function() {
+	var param = ko.mapping.toJS(db.configDataBrowser);
+	grid = $(".grid-databrowser-design").data("kendoGrid");
+
+	var idsToSend = [];         	
+	var grids = $(".grid-databrowser-design").data("kendoGrid")
+	var ds = grids.dataSource.data();
+	param.MetaData = JSON.parse(kendo.stringify(ds));
+
+    console.log(param);
+
+	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
 		if (!res.data) {
 			res.data = [];
 		}
-
-		br.pageVisible("editor");
-		app.mode('editor')
-		// console.log("data mapping",res.data)
-		// console.log("data design>",ko.mapping.fromJS(res.data, db.configDataBrowser))
-		ko.mapping.fromJS(res.data, db.configDataBrowser)
-		// br.dataBrowser(res.data);
+		
+		db.backToFront();
 	});
 }
 
-// dg.addMap = function () {
-// 	var o = ko.mapping.fromJS($.extend(true, {}, db.templateConfigProperties));
-// 	db.templateConfig.Struct.push(o);
-// };
+db.designDataBrowser = function(_id) {
+	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	db.databrowserData([]);
+	app.ajaxPost("/databrowser/getdesignview", { _id: _id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		
+		br.pageVisible("editor");
+		app.mode('editor')
+		db.databrowserData(res.data.MetaData);
+		db.setDataSource();
+		if (typeof _id === "function") {
+			_id();
+		}
+		ko.mapping.fromJS(res.data, db.configDataBrowser);
+	});
+}
+
+db.populateTable = function () {
+	var param = { connectionID: this.value() };
+	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (res.data.length==0){
+			res.data="";
+			db.collectionListData([{value:"", text: ""}]);
+		} else {
+			var datavalue = [];
+			if (res.data.length > 0) {
+				$.each(res.data, function(key, val) {
+					data = {};
+					data.value = val;
+					data.text = val;
+					datavalue.push(data);
+				});
+			}
+
+			db.collectionListData(datavalue);
+		}
+	});
+};
+
+db.testQuery = function() {
+	if (!app.isFormValid(".form-databrowserdesign")) {
+		return;
+	}
+
+	if (db.configDataBrowser._id() == '' || db.configDataBrowser.Description() == '') {
+		swal({ title: "Warning", text: "Please save the datasource first", type: "warning" });
+		return;
+	}
+
+	var param = ko.mapping.toJS(db.configDataBrowser); //{};
+	var isChecked = $("#isFreetext").prop("checked")
+	if (!isChecked) { //if false by default query with dbox
+		param.QueryType = "nonQueryText";
+		param.QueryText = JSON.stringify({"from": $("#table").data("kendoDropDownList").value()});
+		param.TableNames = $("#table").data("kendoDropDownList").value();
+		app.ajaxPost("/databrowser/testquery", param, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+			
+			ko.mapping.fromJS(res.data, db.configDataBrowser)
+			db.configDataBrowser.MetaData([]);
+			db.databrowserData(res.data.MetaData);
+			db.setDataSource();
+		});
+	}
+};
 
 db.backToFront = function() {
 	app.mode('');
@@ -164,19 +277,68 @@ db.backToFront = function() {
 	$("#isFreetext").prop("checked", false);
 	$("#freeQuery").hide();
 	$("#fromTable").show();
+	br.getDataBrowser();
+};
+
+db.setDataSource = function () {
+	var ds = new kendo.data.DataSource({
+		pageSize: 15, 
+		batch: true,
+		schema: { 
+			model: { 
+	    		id: 'Field', 
+    			fields: { 
+    				Field: { editable: false }, 
+    				Label: { type: 'string' },
+    				Format: { type: 'string' },
+    				Align: { type: 'string' },
+    				ShowIndex: { 
+    					type: 'number', 
+    					editable: false
+					},
+					Sortable: { type: 'boolean' }, 
+					SimpleFilter: { type: 'boolean' }, 
+					AdvanceFilter: { type: 'boolean' }, 
+					Aggregate: { type: 'string' }
+				} 
+			} 
+		},
+		data: db.databrowserData()
+	});
+
+	$(".grid-databrowser-design").data("kendoGrid").setDataSource(ds);
+};
+db.prepareGrid = function () {
+	$(".grid-databrowser-design").kendoGrid({ 
+		selectable: 'multiple, row', 
+		columns: db.databrowserColumns(), 
+		editable: true, 
+		filterfable: false, 
+		pageable: true, 
+		dataBound: app.gridBoundTooltipster('.grid-databrowser-design')
+	});
+	db.setDataSource();
 }
 
-$(function () {
+db.showHideFreeQuery = function() {
 	$("#freeQuery").hide();
+	$("#querytype").hide();
 	$("#isFreetext").change(function() {
 		if (this.checked){
 			$("#freeQuery").show();
+			$("#querytype").show();
 			$("#fromTable").hide();	
 		}else{
 			$("#freeQuery").hide();
+			$("#querytype").hide();
 			$("#fromTable").show();
 		}
 	});
+};
+
+$(function () {
+	db.prepareGrid();
+	db.showHideFreeQuery();
 });
 
 //create function klik view for databrowser grid
@@ -187,10 +349,3 @@ db.ViewBrowserName = function(id){
 db.DesignDataBrowser = function(id){
     br.pageVisible("editor");
 }
-
-// dummy table list
-var dummyTable = new Object()
-dummyTable._id = "mongo-students"
-var dataTable = new Array();
-dataTable.push(dummyTable)
-db.tableList(dataTable);

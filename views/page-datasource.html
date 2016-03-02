@@ -7,6 +7,43 @@
 <script src="/res/core/page-datasource.js"></script>
 <script src="/res/core/page-datasource-query.js"></script>
 
+<style>
+.k-widget.k-treeview {
+	color: black;
+}
+body {
+	font-size: 12px;
+}
+
+.k-treeview .k-top,
+.k-treeview .k-mid,
+.k-treeview .k-bot {
+	background-image: url('http://aspnet-skins.telerikstatic.com/mvc/2012.2.607/Default/treeview-nodes.png');
+	background-repeat: no-repeat;
+	margin-left: -16px;
+	padding-left: 16px;
+}
+
+.k-treeview .k-item { background-image: url('http://aspnet-skins.telerikstatic.com/mvc/2012.2.607/Default/treeview-line.png'); }
+.k-treeview .k-last { background-image: none; }
+
+
+.k-treeview .k-top { background-position: -91px 0; }
+.k-treeview .k-bot { background-position: -69px -22px; }
+.k-treeview .k-mid { background-position: -47px -44px; }
+.k-treeview .k-last .k-top { background-position: -25px -66px; }
+.k-treeview .k-group .k-last .k-bot { background-position: -69px -22px; }
+
+.k-treeview .k-item {
+	background-repeat: no-repeat;
+}
+
+.k-treeview .k-first {
+	background-repeat: no-repeat;
+	background-position: 0 16px;
+}
+</style>
+
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
@@ -48,7 +85,7 @@
 		    		Driver
 		    	</label>
 		    	<div class="col-md-8">
-		    		<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: ds.filterDriver, optionLabel: 'Select one' }"></select>
+		    		<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.computedDrivers, dataValueField: 'value', dataTextField: 'text', value: ds.filterDriver, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		</nav>
@@ -100,6 +137,7 @@
 				        	<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one' }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
+				        <p class="mgTop5">*)isnt working yet</p>
 				    </div>
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label" data-bind="text: ds.labelForHost"></label>
@@ -583,8 +621,8 @@
 	</div>
 </div>
 
-<!-- Modal Lookup Data -->
-<div class="modal fade modal-lookup-data" tabindex="-1" role="dialog">
+<!-- Modal Sub/Lookup Data -->
+<div class="modal fade modal-sub-lookup-data" tabindex="-1" role="dialog">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -592,12 +630,11 @@
 					<span aria-hidden="true">&times;</span>
 				</button>
 				<h4 class="modal-title">
-					Lookup Data
-					<span data-bind="text: ds.lokupModalLabel"></span>
+					<span data-bind="text: ds.lookupSubModalLabel"></span>
 				</h4>
 			</div>
 			<div class="modal-body">
-				<div id="grid-lookup-data"></div>
+				<div id="grid-sub-lookup-data"></div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">

@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	"github.com/eaciit/toolkit"
 	// "io"
 	// "net/http"
 	// "os"
@@ -69,9 +69,9 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if err := colonycore.Delete(payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
+	// if err := colonycore.Delete(payload); err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
 
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -127,5 +127,119 @@ func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	// toolkit.Printf("metadata:%#v\n", payload)
 	return helper.CreateResult(true, payload, "")
+}
+
+func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := colonycore.DataBrowser{} //map[string]interface{}{}
+	err := r.GetPayload(&data)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	conn, datacon, err := d.connToDatabase(data.ConnectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	query := d.parseQuery(conn, data)
+
+	cursor, err := query.Cursor(nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	dataFetch := []toolkit.M{}
+	if datacon.Driver == "mongo" {
+		result := toolkit.M{}
+		err = cursor.Fetch(&result, 1, false)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		dataFetch = append(dataFetch, result)
+	} else {
+		err = cursor.Fetch(&dataFetch, 1, false)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	metadata := []*colonycore.StructInfo{}
+	for i, dataFields := range dataFetch {
+		if i > 0 {
+			break
+		}
+
+		j := 1
+		for keyField, _ := range dataFields {
+			sInfo := &colonycore.StructInfo{}
+			sInfo.Field = keyField
+			sInfo.Label = keyField
+			sInfo.Format = ""
+			sInfo.Align = "Left"
+			sInfo.ShowIndex = toolkit.ToInt(j, toolkit.RoundingAuto)
+			sInfo.Sortable = false
+			sInfo.SimpleFilter = false
+			sInfo.AdvanceFilter = false
+			sInfo.Aggregate = ""
+			metadata = append(metadata, sInfo)
+			j++
+		}
+	}
+
+	data.MetaData = metadata
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, *colonycore.Connection, error) {
+	dataConn := new(colonycore.Connection)
+	err := colonycore.Get(dataConn, _id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return connection, dataConn, nil
+}
+
+func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser) dbox.IQuery {
+	var dataQuery dbox.IQuery
+	if dbrowser.QueryType == "nonQueryText" {
+		result := toolkit.M{}
+		toolkit.UnjsonFromString(dbrowser.QueryText, &result)
+		if qFrom := result.Get("from", "").(string); qFrom != "" {
+			dataQuery = conn.NewQuery().From(qFrom)
+		}
+	}
+	return dataQuery
+}
+
+func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result := toolkit.M{}
+
+	payload := toolkit.M{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	getFunc := DataSourceController{}
+	count, data, dataDS, err := getFunc.ConnectToDataSourceDB(payload)
+
+	result.Set("DataCount", count)
+	result.Set("DataValue", data)
+	result.Set("dataresult", dataDS)
+
+	return helper.CreateResult(true, result, "")
 }

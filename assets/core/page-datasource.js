@@ -7,6 +7,9 @@ ds.templateDrivers = ko.observableArray([
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mysql", text: "MySQL" },
 	{ value: "hive", text: "Hive" },
+	{ value: "oracle", text: "Oracle*" },
+	{ value: "sqlserver", text: "SQL Servrer*" },
+	{ value: "postresql", text: "PostreSQL*" },
 ]);
 ds.templateConfigSetting = {
 	id: "",
@@ -62,9 +65,21 @@ ds.connectionListData = ko.observableArray([]);
 ds.lookupFields = ko.observableArray([]);
 ds.dataSourcesData = ko.observableArray([]);
 ds.collectionNames = ko.observableArray([]);
-ds.lokupModalLabel = ko.observable("");
+ds.lookupSubModalLabel = ko.observable("");
 ds.tempCheckIdConnection = ko.observableArray([]);
 ds.tempCheckIdDataSource = ko.observableArray([]);
+ds.subData = ko.observableArray([]);
+ds.computedDrivers = ko.computed(
+	function() {
+		var temp = [];
+		var search = ko.utils.arrayFilter(ds.templateDrivers(),function (item) {
+           if (item.text.indexOf('*') < 0){
+				temp.push(item);
+			}
+       	}); 
+        return temp;
+    }, ds
+);
 ds.dataSourceDataForLookup = ko.computed(function () {
 	return Lazy(ds.dataSourcesData()).where(function (e) {
 		return e._id != ds.confDataSource._id();
@@ -575,6 +590,14 @@ ds.testQuery = function () {
 						columnConfig.template = function (f) {
 							return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
 						}
+					} else if ((e.Type === "object") || (e.Type === "array-objects") || (e.Type.indexOf("array") > -1)) {
+						columnConfig.template = function (f) {
+							if (f[e._id] === undefined){
+								return "";
+							}else{
+								return "<a title='show lookup data for " + f._id + "' onclick='ds.showSubData(\"" + e._id + "\", \"" + f._id + "\")'>" + "Show details" + "</a>";
+							}
+						}
 					}
 
 					return columnConfig;
@@ -651,6 +674,7 @@ ds.fetchAllCollections = function () {
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
 		ds.collectionNames(res.data);
 	}, function (a) {
+		ds.backToFrontPage();
     	sweetAlert("Oops...", a.statusText, "error");
 	}, {
 		timeout: 10000
@@ -708,9 +732,9 @@ ds.saveLookup = function () {
 	});
 };
 ds.showLookupData = function (lookupID, lookupData) {
-	ds.lokupModalLabel("");
-	$(".modal-lookup-data").modal("show");
-	$("#grid-lookup-data").replaceWith("<div id='grid-lookup-data'></div>");
+	ds.lookupSubModalLabel("Lookup Data");
+	$(".modal-sub-lookup-data").modal("show");
+	$("#grid-sub-lookup-data").replaceWith("<div id='grid-sub-lookup-data'></div>");
 
 	var param = {
 		_id: ds.confDataSource._id(),
@@ -745,7 +769,58 @@ ds.showLookupData = function (lookupID, lookupData) {
 			filterfable: false
 		};
 
-		$("#grid-lookup-data").kendoGrid(gridConfig);
+		$("#grid-sub-lookup-data").kendoGrid(gridConfig);
+	});
+};
+
+ds.showSubData = function (subID, subData) {
+	ds.lookupSubModalLabel("Sub Data");
+	$(".modal-sub-lookup-data").modal("show");
+	$("#grid-sub-lookup-data").replaceWith("<div id='grid-sub-lookup-data'></div>");
+
+	var param = {
+		_id: ds.confDataSource._id(),
+		lookupID: subID,
+		lookupData: subData
+	};
+	app.ajaxPost("/datasource/fetchdatasourcesubdata", param, function (res) {
+		if ((!app.isFine(res)) || (res.data.data === null)){
+			return;
+		}
+
+		if ($.isArray(res.data.data)){
+			if(typeof(res.data.data) === "object"){
+				ds.subData(res.data.data);
+
+				if (ds.subData().length > 0) {
+					if (!(ds.subData()[0] instanceof Object)) {
+						var values = [];
+						for (var ln = 0; ln < ds.subData().length; ln++) {
+						    var item1 = {
+						        "List" : ds.subData()[ln]
+						    };
+					    	values.push(item1);
+						}
+						ds.subData(values);
+					}
+				}
+			}
+		}else{
+			var data = ds.toHierarchy(ds.toObject(res.data.data));
+			var height = (data.length < 10) ? (data.length * 30) : 300;
+			$("#grid-sub-lookup-data").height(height).kendoTreeView({
+				height: (data.length * 30),
+                dataSource: new kendo.data.HierarchicalDataSource({
+    				data: data
+    			})
+            });
+
+			return;
+		}
+
+		$("#grid-sub-lookup-data").kendoGrid({
+			dataSource: ds.subData()
+		});
 	});
 };
 
@@ -792,17 +867,50 @@ ds.checkDeleteData = function(elem, e){
 		}
 	}
 }
+ds.toObject = function (o) {
+	var r = {};
 
-function filterConnection(event) {
-	var fconnection = ds.valConnectionFilter();
-	app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res)
-	{
-	if (!app.isFine(res)) {
- 		return;
+	for (var k in o) {
+		if (o.hasOwnProperty(k)) {
+			var v = o[k];
+
+			if (v instanceof Array) {
+				r[k] = {};
+
+				v.forEach(function (d, j) {
+					if (d instanceof Object) {
+						r[k] = ds.toObject(v);
+					} else {
+						r[k][j] = d
+					}
+				});
+			} else if (v instanceof Object) {
+				r[k] = ds.toObject(v);
+			} else {
+				r[k] = v;
+			}
+		}
 	}
-	 	ds.connectionListData(res.data);
-	 });
-}
+
+	return r;
+};
+ds.toHierarchy = function (d) {
+	var result = [];
+	for (var k in d) {
+		if (d.hasOwnProperty(k)) {
+			var v = d[k];
+			var j = { text: k, items: [] };
+			result.push(j);
+
+			if (v instanceof Object) {
+				j.items = ds.toHierarchy(v);
+			} else {
+				j.text += ": " + v;
+			}
+		}
+	}
+	return result;
+};
 
 $(function () {
 	ds.populateGridConnections();

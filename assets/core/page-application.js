@@ -6,6 +6,7 @@ apl.templateConfigApplication = {
 	AppsName: "",
 	Enable: ko.observable(false),
 	Type: "web",
+	Port: "8080",
 	AppPath: "",
 	DeployedTo: [],
 };
@@ -41,26 +42,38 @@ apl.configFile = ko.mapping.fromJS(apl.templateFile);
 apl.searchfield = ko.observable('');
 apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
-	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' id='selectall' onclick='\" apl.checkDelData(this, 'aplAll', 'all') \"' ></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
+	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' onclick=\" apl.checkDelData(this, 'aplAll', 'all') \"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='select' class='aplCheck' idcheck=" + d._id + " onclick='\" apl.checkDelData(this, 'aplCheck') />"
+			"<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>"
 		].join(" ");
 	}},
-	{ field: "_id", title: "ID", width: 80 },
+	{ field: "_id", title: "ID" },
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
-	// { field: "Enable", title: "Enable", width: 50},
+	{ field: "Port", title: "Running Port" },
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy to servers' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deployment information' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
 		].join(" ");
 	} },
 ]);
 apl.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />"
-		].join(" ");
+		var disabled = false;
+		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (baseData != undefined) {
+			if (baseData.DeployedTo == null) {
+				baseData.DeployedTo = [];
+			}
+			
+			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
+		}
+
+		// if (!disabled) {
+			return "<input type='checkbox' class='servercheck' idcheck='"+d._id+"' onclick=\"apl.selectServer(this, 'server')\" />";
+		// }
+
+		return "";
 	} },
 	{ field: "_id", title: "ID" },
 	{ field: "host", title: "Host" },
@@ -73,19 +86,20 @@ apl.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ field: "status", width: 100, headerTemplate: "<center>status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		var baseData = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		if (baseData == undefined) {
+		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (app == undefined) {
 			return "";
 		}
 
-		var deployedTo = baseData.DeployedTo;
+		var deployedTo = app.DeployedTo;
 
 		if (deployedTo == null) {
 			deployedTo = [];
 		}
 
 		if (deployedTo.indexOf(d._id) != -1) {
-			return "DEPLOYED";
+			var target = [d.host.split(":")[0], app.Port].join(":");
+			return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
 		}
 
 		return "UNDEPLOYED";
@@ -94,7 +108,7 @@ apl.ServerColumns = ko.observableArray([
 apl.gridServerDeployDataBound = function () {
 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
 		var $td = $(e).find("td:eq(4)");
-		if ($td.html() == "DEPLOYED") {
+		if ($td.text() == "DEPLOYED") {
 			$td.css("background-color", "#5cb85c");
 			$td.css("color", "white");
 		} else {
@@ -103,13 +117,29 @@ apl.gridServerDeployDataBound = function () {
 		}
 	});
 };
+apl.refreshGridModalDeploy = function () {
+	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
+	$(".grid-server-deploy").kendoGrid({
+		dataSource: { 
+			pageSize: 15,
+			data: srv.ServerData()
+		}, 
+		columns: apl.ServerColumns(),
+		filterfable: false,
+		pageable: true,
+		dataBound: apl.gridServerDeployDataBound
+	});
+};
 apl.showModalDeploy = function (_id) {
 	return function () {
-		apl.appIDToDeploy(_id);
-		$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
-			$(e).prop("checked", false);
+		srv.getServers(function () {
+			$(".modal-deploy").modal("show");
+			apl.appIDToDeploy(_id);
+			apl.refreshGridModalDeploy();
+			$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
+				$(e).prop("checked", false);
+			});
 		});
-		$(".modal-deploy").modal("show");
 	};
 };
 apl.deploy = function () {
@@ -133,7 +163,14 @@ apl.deploy = function () {
 				return;
 			}
 
-			console.log(res);
+			apl.getApplications(function () {
+				apl.appIDToDeploy(param._id);
+				apl.refreshGridModalDeploy();
+
+				setTimeout(function () {
+					$(".modal-deploy").modal("hide");
+				}, 1000);
+			});
 		});
 	})
 };
@@ -145,7 +182,7 @@ apl.selectApps = function (e) {
 	});
 };
 
-apl.getApplications = function() {
+apl.getApplications = function(c) {
 	apl.applicationData([]);
 	apl.appIDToDeploy('');
 
@@ -165,6 +202,9 @@ apl.getApplications = function() {
 		}
 
 		apl.applicationData(res.data);
+		if (typeof c === "function") {
+			c();
+		}
 	});
 };
 
@@ -214,8 +254,9 @@ apl.saveApplication = function() {
 	formData.append("Enable", data.Enable);
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
-	formData.append("id", data._id);
+	formData.append("_id", data._id);
 	formData.append("Type", data.Type);
+	formData.append("Port", data.Port);
 	
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
@@ -480,7 +521,7 @@ apl.OnRemove = function (_id) {
 			closeOnConfirm: true
 		}, function() {
 			setTimeout(function () {
-				app.ajaxPost("/application/deleteapps", { _id: apl.tempCheckIdServer() }, function (res) {
+				app.ajaxPost("/application/deleteapps", apl.tempCheckIdServer(), function (res) {
 					if (!app.isFine(res)) {
 						return;
 					}
@@ -519,32 +560,52 @@ apl.renameFile = function(){
 }
 
 apl.checkDelData = function (elem,e ){
-	if ( e === 'aplAll'){
-		if ($(elem).prop('checked') === true){
-			$('.aplCheckAll').each(function (index) {
-				$(this).prop("checked", true);
-				apl.tempCheckIdServer.push($(elem).attr('idcheck'));	
-			})
-		} else {
-			var idtemp = '';
-			$('.aplCheckAll').each(function (index){
-				$(this).prop("checked", false );
-				idtemp = $(this).attr('idcheck');
-				apl.tempCheckIdServer.remove( function (item) {
-					return item === idtemp;
-				});
-			});
-		}
-	}
-
-	if ( e === 'aplCheck') {
+	if ( e === 'apl') {
 		if ($(elem).prop('checked') === true){
 			apl.tempCheckIdServer.push($(elem).attr('idcheck'));		
 		} else {
 			apl.tempCheckIdServer.remove(function (item) { return item === $(elem).attr('idcheck'); });		
 		}	
 	}
+	if ( e === 'aplAll'){
+		if ($(elem).prop('checked') === true){
+			$('.aplCheck').each(function (index) {
+				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));	
+			})
+		} else {
+			var idtemp = '';
+			$('.aplCheck').each(function (index){
+				$(this).prop("checked", false );
+				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; });
+			});
+		}
+	}
+}
 
+apl.selectServer = function(elem, e){
+	if (e === 'serverall'){
+		if ($(elem).prop('checked') === true){
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", true);
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));
+			});
+		} else {
+			var idtemp = '';
+			$('.servercheck').each(function(index) {
+				$(this).prop("checked", false);
+				idtemp = $(this).attr('idcheck');
+				apl.tempCheckIdServer.remove( function (item) { return item === idtemp; } );
+			});
+		}
+	}else {
+		if ($(elem).prop('checked') === true){
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
+		} else {
+			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
+		}
+	}
 }
 
 $(function () {
