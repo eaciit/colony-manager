@@ -402,7 +402,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 				return helper.CreateResult(true, true, "")
 			}
 		} else {
-			sedotanPath := f.Join(EC_APP_PATH, "daemon", "sedotand")
+			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand")
 			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
 			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
 			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
