@@ -59,4 +59,4 @@ This is what we do!
 - [x] [Data Browser] show real data
 - [x] [Colony JS - eclookup] fix the click mechanism
 
-> don't code today what you can't debug tomorrow ~ Ariya Hidayat
+> ### don't code today what you can't debug tomorrow ~ Ariya Hidayat
