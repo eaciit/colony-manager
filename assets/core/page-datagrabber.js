@@ -160,6 +160,7 @@ dg.getScrapperData = function (){
 		if (!app.isFine(res)) {
 			return;
 		}
+		console.log(res);
 		if (res.data==null){
 			res.data="";
 		}
@@ -191,6 +192,7 @@ dg.removeMap = function (index) {
 		dg.configScrapper.Map.remove(item);
 	};
 }
+
 dg.createNewScrapper = function () {
 	app.mode("editor");
 	dg.scrapperMode('');
@@ -201,10 +203,11 @@ dg.createNewScrapper = function () {
 
 dg.addWizard = function (){
 	app.mode('addWizard');
-	ko.mapping.fromJS(dg.templatewizard, dg.config)
-	app.resetValidation("#form-add-wizard");
+	dg.scrapperMode('');
+	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
+	ko.mapping.fromJS(dg.templatewizard, dg.config);
 	dg.addtable();
-}
+};
 
 dg.doSaveDataGrabber = function (c) {
 	if (!app.isFormValid(".form-datagrabber")) {
