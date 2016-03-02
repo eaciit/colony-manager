@@ -34,6 +34,23 @@
 
 }	
 
+.modal-body{
+	overflow: auto;
+}
+
+.modal-body input{
+	width: 	70%;
+}
+
+.modal-body .checkbox input{
+	width: 	120%;
+}
+
+.perm-label{
+	    width: 74%;
+    text-align: center;
+}
+
 .fb-ed-btn:hover {
     background-color: #4F9AE6!important;
     border-color: #3282D6!important;
