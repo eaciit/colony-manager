@@ -806,7 +806,16 @@ ds.showSubData = function (subID, subData) {
 				}
 			}
 		}else{
-			ds.subData([res.data.data]);
+			var data = ds.toHierarchy(ds.toObject(res.data.data));
+			var height = (data.length < 10) ? (data.length * 30) : 300;
+			$("#grid-sub-lookup-data").height(height).kendoTreeView({
+				height: (data.length * 30),
+                dataSource: new kendo.data.HierarchicalDataSource({
+    				data: data
+    			})
+            });
+
+			return;
 		}
 
 		$("#grid-sub-lookup-data").kendoGrid({
@@ -858,17 +867,50 @@ ds.checkDeleteData = function(elem, e){
 		}
 	}
 }
+ds.toObject = function (o) {
+	var r = {};
 
-function filterConnection(event) {
-	var fconnection = ds.valConnectionFilter();
-	app.ajaxPost("/datasource/findconnection", {inputText : fconnection, inputDrop : ""}, function (res)
-	{
-	if (!app.isFine(res)) {
- 		return;
+	for (var k in o) {
+		if (o.hasOwnProperty(k)) {
+			var v = o[k];
+
+			if (v instanceof Array) {
+				r[k] = {};
+
+				v.forEach(function (d, j) {
+					if (d instanceof Object) {
+						r[k] = ds.toObject(v);
+					} else {
+						r[k][j] = d
+					}
+				});
+			} else if (v instanceof Object) {
+				r[k] = ds.toObject(v);
+			} else {
+				r[k] = v;
+			}
+		}
 	}
-	 	ds.connectionListData(res.data);
-	 });
-}
+
+	return r;
+};
+ds.toHierarchy = function (d) {
+	var result = [];
+	for (var k in d) {
+		if (d.hasOwnProperty(k)) {
+			var v = d[k];
+			var j = { text: k, items: [] };
+			result.push(j);
+
+			if (v instanceof Object) {
+				j.items = ds.toHierarchy(v);
+			} else {
+				j.text += ": " + v;
+			}
+		}
+	}
+	return result;
+};
 
 $(function () {
 	ds.populateGridConnections();
