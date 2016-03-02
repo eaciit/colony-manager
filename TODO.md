@@ -5,7 +5,7 @@ This is what we do!
 ## Issues until 02 Mar 2015
 
 | No  | Done? | Module | Issue |
-| --: | :---: | ------ | ----- | 
+| --: | :---: | :----- | :---- | 
 | 51 | | Connection | prepare defaults settings for each driver (cannot be deleted) |
 | 50 | | Connection | prepare at least 5 sample connection |
 | 49 | | Data Source | add timeout when run the query |
