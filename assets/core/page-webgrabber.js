@@ -218,6 +218,8 @@ wg.configConnection = ko.mapping.fromJS(wg.templateConfigConnection);
 wg.checkDaemonStatus = function () {
 	app.ajaxPost("/webgrabber/daemonstat", {}, function (res) {
 		wg.isDaemonRunning(res.data);
+	}, {
+		withLoader: false
 	});
 };
 wg.toggleDaemon = function (to) {

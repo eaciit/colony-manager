@@ -163,44 +163,29 @@ br.ViewBrowserName = function(id){
 				   serverFiltering: true,
 			   },
             pageable: true,
+            scrollable: true,
+			sortable: true,
             columns:datacol
         });
 	});
-
-
 	
-   // var parm = {
-   // 		id: id
-   // }
-   // var url = "/databrowser/detaildb";
-   // $("#gridUser").kendoGrid({
-	  //  dataSource: {
-		 //   transport: {
-			//    read: {
-			// 	   url: url,
-			// 	   data: parm,
-			// 	   dataType: "json"
-			//    }
-		 //   },
-		 //   schema: {
-			//    data: "Data",
-			//    total: "Total",
-		 //   },
-		 //   pageSize: 5,
-		 //   serverPaging: true, 
-		 //   serverSorting: true,
-		 //   serverFiltering: true,
-	  //  },
-	  //  resizable: true,
-	  //  sortable: true,
-	  //  pageable: {
-		 //   refresh: true,
-		 //   pageSizes: true,
-		 //   buttonCount: 5
-	  //  },
-	  //  columns: datacol
-   // });
-	
+}
+
+br.FilterViewDB = function(){
+	$('#filter-id').ecLookup({
+		dataSource:{
+			url: "/databrowser/detaildb",
+			call: 'POST',
+			callData: 'search', 
+			callOK: function(res){
+				console.log(res);
+			}
+		}, 
+		inputType: 'multiple', 
+		inputSearch: '_id', 
+		idField: '_id', 
+		idText: '_id', 
+	})
 }
 
 br.saveAndBack = function (){
@@ -221,4 +206,5 @@ br.filterSimple = function(){
 $(function (){
 	br.getDataBrowser();
 	br.getAllbrowser();
+	br.FilterViewDB();
 });

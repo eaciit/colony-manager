@@ -410,6 +410,8 @@ dg.checkTransformationStatus = function () {
 				var $row = $grid.find("tr[data-uid='" + row.uid + "']");
 
 				$row.removeClass("started");
+			}, {
+				withLoader: false
 			});
 		};
 

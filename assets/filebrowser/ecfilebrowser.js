@@ -46,7 +46,7 @@ var Setting_DataSource = {
 };
 
 var templatetree = "#: item.text# "+
-             "<a style='display:none' path=\"#:item.pathf #\"></a> ";
+             "<a style='display:none' path=\"#:item.pathf #\" name=\"#:item.text #\"></a> ";
 
 var methodsFB = {
 	init:function(options){
@@ -56,7 +56,7 @@ var methodsFB = {
 		settings["dataSource"] = settingsSource;
 		settings["serverSource"] = serverSource;
 
-		templatetree = templatetree.replace("text",options.dataSource.nameField);
+		templatetree = templatetree.replace("text",options.dataSource.nameField).replace("text",options.dataSource.nameField);
 		templatetree = templatetree.replace("pathf",options.dataSource.pathField);
 
 		this.each(function () {
@@ -163,6 +163,7 @@ var methodsFB = {
 		});
 
 		methodsFB.BuildEditor(elem,options);
+		methodsFB.BuildPopUp(elem,options);
 	},
 	BuildEditor:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
@@ -275,6 +276,150 @@ var methodsFB = {
 		$edtxt.appendTo($edli);
 
 	},
+	BuildPopUp : function(elem,options){
+		$div = $("<div class='modal fade modal-fb' tabindex='-1' role='dialog'></div>");
+		$div.appendTo($(elem));
+
+		$divmod = $("<div class='modal-dialog modalcustom'></div>");
+		$divmod.appendTo($div);
+
+		$divcont = $("<div class='modal-content'></div>");
+		$divcont.appendTo($divmod);
+
+		$divhead = $("<div class='modal-header'>"+
+					"<button type='button' class='close' data-dismiss='modal' aria-label='Close'>"+
+					"<span aria-hidden='true'>&times;</span>"+
+					"</button>"+
+					"<h4 class='modal-title'>"+
+					"</h4>"+
+					"</div>");
+		$divhead.appendTo($divcont);
+
+		$divbody = $("<div class='modal-body'></div>");
+		$divbody.appendTo($divcont);
+
+		$divfooter = $("<div class='modal-footer'>"+
+					"<button type='button' class='btn btn-sm btn-danger' data-dismiss='modal'>"+
+					"<span class='glyphicon glyphicon-repeat'></span> Cancel"+
+					"</button>"+
+					"<button type='button' class='btn btn-sm btn-primary fb-submit' >"+
+					"<span class='glyphicon glyphicon-floppy-disk'></span> Submit"+
+					"</button>"+
+			"</div>");
+		$divfooter.appendTo($divcont);
+	},
+	CallPopUp:function(elem,content,title){
+		$($(elem).find("h4")).html(title);
+		$body =	$($(elem).find(".modal-body"));
+		$btn =	$($(elem).find(".fb-submit"));
+		$btn.unbind("click");
+		$body.html("");
+		var name = $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("name");
+		var type = methodsFB.DetectType($(elem).find("span[class='k-in k-state-selected']"),name);
+
+		if(content.action=="NewFile"){
+			if (type!="folder"){
+				alert("Please choose folder !");
+				return;
+			}
+
+
+			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>File Name</label></div><div class='col-md-9'><input placeholder='Type File Name ..' class='form control'></input></div></div>");
+			$divNewFile.appendTo($body);
+			$btn.click(function(){
+					content.path = content.path	+ $($body.find("input")).val();
+					methodsFB.SendActionRequest(elem,content);
+			});
+		}else if(content.action=="NewFolder"){
+			if (type!="folder"){
+				alert("Please choose folder !");
+				return;
+			}
+
+
+			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>Folder Name</label></div><div class='col-md-9'><input placeholder='Type Folder Name ..' class='form control'></input></div></div>");
+			$divNewFile.appendTo($body);
+			$btn.click(function(){
+					content.path = content.path	+ $($body.find("input")).val();
+					methodsFB.SendActionRequest(elem,content);
+			});
+		}else if(content.action=="Rename"){
+			var lbl = "File"
+			if(type	=="folder"){
+				lbl = "Folder";
+			    $($(elem).find("h4")).html(lbl + " Name");
+			}
+
+			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>" +lbl+ " Name</label></div><div class='col-md-9'><input placeholder='Type "+lbl+" Name ..' class='form control'></input></div></div>");
+			$($divNewFile.find("input")).val(name);
+			$divNewFile.appendTo($body);
+
+			$btn.click(function(){
+					content.newname = $($body.find("input")).val();
+					methodsFB.SendActionRequest(elem,content);
+			});		
+		}else if (content.action=="Permission"){
+			$divperm = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>Permission</label></div>"+
+					"<div class='col-md-3'><label class='perm-label'>Owner</label><div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Read</label>"+
+			  		"</div>"+
+			  		"<div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Write</label>"+
+			  		"</div>"+
+			  		"<div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Execute</label>"+
+			  		"</div>"+
+					"</div>"+
+					"<div class='col-md-3'><label class='perm-label'>Group Member</label><div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Read</label>"+
+			  		"</div>"+
+			  		"<div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Write</label>"+
+			  		"</div>"+
+			  		"<div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Execute</label>"+
+			  		"</div>"+
+					"</div>"+
+					"<div class='col-md-3'><label class='perm-label'>All User</label><div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Read</label>"+
+			  		"</div>"+
+			  		"<div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Write</label>"+
+			  		"</div>"+
+			  		"<div class='checkbox'>"+
+			  		"<label><input type='checkbox' value=''>Execute</label>"+
+			  		"</div>"+
+					"</div>"+
+					"</div>");
+			$divperm.appendTo($body);
+
+			$btn.click(function(){
+					var strperm = "";
+					var arr = ["r","w","x"];
+					$($body.find(".col-md-3")).each(function(){
+						$($(this).find("input")).each(function(i){
+								if($(this)[0].checked){
+									strperm	+= arr[i];
+								}else{
+									strperm	+="-";
+								}
+						});
+					});
+					content.permission = strperm;
+					methodsFB.SendActionRequest(elem,content);
+			});	
+
+		}else if (content.action=="Upload"){
+			$form =	$("<form class='form-signin' method='post' action='/Test/Upload' enctype='multipart/form-data'></form>");
+			$fs =	$("<fieldset></fieldset>");
+			$inp =	$("<div class='col-md-3'><label class='filter-label'>Upload File</label></div><div class='col-md-9'><input type='file' name='myfiles' multiple='multiple'></div>");
+
+			$form.appendTo($body);
+			$fs.appendTo($form);
+			$inp.appendTo($fs);	
+		}
+		$($(elem).find(".modal")).modal("show");		
+	},
 	ActionRequest:function(elem,options,content,sender){
 		// console.log(content);		
 		var SelectedPath = $($(elem).find("span[class='k-in k-state-selected']")).length > 0 ?  $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("path"):"";
@@ -294,17 +439,22 @@ var methodsFB = {
 			$($(elem).find(".fb-filename")).html(($($(sender).find("a")).attr("path")));
 			$($(elem).find(".fb-editor")).data("kendoEditor").value(path);
 		}else if(content.action=="Rename"){
-			content.newname = "";
+			methodsFB.CallPopUp(elem,content,"Rename File");
+			return;
 		}else if(content.action=="NewFile"){
-			content.newfile = "";
+			methodsFB.CallPopUp(elem,content,"Create New File");
+			return;
 		}else if(content.action=="NewFolder"){
-			content.newfolder = "";
+			methodsFB.CallPopUp(elem,content,"Create New Folder");
+			return;
 		}else if(content.action=="Delete"){
 
 		}else if(content.action=="Permission"){
-			content.permission = [];
+			methodsFB.CallPopUp(elem,content,"Edit Permission");
+			return;
 		}else if(content.action=="Upload"){
-			content.files = "";
+			methodsFB.CallPopUp(elem,content,"Upload File");
+			return;
 		}else if(content.action=="Edit"){
 			content.contents = "";
 		}else{
