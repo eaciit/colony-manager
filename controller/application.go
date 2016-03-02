@@ -270,12 +270,10 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
     sourceZipPath :=""
     extractCmd:=""
-    // destinationZipPath:=""
 	if(strings.Contains(server.CmdExtract, "tar")){
-		// TargetPath :=filepath.Join(EC_APP_PATH, "src")
 		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
 		extractCmd =server.CmdExtract+" "+destinationZipPathOutput+".tar -C "+destinationPath+"/"+app.ID
-		err = toolkit.TarCompress2(sourcePath, sourceZipPath)
+		err = toolkit.TarCompress(sourcePath, sourceZipPath)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -286,10 +284,11 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
+	}else if(strings.Contains(server.CmdExtract, "zip")){
+
 	}
 	
 	installerFile := ""
-
 	filepath.Walk(sourcePath, func(path string, f os.FileInfo, err error) error {
 		if installerFile != "" {
 			return nil
@@ -407,15 +406,23 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	fileExtract :=zipSource+"\\"+fileName
-	if(strings.Contains(fileName,"tar")){
+	if(strings.Contains(fileName,".tar.gz")){
+		err = toolkit.GzExtract(fileExtract, zipSource)		
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		err = toolkit.TarExtract(zipSource+"\\"+strings.TrimRight(fileName, ".gz"), zipSource+"\\"+o.AppsName)		
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}	
+		os.Remove(zipSource+"\\"+strings.TrimRight(fileName, ".gz"))
+	}else if(strings.Contains(fileName,".tar")){
 		err = toolkit.TarExtract(fileExtract, zipSource+"\\"+o.AppsName)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}	
-	}else if(strings.Contains(fileName,"zip")){
-		fmt.Println("from ",fileExtract)
-		fmt.Println("to ",zipSource+"\\"+o.AppsName)
-		err = toolkit.ZipExtract2(fileExtract, zipSource+"\\"+o.AppsName)		
+	}else if(strings.Contains(fileName,".zip")){
+		err = toolkit.ZipExtract(fileExtract, zipSource+"\\"+o.AppsName)		
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}	
@@ -429,7 +436,9 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 
 	if zipFile != "" && o.ID != "" {
 		newDirName = o.ID
+		fmt.Println(zipFile)
 		directoryTree, zipName, _ := unzip(zipFile)
+		fmt.Println("test8 ",zipName)
 		createJson(directoryTree)
 
 		o.ZipName = zipName
