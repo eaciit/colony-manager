@@ -23,7 +23,8 @@ wg.collectionInput = ko.observable();
 wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
-wg.modeSetup = ko.observable('onetime');
+wg.modeSetup = ko.observable();
+wg.timePreset = ko.observable();
 wg.selectedSeconds = ko.observable(0);
 wg.selectedMinutes = ko.observable(0);
 wg.selectedHour = ko.observable('');
@@ -91,8 +92,8 @@ wg.templateConfigScrapper = {
                 "starttime": new Date(),
                 "expiredtime": new Date(),
                 "intervaltype": "",
-                "grabinterval": "" ,
-                "timeoutinterval": "",
+                "grabinterval": "20" ,
+                "timeoutinterval": "20",
                 "cronconf": {}
             },
     logconf:
@@ -136,7 +137,7 @@ wg.templateCron = {
 	dayofweek: ""
 }
 wg.templateConfigSelector = {
-	id: "",
+	name: "",
 	rowselector: "",
 	filtercond: "",
 	conditionlist: [],
@@ -239,7 +240,7 @@ wg.filterDataSourceTypes= ko.observable('');
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
 	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
-	// { value: "SourceType_DocExcel", title: "Data File" },
+	{ value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -570,7 +571,7 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
 			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector, contentid);
 		}
-	})
+	});
 	return linenumber;
 };
 wg.GetCurrentSelector = function(id,selector, node){
@@ -660,8 +661,16 @@ wg.viewHistory = function (_id) {
 }
 wg.nextSetting = function() {
 	if (!app.isFormValid(".form-row-1")) {
-		return;
+		var errors = $(".form-row-1").data("kendoValidator").errors();
+		errors = Lazy(errors).filter(function (d) {
+			return ["Interval Type cannot be empty","Start time cannot be empty","Expired time cannot be empty"].indexOf(d) == -1;
+		}).toArray();
+
+		if (errors.length > 0) {
+			return;
+		}
 	}
+	
 
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
@@ -861,6 +870,7 @@ wg.parseGrabConf = function () {
 			month: (cron.month == "" ? "*" : cron.month),
 			dayofweek: (cron.dayofweek == "" ? "*" : cron.dayofweek)
 		};
+
 		config.intervalconf.cronconf = cronconf;
 	}
 
@@ -907,7 +917,7 @@ wg.saveSelectorConf = function(){
 	});
 }
 wg.viewData = function (id) {
-	var base = Lazy(wg.scrapperData()).find({ nameid: wg.selectedID() });
+	var base = Lazy(wg.scrapperData()).find({ id: wg.selectedID() });
 	var row = Lazy(wg.historyData()).find({ id: id });
 
 	var param = {
@@ -1081,32 +1091,15 @@ wg.checkDeleteWebGrabber = function(elem, e){
 	}
 }
 
-$(function () {
-	wg.getConnection();
-	wg.getScrapperData();
-	app.registerSearchKeyup($(".search"), wg.getScrapperData);
-
+wg.showSetupForm = function(mode){
 	$("#IntervalMode").hide();
 	$("#ScheduleMode").hide();
 	$("#Onetime").hide();
 
-	$("#settingOptions").change(function() {
-		if (document.getElementById("settingOptions").value == 'onetime'){
-			$("#IntervalMode").hide();
-			$("#ScheduleMode").hide();	
-			$("#Onetime").show();
-		}else if (document.getElementById("settingOptions").value == 'interval'){
-			$("#IntervalMode").show();
-			$("#ScheduleMode").hide();	
-			$("#Onetime").hide();
-		}else if(document.getElementById("settingOptions").value == 'schedule'){
-			$("#IntervalMode").hide();
-			$("#ScheduleMode").show();
-			$("#Onetime").hide();
-		}else{
-			$("#IntervalMode").hide();
-			$("#ScheduleMode").hide();
-			$("#Onetime").hide();
-		}
-	});
+}
+
+$(function () {
+	wg.getConnection();
+	wg.getScrapperData();
+	app.registerSearchKeyup($(".search"), wg.getScrapperData);
 });
