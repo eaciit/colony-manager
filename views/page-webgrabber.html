@@ -531,6 +531,9 @@
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToHistory">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
+	    	<button class="btn btn-sm btn-primary btn-secondary" data-bind="click: refreshLogView">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'log')">
@@ -563,7 +566,7 @@
 						</div>
 				    </div>
             	</div>
-            	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: logData, columns: viewLogColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
+            	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: tempViewLog, columns: viewLogColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
 		    </div>
 		</div>
 

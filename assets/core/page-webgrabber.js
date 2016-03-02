@@ -178,6 +178,7 @@ wg.filterRequestTypes = ko.observable('');
 wg.filterRequestLogView = ko.observable('');
 wg.searchRequestLogView = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
+wg.tempViewLog = ko.observableArray([]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
 	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
@@ -942,6 +943,7 @@ wg.viewLog = function (date) {
 		try {
 			// wg.logData(res.data.logs.join(''));
 			wg.logData(res.data.logs);
+			wg.tempViewLog(wg.logData());
 		} catch (err) {
 
 		}
@@ -949,16 +951,34 @@ wg.viewLog = function (date) {
 };
 
 wg.findLogView = function(){
-	var obj = wg.logData();
+	wg.tempViewLog(wg.logData());
+	var obj = wg.tempViewLog();
 	var key = wg.filterRequestLogView();
 	var val = wg.searchRequestLogView();
+	if (val == ""){
+		wg.tempViewLog(wg.logData());
+		return false
+	}
+	
 	var returnedData = $.grep(obj, function (element, index) {
-	    return element.key == val;
+		if (key == "Desc"){
+			return element.Desc == val;
+		}else{
+			return element.Type == val;
+		}
+	    
 	});
-	wg.logData([]);
-    wg.logData(returnedData);
+	wg.tempViewLog([]);
+    wg.tempViewLog(returnedData);
 
 }
+
+wg.refreshLogView = function(){
+	wg.filterRequestLogView("");
+	wg.searchRequestLogView("");
+	wg.tempViewLog(wg.logData());
+}
+
 function filterWebGrabber(event) {
 	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
 		if (!app.isFine(res)) {
