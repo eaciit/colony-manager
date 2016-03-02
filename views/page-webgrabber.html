@@ -295,7 +295,7 @@
 											<tbody data-bind="foreach: wg.selectorRowSetting">
 												<tr>
 													<td>
-														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: _id, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 													</td>
 													<td>
