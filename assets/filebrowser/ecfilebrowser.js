@@ -116,7 +116,8 @@ var methodsFB = {
         transport: {
             read: {
                 url: url,
-                dataType: "jsonp",
+                dataType: "json",
+                type: call,
                 complete: function(){
                 	$strtree.find("span").each(function(){
 						if($(this).html()!=""){
@@ -146,6 +147,7 @@ var methodsFB = {
             }
         },
         schema: {
+        	data: "data",
             model: {
                 id: options.dataSource.pathField,
                 hasChildren: options.dataSource.hasChildrenField,

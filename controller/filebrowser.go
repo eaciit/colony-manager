@@ -9,6 +9,7 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
+	// "github.com/eaciit/errorlib"
 	. "github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/sshclient"
@@ -251,13 +252,13 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	server, payload, err := getServer(r)
-	_ = payload
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	if server.RecordID() != nil {
-		/*path := ""
+		path := ""
 		permission := ""
 
 		if payload["path"] != nil {
@@ -265,11 +266,22 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 		}
 		if payload["permission"] != nil {
 			permission = payload["permission"].(string)
-		}*/
+		}
 
 		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
+			setting, err := sshConnect(&server)
+
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			err = sshclient.Chmod(setting, path, permission, true)
+
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			return helper.CreateResult(true, nil, "")
 		} else if server.ServerType == SERVER_HDFS {
 
 		}
@@ -342,7 +354,7 @@ func getServer(r *knot.WebContext) (server colonycore.Server, payload map[string
 		return
 	}
 
-	serverId := payload["ServerID"].(string)
+	serverId := payload["serverid"].(string)
 	query := dbox.Eq("_id", serverId)
 
 	cursor, err := colonycore.Find(new(colonycore.Server), query)
