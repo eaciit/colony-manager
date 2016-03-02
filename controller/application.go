@@ -63,7 +63,7 @@ func createJson(object *colonycore.TreeSource) {
 	}
 	jsonString := string(jsonData)
 
-	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, ".directory-tree.json"))
+	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, "directory-tree.json"))
 
 	f, err := os.Create(filename)
 	if err != nil {
@@ -380,8 +380,9 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	// upload handler
-	fmt.Printf("-------- %s\n", zipSource)
+	//fmt.Printf("-------- %s\n", zipSource)
 	err, fileName := helper.UploadHandler(r, "userfile", zipSource)
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -405,7 +406,22 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
+	fileExtract :=zipSource+"\\"+fileName
+	if(strings.Contains(fileName,"tar")){
+		err = toolkit.TarExtract(fileExtract, zipSource+"\\"+o.AppsName)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}	
+	}else if(strings.Contains(fileName,"zip")){
+		fmt.Println("from ",fileExtract)
+		fmt.Println("to ",zipSource+"\\"+o.AppsName)
+		err = toolkit.ZipExtract2(fileExtract, zipSource+"\\"+o.AppsName)		
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}	
+	}
+	
+	os.Remove(zipSource+"/"+fileName)
 	var zipFile string
 	if fileName != "" {
 		zipFile = filepath.Join(zipSource, fileName)
