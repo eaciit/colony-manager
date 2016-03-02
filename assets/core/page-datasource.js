@@ -674,6 +674,7 @@ ds.fetchAllCollections = function () {
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
 		ds.collectionNames(res.data);
 	}, function (a) {
+		ds.backToFrontPage();
     	sweetAlert("Oops...", a.statusText, "error");
 	}, {
 		timeout: 10000
