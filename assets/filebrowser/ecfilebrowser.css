@@ -62,6 +62,32 @@
 	margin:10px;
 }
 
+.fb-pre .col-md-3 {
+	padding-right: 	0px!important;
+	padding-left: 	0px!important;
+}
+
+.fb-pre .col-md-1 {
+	padding-right: 	0px!important;
+	padding-left: 	0px!important;
+}
+
+.fb-pre .col-md-8 {
+	padding-right: 	0px!important;
+}
+
+.fb-pre .col-md-8 .form-control {
+	border-radius: 4px 0 0 4px;
+	width: 	95%;
+}
+
+.fb-pre .col-md-1 .btn-primary {
+	border-radius: 0 4px 4px 0;
+	margin-left:-37%;
+}
+
+
+
 .dropdown-menu .divider{
 	margin: 3px 0 !important;
 }
