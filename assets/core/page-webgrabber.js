@@ -77,7 +77,7 @@ wg.useHeaderOptions = ko.observableArray([
 	{ value: false, title: 'NO' }
 ]);
 wg.templateConfigSelector = {
-	name: "",
+	_id: "",
 	rowselector: "",
 	filtercond: "",
 	conditionlist: [],
@@ -305,7 +305,6 @@ wg.getScrapperData = function () {
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
-	ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
 	wg.addScrapperPayload();
@@ -803,12 +802,15 @@ wg.parseGrabConf = function () {
 			}
 			item.filtercond = condition;
 		}
+		if (item.filtercond == "") {
+			item.filtercond = {};
+		}
+
 		delete item["conditionlist"];
 		delete item["__ko_mapping__"];
 		return JSON.parse(ko.mapping.toJSON(item));
 	});
 	return config;
-//	config.nameid = config._id;
 
 	var grabConfData = {};
 	var tempParameters = [];
