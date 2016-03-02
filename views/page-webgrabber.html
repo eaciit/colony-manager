@@ -17,7 +17,7 @@
 		<label>Sedotan Daemon Status</label>
 		<div class="btn-group">
 			<button class="btn btn-sm btn btn-default" data-bind="css: { 'btn-danger' : !wg.isDaemonRunning(), 'btn-default' : wg.isDaemonRunning() }, click: wg.toggleDaemon('off')">Off</button>
-			<button class="btn btn-sm btn btn-primary" data-bind="css: { 'btn-primary' : wg.isDaemonRunning(), 'btn-default' : !wg.isDaemonRunning() }, click: wg.toggleDaemon('on')">On</button>
+			<button class="btn btn-sm btn btn-default" data-bind="css: { 'btn-success' : wg.isDaemonRunning(), 'btn-default' : !wg.isDaemonRunning() }, click: wg.toggleDaemon('on')">On</button>
 		</div>
 	</div>
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
@@ -295,7 +295,7 @@
 											<tbody data-bind="foreach: wg.selectorRowSetting">
 												<tr>
 													<td>
-														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: _id, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 													</td>
 													<td>
@@ -541,7 +541,29 @@
 		        </h1>
 		    </div>
 		    <div class="panel-body">
-            	<div class="col-md-12" data-bind="html: wg.logData"></div>
+            	<!-- <div class="col-md-12" data-bind="html: wg.logData"></div> -->
+            	<div class="navbar no-padding" >
+            		<div class="col-md-3 no-padding">
+				    	<label class="col-md-5 filter-label">
+				    		Source Type
+				    	</label>
+				    	<div class="col-md-7 no-padding">
+				    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestLogView, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestLogView, optionLabel: 'Select one' }"></select>
+				    	</div>
+				    </div>
+            		<div class="col-md-3 no-padding">
+				    	<label class="col-md-4 filter-label">
+				    		Search
+				    	</label>
+				    	<div class="input-group">
+							<input type="text" class="form-control" data-bind="value:wg.searchRequestLogView" placeholder="Type keyword here">
+							<span class="input-group-btn">
+								<button class="btn btn-primary btn-secondary" data-bind="click: wg.findLogView" type="button"><span class="glyphicon glyphicon-search"></span></button>
+							</span>
+						</div>
+				    </div>
+            	</div>
+            	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: logData, columns: viewLogColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
 		    </div>
 		</div>
 

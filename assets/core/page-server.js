@@ -414,36 +414,44 @@ srv.navModalWizard = function (status) {
 		}	
 
 		srv.dataWizard([]);
+		var allIP = [];
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
-			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
-			var pattern = srv.txtWizard().replace(/\]|\[/g, "").split('.')[3];
-			var firstPattern = pattern.split('-')[0];
-			var secondPattern = pattern.split('-')[1];
-			
-			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
+			if (e.indexOf('[') == -1) {
+				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;				
+				allIP.push({ ip: ip1, label: e });
+			}else{
+				var patterns = e.match(/\[(.*?)\]/g);
+				if patterns.length > 0{
+					pattern = patterns[0];
+				}
+				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
+				var secondPattern = pattern.replace(/\]/g, "").split('-')[1];
+				for (i = firstPattern; i <= secondPattern; i++) { 
+					patternIP = e.replace( pattern, i )
+					var ip2 = (patternIP.indexOf(":") == -1) ? (patternIP + ":80") : patternIP;
+					allIP.push({ ip: ip2, label: patternIP });
+				}
+			}
+		});
+
+		allIP.forEach(function (ip) {
+			app.ajaxPost("/server/checkping", { ip: ip.ip }, function (res) {
 				app.isLoading(true);
-				var o = { 
-					host: ip, 
-					status: res.data 
-				};
+				var o = { host: ip.label, status: res.data };
 
 				if (!res.success) {
 					o.status = res.message;
 				}
 
 				srv.dataWizard.push(o);
-			}, function () { 
-				var o = { 
-					host: ip, 
-					status: "request timeout"
-				};
-
+			}, function () {
+				var o = { host: ip.label, status: "request timeout" };
 				srv.dataWizard.push(o);
 			}, {
 				timeout: 5000
 			});
 		});
-		
+
 		$(document).ajaxStop(function() {
 		  app.isLoading(false);
 		});

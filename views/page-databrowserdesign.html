@@ -1,12 +1,19 @@
+<!-- token input -->
+<link href="/res/tokeninput/token-input.css" rel="stylesheet">
+<link href="/res/tokeninput/token-input-facebook.css" rel="stylesheet">
+<script src="/res/tokeninput/jquery.tokeninput.js"></script>
+
 <!-- core -->
-<!-- <script src="/res/core/page-databrowserdesign.js"></script> -->
+<script src="/res/core/page-databrowserdesign.js"></script>
 <script src="/res/core/page-datasource.js"></script>
+<script src="/res/core/page-databrowser-query.js"></script>
+<!-- <script src="/res/core/coba.js"></script> -->
 <!-- <script src="/res/core/page-datasource-query.js"></script> -->
 
 <!-- main area -->
 <div class="col-md-12">
 	<nav class="navbar" >
-        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.saveAndBack">
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.saveAndBack">
     		<span class="glyphicon glyphicon-chevron-left"></span> Save and Back to List
     	</button>
         <button class="btn btn-sm btn-success navbar-btn" >
@@ -71,7 +78,7 @@
 			    			<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Table</label>
 					    		<div class="input-group col-md-7">
-						    		<select required id="table" data-required-msg="Table cannot be empty" name="table" class="form-control col-100" data-bind="kendoDropDownList: { data: db.collectionListData, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Select one', filter: 'contains', suggest: true, minLength: 2 }">
+						    		<select required id="table" data-required-msg="Table cannot be empty" name="table" class="form-control col-100" data-bind="kendoDropDownList: { data: db.collectionListData, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Select one', value: TableNames, filter: 'contains', suggest: true, minLength: 2 }">
 							        </select>
 							        <span class="k-invalid-msg" data-for="table"></span> 
 					    		</div>
@@ -95,11 +102,28 @@
 			    		</div>
 			    		<div class="col-md-12" id="freeQuery">
 			    			<div class="form-group">
-					    		<label class="col-md-2 databrowser-query-label query-text">Query Text</label>
+					    		<label class="col-md-2 databrowser-query-label query-text">Query Builder</label>
+					    		<div class="row form-datasource" data-bind="with: viewModel.dbquery">
+						        <div class="col-md-2 nav-command">
+						        	<label class="title-command">Commands</label>
+						        	<ul class="nav" data-bind="foreach: dataCommand">
+										<li>
+											<a href="#" data-bind="click: viewModel.dbquery.addFilter($data)">
+												<span class="fa fa-caret-right"></span>&nbsp;
+												<span data-bind="text: $data.key" style="text-transform: capitalize;"></span>
+											</a>
+										</li>
+									</ul>
+						        </div>
+						        <!-- <div class="col-md-10 area-command">
+						        	<label class="title-command">Query Editor</label>
+						        	<input type='text' id='textquery' name='textquery' />
+						        </div> -->
+							</div>
 					    		<div class="input-group col-md-11">
-								<input type="textquery" name="textquery" class="form-control" placeholder="Query builder">
+									<input type="textquery" name="textquery" id="textquery" class="form-control" placeholder="Query Text">
 									<span class="input-group-btn">
-									<button class="btn btn-primary" type="button">Builder</button>
+										<button class="btn btn-primary" type="button">Builder</button>
 									</span>
 								</div>
 				    		</div>
@@ -108,8 +132,92 @@
 			    </div>
 		    </form>
 		    <div class="col-md-12">
-		    	<div class="grid grid-databrowser-design" id="grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { model: { id: 'Field', fields: { Field: { editable: false }, ShowIndex: { type: 'number', editable: false, validation: { required: true, min: 1} } } } } }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div> 
+		    	<div class="grid grid-databrowser-design" id="grid-databrowser-design"></div> 
 		    </div>
 	    </div>
+	</div>
+</div>
+
+<!-- Modal Query -->
+<div class="modal fade modal-query" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content" data-bind="with:viewModel.dbquery">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					Data for <span data-bind="text: dbq.queryBuilderMode"></span>
+				</h4>
+			</div>
+
+			<div class="modal-body" data-bind="visible: dbq.queryBuilderMode() == 'select'">
+			    <div class="form-group">
+		    		<label class="col-md-4 filter-label">Fields</label>
+		        	<div class="col-md-5">
+		        		<select data-bind="kendoMultiSelect: { data: db.configDataBrowser.MetaData, dataValueField: '_id', dataTextField: 'Label', value: dbq.queryOfSelect, placeholder: 'Choose the fields', filter: 'contains', minLength: 2 }" class="full-width" multiple='multiple'></select>
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+
+			<div class="modal-body query-of-from" data-bind="visible: dbq.queryBuilderMode() == 'from'">
+			    <div class="form-group">
+		    		<label class="col-md-4 filter-label">Table Name</label>
+		        	<div class="col-md-6">
+		        		<select required data-required-msg="Table name cannot be empty" name="query-from" data-bind="kendoComboBox: { data: db.collectionListData, value: dbq.queryOfFrom, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Type something here', filter: 'contains', suggest: true, minLength: 2 }" class="full-width"></select>
+		        		<span class="k-invalid-msg" data-for="query-from"></span>
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+
+			<!-- <div class="modal-body" data-bind="visible: dbq.queryBuilderMode() == 'order'">
+				<div class="col-md-12" style="margin-bottom: 10px;">
+					<button class="btn btn-sm btn-primary" data-bind="click: addQueryOfOrder">
+						<span class="glyphicon glyphicon-plus"></span>
+						Add more
+					</button>
+				</div>
+	        	<div class="col-md-12">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Field</th>
+								<th>Direction</th>
+								<th>&nbsp;</th>
+							</tr>
+						</thead>
+						<tbody class="query-of-order" data-bind="foreach: queryOfOrder">
+							<tr>
+								<td>
+			        				<select required data-required-msg="Field cannot be empty" data-bind="kendoDropDownList: { data: db.configDataBrowser.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, optionLabel: 'Select one' }, attr: { 'name': 'query-order-field-' + $index() }"></select>
+									<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-order-field-' + $index() }"></span>
+								</td>
+								<td>
+			        				<select required data-required-msg="Value cannot be empty" data-bind="kendoDropDownList: { data: dbq.dataQueryOfOrder, dataValueField: 'value', dataTextField: 'title', value: direction, optionLabel: 'Select one' }, attr: { 'name': 'query-order-direction-' + $index() }"></select>
+									<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-order-direction-' + $index() }"></span>
+								</td>
+								<td>
+									<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: dbq.removeQueryOfOrder($index())">
+										<span class="glyphicon glyphicon-remove"></span>
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="clearfix"></div>
+        	</div> -->
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span> Close
+				</button>
+				<button type="button" class="btn btn-sm btn-primary" data-bind="click: querySave">
+					<span class="glyphicon glyphicon-save"></span> Save
+				</button>
+			</div>
+		</div>
 	</div>
 </div>

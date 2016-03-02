@@ -122,7 +122,8 @@ var methodsFB = {
         transport: {
             read: {
                 url: url,
-                dataType: "jsonp",
+                dataType: "json",
+                type: call,
                 complete: function(){
                 	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
                 	$strtree.find("span").each(function(){
@@ -158,6 +159,7 @@ var methodsFB = {
             }
         },
         schema: {
+        	data: "data",
             model: {
                 id: options.dataSource.pathField,
                 hasChildren: options.dataSource.hasChildrenField,
