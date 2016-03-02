@@ -3,19 +3,22 @@ package controller
 import (
 	// "encoding/json"
 	// "errors"
+	// "fmt"
 	"fmt"
-	// "github.com/eaciit/colony-core/v0"
-	// "github.com/eaciit/colony-manager/helper"
-	// "github.com/eaciit/dbox"
+	"github.com/eaciit/colony-core/v0"
+	"github.com/eaciit/colony-manager/helper"
+	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	. "github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/sshclient"
 	// "github.com/eaciit/toolkit"
 	// "io"
 	// "net/http"
 	"os"
 	// "path/filepath"
 	// "strconv"
+	// "log"
 	"strings"
 	"time"
 )
@@ -32,6 +35,114 @@ func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
 	var controller = new(FileBrowserController)
 	controller.Server = s
 	return controller
+}
+
+func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	/*payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+
+	query := dbox.Or(dbox.Contains("_id", search), dbox.Contains("os", search), dbox.Contains("host", search), dbox.Contains("sshtype", search))*/
+
+	cursor, err := colonycore.Find(new(colonycore.Server), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.Server{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["ServerID"].(string)
+
+	path := ""
+
+	if payload["path"] != nil {
+		path = payload["path"].(string)
+	}
+
+	query := dbox.Eq("_id", search)
+
+	cursor, err := colonycore.Find(new(colonycore.Server), query)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.Server{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	if data != nil {
+		server := data[0]
+
+		setting, err := sshConnect(&server)
+
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		if len(strings.TrimSpace(path)) == 0 {
+			path = server.DataPath
+		}
+
+		if server.ServerType == "node" {
+			list, err := sshclient.List(setting, path, true)
+
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			result, err := colonycore.ConstructFileInfo(list, path)
+
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			return helper.CreateResult(true, result, "")
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
+func sshConnect(payload *colonycore.Server) (sshclient.SshSetting, error) {
+	client := sshclient.SshSetting{}
+	client.SSHHost = payload.Host
+
+	if payload.SSHType == "File" {
+		client.SSHAuthType = sshclient.SSHAuthType_Certificate
+		client.SSHKeyLocation = payload.SSHFile
+	} else {
+		client.SSHAuthType = sshclient.SSHAuthType_Password
+		client.SSHUser = payload.SSHUser
+		client.SSHPassword = payload.SSHPass
+	}
+
+	_, err := client.Connect()
+
+	return client, err
 }
 
 func SetHDFSConnection(Server, User string) *WebHdfs {

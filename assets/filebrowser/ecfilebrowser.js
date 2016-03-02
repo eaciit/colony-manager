@@ -86,8 +86,8 @@ var methodsFB = {
 
 		$($(elem).find(".fb-server")).kendoDropDownList({
 			dataSource : options.serverSource.data,
-			dataTextField: "text",
-			dataValueField:"text",
+			dataTextField: "_id",
+			dataValueField:"_id",
 			change: function(){
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
@@ -111,45 +111,46 @@ var methodsFB = {
 		}
 
 		var datatree = new kendo.data.HierarchicalDataSource({
-        transport: {
-            read: {
-                url: url,
-                dataType: "jsonp",
-                complete: function(){
-                	$strtree.find("span").each(function(){
-						if($(this).html()!=""){
-							if($($(this).find("span")).length==0){
-								var type = methodsFB.DetectType(this,$(this).html());
-								var sp = "<span class='k-sprite "+type+"'></span>";
-								$sp = $(sp);
-								$sp.prependTo($(this));
+	        transport: {
+	            read: {
+	                url: url,
+	                dataType: "json",
+	                type: call,
+	                complete: function(){
+	                	$strtree.find("span").each(function(){
+							if($(this).html()!=""){
+								if($($(this).find("span")).length==0){
+									var type = methodsFB.DetectType(this,$(this).html());
+									var sp = "<span class='k-sprite "+type+"'></span>";
+									$sp = $(sp);
+									$sp.prependTo($(this));
 
-								if(type!="folder"){
-									$(this).dblclick(function(){
-										methodsFB.ActionRequest(elem,options,{action:"Edit"},this);
-									});
+									if(type!="folder"){
+										$(this).dblclick(function(){
+											methodsFB.ActionRequest(elem,options,{action:"Edit"},this);
+										});
+									}
 								}
 							}
-						}
-					});
-                },
-            },
-            parameterMap:function(data,type){
-            	if(type=="read"){
-            		var dt = data;
-            		dt["ServerID"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
-            		return dt
-            	}
-            }
-        },
-        schema: {
-            model: {
-                id: options.dataSource.pathField,
-                hasChildren: options.dataSource.hasChildrenField,
-
-            }
-        }
-    });
+						});
+	                },
+	            },
+	            parameterMap:function(data,type){
+	            	if(type=="read"){
+	            		var dt = data;
+	            		dt["ServerID"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+	            		return dt
+	            	}
+	            }
+	        },
+	        schema: {
+	        	data: "data",
+	            model: {
+	                id: options.dataSource.pathField,
+	                hasChildren: options.dataSource.hasChildrenField,
+	            }
+	        }
+	    });
 
 		$strtree.kendoTreeView({
 			template: templatetree,
@@ -328,8 +329,8 @@ var methodsFB = {
 
 						$($(elem).find(".fb-server")).kendoDropDownList({
 							dataSource : options.serverSource.data,
-							dataTextField: "text",
-							dataValueField:"text",
+							dataTextField: "_id",
+							dataValueField:"_id",
 							change: function(){
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
