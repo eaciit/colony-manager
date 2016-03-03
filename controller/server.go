@@ -30,14 +30,41 @@ func CreateServerController(s *knot.Server) *ServerController {
 func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
+	payload := struct {
+		Search     string `json:"search"`
+		ServerOS   string `json:"serverOS"`
+		ServerType string `json:"serverType"`
+		SSHType    string `json:"sshType"`
+	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	search := payload["search"].(string)
 
-	query := dbox.Or(dbox.Contains("_id", search), dbox.Contains("os", search), dbox.Contains("host", search), dbox.Contains("sshtype", search))
+	filters := []*dbox.Filter{}
+	if payload.Search != "" {
+		filters = append(filters, dbox.Or(
+			dbox.Contains("_id", payload.Search),
+			dbox.Contains("os", payload.Search),
+			dbox.Contains("host", payload.Search),
+			dbox.Contains("serverType", payload.Search),
+			dbox.Contains("sshtype", payload.Search),
+		))
+	}
+	if payload.ServerOS != "" {
+		filters = append(filters, dbox.Eq("os", payload.ServerOS))
+	}
+	if payload.ServerType != "" {
+		filters = append(filters, dbox.Eq("serverType", payload.ServerType))
+	}
+	if payload.SSHType != "" {
+		filters = append(filters, dbox.Eq("sshtype", payload.SSHType))
+	}
+
+	var query *dbox.Filter
+	if len(filters) > 0 {
+		query = dbox.And(filters...)
+	}
 
 	cursor, err := colonycore.Find(new(colonycore.Server), query)
 	if err != nil {

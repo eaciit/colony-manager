@@ -23,28 +23,49 @@
 
 <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 	<div class="col-md-4">
-		<label class="col-md-3 filter-label no-left-padding">
-			Search
-		</label>
-		<div class="col-md-8">
-			<input class="form-control full-width input-sm searchsrv" name="search" type="text" data-bind="value: srv.searchfield" placeholder="Type keyword here" />
+		<div class="form-group">
+			<label class="col-md-4 filter-label no-left-padding">
+				Search
+			</label>
+			<div class="col-md-8">
+				<input class="form-control full-width input-sm searchsrv" name="search" type="text" data-bind="value: srv.filter.search" placeholder="Type keyword here" />
+			</div>
+			<div class="clearfix"></div>
 		</div>
 	</div>
-	<div class="col-md-4">
-    	<label class="col-md-3 filter-label no-left-padding">
-    		Server OS
-    	</label>
-    	<div class="col-md-8">
-    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvOS, optionLabel: 'Select one' }"></select>
-    	</div>
-    </div>
     <div class="col-md-4">
-    	<label class="col-md-3 filter-label no-left-padding">
-    		Type SSH
-    	</label>
-    	<div class="col-md-8">
-    		<select name="sshtype" class="full-width" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvSSHType, optionLabel: 'Select one' }"></select>
-    	</div>
+		<div class="form-group">
+	    	<label class="col-md-4 filter-label no-left-padding">
+	    		Type SSH
+	    	</label>
+	    	<div class="col-md-8">
+	    		<select name="sshtype" class="full-width" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: srv.filter.sshType, optionLabel: 'Select one' }"></select>
+	    	</div>
+			<div class="clearfix"></div>
+		</div>
+    </div>
+    <div class="clearfix"></div>
+	<div class="col-md-4">
+		<div class="form-group">
+	    	<label class="col-md-4 filter-label no-left-padding">
+	    		Server Type
+	    	</label>
+	    	<div class="col-md-8">
+	    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templatetypeServer, dataValueField: 'value', dataTextField: 'text', value: srv.filter.serverType, optionLabel: 'Select one' }"></select>
+	    	</div>
+			<div class="clearfix"></div>
+		</div>
+    </div>
+	<div class="col-md-4">
+		<div class="form-group">
+	    	<label class="col-md-4 filter-label no-left-padding">
+	    		Server OS
+	    	</label>
+	    	<div class="col-md-8">
+	    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: srv.filter.serverOS, optionLabel: 'Select one' }"></select>
+	    	</div>
+			<div class="clearfix"></div>
+		</div>
     </div>
 </nav>
 

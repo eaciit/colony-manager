@@ -27,6 +27,12 @@ srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
+srv.templateFilter = { 
+	search: "",
+	serverOS: "",
+	serverType: "",
+	sshType: "",
+};
 srv.WizardColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkWizardServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -54,12 +60,13 @@ srv.filterValue = ko.observable('');
 srv.filterSrvSSHType = ko.observable('');
 srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
+srv.filter = ko.mapping.fromJS(srv.templateFilter);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.tempCheckIdWizard = ko.observableArray([]);
-srv.searchfield = ko.observable('');
+srv.filterSearch = ko.observable('');
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -67,9 +74,8 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	{ field: "serverType", title: "Type", template: "#: serverType # server" },
-	{ field: "host", title: "Host" },
-	{ field: "os", title: "OS", template: function (d) {
+	{ field: "serverType", title: "Server Type" },
+	{ field: "os", title: "Server OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
 		if (row != undefined) {
 			return row.text;
@@ -77,6 +83,7 @@ srv.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
+	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type"},
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
@@ -90,7 +97,8 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function(c) {
 	srv.ServerData([]);
-	app.ajaxPost("/server/getservers", {search: srv.searchfield}, function (res) {
+	var param = ko.mapping.toJS(srv.filter);
+	app.ajaxPost("/server/getservers", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
