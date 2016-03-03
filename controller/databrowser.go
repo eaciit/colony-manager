@@ -10,12 +10,13 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	// "reflect"
 	// "io"
 	// "net/http"
 	// "os"
 	// "path/filepath"
 	// "strconv"
-	// "strings"
+	"strings"
 )
 
 type DataBrowserController struct {
@@ -69,8 +70,8 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// if err := colonycore.Delete(payload); err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
+	// if payload.QueryText != "" {
+	// 	payload.TableNames = ""
 	// }
 
 	if err := colonycore.Save(payload); err != nil {
@@ -226,6 +227,28 @@ func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colon
 	} else if dbrowser.QueryType == "SQL" {
 		dataQuery = conn.NewQuery().Command("freequery", toolkit.M{}.
 			Set("syntax", dbrowser.QueryText))
+	} else if dbrowser.QueryType == "Dbox" {
+		queryInfo := toolkit.M{}
+		toolkit.UnjsonFromString(dbrowser.QueryText, &queryInfo)
+		toolkit.Println("queryinfo", queryInfo)
+
+		if qFrom := queryInfo.Get("from", "").(string); qFrom != "" {
+			dataQuery = conn.NewQuery()
+			dataQuery = dataQuery.From(qFrom)
+		}
+		if qSelect := queryInfo.Get("select", "").(string); qSelect != "" {
+			if qSelect != "*" {
+				dataQuery = dataQuery.Select(strings.Split(qSelect, ",")...)
+			}
+		}
+		// if qFrom := dbrowser.QueryText[0]; qFrom != "" {
+		// 	dataQuery = dataQuery.From(qFrom)
+		// }
+		// if qSelect := dbrowser.QueryText[1]; qSelect != "" {
+		// 	if qSelect != "*" {
+		// 		dataQuery = dataQuery.Select(strings.Split(qSelect, ",")...)
+		// 	}
+		// }
 	}
 	return dataQuery
 }

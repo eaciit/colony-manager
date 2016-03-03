@@ -193,9 +193,8 @@ dbq.querySave = function () {
 		if (!app.isFormValid(".query-of-from")) {
 			return;
 		}
-
 		o.value = dbq.queryOfFrom();
-		ds.fetchDataSourceMetaData(o.value);
+		db.fetchDataSourceMetaData(o.value);
 	}
 
 	if (dbq.queryBuilderMode() == "order") {
