@@ -77,20 +77,20 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 	if server.RecordID() != nil {
 		path := ""
-		// search := ""
+		search := ""
 
 		if payload["path"] != nil {
 			path = payload["path"].(string)
 		}
 
-		/*if payload["search"] != nil {
+		if payload["search"] != nil {
 			search = payload["search"].(string)
-		}*/
+		}
 
 		var result []colonycore.FileInfo
 
 		if server.ServerType == SERVER_NODE {
-			/*if search != "" {
+			if search != "" {
 				setting, err := sshConnect(&server)
 
 				if err != nil {
@@ -120,17 +120,19 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				}
 
 				result = append(append(result, resultApp...), resultData...)
-			} else*/if path == "" {
+			} else if path == "" {
 				appFolder := colonycore.FileInfo{
-					Name:  "APP",
-					Path:  server.AppPath,
-					IsDir: true,
+					Name:       "APP",
+					Path:       server.AppPath,
+					IsDir:      true,
+					IsEditable: false,
 				}
 
 				dataFolder := colonycore.FileInfo{
-					Name:  "DATA",
-					Path:  server.DataPath,
-					IsDir: true,
+					Name:       "DATA",
+					Path:       server.DataPath,
+					IsDir:      true,
+					IsEditable: false,
 				}
 
 				result = append(result, appFolder)
