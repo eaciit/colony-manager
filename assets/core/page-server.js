@@ -1,6 +1,6 @@
 viewModel.servers = {}; var srv = viewModel.servers;
 srv.templateOS = ko.observableArray([
-	{ value: "windows", text: "Windows" },
+	{ value: "windows", text: "Windows*" },
 	{ value: "linux", text: "Linux/Darwin" }
 ]);
 srv.templateConfigServer = {
@@ -45,6 +45,17 @@ srv.WizardColumns = ko.observableArray([
 	} },
 	{ field: "status", title: "Status" }
 ]);
+srv.computedOS = ko.computed(
+	function() {
+		var temp = [];
+		var search = ko.utils.arrayFilter(srv.templateOS(),function (item) {
+           if (item.text.indexOf('*') < 0){
+				temp.push(item);
+			}
+       	}); 
+        return temp;
+    }, srv
+);
 srv.isNew = ko.observable(false);
 srv.dataWizard = ko.observableArray([]);
 srv.validator = ko.observable('');

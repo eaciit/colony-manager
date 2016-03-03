@@ -35,7 +35,7 @@
     		Server OS
     	</label>
     	<div class="col-md-8">
-    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvOS, optionLabel: 'Select one' }"></select>
+    		<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.computedOS, dataValueField: 'value', dataTextField: 'text', value: srv.filterSrvOS, optionLabel: 'Select one' }"></select>
     	</div>
     </div>
     <div class="col-md-4">
@@ -82,26 +82,18 @@
     	<form class="form-horizontal form-server" id="form-add-Server" data-bind="with: configServer" novalidate>
     		<div class="col-md-6">
 	    		<div class="form-group" data-bind="style: { visibility: (srv.isMultiServer() ? 'hidden' : 'visible') }">
-		    		<label class="col-md-3 filter-label">ID</label>
+		    		<label class="col-md-4 filter-label">ID</label>
 		    		<div class="col-md-7">
 		    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
 						<span class="k-invalid-msg" data-for="ID"></span>					    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Server Type</label>
+		    		<label class="col-md-4 filter-label">Server Type</label>
 		    		<div class="col-md-7">
 		    			<select id="server-type" data-required-msg="Server type cannot be empty" name="server-type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeServer, dataValueField: 'value', dataTextField: 'text', value: serverType, change: srv.changeServerOS }">
 				        </select>
 				        <span class="k-invalid-msg" data-for="server-type"></span>
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Server OS</label>
-		    		<div class="col-md-7">
-		    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, enabled: srv.isServerTypeNode }">
-				        </select>
-				        <span class="k-invalid-msg" data-for="os"></span>
 		    		</div>
 	    		</div>
     		</div>
@@ -130,6 +122,17 @@
 				    <span class="glyphicon glyphicon-upload"></span> Upload <input id="uploadserver" name="uploadserver" type="file" accept=".zip"  data-bind="fileInput : sshfile">
 				</span> -->
     		</div>
+    		<div class="col-md-8">    			
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Server OS</label>
+		    		<div class="col-md-7 col-44">
+		    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, enabled: srv.isServerTypeNode }">
+				        </select>
+				        <span class="k-invalid-msg" data-for="os"></span>
+		    		</div>
+				    <p class="mgTop5">*)isnt tested yet</p>
+	    		</div>
+    		</div>
 
     		<div class="col-md-12 row">
     			<p class="pcustom">SSH Access</p>
@@ -137,7 +140,7 @@
 
     		<div class="col-md-6">
     			<div class="form-group">
-			    	<label class="col-md-3 filter-label">Host</label>
+			    	<label class="col-md-4 filter-label">Host</label>
 		    		<div class="col-md-7" data-bind="visible: !srv.isMultiServer()">
 		    			<input required type="text" class="form-control input-sm" name="host" placeholder="Type Host Here" data-bind="value: host">
 						<span class="k-invalid-msg" data-for="host"></span>
@@ -147,7 +150,7 @@
 		    		</div>
 	    		</div>
 	    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
-		    		<label class="col-md-3 filter-label">User</label>
+		    		<label class="col-md-4 filter-label">User</label>
 		    		<div class="col-md-7">
 		    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the username Here" data-bind="value: sshuser">
 						<span class="k-invalid-msg" data-for="user"></span>

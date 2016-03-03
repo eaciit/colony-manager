@@ -221,4 +221,5 @@ br.filterSimple = function(){
 $(function (){
 	br.getDataBrowser();
 	br.getAllbrowser();
+	app.registerSearchKeyup($(".searchbr"), br.getDataBrowser);
 });
