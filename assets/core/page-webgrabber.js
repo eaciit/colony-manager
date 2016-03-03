@@ -24,6 +24,51 @@ wg.collectionInput = ko.observable();
 wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
+wg.modeSetup = ko.observable();
+wg.timePreset = ko.observable();
+wg.selectedSeconds = ko.observable(0);
+wg.selectedMinutes = ko.observable(0);
+wg.selectedHour = ko.observable('');
+wg.selectedDay = ko.observable('');
+wg.selectedMonth = ko.observable('');
+wg.selectedDayweek = ko.observable('');
+wg.hours = ko.observableArray([]);
+wg.minutes = ko.observableArray([]);
+wg.seconds = ko.observableArray([]);
+wg.days = ko.observableArray([]);
+wg.months = ko.observableArray([
+	{value: 1 , title: "January"},
+	{value: 2 , title: "February"},
+	{value: 3 , title: "March"},
+	{value: 4 , title: "April"},
+	{value: 5 , title: "May"},
+	{value: 6 , title: "June"},
+	{value: 7 , title: "July"},
+	{value: 8 , title: "August"},
+	{value: 9 , title: "September"},
+	{value: 10 , title: "October"},
+	{value: 11 , title: "November"},
+	{value: 12 , title: "December"},
+]);
+wg.dayweek = ko.observableArray([
+	{value: 0 , title: "Sunday"},
+	{value: 1 , title: "Monday"},
+	{value: 2 , title: "Tuesday"},
+	{value: 3 , title: "Wednesday"},
+	{value: 4 , title: "Thursday"},
+	{value: 5 , title: "Friday"},
+	{value: 6 , title: "Saturday"},
+]);
+for (var i = 0; i < 60; i++) {
+	wg.minutes.push(""+i+"")
+	wg.seconds.push(""+i+"")
+}
+for (var hour = 0; hour < 24; hour++) {
+	wg.hours.push(""+hour+"")
+}
+for (var day = 1; day <= 31; day++) {
+	wg.days.push(day)
+}
 wg.templateConfigScrapper = {
     _id: "",
     sourcetype: "SourceType_HttpHtml",
@@ -46,9 +91,10 @@ wg.templateConfigScrapper = {
     intervalconf:
             {
                 "starttime": new Date(),
-                "intervaltype": "seconds",
-                "grabinterval": 20,
-                "timeoutinterval": 20,
+                "expiredtime": new Date(),
+                "intervaltype": "",
+                "grabinterval": "20" ,
+                "timeoutinterval": "20",
                 "cronconf": {}
             },
     logconf:
@@ -76,6 +122,21 @@ wg.useHeaderOptions = ko.observableArray([
 	{ value: true, title: 'YES' }, 
 	{ value: false, title: 'NO' }
 ]);
+wg.taskMode = ko.observableArray([
+	{value: "hourly", title:"Hourly"},
+	{value: "daily", title: "Daily"},
+	{value: "weekly", title: "Weekly" },
+	{value: "monthly", title: "Monthly" },
+	{value: "custom", title: "Custom" },
+]);
+wg.templateCron = {
+	second : "*",
+	min: "",
+	hour: "",
+	dayofmonth: "",
+	month: "",
+	dayofweek: ""
+}
 wg.templateConfigSelector = {
 	_id: "",
 	rowselector: "",
@@ -123,10 +184,16 @@ wg.templateScrapperPayload = {
 	pattern: "",
 	value: "",
 };
+wg.configSetup = ko.observableArray([
+	{value: "onetime", title:"One Time"},
+	{value: "interval", title: "Interval"},
+	{value: "schedule", title: "Schedule" }
+]);
 wg.scrapperPayloads = ko.observableArray([]);
 wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
+wg.configCron = ko.mapping.fromJS(wg.templateCron);
 wg.scrapperColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/></center>", width: 40, attributes: { class: "align-center" }, template: function (d) {
 		return [
@@ -182,7 +249,7 @@ wg.tempViewLog = ko.observableArray([]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
 	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
-	// { value: "SourceType_DocExcel", title: "Data File" },
+	{ value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -533,7 +600,7 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
 			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector, contentid);
 		}
-	})
+	});
 	return linenumber;
 };
 wg.GetCurrentSelector = function(id,selector, node){
@@ -623,8 +690,16 @@ wg.viewHistory = function (_id) {
 }
 wg.nextSetting = function() {
 	if (!app.isFormValid(".form-row-1")) {
-		return;
+		var errors = $(".form-row-1").data("kendoValidator").errors();
+		errors = Lazy(errors).filter(function (d) {
+			return ["Interval Type cannot be empty","Start time cannot be empty","Expired time cannot be empty"].indexOf(d) == -1;
+		}).toArray();
+
+		if (errors.length > 0) {
+			return;
+		}
 	}
+	
 
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
@@ -769,6 +844,7 @@ wg.parseGrabConf = function () {
 	wg.configSelector.desttype(wg.configSelector.destoutputtype());
 
 	var config = ko.mapping.toJS(wg.configScrapper);
+
 	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting).map(function (item) {
 		if (typeof item.connectioninfo.useheader == "string") {
 			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
@@ -813,7 +889,24 @@ wg.parseGrabConf = function () {
 		delete item["__ko_mapping__"];
 		return JSON.parse(ko.mapping.toJSON(item));
 	});
-	return config;
+
+	var modeSetup = wg.modeSetup();
+	if(modeSetup == 'schedule'){
+		var cron =ko.mapping.toJS(wg.configCron);
+		var cronconf = {
+			second : (cron.second),
+			min: (cron.min == "" ? "*" : cron.min),
+			hour: (cron.hour == "" ? "*" : cron.hour),
+			dayofmonth: (cron.dayofmonth == "" ? "*" : cron.dayofmonth),
+			month: (cron.month == "" ? "*" : cron.month),
+			dayofweek: (cron.dayofweek == "" ? "*" : cron.dayofweek)
+		};
+
+		config.intervalconf.cronconf = cronconf;
+	}
+
+	config.intervalconf.grabinterval = parseInt(config.intervalconf.grabinterval, 10);
+	config.intervalconf.timeoutinterval = parseInt(config.intervalconf.timeoutinterval, 10);
 
 	var grabConfData = {};
 	var tempParameters = [];
@@ -1035,6 +1128,13 @@ wg.checkDeleteWebGrabber = function(elem, e){
 			wg.tempCheckIdWebGrabber.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
+}
+
+wg.showSetupForm = function(mode){
+	$("#IntervalMode").hide();
+	$("#ScheduleMode").hide();
+	$("#Onetime").hide();
+
 }
 
 $(function () {

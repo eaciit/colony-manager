@@ -123,7 +123,7 @@ br.ViewBrowserName = function(id){
 		var ondataval =ondata.DataValue;
 		var ondatacol = ondata.dataresult.MetaData;
 		for(var i=0; i< ondatacol.length; i++){
-			datacol.push({field: ondatacol[i].Field , title: ondatacol[i].Label})
+			datacol.push({field: ondatacol[i].Field , title: ondatacol[i].Label, sortable: ondatacol[i].Sortable})
 		}
 		//br.dataBrowserDescColumns(datacol);
 		br.dataBrowserDesc(ondataval);
