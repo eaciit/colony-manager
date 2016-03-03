@@ -50,6 +50,7 @@ br.getDataBrowser = function(){
 br.OpenBrowserForm = function(ID){
 	br.pageVisible("editor");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	dbq.clearQuery()
 	$("#grid-databrowser-design").data('kendoGrid').dataSource.data([]);
 	db.showHideFreeQuery();
 	// app.ajaxPost("/databrowser/gobrowser", {id: ID}, function (){
