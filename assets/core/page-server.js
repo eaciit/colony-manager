@@ -51,6 +51,14 @@ srv.WizardColumns = ko.observableArray([
 	} },
 	{ field: "status", title: "Status" }
 ]);
+srv.computedOS = ko.computed(function() {
+	return srv.templateOS().map(function (a) {
+		if (a.text == "windows") {
+			a.text = "Windows *";
+		}
+		return a;
+	})
+}, srv);
 srv.isNew = ko.observable(false);
 srv.dataWizard = ko.observableArray([]);
 srv.validator = ko.observable('');

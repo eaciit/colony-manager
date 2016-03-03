@@ -231,4 +231,5 @@ $(function (){
 	br.getDataBrowser();
 	br.getAllbrowser();
 	br.FilterViewDB();
+	app.registerSearchKeyup($(".searchbr"), br.getDataBrowser);
 });

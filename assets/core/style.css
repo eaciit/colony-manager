@@ -273,6 +273,9 @@ table.table tr:hover td {
 .col-100 {
   width: 100%; }
 
+.col-44 {
+  width: 44%; }
+
 #myTab {
   margin-bottom: 2%; }
 
