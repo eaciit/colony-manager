@@ -110,16 +110,24 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 				// search in data-path
 				listData, err := sshclient.Search(setting, server.DataPath, true, search)
+
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
+
 				resultData, err := colonycore.ConstructFileInfo(listData, server.DataPath)
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 
-				result = append(append(result, resultApp...), resultData...)
+				if len(resultApp) > 0 {
+					result = append(result, resultApp...)
+				}
+				if len(resultData) > 0 {
+					result = append(result, resultData...)
+				}
+
 			} else if path == "" {
 				appFolder := colonycore.FileInfo{
 					Name:       "APP",
@@ -172,16 +180,23 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		/*path := ""
+	if server.RecordID() != nil && payload != nil {
+		path := ""
 
 		if payload["path"] != nil {
 			path = payload["path"].(string)
-		}*/
+		}
 
 		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
+			setting, err := sshConnect(&server)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			result, err := sshclient.Cat(setting, path)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			return helper.CreateResult(true, result, "")
 		} else if server.ServerType == SERVER_HDFS {
 
 		}
@@ -198,7 +213,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		/*path := ""
 		content := ""
 
@@ -229,7 +244,7 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		/*path := ""
 
 		if payload["path"] != nil {
@@ -255,7 +270,7 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		/*path := ""
 
 		if payload["path"] != nil {
@@ -281,7 +296,7 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		/*path := ""
 
 		if payload["path"] != nil {
@@ -348,7 +363,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		/*path := ""
 		files := ""
 
@@ -378,7 +393,7 @@ func (s *FileBrowserController) Downnload(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		/*path := ""
 
 		if payload["path"] != nil {
