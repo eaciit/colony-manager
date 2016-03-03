@@ -56,6 +56,8 @@ var methodsFB = {
 		settings["dataSource"] = settingsSource;
 		settings["serverSource"] = serverSource;
 
+		settings["dataSource"].GetDirAction = "GetDir";
+
 		templatetree = templatetree.replace("text",options.dataSource.nameField).replace("text",options.dataSource.nameField);
 		templatetree = templatetree.replace("pathf",options.dataSource.pathField);
 
@@ -95,9 +97,13 @@ var methodsFB = {
 			}
 		});
 
-		strsearch = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label' >Search</label></div><div class='col-md-9'><input class='form-control' placeholder='folder,file name, etc..'></input></div></div>"
+		strsearch = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label' >Search</label></div><div class='col-md-8'><input class='form-control fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
 		$strsearch = $(strsearch);
 		$strsearch.appendTo($strpre);
+
+		$($strsearch.find("button")).click(function(){
+				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
+		});
 
 		strtree = "<div></div>"
 		$strtree = $(strtree);
@@ -119,6 +125,7 @@ var methodsFB = {
                 dataType: "json",
                 type: call,
                 complete: function(){
+                	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
                 	$strtree.find("span").each(function(){
 						if($(this).html()!=""){
 							if($($(this).find("span")).length==0){
@@ -140,8 +147,13 @@ var methodsFB = {
             parameterMap:function(data,type){
             	if(type=="read"){
             		var dt = data;
-            		dt["action"] = "GetDir";
-            		dt["serverid"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+            		 
+            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
+            		if (dt["action"]=="GetDir"){
+            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+            		}else{
+            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
+            		}
             		return dt
             	}
             }
@@ -410,6 +422,11 @@ var methodsFB = {
 			});	
 
 		}else if (content.action=="Upload"){
+			if (type!="folder"){
+				alert("Please choose folder !");
+				return;
+			}
+
 			$form =	$("<form class='form-signin' method='post' action='/Test/Upload' enctype='multipart/form-data'></form>");
 			$fs =	$("<fieldset></fieldset>");
 			$inp =	$("<div class='col-md-3'><label class='filter-label'>Upload File</label></div><div class='col-md-9'><input type='file' name='myfiles' multiple='multiple'></div>");
@@ -424,10 +441,13 @@ var methodsFB = {
 		// console.log(content);		
 		var SelectedPath = $($(elem).find("span[class='k-in k-state-selected']")).length > 0 ?  $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("path"):"";
 		// console.log(SelectedPath);
-		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" ){
+		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
 			alert("Select the directory/file !");
 			return;
 		}
+
+		var name = $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("name");
+		var type = methodsFB.DetectType($(elem).find("span[class='k-in k-state-selected']"),name);
 
 		content.path = SelectedPath;
 		if(content.action=="Cancel"){
@@ -436,8 +456,7 @@ var methodsFB = {
 			return;
 		}else if(content.action=="GetContent"){
 			var path = ($($(sender).find("a")).attr("path")); 
-			$($(elem).find(".fb-filename")).html(($($(sender).find("a")).attr("path")));
-			$($(elem).find(".fb-editor")).data("kendoEditor").value(path);
+			content.path = path;
 		}else if(content.action=="Rename"){
 			methodsFB.CallPopUp(elem,content,"Rename File");
 			return;
@@ -456,9 +475,20 @@ var methodsFB = {
 			methodsFB.CallPopUp(elem,content,"Upload File");
 			return;
 		}else if(content.action=="Edit"){
-			content.contents = "";
-		}else{
-
+			content.contents = $($(elem).find(".fb-editor")).getKendoEditor().value();
+		}else if(content.action=="Search"){
+			if($($(elem).find(".fb-txt-search")).val()!=""){
+					$(elem).data("ecFileBrowser").dataSource.GetDirAction = content.action;
+			}else{
+				$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
+			}
+			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
+			return;
+		}else if(content.action=="Download"){
+			if (type=="folder"){
+				alert("Please choose file !");
+				return;
+			}
 		}
 		methodsFB.SendActionRequest(elem,content);
 	},
@@ -480,6 +510,10 @@ var methodsFB = {
                 success : function(res) {
                 	alert("OK");
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
+                	if(param.action == "GetContent"){
+                		$($(elem).find(".fb-filename")).html(param.path);
+						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
+                	}
                 },
                 error: function (a, b, c) {
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
