@@ -213,12 +213,19 @@ func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, *c
 
 func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser) dbox.IQuery {
 	var dataQuery dbox.IQuery
+
+	// result := toolkit.M{}
+	// toolkit.UnjsonFromString(dbrowser.QueryText, &result)
 	if dbrowser.QueryType == "nonQueryText" {
-		result := toolkit.M{}
-		toolkit.UnjsonFromString(dbrowser.QueryText, &result)
-		if qFrom := result.Get("from", "").(string); qFrom != "" {
-			dataQuery = conn.NewQuery().From(qFrom)
-		}
+		toolkit.Printf("from:%v\n", dbrowser.TableNames)
+		dataQuery = conn.NewQuery().From(dbrowser.TableNames)
+		// if qFrom := result.Get("from", "").(string); qFrom != "" {
+		// 	toolkit.Printf("from:%v\n", qFrom)
+		// 	dataQuery = conn.NewQuery().From(dbrowser.TableNames)
+		// }
+	} else if dbrowser.QueryType == "SQL" {
+		dataQuery = conn.NewQuery().Command("freequery", toolkit.M{}.
+			Set("syntax", dbrowser.QueryText))
 	}
 	return dataQuery
 }

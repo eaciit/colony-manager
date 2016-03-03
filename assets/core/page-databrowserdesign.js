@@ -8,6 +8,7 @@ db.templateConfigMetaData = {
     Format : "",
     Align : "",
     ShowIndex : 0,
+    HiddenField: false,
     Sortable : false,
     SimpleFilter : false,
     AdvanceFilter : false,
@@ -35,6 +36,7 @@ db.queryType = ko.observableArray([
 	{ value: "Dbox", text: "Dbox" }
 ]);
 db.connectionID = ko.observable('');
+db.isChecked = ko.observable('')
 db.collectionListData = ko.observableArray([]);
 db.databrowserData = ko.observableArray([]);
 // db.configMetaData = ko.mapping.fromJS(db.templateConfigMetaData);
@@ -56,7 +58,8 @@ db.databrowserColumns = ko.observableArray([
     },
 	// { field: "ShowIndex", title: "Position"},
 	// { field: "ShowIndex", title: "Position", command: [ { text: "Up", click: db.moveUp }, { text: "Down", click: db.moveDown } ]},
-	{ title: "Position", template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'>Up</a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'>Down</a><span style='margin-left: 20px;''>#= ShowIndex #</span>"},
+	{ title: "Position", width: 100,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;''>#= ShowIndex #</span>"},
+	{ title: "Hidden Field", template: "<input type='checkbox' #= HiddenField ? \"checked='checked'\" : '' # class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' />"},
 	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' />"},
 	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
 	{ title: "Advance Filter", template: "<input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
@@ -139,6 +142,7 @@ db.addProperties = function () {
     	property.Label = val.Label
     	property.Format = val.Format
     	property.Align = val.Align
+    	property.HiddenField = val.HiddenField
     	property.ShowIndex = val.ShowIndex
     	property.Sortable = val.Sortable
     	property.SimpleFilter = val.SimpleFilter
@@ -169,7 +173,21 @@ db.changeCheckboxOnGrid = function (o) {
 	return true;
 }
 
-db.saveAndBack = function() {
+db.saveAndBack = function(section) {
+
+	if (!app.isFormValid(".form-databrowserdesign")) {
+		return;
+	}
+
+	db.checkBuilderNotEmpty();
+	if (!db.isChecked()) {
+		if ($("#table option:selected").text() == 'Select one') {
+			return;
+		} else if ($("#querytext").val() != '' || $("#querytype option:selected").text() != 'Select Query Type') {
+			return;
+		}
+	}
+
 	var param = ko.mapping.toJS(db.configDataBrowser);
 	grid = $(".grid-databrowser-design").data("kendoGrid");
 
@@ -177,8 +195,6 @@ db.saveAndBack = function() {
 	var grids = $(".grid-databrowser-design").data("kendoGrid")
 	var ds = grids.dataSource.data();
 	param.MetaData = JSON.parse(kendo.stringify(ds));
-
-    console.log(param);
 
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
@@ -188,7 +204,11 @@ db.saveAndBack = function() {
 			res.data = [];
 		}
 		
-		db.backToFront();
+		if (section == "goback") {
+			db.backToFront();	
+		} else {
+			br.ViewBrowserName(param._id)
+		}
 	});
 }
 
@@ -208,7 +228,9 @@ db.designDataBrowser = function(_id) {
 		br.pageVisible("editor");
 		app.mode('editor')
 		db.databrowserData(res.data.MetaData);
+		// db.connectionID(res.data.ConnectionID);
 		db.setDataSource();
+		db.populateTable(res.data.ConnectionID);
 		if (typeof _id === "function") {
 			_id();
 		}
@@ -216,8 +238,8 @@ db.designDataBrowser = function(_id) {
 	});
 }
 
-db.populateTable = function () {
-	var param = { connectionID: this.value() };
+db.populateTable = function (_id) {
+	var param = { connectionID: _id };
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -238,38 +260,67 @@ db.populateTable = function () {
 			}
 
 			db.collectionListData(datavalue);
+			// db.configDataBrowser;
 		}
 	});
 };
 
 db.testQuery = function() {
+	if (db.configDataBrowser._id() == '') {
+		swal({ title: "Warning", text: "Please add ID first", type: "warning" });
+		return;
+	}
+
 	if (!app.isFormValid(".form-databrowserdesign")) {
 		return;
 	}
 
-	if (db.configDataBrowser._id() == '' || db.configDataBrowser.Description() == '') {
-		swal({ title: "Warning", text: "Please save the datasource first", type: "warning" });
-		return;
-	}
-
 	var param = ko.mapping.toJS(db.configDataBrowser); //{};
-	var isChecked = $("#isFreetext").prop("checked")
-	if (!isChecked) { //if false by default query with dbox
-		param.QueryType = "nonQueryText";
-		param.QueryText = JSON.stringify({"from": $("#table").data("kendoDropDownList").value()});
-		param.TableNames = $("#table").data("kendoDropDownList").value();
-		app.ajaxPost("/databrowser/testquery", param, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-			
-			ko.mapping.fromJS(res.data, db.configDataBrowser)
-			db.configDataBrowser.MetaData([]);
-			db.databrowserData(res.data.MetaData);
-			db.setDataSource();
-		});
+	db.checkBuilderNotEmpty();
+	if (!db.isChecked()) { //if false by default query with dbox
+		if ($("#table option:selected").text() != 'Select one') {
+			param.QueryType = "nonQueryText";
+			param.TableNames = $("#table").data("kendoDropDownList").value();
+		}else{
+			return;
+		}
+	}else {
+		if ($("#querytext").val() != '' || $("#querytype option:selected").text() != 'Select Query Type') {
+			param.QueryType = db.configDataBrowser.QueryType();
+			param.QueryText = db.configDataBrowser.QueryText();
+		} else {
+			return;
+		}
 	}
+	// console.log(param)
+	app.ajaxPost("/databrowser/testquery", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		
+		ko.mapping.fromJS(res.data, db.configDataBrowser)
+		db.configDataBrowser.MetaData([]);
+		db.databrowserData(res.data.MetaData);
+		db.setDataSource();
+		param.QueryText = ""
+	});
 };
+
+db.checkBuilderNotEmpty = function() {
+	db.isChecked($("#isFreetext").prop("checked"))
+	if (!db.isChecked()) { //if false by default query with dbox
+		if ($("#table option:selected").text() == 'Select one') {
+			swal({ title: "Warning", text: "Please choose table name", type: "warning" });
+			return;
+		}
+	}else {
+		if ($("#querytext").val() == '' || $("#querytype option:selected").text() == 'Select Query Type') {
+			var mustFilled = ($("#querytext").val() == "") ? "type the query text" : "choose the query type";
+			swal({ title: "Warning", text: "Please "+mustFilled+"", type: "warning" });
+			return;
+		}
+	}
+}
 
 db.backToFront = function() {
 	app.mode('');
@@ -296,6 +347,7 @@ db.setDataSource = function () {
     					type: 'number', 
     					editable: false
 					},
+					HiddenField: { type: 'boolean' }, 
 					Sortable: { type: 'boolean' }, 
 					SimpleFilter: { type: 'boolean' }, 
 					AdvanceFilter: { type: 'boolean' }, 
