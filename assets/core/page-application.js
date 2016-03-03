@@ -8,6 +8,8 @@ apl.templateConfigApplication = {
 	Type: "web",
 	AppPath: "",
 	DeployedTo: [],
+	Command: [],
+	Variable: [],
 };
 apl.appTypes = ko.observableArray([
 	{ value: "web", title: "Web" },
@@ -19,8 +21,17 @@ apl.templateFile = {
 	Path: "",
 	Filename: "",
 	Type: "folder",
-	Content: "",
+	Content: "",	
 }
+apl.templateConfigCommand = {
+	key: "",
+	value: ""
+};
+apl.templateConfigVariable = {
+	key: "",
+	value: ""
+};
+apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
@@ -114,6 +125,28 @@ apl.gridServerDeployDataBound = function () {
 			$td.css("color", "white");
 		}
 	});
+};
+apl.addCommand = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
+	apl.configApplication.Command.push(item); 
+};
+
+apl.addVariable = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigVariable));
+	apl.configApplication.Variable.push(item); 
+};
+apl.removeCommand = function (each) {
+	return function () {
+		console.log(each);
+		apl.configApplication.Command.remove(each);
+	};
+};
+
+apl.removeVariable = function (each) {
+	return function () {
+		console.log(each);
+		apl.configApplication.Variable.remove(each);
+	};
 };
 apl.refreshGridModalDeploy = function () {
 	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
@@ -248,12 +281,23 @@ apl.saveApplication = function() {
 
 	var data = ko.mapping.toJS(apl.configApplication);
 	var formData = new FormData();
-	
+	// var ArrCommand = [];
+	// var ArrVariable = [];
+	// var cmd = apl.configApplication.Command()
+	// var vari = apl.configApplication.Variable()
+	// for (var i = 0; i < cmd.length; i++) {
+	// 	ArrCommand.push('{"'+cmd[i].key()+'":"'+cmd[i].value()+'"}');
+	// };
+	// for (var i = 0; i < vari.length; i++) {
+	// 	ArrVariable.push('{"'+vari[i].key()+'":"'+vari[i].value()+'"}');
+	// };
 	formData.append("Enable", data.Enable);
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("id", data._id);
 	formData.append("Type", data.Type);
+	formData.append("Command",JSON.stringify(data.Command));
+	formData.append("Variable", JSON.stringify(data.Variable));
 	
 	var request = new XMLHttpRequest();
 	request.open("POST", "/application/saveapps");
@@ -580,7 +624,9 @@ apl.checkDelData = function (elem,e ){
 		}
 	}
 }
-
+apl.test= function(){
+	console.log("aaa");
+}
 apl.selectServer = function(elem, e){
 	if (e === 'serverall'){
 		if ($(elem).prop('checked') === true){
@@ -613,3 +659,4 @@ $(function () {
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
+
