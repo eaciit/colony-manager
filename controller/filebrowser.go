@@ -77,15 +77,50 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 	if server.RecordID() != nil {
 		path := ""
+		// search := ""
 
 		if payload["path"] != nil {
 			path = payload["path"].(string)
 		}
 
+		/*if payload["search"] != nil {
+			search = payload["search"].(string)
+		}*/
+
 		var result []colonycore.FileInfo
 
 		if server.ServerType == SERVER_NODE {
-			if len(strings.TrimSpace(path)) == 0 {
+			/*if search != "" {
+				setting, err := sshConnect(&server)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				// search in app-path
+				listApp, err := sshclient.Search(setting, server.AppPath, true, search)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				resultApp, err := colonycore.ConstructFileInfo(listApp, server.AppPath)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				// search in data-path
+				listData, err := sshclient.Search(setting, server.DataPath, true, search)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				resultData, err := colonycore.ConstructFileInfo(listData, server.DataPath)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				result = append(append(result, resultApp...), resultData...)
+			} else*/if path == "" {
 				appFolder := colonycore.FileInfo{
 					Name:  "APP",
 					Path:  server.AppPath,
@@ -367,7 +402,7 @@ func getServer(r *knot.WebContext) (server colonycore.Server, payload map[string
 		return
 	}
 
-	serverId := payload["serverid"].(string)
+	serverId := payload["serverId"].(string)
 	query := dbox.Eq("_id", serverId)
 
 	cursor, err := colonycore.Find(new(colonycore.Server), query)
