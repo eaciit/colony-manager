@@ -257,14 +257,15 @@ apl.saveApplication = function() {
 	formData.append("_id", data._id);
 	formData.append("Type", data.Type);
 	formData.append("Port", data.Port);
-	
-	var request = new XMLHttpRequest();
-	request.open("POST", "/application/saveapps");
-	request.onload = function(){
+
+	app.ajaxPost("/application/saveapps", formData, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		
 		swal({title: "Application successfully created", type: "success",closeOnConfirm: true});
 		apl.backToFront();
-	}
-	request.send(formData);
+	});
 };
 
 apl.getUploadFile = function() {
