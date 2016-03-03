@@ -198,6 +198,7 @@ db.changeCheckboxOnGrid = function (o) {
 	return true;
 }
 
+
 db.saveAndBack = function(section) {
 
 	if (!app.isFormValid(".form-databrowserdesign")) {
@@ -205,18 +206,27 @@ db.saveAndBack = function(section) {
 	}
 
 	db.checkBuilderNotEmpty();
+
+	var param = ko.mapping.toJS(db.configDataBrowser);
+
 	if (!db.isChecked()) {
+		param.QueryText = ""
+		param.QueryType = ""
 		if ($("#table option:selected").text() == 'Select one') {
 			return;
-		} else if ($("#querytext").val() != '' || $("#querytype option:selected").text() != 'Select Query Type') {
+		}
+	} else if (db.isChecked()) {
+		param.TableNames = ""
+		var querytype = $("#querytype option:selected").text()
+		if (querytype == 'Select Query Type') {
+			return;
+		} else if (querytype == 'SQL' && $("#querytext").val() == '') {
+			return;
+		} else if (querytype == 'Dbox' && $("#textquery").val() == '') {
 			return;
 		}
 	}
-
-	var param = ko.mapping.toJS(db.configDataBrowser);
-	grid = $(".grid-databrowser-design").data("kendoGrid");
-
-	var idsToSend = [];         	
+     	
 	var grids = $(".grid-databrowser-design").data("kendoGrid")
 	var ds = grids.dataSource.data();
 	param.MetaData = JSON.parse(kendo.stringify(ds));
@@ -255,6 +265,12 @@ db.designDataBrowser = function(_id) {
 		db.databrowserData(res.data.MetaData);
 		
 
+
+		// db.connectionID(res.data.ConnectionID);
+		dbq.clearQuery()
+		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
+			dbq.setQuery(JSON.parse(res.data.QueryText));
+		}
 		db.setDataSource();
 		db.populateTable(res.data.ConnectionID);
 		if (typeof _id === "function") {
@@ -303,8 +319,8 @@ db.testQuery = function() {
 	if (!app.isFormValid(".form-databrowserdesign")) {
 		return;
 	}
-
-	var param = ko.mapping.toJS(db.configDataBrowser); //{};
+	
+	var param = ko.mapping.toJS(db.configDataBrowser);
 	db.checkBuilderNotEmpty();
 	if (!db.isChecked()) { //if false by default query with dbox
 		if ($("#table option:selected").text() != 'Select one') {
@@ -314,11 +330,15 @@ db.testQuery = function() {
 			return;
 		}
 	}else {
-		if ($("#querytext").val() != '' || $("#querytype option:selected").text() != 'Select Query Type') {
+		if ($("#querytext").val() != '' && $("#querytype option:selected").text() == 'SQL') {
 			param.QueryType = db.configDataBrowser.QueryType();
 			param.QueryText = db.configDataBrowser.QueryText();
-		} else {
-			return;
+			console.log(param)
+		} else if ($("#textquery").val() != '' && $("#querytype option:selected").text() == 'Dbox') {
+			param.QueryType = $("#querytype option:selected").text();
+			param.QueryText = JSON.stringify(dbq.getQuery());
+			db.configDataBrowser.QueryType(param.QueryType);
+			db.configDataBrowser.QueryText(param.QueryText);
 		}
 	}
 	// console.log(param)
@@ -334,6 +354,35 @@ db.testQuery = function() {
 	});
 };
 
+
+db.fetchDataSourceMetaData = function (from) {
+	var param = {
+		connectionID: db.configDataBrowser.ConnectionID(),
+		from: from
+	};
+
+	db.configDataBrowser.MetaData([]);
+	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) {
+		if (!res.success && res.message == "[eaciit.dbox.dbc.mongo.Cursor.Fetch] Not found") {
+			db.configDataBrowser.MetaData([]);
+			dbq.clearQuery();
+			return;
+		}
+		if (!app.isFine(res)) {
+			dbq.clearQuery();
+			return;
+		}
+
+		db.configDataBrowser.MetaData(res.data);
+		// db.saveDataSource();
+	}, function (a) {
+        sweetAlert("Oops...", a.statusText, "error");
+		dbq.clearQuery();
+	}, {
+		timeout: 10000
+	});
+};
+
 db.checkBuilderNotEmpty = function() {
 	db.isChecked($("#isFreetext").prop("checked"))
 	if (!db.isChecked()) { //if false by default query with dbox
@@ -342,8 +391,16 @@ db.checkBuilderNotEmpty = function() {
 			return;
 		}
 	}else {
-		if ($("#querytext").val() == '' || $("#querytype option:selected").text() == 'Select Query Type') {
-			var mustFilled = ($("#querytext").val() == "") ? "type the query text" : "choose the query type";
+		var sqltext = $("#querytext").val()
+		var dboxtext = $("#textquery").val()
+		var querytype = $("#querytype option:selected").text()
+		var mustFilled = ""
+		if (querytype == 'Select Query Type') {
+			mustFilled = "choose the query type";
+		} else if ((sqltext == "" && querytype == 'SQL') || (dboxtext == "" && querytype == 'Dbox') ) {
+			var mustFilled = "type the query text"
+		}
+		if (mustFilled != "") {
 			swal({ title: "Warning", text: "Please "+mustFilled+"", type: "warning" });
 			return;
 		}
@@ -394,6 +451,7 @@ db.backToFront = function() {
 	$("#isFreetext").prop("checked", false);
 	$("#selectallhiddenfield").prop("checked", false);
 	$("#freeQuery").hide();
+	$("#builderButton").hide();
 	$("#fromTable").show();
 	br.getDataBrowser();
 };
@@ -444,16 +502,19 @@ db.showHideFreeQuery = function() {
 	if (db.configDataBrowser.QueryType() == "") {
 		$("#isFreetext").attr("checked", false)
 		$("#freeQuery").hide();
+		$("#builderButton").hide();
 		$("#querytype").hide();
 	}
 
 	$("#isFreetext").change(function() {
 		if (this.checked){
 			$("#freeQuery").show();
+			$("#builderButton").show();
 			$("#querytype").show();
 			$("#fromTable").hide();	
 		}else{
 			$("#freeQuery").hide();
+			$("#builderButton").hide();
 			$("#querytype").hide();
 			$("#fromTable").show();
 		}
