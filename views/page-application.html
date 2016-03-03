@@ -144,10 +144,11 @@
 					    		<div class="form-group">
 						    		<div class="col-md-6 col-md-offset-3">
 						    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
-										    <span class="fa fa-file"></span> Upload .zip file 
-										    <input required id="files" name="files" type="file" accept=".zip">
+										    <span class="fa fa-file"></span> Upload .zip .tar file 
+										    <input required id="files" name="files" type="file" accept=".zip,.tar">
 										</span>
-										<span class="k-invalid-msg" data-for="files"></span>
+										<div><span id="nama" data-bind="value:AppPath"></span></div>
+										<div><span class="k-invalid-msg" data-for="files"></span></div>
 						    		</div>
 								</div>
 				    		</div>

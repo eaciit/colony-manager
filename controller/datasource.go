@@ -27,6 +27,10 @@ type MetaSave struct {
 	data    string
 }
 
+var (
+	sorter string
+)
+
 func CreateDataSourceController(s *knot.Server) *DataSourceController {
 	var controller = new(DataSourceController)
 	controller.Server = s
@@ -105,10 +109,28 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []toolkit.M, *colonycore.DataBrowser, error) {
 
 	_id := toolkit.ToString(payload.Get("id", ""))
+	sort := payload.Get("sort")
+	search := payload.Get("search")
 	take := toolkit.ToInt(payload.Get("take", ""), toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
+	fmt.Println("===== >> seacrch", search)
+
 	TblName := toolkit.M{}
+	//sorter = ""
+	if sort != nil {
+		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
+		fmt.Printf("====== sort %#v\n", tmsort["dir"])
+		if tmsort["dir"] == "asc" {
+			sorter = tmsort["field"].(string)
+		} else if tmsort["dir"] == "desc" {
+			sorter = "-" + tmsort["field"].(string)
+		} else if tmsort["dir"] == nil {
+			sorter = " "
+		}
+	} else {
+		sorter = " "
+	}
 
 	dataDS := new(colonycore.DataBrowser)
 	err := colonycore.Get(dataDS, _id)
@@ -136,7 +158,8 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	TblName.Set("from", dataDS.TableNames)
 
 	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
-	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take), TblName)
+	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
+
 	_ = metaSave
 	// fmt.Println("Meta Save : ", metaSave)
 
