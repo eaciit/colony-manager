@@ -539,7 +539,10 @@ var methodsFB = {
                 	if(param.action == "GetContent"){
                 		$($(elem).find(".fb-filename")).html(param.path);
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
+                	}else{
+                		methodsFB.RefreshTreeView(elem);
                 	}
+                		$(elem).find(".modal").modal("hide");
                 },
                 error: function (a, b, c) {
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
@@ -604,5 +607,20 @@ var methodsFB = {
 		}else {
 			return "html"
 		}
+	},
+	RefreshTreeView:function(elem){
+		var tree = $($("#FileBrowser").find(".k-treeview")).getKendoTreeView();
+		var selectedUid = $($($($("#FileBrowser").find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
+		var selectedparent = tree.parent(tree.findByUid(selectedUid));
+		if(selectedparent.length==0){
+			tree.dataSource.read();
+			return;
+		}
+		var dtItem = tree.dataItem(selectedparent);
+		dtItem.dirty = false;
+		dtItem.expanded = false;
+		dtItem.loaded(false);
+		$(selectedparent[0].firstChild.firstChild).click();
+		$(selectedparent[0].firstChild.firstChild).trigger("click");
 	}
 }
