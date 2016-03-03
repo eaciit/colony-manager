@@ -552,9 +552,10 @@ var methodsFB = {
                 		methodsFB.RefreshTreeView(elem);
                 	}
                 		$(elem).find(".modal").modal("hide");
-                		app.isLoading(false)
+                		app.isLoading(false);
                 },
                 error: function (a, b, c) {
+                	app.isLoading(false);
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
 			},
         });
