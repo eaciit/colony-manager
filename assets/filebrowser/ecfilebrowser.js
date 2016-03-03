@@ -57,6 +57,7 @@ var methodsFB = {
 		settings["serverSource"] = serverSource;
 
 		settings["dataSource"].GetDirAction = "GetDir";
+		settings["dataSource"].originUrl = settingsSource.url;
 
 		templatetree = templatetree.replace("text",options.dataSource.nameField).replace("text",options.dataSource.nameField);
 		templatetree = templatetree.replace("pathf",options.dataSource.pathField);
@@ -93,6 +94,7 @@ var methodsFB = {
 			dataTextField: options.serverSource.dataTextField,
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
+            		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
 		});
@@ -108,9 +110,8 @@ var methodsFB = {
 		strtree = "<div></div>"
 		$strtree = $(strtree);
 		$strtree.appendTo($strpre);
-
 		var ds = options.dataSource;
-		var url = ds.url;
+		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
@@ -121,7 +122,7 @@ var methodsFB = {
 		var datatree = new kendo.data.HierarchicalDataSource({
         transport: {
             read: {
-                url: url,
+                url:  url,
                 dataType: "json",
                 type: call,
                 complete: function(){
@@ -150,10 +151,14 @@ var methodsFB = {
             		 
             		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
             		if (dt["action"]=="GetDir"){
+            			// methodsFB.SetUrl(elem,dt["action"]);
             			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
             		}else{
+            			// methodsFB.SetUrl(elem,dt["action"]);
             			dt["search"] = $($(elem).find(".fb-txt-search")).val();
             		}
+
+            		 // $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  $(elem).data('ecFileBrowser').dataSource.url;
             		return dt
             	}
             }
@@ -176,6 +181,10 @@ var methodsFB = {
 
 		methodsFB.BuildEditor(elem,options);
 		methodsFB.BuildPopUp(elem,options);
+	},
+	SetUrl:function(elem,action){
+		$(elem).data("ecFileBrowser").dataSource.url = $(elem).data("ecFileBrowser").dataSource.originUrl + "/"+action.toLowerCase();
+		return $(elem).data("ecFileBrowser").dataSource.url;
 	},
 	BuildEditor:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
@@ -326,8 +335,8 @@ var methodsFB = {
 		$btn =	$($(elem).find(".fb-submit"));
 		$btn.unbind("click");
 		$body.html("");
-		var name = $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("name");
-		var type = methodsFB.DetectType($(elem).find("span[class='k-in k-state-selected']"),name);
+		var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
@@ -439,15 +448,19 @@ var methodsFB = {
 	},
 	ActionRequest:function(elem,options,content,sender){
 		// console.log(content);		
-		var SelectedPath = $($(elem).find("span[class='k-in k-state-selected']")).length > 0 ?  $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("path"):"";
+		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
 		// console.log(SelectedPath);
+		var name = "";
+		var type = "";
 		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
 			alert("Select the directory/file !");
 			return;
 		}
 
-		var name = $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("name");
-		var type = methodsFB.DetectType($(elem).find("span[class='k-in k-state-selected']"),name);
+		if(content.action!="Search"){
+			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+		}
 
 		content.path = SelectedPath;
 		if(content.action=="Cancel"){
@@ -457,31 +470,39 @@ var methodsFB = {
 		}else if(content.action=="GetContent"){
 			var path = ($($(sender).find("a")).attr("path")); 
 			content.path = path;
+			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Rename"){
 			methodsFB.CallPopUp(elem,content,"Rename File");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="NewFile"){
 			methodsFB.CallPopUp(elem,content,"Create New File");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="NewFolder"){
 			methodsFB.CallPopUp(elem,content,"Create New Folder");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Delete"){
-
+			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Permission"){
 			methodsFB.CallPopUp(elem,content,"Edit Permission");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Upload"){
 			methodsFB.CallPopUp(elem,content,"Upload File");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Edit"){
 			content.contents = $($(elem).find(".fb-editor")).getKendoEditor().value();
+			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Search"){
 			if($($(elem).find(".fb-txt-search")).val()!=""){
 					$(elem).data("ecFileBrowser").dataSource.GetDirAction = content.action;
 			}else{
 				$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
 			}
+            $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			return;
 		}else if(content.action=="Download"){
@@ -489,6 +510,7 @@ var methodsFB = {
 				alert("Please choose file !");
 				return;
 			}
+			methodsFB.SetUrl(elem,content.action);
 		}
 		methodsFB.SendActionRequest(elem,content);
 	},
@@ -552,6 +574,7 @@ var methodsFB = {
 							dataTextField: options.serverSource.dataTextField,
 							dataValueField:options.serverSource.dataValueField,
 							change: function(){
+            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
 						});					
