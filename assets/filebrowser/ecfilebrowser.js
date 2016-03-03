@@ -120,58 +120,55 @@ var methodsFB = {
 		}
 
 		var datatree = new kendo.data.HierarchicalDataSource({
-        transport: {
-            read: {
-                url:  url,
-                dataType: "json",
-                type: call,
-                complete: function(){
-                	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
-                	$strtree.find("span").each(function(){
-						if($(this).html()!=""){
-							if($($(this).find("span")).length==0){
-								var type = methodsFB.DetectType(this,$(this).html());
-								var sp = "<span class='k-sprite "+type+"'></span>";
-								$sp = $(sp);
-								$sp.prependTo($(this));
+	        transport: {
+	            read: {
+	                url: url,
+	                dataType: "json",
+	                type: call,
+	                complete: function(){
+	                	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
+	                	$strtree.find("span").each(function(){
+							if($(this).html()!=""){
+								if($($(this).find("span")).length==0){
+									var type = methodsFB.DetectType(this,$(this).html());
+									var sp = "<span class='k-sprite "+type+"'></span>";
+									$sp = $(sp);
+									$sp.prependTo($(this));
 
-								if(type!="folder"){
-									$(this).dblclick(function(){
-										methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
-									});
+									if(type!="folder"){
+										$(this).dblclick(function(){
+											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
+										});
+									}
 								}
 							}
-						}
-					});
-                },
-            },
-            parameterMap:function(data,type){
-            	if(type=="read"){
-            		var dt = data;
-            		 
-            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
-            		if (dt["action"]=="GetDir"){
-            			// methodsFB.SetUrl(elem,dt["action"]);
-            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
-            		}else{
-            			// methodsFB.SetUrl(elem,dt["action"]);
-            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
-            		}
+						});
+	                },
+	            },
+	            parameterMap:function(data,type){
+	            	if(type=="read"){
+	            		var dt = data;
+	            		 
+	            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
+	            		if (dt["action"]=="GetDir"){
+	            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+	            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
+	            		}else{
+	            			//dt["search"] = $($(elem).find(".fb-txt-search")).val();
+	            		}
+	            		return dt
+	            	}
+	            }
+	        },
+	        schema: {
+	        	data: "data",
+	            model: {
+	                id: options.dataSource.pathField,
+	                hasChildren: options.dataSource.hasChildrenField,
 
-            		 // $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  $(elem).data('ecFileBrowser').dataSource.url;
-            		return dt
-            	}
-            }
-        },
-        schema: {
-        	data: "data",
-            model: {
-                id: options.dataSource.pathField,
-                hasChildren: options.dataSource.hasChildrenField,
-
-            }
-        }
-    });
+	            }
+	        }
+	    });
 
 		$strtree.kendoTreeView({
 			template: templatetree,
@@ -497,11 +494,7 @@ var methodsFB = {
 			content.contents = $($(elem).find(".fb-editor")).getKendoEditor().value();
 			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Search"){
-			if($($(elem).find(".fb-txt-search")).val()!=""){
-					$(elem).data("ecFileBrowser").dataSource.GetDirAction = content.action;
-			}else{
-				$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
-			}
+			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
             $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			return;
