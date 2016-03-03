@@ -147,6 +147,7 @@ wg.scrapperColumns = ko.observableArray([
 	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
 	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
 	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ field: "note", title: "NOTE", encoded: false, filterable: false},
 ]);
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
@@ -179,6 +180,7 @@ wg.filterRequestLogView = ko.observable('');
 wg.searchRequestLogView = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
 wg.tempViewLog = ko.observableArray([]);
+wg.tempConfig = ko.observableArray([]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
 	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
@@ -292,6 +294,7 @@ wg.removeScrapper = function (_id) {
 };
 wg.getScrapperData = function () {
 	wg.scrapperData([]);
+	wg.tempConfig([]);
 	app.ajaxPost("/webgrabber/getscrapperdata", {search: wg.searchfield, requesttype: wg.filterRequestTypes, sourcetype: wg.filterDataSourceTypes}, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -299,14 +302,36 @@ wg.getScrapperData = function () {
 		if (res.data==null){
 			res.data="";
 		}
-		wg.scrapperData(res.data);
+
+		for (var i in res.data){
+			var dataPush = {}
+			var startdate = 0
+	        var grabcount = 0
+	        var rowgrab = 0
+	        var errorfound = 0
+	        var summary = "Start "+startdate+" <br> Grab "+grabcount+" times <br> Data retreive "+rowgrab+" rows <br> Error "+errorfound+" times";
+
+	        dataPush._id =  res.data[i]._id
+	        dataPush.datasettings =  res.data[i].datasettings
+	        dataPush.grabconf =  res.data[i].grabconf
+	        dataPush.histconf =  res.data[i].histconf
+	        dataPush.intervalconf =  res.data[i].intervalconf
+	        dataPush.logconf =  res.data[i].logconf
+	        dataPush.running =  res.data[i].running
+	        dataPush.sourcetype =  res.data[i].sourcetype
+	        dataPush.note =  summary
+	        dataPush.running =  res.data[i].running
+	        wg.tempConfig.push(dataPush)
+		}
+		// wg.scrapperData(res.data);
+		wg.scrapperData(wg.tempConfig());
 		wg.runBotStats();
 	});
 };
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
-	ko.mapping.fromJS(res.data, wg.configScrapper);
+	// ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
 	wg.addScrapperPayload();
@@ -343,19 +368,19 @@ wg.runBotStats = function () {
 	});
 
 	var isThereAnyError = false;
-
 	if (wg.scrapperData() != "") {
 		wg.scrapperData().forEach(function (each) {
+			
 			var checkStat = function () {
+
 				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
 					if (res.success) {
 						var $grid = $(".grid-web-grabber").data("kendoGrid");
+						var dataGrid = Lazy($grid.dataSource.data()).find({ _id: each._id });
 						var row = Lazy($grid.dataSource.data()).find({ _id: each._id });
-
 						if (row != undefined) {
 							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
-
-							if (res.data) {
+							if (res.data.running) {
 								$tr.addClass("started");
 							} else {
 								$tr.removeClass("started");
@@ -363,11 +388,23 @@ wg.runBotStats = function () {
 						}
 					}
 
+					app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res) {
+						if (res.data.length > 0){
+							var startdate = res.data[0].starttime
+				            var grabcount = res.data[0].grabcount
+				            var rowgrab = res.data[0].rowgrabbed
+				            var errorfound = res.data[0].errorfound
+					        var summary = "Start "+startdate+" <br> Grab "+grabcount+" times <br> Data retreive "+rowgrab+" rows <br> Error "+errorfound+" times";
+							dataGrid.set("note", summary);
+						}
+						
+					});
+
 					if (isThereAnyError) {
 						return;
 					}
 
-					if (!app.isFine(res)) {
+					if (!app.isFine(res.data.running)) {
 						isThereAnyError = true;
 						return;
 					}
@@ -376,6 +413,7 @@ wg.runBotStats = function () {
 				}, {
 					withLoader: false
 				});
+				
 			};
 
 			var interval = (each.grabinterval == undefined ? 20 : (each.grabinterval <= 0 ? 20 : each.grabinterval));
@@ -384,7 +422,7 @@ wg.runBotStats = function () {
 				_id: each._id,
 				interval: setInterval(checkStat, interval * 1000)
 			});
-
+			
 			checkStat();
 		});
 	}
@@ -959,7 +997,7 @@ wg.findLogView = function(){
 		wg.tempViewLog(wg.logData());
 		return false
 	}
-	
+
 	var returnedData = $.grep(obj, function (element, index) {
 		if (key == "Desc"){
 			return element.Desc == val;
