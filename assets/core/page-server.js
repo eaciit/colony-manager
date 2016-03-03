@@ -421,7 +421,7 @@ srv.navModalWizard = function (status) {
 				allIP.push({ ip: ip1, label: e });
 			}else{
 				var patterns = e.match(/\[(.*?)\]/g);
-				if patterns.length > 0{
+				if (patterns.length > 0) {
 					pattern = patterns[0];
 				}
 				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
