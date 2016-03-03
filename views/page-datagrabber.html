@@ -186,7 +186,7 @@
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="">
+	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click:dg.SaveDataGrabberWizard">
 	    		<span class="glyphicon glyphicon-chevron-save"></span> Save
 	    	</button>
 		</nav>
@@ -220,7 +220,7 @@
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Prefix</label>
 								<div class="col-md-5">
-									<input class="form-control input-sm prefix" type="text" placeholder="Prefix"></input>
+									<input class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix"></input>
 								</div>	
 							</div>
 							
@@ -242,11 +242,11 @@
 										<tbody data-bind ="foreach:Transformation">
 											<tr>
 												<td>
-													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one'}" class="full-width">
+													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one', value: TableSource }" class="full-width">
 													</select>
 												</td>
 												<td>
-													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one'}" class="full-width">
+													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one', value: TableDestination }" class="full-width">
 													</select>
 												</td>
 												<td>

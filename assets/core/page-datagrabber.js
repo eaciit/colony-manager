@@ -36,21 +36,21 @@ dg.templateIntervalType = [
 dg.templatewizard = {
 	ConnectionSource : "",
 	ConnectionDestination : "",
+	prefix :"",
 	Transformation : [],
-	QueryInfo : {},
-	MetaData: [],
 };
 
 dg.templateWizardTable = {
 	id : "",
-	TableSource :[],
-	TableDestination: [],
+	TableSource :"",
+	TableDestination: "",
 }
 
 dg.config = ko.mapping.fromJS(dg.templatewizard);
 dg.connectionListData = ko.observableArray([]);
 dg.tableConnectionSource = ko.observableArray([]);
 dg.tableConnectionDestination = ko.observableArray([]);
+dg.hasilsave = ko.observableArray([]);
 
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
@@ -180,7 +180,7 @@ dg.getScrapperData = function (){
 dg.addtable = function (){
 	var table = $.extend(true, {}, dg.templateWizardTable);
 	table.id = "s"+ moment.now();
-	dg.config.Transformation.push(table);
+	dg.config.Transformation.push(ko.mapping.fromJS(table));
 }
 
 dg.removetable = function (each){
@@ -255,6 +255,17 @@ dg.getDataSourceData = function () {
 	});
 };
 
+dg.SaveDataGrabberWizard = function (){
+	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
+		if (!app.isFine(res)){
+			return;
+		}
+		if (res.data == null){
+			res.data = "";
+		}
+	})
+};
+
 dg.getConnectionsData = function (){
 	app.ajaxPost("/datasource/getconnections", {search:"", driver:""}, function(res){
 		if (!app.isFine(res)){
@@ -268,7 +279,7 @@ dg.getConnectionsData = function (){
 };
 
 dg.changeConnectionSource = function (){
-	var coba = app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
+	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
 			return;
 		}
@@ -279,7 +290,7 @@ dg.changeConnectionSource = function (){
 	});
 }
 dg.changeConnectionDestination = function (){
-	var coba = app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
+	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
 			return;
 		}
@@ -288,6 +299,17 @@ dg.changeConnectionDestination = function (){
 		}
 		dg.tableConnectionDestination(res.data);
 	});
+}
+
+dg.parsetablewizard = function (){
+	if (this.value() == ''){
+		return 
+	}
+	var table = {
+		tableSource : this.value()
+	}
+	console.log(table);
+	dg.templatewizard.Transformation(table);	
 }
 
 dg.selectGridDataGrabber = function (e) {
