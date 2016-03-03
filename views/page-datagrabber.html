@@ -204,23 +204,26 @@
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Connection Source</label>
 								<div class=" col-md-5">
-									<select required data-required-msg="Data connection source cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionSource, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeConnectionSource}" class="full-width">
+									<select required data-required-msg="Connection Source cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionSource, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeConnectionSource}" class="full-width" name="connection-source">
 									</select>
+									<span class="k-invalid-msg" data-for="connection-source"></span>
 								</div>	
 							</div>
 
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Connection Destination</label>
 								<div class="col-md-5">
-									<select required data-required-msg="Data connection source cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one',change: dg.changeConnectionDestination}">
+									<select required data-required-msg="Connection Destination cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one',change: dg.changeConnectionDestination}" name="connection-destination">
 									</select>
+									<span class="k-invalid-msg" data-for="connection-destination"></span>
 								</div>	
 							</div>
 
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Prefix</label>
 								<div class="col-md-5">
-									<input class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix"></input>
+									<input required data-required-msg="Prefix cannot be empty" class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix" name="prefix"></input>
+									<span class="k-invalid-msg" data-for="prefix"></span>
 								</div>	
 							</div>
 							
@@ -239,15 +242,17 @@
 											<th style="border-bottom: none;">Table Source</th>
 											<th style="border-bottom: none;">Table Destination</th>
 										</thead>
-										<tbody data-bind ="foreach:Transformation">
+										<tbody data-bind ="foreach:Transformations">
 											<tr>
 												<td>
-													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one', value: TableSource }" class="full-width">
+													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one', value: TableSource }" class="full-width" name="tableSource" name="table-source">
 													</select>
+													<span class="k-invalid-msg" data-for="table-source"></span>
 												</td>
 												<td>
-													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one', value: TableDestination }" class="full-width">
+													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one', value: TableDestination }" class="full-width" name="table-Destination">
 													</select>
+													<span class="k-invalid-msg" data-for="table-Destination"></span>
 												</td>
 												<td>
 													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 )">
