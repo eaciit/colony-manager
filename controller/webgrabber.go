@@ -26,6 +26,7 @@ var (
 	wgHistoryPath    string = f.Join(EC_DATA_PATH, "webgrabber", "history") + toolkit.PathSeparator
 	wgHistoryRecPath string = f.Join(EC_DATA_PATH, "webgrabber", "historyrec") + toolkit.PathSeparator
 	wgOutputPath     string = f.Join(EC_DATA_PATH, "webgrabber", "output") + toolkit.PathSeparator
+	wgSnapShotPath   string = f.Join(EC_DATA_PATH, "daemon") + toolkit.PathSeparator
 	dateformat       string = "YYYYMM"
 )
 
@@ -50,19 +51,23 @@ func NewHistory(nameid string) *WebGrabberController {
 	return w
 }
 
+func GetDirSnapshot(nameid string) *WebGrabberController {
+	w := new(WebGrabberController)
+	path := wgSnapShotPath + nameid + ".csv"
+	w.filepathName = path
+	w.nameid = nameid
+	return w
+}
+
 func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
 	var controller = new(WebGrabberController)
 	controller.Server = s
 	return controller
 }
 
-func (w *WebGrabberController) PrepareHistoryPath() {
-}
-
 func (w *WebGrabberController) OpenHistory() ([]interface{}, error) {
 	var history = []interface{}{} //toolkit.M{}
 	var config = map[string]interface{}{"useheader": true, "delimiter": ",", "dateformat": "MM-dd-YYYY"}
-
 	ci := &dbox.ConnectionInfo{w.filepathName, "", "", "", config}
 	c, err := dbox.NewConnection("csv", ci)
 	if err != nil {
@@ -109,6 +114,51 @@ func (w *WebGrabberController) OpenHistory() ([]interface{}, error) {
 		history = append(history, addToMap)
 	}
 	return history, nil
+}
+
+func (w *WebGrabberController) OpenSnapShot(Nameid string) ([]interface{}, error) {
+	var snapShot = []interface{}{} //toolkit.M{}
+	var config = map[string]interface{}{"useheader": true, "delimiter": ",", "dateformat": "MM-dd-YYYY"}
+	ci := &dbox.ConnectionInfo{w.filepathName, "", "", "", config}
+	c, err := dbox.NewConnection("csv", ci)
+	if err != nil {
+		return snapShot, err
+	}
+
+	err = c.Connect()
+	if err != nil {
+		return snapShot, err
+	}
+	defer c.Close()
+
+	csr, err := c.NewQuery().Select("*").Where(dbox.Eq("Id", Nameid)).Cursor(nil)
+	if err != nil {
+		return snapShot, err
+	}
+	if csr == nil {
+		return snapShot, errors.New("Cursor not initialized")
+	}
+	defer csr.Close()
+	ds := []toolkit.M{}
+	err = csr.Fetch(&ds, 0, false)
+	if err != nil {
+		return snapShot, err
+	}
+	for _, v := range ds {
+		var addToMap = toolkit.M{}
+		addToMap.Set("id", v.Get("Id"))
+		addToMap.Set("starttime", v.Get("Starttime"))
+		addToMap.Set("endtime", v.Get("Endtime"))
+		addToMap.Set("grabcount", v.Get("Grabcount"))
+		addToMap.Set("rowgrabbed", v.Get("Rowgrabbed"))
+		addToMap.Set("errorfound", v.Get("Errorfound"))
+		addToMap.Set("lastgrabstatus", v.Get("Lastgrabstatus"))
+		addToMap.Set("grabstatus", v.Get("Grabstatus"))
+		addToMap.Set("note", v.Get("Note"))
+
+		snapShot = append(snapShot, addToMap)
+	}
+	return snapShot, nil
 }
 
 func (w *WebGrabberController) GetLogHistory(datas []interface{}, date string) interface{} {
@@ -423,7 +473,6 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	w.PrepareHistoryPath()
 
 	payload := new(colonycore.WebGrabber)
 	err := r.GetPayload(payload)
@@ -444,9 +493,26 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, history, "")
 }
 
+func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := struct {
+		Nameid string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	module := GetDirSnapshot("daemonsnapshot")
+	SnapShot, err := module.OpenSnapShot(payload.Nameid)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, SnapShot, "")
+}
+
 func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	w.PrepareHistoryPath()
 
 	payload := struct {
 		RecFile string `json:"recfile"`
@@ -471,7 +537,6 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	w.PrepareHistoryPath()
 
 	payload := struct {
 		ID   string `json:"_id"`
@@ -500,7 +565,6 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	w.PrepareHistoryPath()
 
 	payload := new(colonycore.WebGrabber)
 	err := r.GetPayload(payload)
@@ -518,7 +582,6 @@ func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	w.PrepareHistoryPath()
 
 	payload := map[string]interface{}{}
 	err := r.GetPayload(&payload)
