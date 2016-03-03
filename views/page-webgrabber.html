@@ -226,7 +226,7 @@
 		    		<div class="col-md-4 vv-padding-right" data-bind="with:wg.configScrapper">
 		    			<div class="col-md-12 form-action" data-bind="visible:wg.modeSelector() == ''">
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() > 1, click: wg.backSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() < 2, click: wg.nextSetting, enable: wg.modeSetup() != ''"><span class="glyphicon glyphicon-chevron-right"></span> Next</button>
 		    				<button class="btn btn-sm btn-warning" data-bind="visible: wg.modeSetting() < 3"><span class="glyphicon glyphicon-erase"></span> Clear</button>
 		    				<button class="btn btn-sm btn-primary" data-bind="visible: wg.modeSetting() == 2, click: wg.saveSelectorConf"><span class="glyphicon glyphicon-save"></span> Save</button>
 		    			</div>
@@ -234,7 +234,7 @@
 		    				<div class="form-group">
 							    <label class="col-md-4 filter-label">Setting Option</label>
 							    <div class="col-md-8">
-						       		<select class="input-md" id="settingOptions" name="setup" data-bind="kendoDropDownList: { data: wg.configSetup, dataValueField: 'value', dataTextField: 'title', value: wg.modeSetup,optionLabel:'Select mode...'}"></select>
+						       		<select required data-required-msg="Setting connot be empty" name="setup"  class="input-md" id="settingOptions" name="setup" data-bind="kendoDropDownList: { data: wg.configSetup, dataValueField: 'value', dataTextField: 'title', value: wg.modeSetup,optionLabel:'Select mode...'}"></select>
 									<span class="k-invalid-msg" data-for="setup"></span>
 						       	</div>
 							</div>
@@ -285,16 +285,16 @@
 						        	</div>
 						        </div>
 						        <div class="row">
-						        	<label class="col-md-4 filter-label">Grap Interval</label>
+						        	<label class="col-md-4 filter-label">Grab Interval</label>
 						        	<div class="col-md-4">
-						        		<input type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" style="100px"/>
+						        		<input required data-required-msg="Grab Interval cannot be empty" type="text" class="full-width" name="GrabInterval" data-bind="kendoNumericTextBox: { min: 1, format: '#', value: wg.configScrapper.intervalconf.grabinterval, placeholder: 'Example: 2' }" style="100px"/>
 										<span class="k-invalid-msg" data-for="GrabInterval"></span>
 						        	</div>
 						        </div>
 						        <div class="row">
 						        	<label class="col-md-4 filter-label">Timeout Interval</label>
 						        	<div class="col-md-4">
-						        		<input type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 0, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" style="100px" />
+						        		<input required data-required-msg="Timeout Interval cannot be empty" type="text" class="full-width" name="TimeoutInterval" data-bind="kendoNumericTextBox: { min: 1, format: '#', value: wg.configScrapper.intervalconf.timeoutinterval, placeholder: 'Example: 2' }" style="100px" />
 										<span class="k-invalid-msg" data-for="TimeoutInterval"></span>
 						        	</div>
 						        </div>
@@ -305,44 +305,44 @@
 		    					<span>Task Scheduler</span>
 			    			</div>
 			    			<hr style="width: 100%; color: #FDFDFD; height: 1px;" />
-			    			<section class="form-horizontal">
+			    			<section class="form-horizontal" data-bind="with: wg.configCron">
 			    				<div class="col-md-12" style="padding-left:0px">
 								    <label class="col-md-4 filter-label">Time Presets</label>
 								    <div class="col-md-8">
-							       		<select class="input-md" name="setup" data-bind="kendoDropDownList: { data: wg.taskMode, dataValueField: 'value', dataTextField: 'title', value: wg.timePreset}"></select>
+							       		<select class="input-md" name="setup" data-bind="kendoDropDownList: { data: wg.taskMode, dataValueField: 'value', dataTextField: 'title', value: wg.configCron.mode}"></select>
 										<span class="k-invalid-msg" data-for="setup"></span>
 							       	</div>
-							       <div data-bind="with: wg.configCron">
+							       <div>
 							       		<div class="clearfix">&nbsp;</div>
 							       		<label class="col-md-4">&nbsp;</label>
 										<div class="col-md-8 form-group">
-											<div data-bind="visible: wg.timePreset() == 'daily' || wg.timePreset() == 'weekly' || wg.timePreset() == 'monthly'">
+											<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.timePreset() == 'monthly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...' }" style="width: 100px"></select>
+								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...', max: 23, min:0 }" style="width: 100px"></select>
 								       			</div>
 								       		</div>
-								       		<div data-bind="visible: wg.timePreset() == 'daily' || wg.timePreset() == 'weekly' || wg.timePreset() == 'monthly' || wg.timePreset() != '' && wg.timePreset() != 'custom' ">
+								       		<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.timePreset() == 'monthly' || wg.timePreset() != '' && wg.timePreset() != 'custom' ">
 								       			<div class="col-md-6">
-									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min }" style="width: 90px"></select>
+									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min, max: 59, min:0 }" style="width: 90px"></select>
 								       			</div>
 								       		</div>
 										</div>
 										<label class="col-md-4">&nbsp;</label>
 										<div class="col-md-8 form-group">
-								       		<div data-bind="visible: wg.timePreset() == 'weekly' || wg.timePreset() == 'monthly'">
+								       		<div data-bind="visible: wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
 								       				<select id="dropdownHour" name="day" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek, optionLabel: 'Day...'}" style="width: 100px"></select>
 								       			</div>
 								       		</div>
-								       		<div data-bind="visible: wg.timePreset() == 'monthly'">
+								       		<div data-bind="visible: wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Date...'}" style="width: 90px"></select>
+								       				<select id="dropdownHour" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Date...', max: 31, min:1}" style="width: 90px"></select>
 								       			</div>
 								       		</div>
 										</div>
 										<label class="col-md-4">&nbsp;</label>
 										<div class="col-md-8 form-group">
-								       		<div data-bind="visible: wg.timePreset() == 'monthly'">
+								       		<div data-bind="visible: wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
 								       				<select id="dropdownHour" name="month" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month, optionLabel: 'Month...'}"></select>
 								       			</div>
@@ -376,7 +376,7 @@
 											<tbody data-bind="foreach: wg.selectorRowSetting">
 												<tr>
 													<td>
-														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: name, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: nameid, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 													</td>
 													<td>
