@@ -46,7 +46,7 @@ var Setting_DataSource = {
 };
 
 var templatetree = "#: item.text# "+
-             "<a style='display:none' path=\"#:item.pathf #\" name=\"#:item.text #\"></a> ";
+             "<a style='display:none' path=\"#:item.pathf #\" name=\"#:item.text #\" permission=\"#:item.permissions#\"></a> ";
 
 var methodsFB = {
 	init:function(options){
@@ -294,6 +294,17 @@ var methodsFB = {
 		$edtxt.appendTo($edli);
 
 	},
+	BuildPermission:function(elemarr,permstr){
+		var idx = 0;
+		$(elemarr).each(function(){
+			$($(this).find("input")).each(function(){
+				if(permstr.charAt(idx)!="-"){
+					$(this)[0].checked = true;
+				}
+				idx++;
+			});
+		});
+	},
 	BuildPopUp : function(elem,options){
 		$div = $("<div class='modal fade modal-fb' tabindex='-1' role='dialog'></div>");
 		$div.appendTo($(elem));
@@ -426,7 +437,7 @@ var methodsFB = {
 					content.permission = strperm;
 					methodsFB.SendActionRequest(elem,content);
 			});	
-
+			methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
 		}else if (content.action=="Upload"){
 			if (type!="folder"){
 				alert("Please choose folder !");
