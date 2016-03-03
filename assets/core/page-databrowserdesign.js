@@ -5,6 +5,7 @@ viewModel.databrowserdesign = {}; var db = viewModel.databrowserdesign;
 db.templateConfigMetaData = {
     Field : "",
     Label : "",
+    DataType : "",
     Format : "",
     Align : "",
     ShowIndex : 0,
@@ -35,6 +36,14 @@ db.queryType = ko.observableArray([
 	{ value: "SQL", text: "SQL" },
 	{ value: "Dbox", text: "Dbox" }
 ]);
+db.dataType = ko.observableArray([
+	{ DataType: "bson.ObjectId", text: "bson.ObjectId" },
+	{ DataType: "string", text: "string" },
+	{ DataType: "int", text: "int" },
+	{ DataType: "float32", text: "float32" },
+	{ DataType: "float64", text: "float64" },
+	{ DataType: "date", text: "date" }
+]);
 db.connectionID = ko.observable('');
 db.isChecked = ko.observable('')
 db.collectionListData = ko.observableArray([]);
@@ -44,6 +53,16 @@ db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
 db.databrowserColumns = ko.observableArray([
 	{ field: "Field", title: "Field", editable: false },
 	{ field: "Label", title: "label"},
+	{ field: "DataType", title: "Data Type", template: "#= db.dataTypeOption(DataType) #",
+		editor: function(container, options) {
+            var input = $('<input id="datatypeId" name="datatype" data-bind="value:' + options.field + '">');
+            input.appendTo(container);
+            input.kendoDropDownList({
+                dataTextField: "text",
+                dataValueField: "DataType",
+                dataSource: db.dataType() // bind it to the models array
+            }).appendTo(container);
+        }},
 	{ field: "Format", title: "Format"},
 	{ title: "Align", field: "Align", template: "#= db.alignOption(Align) #",
 		editor: function(container, options) {
@@ -56,9 +75,7 @@ db.databrowserColumns = ko.observableArray([
             }).appendTo(container);
         }
     },
-	// { field: "ShowIndex", title: "Position"},
-	// { field: "ShowIndex", title: "Position", command: [ { text: "Up", click: db.moveUp }, { text: "Down", click: db.moveDown } ]},
-	{ title: "Position", width: 100,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;''>#= ShowIndex #</span>"},
+	{ title: "Position", width: 110,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;''>#= ShowIndex #</span>"},
 	{ title: "Hidden Field", template: "<input type='checkbox' #= HiddenField ? \"checked='checked'\" : '' # class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' />"},
 	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' />"},
 	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
@@ -68,11 +85,18 @@ db.databrowserColumns = ko.observableArray([
 
 
 db.alignOption = function (opt) {
-	grid = $(".grid-databrowser-design").data("kendoGrid");
 	for (var i = 0; i < db.alignList().length; i++) {
-		// console.log(db.alignList()[i].Align)
         if (db.alignList()[i].Align == opt) {
             return db.alignList()[i].name;
+        }
+    }
+}
+
+db.dataTypeOption = function (opt) {
+	for (var i = 0; i < db.dataType().length; i++) {
+		// console.log(db.dataType()[i].DataType)
+        if (db.dataType()[i].DataType == opt) {
+            return db.dataType()[i].text;
         }
     }
 }
@@ -228,13 +252,19 @@ db.designDataBrowser = function(_id) {
 		br.pageVisible("editor");
 		app.mode('editor')
 		db.databrowserData(res.data.MetaData);
-		// db.connectionID(res.data.ConnectionID);
+		
+
 		db.setDataSource();
 		db.populateTable(res.data.ConnectionID);
 		if (typeof _id === "function") {
 			_id();
 		}
 		ko.mapping.fromJS(res.data, db.configDataBrowser);
+		
+		db.isChecked($("#isFreetext").prop("checked"))
+		db.showHideFreeQuery();
+		
+
 	});
 }
 
@@ -258,7 +288,8 @@ db.populateTable = function (_id) {
 					datavalue.push(data);
 				});
 			}
-
+			console.log(datavalue)
+			console.log(db.queryType())
 			db.collectionListData(datavalue);
 			// db.configDataBrowser;
 		}
@@ -325,6 +356,7 @@ db.checkBuilderNotEmpty = function() {
 db.backToFront = function() {
 	app.mode('');
 	br.pageVisible("");
+	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	$("#isFreetext").prop("checked", false);
 	$("#freeQuery").hide();
 	$("#fromTable").show();
@@ -341,6 +373,7 @@ db.setDataSource = function () {
     			fields: { 
     				Field: { editable: false }, 
     				Label: { type: 'string' },
+    				DataType: { type: 'string' },
     				Format: { type: 'string' },
     				Align: { type: 'string' },
     				ShowIndex: { 
@@ -373,31 +406,34 @@ db.prepareGrid = function () {
 }
 
 db.showHideFreeQuery = function() {
-	$("#freeQuery").hide();
-	$("#querytype").hide();
-	$("#isFreetext").change(function() {
-		if (this.checked){
-			$("#freeQuery").show();
-			$("#querytype").show();
-			$("#fromTable").hide();	
-		}else{
-			$("#freeQuery").hide();
-			$("#querytype").hide();
-			$("#fromTable").show();
-		}
-	});
+	if (db.configDataBrowser.QueryType() == "") {
+		$("#isFreetext").attr("checked", false)
+		$("#freeQuery").hide();
+		$("#querytype").hide();
+		$("#isFreetext").change(function() {
+			if (this.checked){
+				$("#freeQuery").show();
+				$("#querytype").show();
+				$("#fromTable").hide();	
+			}else{
+				$("#freeQuery").hide();
+				$("#querytype").hide();
+				$("#fromTable").show();
+			}
+		});
+	}
+
+	if (db.isChecked()) {
+		$("#freeQuery").show();
+		$("#querytype").show();
+		$("#fromTable").hide();
+	} else {
+		$("#freeQuery").hide();
+		$("#querytype").hide();
+		$("#fromTable").show();
+	}
 };
 
 $(function () {
-	db.prepareGrid();
-	db.showHideFreeQuery();
+	db.prepareGrid();	
 });
-
-//create function klik view for databrowser grid
-db.ViewBrowserName = function(id){
-    alert("masuk "+id);
-}
-
-db.DesignDataBrowser = function(id){
-    br.pageVisible("editor");
-}

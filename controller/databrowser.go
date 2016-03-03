@@ -10,6 +10,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	// "gopkg.in/mgo.v2/bson"
 	// "io"
 	// "net/http"
 	// "os"
@@ -169,16 +170,28 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 	}
 
 	metadata := []*colonycore.StructInfo{}
+	// var dt string
 	for i, dataFields := range dataFetch {
 		if i > 0 {
 			break
 		}
 
 		j := 1
-		for keyField, _ := range dataFields {
+		for keyField, dataField := range dataFields {
 			sInfo := &colonycore.StructInfo{}
 			sInfo.Field = keyField
 			sInfo.Label = keyField
+
+			rf := toolkit.TypeName(dataField)
+			if rf == "time.Time" {
+				rf = "date"
+			}
+			// toolkit.Println(dataField, ">", rf)
+			// if rf == "bson.ObjectId" {
+			// 	dt = dataField.(bson.ObjectId).Hex()
+			// }
+			sInfo.DataType = rf
+
 			sInfo.Format = ""
 			sInfo.Align = "Left"
 			sInfo.ShowIndex = toolkit.ToInt(j, toolkit.RoundingAuto)
@@ -217,12 +230,7 @@ func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colon
 	// result := toolkit.M{}
 	// toolkit.UnjsonFromString(dbrowser.QueryText, &result)
 	if dbrowser.QueryType == "nonQueryText" {
-		toolkit.Printf("from:%v\n", dbrowser.TableNames)
 		dataQuery = conn.NewQuery().From(dbrowser.TableNames)
-		// if qFrom := result.Get("from", "").(string); qFrom != "" {
-		// 	toolkit.Printf("from:%v\n", qFrom)
-		// 	dataQuery = conn.NewQuery().From(dbrowser.TableNames)
-		// }
 	} else if dbrowser.QueryType == "SQL" {
 		dataQuery = conn.NewQuery().Command("freequery", toolkit.M{}.
 			Set("syntax", dbrowser.QueryText))
@@ -247,6 +255,6 @@ func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
 	result.Set("DataCount", count)
 	result.Set("DataValue", data)
 	result.Set("dataresult", dataDS)
-
+	toolkit.Printf("result:%v\n", toolkit.JsonString(result))
 	return helper.CreateResult(true, result, "")
 }
