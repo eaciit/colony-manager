@@ -51,7 +51,7 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Free Text Query</label>
 					    		<div class="col-md-7">
-						    		<input type="checkbox" id="isFreetext">
+						    		<input type="checkbox" id="isFreetext" data-bind="checked: (db.configDataBrowser.QueryType() != 'nonQueryText')">
 					    		</div>
 				    		</div>
 			    		</div>
