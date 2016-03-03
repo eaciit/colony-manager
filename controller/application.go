@@ -14,16 +14,24 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
 
 var (
-	unzipDest  = filepath.Join(EC_APP_PATH, "src")
-	zipSource  = filepath.Join(EC_APP_PATH, "src")
-	parents    = make(map[string]*colonycore.TreeSource)
-	basePath   string
-	newDirName string
+	unzipDest            = filepath.Join(EC_APP_PATH, "src")
+	zipSource            = filepath.Join(EC_APP_PATH, "src")
+	parents              = make(map[string]*colonycore.TreeSource)
+	basePath             string
+	newDirName           string
+	currentPathSeparator string = (func() string {
+		if runtime.GOOS == "windows" {
+			return `\`
+		} else {
+			return `/`
+		}
+	}())
 )
 
 type ApplicationController struct {
@@ -63,7 +71,7 @@ func createJson(object *colonycore.TreeSource) {
 	}
 	jsonString := string(jsonData)
 
-	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, ".directory-tree.json"))
+	filename := fmt.Sprintf("%s", filepath.Join(unzipDest, newDirName, "directory-tree.json"))
 
 	f, err := os.Create(filename)
 	if err != nil {
@@ -275,34 +283,54 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		colonycore.Save(app)
 	}
 
+	server.CmdExtract = "unzip"
 	log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
-	if output, err := sshSetting.RunCommandSsh("unzip"); err != nil || strings.Contains(output, "not installed") {
-		log.AddLog("`unzip` not installed"+err.Error(), "ERROR")
+	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
+		log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
 		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
+		return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
 	}
 
 	defer sshClient.Close()
 
-	serverPathSeparator := `/`
-	if server.OS == "windows" {
-		serverPathSeparator = `\`
-	}
-
 	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
-	sourceZipPath := filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
-	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
-	destinationZipPath := fmt.Sprintf("%s.zip", destinationZipPathOutput)
+	destinationPath := strings.Join([]string{server.AppPath, "src"}, currentPathSeparator)
+	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, currentPathSeparator)
+	var sourceZipPath string
+	var unzipCmd string
+	var destinationZipPath string
 
-	log.AddLog(fmt.Sprintf("compress %s to %s", sourcePath, sourceZipPath), "INFO")
-	err = toolkit.ZipCompress(sourcePath, sourceZipPath)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
+	if strings.Contains(server.CmdExtract, "tar") {
+		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
+		destinationZipPath = fmt.Sprintf("%s.tar", destinationZipPathOutput)
+		unzipCmd = fmt.Sprintf("tar -xvf %s -C %s", destinationZipPath, destinationZipPathOutput)
+		log.AddLog(unzipCmd, "INFO")
+		err = toolkit.TarCompress(sourcePath, sourceZipPath)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		// } else if strings.Contains(server.CmdExtract, "zip") {
+		// 	sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+		// 	err = toolkit.GzExtract(sourcePath, sourceZipPath)
+		// 	// extractCmd = server.CmdExtract + " " + destinationPath + ".zip -d " + destinationZipPathOutput
+		// 	if err != nil {
+		// 		return helper.CreateResult(false, nil, err.Error())
+		// 	}
+	} else if strings.Contains(server.CmdExtract, "zip") {
+		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+		destinationZipPath = fmt.Sprintf("%s.zip", destinationZipPathOutput)
+		unzipCmd = fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+		log.AddLog(unzipCmd, "INFO")
+		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	getPIDofPrevProccessCmd := fmt.Sprintf("lsof -i:%s -t", app.Port)
@@ -352,7 +380,6 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	unzipCmd := fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
 	log.AddLog(unzipCmd, "INFO")
 	_, err = sshSetting.RunCommandSsh(unzipCmd)
 	if err != nil {
@@ -389,8 +416,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 
 	installerBasePath, installerFile := func(path string) (string, string) {
-		comps := strings.Split(path, serverPathSeparator)
-		ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
+		comps := strings.Split(path, currentPathSeparator)
+		ibp := strings.Join(comps[:len(comps)-1], currentPathSeparator)
 		ilf := comps[len(comps)-1]
 
 		return ibp, ilf
@@ -432,8 +459,10 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 }
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
-	// upload handler
+	r.Config.OutputType = knot.OutputJson
+
 	err, fileName := helper.UploadHandler(r, "userfile", zipSource)
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -465,6 +494,23 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	fileExtract := strings.Join([]string{zipSource, fileName}, currentPathSeparator)
+	destinationExtract := strings.Join([]string{zipSource, o.ID}, currentPathSeparator)
+	if strings.Contains(fileName, ".gz") {
+		return helper.CreateResult(false, nil, "Unsupported format")
+	} else if strings.Contains(fileName, ".tar") {
+		err = toolkit.TarExtract(fileExtract, destinationExtract)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	} else if strings.Contains(fileName, ".zip") {
+		err = toolkit.ZipExtract(fileExtract, destinationExtract)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	os.Remove(zipSource + "/" + fileName)
 	var zipFile string
 	if fileName != "" {
 		zipFile = filepath.Join(zipSource, fileName)
