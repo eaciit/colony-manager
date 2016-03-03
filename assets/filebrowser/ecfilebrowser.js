@@ -119,54 +119,55 @@ var methodsFB = {
 		}
 
 		var datatree = new kendo.data.HierarchicalDataSource({
-        transport: {
-            read: {
-                url: url,
-                dataType: "json",
-                type: call,
-                complete: function(){
-                	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
-                	$strtree.find("span").each(function(){
-						if($(this).html()!=""){
-							if($($(this).find("span")).length==0){
-								var type = methodsFB.DetectType(this,$(this).html());
-								var sp = "<span class='k-sprite "+type+"'></span>";
-								$sp = $(sp);
-								$sp.prependTo($(this));
+	        transport: {
+	            read: {
+	                url: url,
+	                dataType: "json",
+	                type: call,
+	                complete: function(){
+	                	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
+	                	$strtree.find("span").each(function(){
+							if($(this).html()!=""){
+								if($($(this).find("span")).length==0){
+									var type = methodsFB.DetectType(this,$(this).html());
+									var sp = "<span class='k-sprite "+type+"'></span>";
+									$sp = $(sp);
+									$sp.prependTo($(this));
 
-								if(type!="folder"){
-									$(this).dblclick(function(){
-										methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
-									});
+									if(type!="folder"){
+										$(this).dblclick(function(){
+											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
+										});
+									}
 								}
 							}
-						}
-					});
-                },
-            },
-            parameterMap:function(data,type){
-            	if(type=="read"){
-            		var dt = data;
-            		 
-            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
-            		if (dt["action"]=="GetDir"){
-            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
-            		}else{
-            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
-            		}
-            		return dt
-            	}
-            }
-        },
-        schema: {
-        	data: "data",
-            model: {
-                id: options.dataSource.pathField,
-                hasChildren: options.dataSource.hasChildrenField,
+						});
+	                },
+	            },
+	            parameterMap:function(data,type){
+	            	if(type=="read"){
+	            		var dt = data;
+	            		 
+	            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
+	            		if (dt["action"]=="GetDir"){
+	            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+	            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
+	            		}else{
+	            			//dt["search"] = $($(elem).find(".fb-txt-search")).val();
+	            		}
+	            		return dt
+	            	}
+	            }
+	        },
+	        schema: {
+	        	data: "data",
+	            model: {
+	                id: options.dataSource.pathField,
+	                hasChildren: options.dataSource.hasChildrenField,
 
-            }
-        }
-    });
+	            }
+	        }
+	    });
 
 		$strtree.kendoTreeView({
 			template: templatetree,
