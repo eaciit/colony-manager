@@ -323,11 +323,6 @@ func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	err = colonycore.Get(payload, payload.ID)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
 	if payload.ServerType == "hadoop" {
 		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(payload.Host, payload.SSHPass))
 		if err != nil {
@@ -340,6 +335,11 @@ func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 		}
 
 		return helper.CreateResult(true, payload, "")
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	a, b, err := s.SSHConnect(payload)

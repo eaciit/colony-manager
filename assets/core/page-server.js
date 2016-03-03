@@ -121,6 +121,19 @@ srv.createNewServer = function () {
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
 };
+srv.validateHost = function () {
+	if (srv.configServer.serverType() == "node") {
+		srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
+		return true;
+	} else {
+		if (srv.configServer.host().indexOf("http") == -1) {
+			sweetAlert("Oops...", "Protocol on host must be defined (Example: http://127.0.0.1:50070)", "error");
+			return false;
+		}
+	}
+
+	return true;
+};
 srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
 		var errors = $(".form-server").data("kendoValidator").errors();
@@ -146,6 +159,10 @@ srv.doSaveServer = function (c) {
 		if (errors.length > 0) {
 			return;
 		}
+	}
+
+	if (!srv.validateHost()) {
+		return;
 	}
 
 	var data = ko.mapping.toJS(srv.configServer);
