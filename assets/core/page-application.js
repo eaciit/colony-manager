@@ -9,6 +9,8 @@ apl.templateConfigApplication = {
 	Port: "8080",
 	AppPath: "",
 	DeployedTo: [],
+	Command: [],
+	Variable: [],
 };
 apl.appTypes = ko.observableArray([
 	{ value: "web", title: "Web" },
@@ -26,6 +28,15 @@ apl.templateFilter = {
 	search: "",
 	type: "",
 };
+apl.templateConfigCommand = {
+	key: "",
+	value: ""
+};
+apl.templateConfigVariable = {
+	key: "",
+	value: ""
+};
+apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
@@ -121,6 +132,28 @@ apl.gridServerDeployDataBound = function () {
 			$td.css("color", "white");
 		}
 	});
+};
+apl.addCommand = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
+	apl.configApplication.Command.push(item); 
+};
+
+apl.addVariable = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigVariable));
+	apl.configApplication.Variable.push(item); 
+};
+apl.removeCommand = function (each) {
+	return function () {
+		console.log(each);
+		apl.configApplication.Command.remove(each);
+	};
+};
+
+apl.removeVariable = function (each) {
+	return function () {
+		console.log(each);
+		apl.configApplication.Variable.remove(each);
+	};
 };
 apl.refreshGridModalDeploy = function () {
 	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
@@ -246,6 +279,8 @@ apl.createNewApplication = function () {
 	apl.configApplication._id("");
 	apl.configApplication.AppsName("");
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
+	apl.addVariable();
+	apl.addCommand();
 };
 
 apl.saveApplication = function() {
@@ -255,13 +290,14 @@ apl.saveApplication = function() {
 
 	var data = ko.mapping.toJS(apl.configApplication);
 	var formData = new FormData();
-	
 	formData.append("Enable", data.Enable);
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("_id", data._id);
 	formData.append("Type", data.Type);
 	formData.append("Port", data.Port);
+	formData.append("Command",JSON.stringify(data.Command));
+	formData.append("Variable", JSON.stringify(data.Variable));
 
 	app.ajaxPost("/application/saveapps", formData, function (res) {
 		if (!app.isFine(res)) {
@@ -622,3 +658,4 @@ $(function () {
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
+

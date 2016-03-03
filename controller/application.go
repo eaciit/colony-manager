@@ -483,6 +483,19 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	}
 	defer cursor.Close()
 
+	o.AppsName = r.Request.FormValue("AppsName")
+	o.Type = r.Request.FormValue("Type")
+	var Command, Variable interface{}
+	err = json.Unmarshal([]byte(r.Request.FormValue("Command")), &Command)
+	err = json.Unmarshal([]byte(r.Request.FormValue("Variable")), &Variable)
+	o.Command = Command
+	o.Variable = Variable
+
+	err = colonycore.Delete(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	data := []colonycore.Application{}
 	err = cursor.Fetch(&data, 0, false)
 	if len(data) > 0 {
