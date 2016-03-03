@@ -36,16 +36,22 @@ dg.templateIntervalType = [
 dg.templatewizard = {
 	ConnectionSource : "",
 	ConnectionDestination : "",
+	prefix :"",
 	Transformation : [],
 };
 
 dg.templateWizardTable = {
 	id : "",
 	TableSource :"",
-	TableDestination: ""
+	TableDestination: "",
 }
 
 dg.config = ko.mapping.fromJS(dg.templatewizard);
+dg.connectionListData = ko.observableArray([]);
+dg.tableConnectionSource = ko.observableArray([]);
+dg.tableConnectionDestination = ko.observableArray([]);
+dg.hasilsave = ko.observableArray([]);
+
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
@@ -54,6 +60,7 @@ dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
 dg.dataSourcesData = ko.observableArray([]);
+
 dg.fieldDataTypes = ko.observableArray(['string', 'double', 'int']);
 
 dg.selectedDataGrabber = ko.observable('');
@@ -169,10 +176,11 @@ dg.getScrapperData = function (){
 	});
 };
 
+
 dg.addtable = function (){
 	var table = $.extend(true, {}, dg.templateWizardTable);
 	table.id = "s"+ moment.now();
-	dg.config.Transformation.push(table);
+	dg.config.Transformation.push(ko.mapping.fromJS(table));
 }
 
 dg.removetable = function (each){
@@ -204,9 +212,10 @@ dg.createNewScrapper = function () {
 dg.addWizard = function (){
 	app.mode('addWizard');
 	dg.scrapperMode('');
-	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 	ko.mapping.fromJS(dg.templatewizard, dg.config);
 	dg.addtable();
+	dg.tableConnectionSource([]);
+	dg.tableConnectionDestination([]);
 };
 
 dg.doSaveDataGrabber = function (c) {
@@ -220,7 +229,6 @@ dg.doSaveDataGrabber = function (c) {
 		if(!app.isFine(res)) {
 			return;
 		}
-
 		if (typeof c != undefined) {
 			c();
 		}
@@ -240,10 +248,70 @@ dg.getDataSourceData = function () {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (res.data == null){
+			res.data = "";
+		}
 		dg.dataSourcesData(res.data);
 	});
 };
+
+dg.SaveDataGrabberWizard = function (){
+	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
+		if (!app.isFine(res)){
+			return;
+		}
+		if (res.data == null){
+			res.data = "";
+		}
+	})
+};
+
+dg.getConnectionsData = function (){
+	app.ajaxPost("/datasource/getconnections", {search:"", driver:""}, function(res){
+		if (!app.isFine(res)){
+			return;
+		}
+		if (res.data == null){
+			res.data = "";
+		}
+		dg.connectionListData(res.data);
+	});
+};
+
+dg.changeConnectionSource = function (){
+	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
+		if (!app.isFine(res)){
+			return;
+		}
+		if (res.data == null){
+			res.data = "";
+		}
+		dg.tableConnectionSource(res.data);
+	});
+}
+dg.changeConnectionDestination = function (){
+	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
+		if (!app.isFine(res)){
+			return;
+		}
+		if (res.data == null){
+			res.data = "";
+		}
+		dg.tableConnectionDestination(res.data);
+	});
+}
+
+dg.parsetablewizard = function (){
+	if (this.value() == ''){
+		return 
+	}
+	var table = {
+		tableSource : this.value()
+	}
+	console.log(table);
+	dg.templatewizard.Transformation(table);	
+}
+
 dg.selectGridDataGrabber = function (e) {
 	app.wrapGridSelect(".grid-data-grabber", ".btn", function (d) {
 		dg.editScrapper(d._id);
@@ -743,5 +811,6 @@ dg.checkDeleteDataGrabber = function(elem, e){
 $(function () {
 	dg.getScrapperData();
 	dg.getDataSourceData();
+	dg.getConnectionsData();
 	app.registerSearchKeyup($(".search"), dg.getScrapperData);
 });

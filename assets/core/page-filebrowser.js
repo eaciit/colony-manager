@@ -3,7 +3,7 @@ $(document).ready(function(){
 
 $("#FileBrowser").ecFileBrowser({
         dataSource:{
-            url: '/filebrowser/getdir',
+            url: '/filebrowser',
             call: 'POST',
             pathField: "path",
             hasChildrenField:"isdir",

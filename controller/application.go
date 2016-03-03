@@ -344,7 +344,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	if pid != "" {
 		log.AddLog("PID of sedotand: "+pid, "SUCCESS")
 
-		killProcessCmd := fmt.Sprintf("sudo kill -9 %s", pid)
+		killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
 		log.AddLog(killProcessCmd, "INFO")
 		_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
 		if err != nil {
@@ -534,15 +534,32 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 func (a *ApplicationController) GetApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
+	payload := struct {
+		Search string `json:"search"`
+		Type   string `json:"type"`
+	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	search := payload["search"].(string)
+
+	filters := []*dbox.Filter{}
+	if payload.Search != "" {
+		filters = append(filters, dbox.Or(
+			dbox.Contains("_id", payload.Search),
+			dbox.Contains("AppsName", payload.Search),
+			dbox.Contains("Type", payload.Search),
+			dbox.Contains("Port", payload.Search),
+		))
+	}
+	if payload.Type != "" {
+		filters = append(filters, dbox.Eq("Type", payload.Type))
+	}
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search), dbox.Contains("Type", search))
+	if len(filters) > 0 {
+		query = dbox.And(filters...)
+	}
 
 	cursor, err := colonycore.Find(new(colonycore.Application), query)
 	if err != nil {

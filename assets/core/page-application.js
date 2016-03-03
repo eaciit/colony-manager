@@ -21,7 +21,11 @@ apl.templateFile = {
 	Filename: "",
 	Type: "folder",
 	Content: "",
-}
+};
+apl.templateFilter = {
+	search: "",
+	type: "",
+};
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
@@ -30,6 +34,7 @@ apl.filterValue = ko.observable('');
 apl.filterAplType = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
+apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
@@ -193,7 +198,7 @@ apl.getApplications = function(c) {
 	$(ongrid.tbody).on("mouseleave", "tr", function (e) {
 	    $(this).removeClass("k-state-hover");
 	});
-	app.ajaxPost("/application/getapps", {search: apl.searchfield}, function (res) {
+	app.ajaxPost("/application/getapps", apl.filter, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

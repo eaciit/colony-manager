@@ -92,7 +92,7 @@ wg.templateConfigScrapper = {
             {
                 "starttime": new Date(),
                 "expiredtime": new Date(),
-                "intervaltype": "",
+                "intervaltype": "seconds",
                 "grabinterval": "20" ,
                 "timeoutinterval": "20",
                 "cronconf": {}
@@ -111,8 +111,9 @@ wg.templateConfigScrapper = {
                 "filepattern": "YYYYMMDD"
             },
     datasettings: [],
-    running: true
+    running: false
 };
+
 wg.parametersPattern = ko.observableArray([
 	{ value: "", title: "-" },
 	{ value: "time.Now()", title: "Now" },
@@ -127,7 +128,7 @@ wg.taskMode = ko.observableArray([
 	{value: "daily", title: "Daily"},
 	{value: "weekly", title: "Weekly" },
 	{value: "monthly", title: "Monthly" },
-	{value: "custom", title: "Custom" },
+	//{value: "custom", title: "Custom" },
 ]);
 wg.templateCron = {
 	second : "*",
@@ -135,7 +136,9 @@ wg.templateCron = {
 	hour: "",
 	dayofmonth: "",
 	month: "",
-	dayofweek: ""
+	dayofweek: "",
+	mode:"hourly", 
+
 }
 wg.templateConfigSelector = {
 	_id: "",
@@ -146,18 +149,20 @@ wg.templateConfigSelector = {
 	desttype: "mongo",
 	columnsettings: [],
 	connectioninfo: {
-		filename: "",
-		useheader: true,
-		delimiter: ",",
-
 		host: "",
 		database: "",
 		username: "",
 		password: "",
 		collection: "",
-		connectionid: ""
+		connectionid: "",
+		settings: {
+			filename: "",
+			useheader: true,
+			delimiter: "",
+		}
 	}
 }
+
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
 wg.templateFilterCond = ko.observableArray([
@@ -248,8 +253,8 @@ wg.filterDataSourceTypes= ko.observable('');
 wg.tempViewLog = ko.observableArray([]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
-	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
-	{ value: "SourceType_DocExcel", title: "Data File" },
+	{ value: "SourceType_HttpJson", title: "HTTP / Json" },
+	//{ value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -315,7 +320,13 @@ wg.editScrapper = function (_id) {
 		wg.modeSetting(1);
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
-
+		if(wg.configScrapper.intervalconf.intervaltype() == "" && $.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === true){
+			wg.modeSetup('onetime');
+		}else if($.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === false){
+			wg.modeSetup('schedule');
+		}else if(wg.configScrapper.intervalconf.intervaltype() != ""){
+			wg.modeSetup('interval');
+		}
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
 			item.filtercond = {};
@@ -375,11 +386,15 @@ wg.getScrapperData = function () {
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
+	ko.mapping.fromJS(wg.templateCron, wg.configCron);
+	//ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
 	wg.addScrapperPayload();
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
+	wg.modeSetup('');
+	//wg.timePreset('');
 };
 wg.backToFront = function () {
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -390,6 +405,10 @@ wg.backToFront = function () {
 	wg.getScrapperData();
 	wg.modeSelector("");
 	wg.showWebGrabber(false);
+	wg.scrapperMode('');
+	wg.modeSetup('');
+	wg.timePreset('');
+	ko.mapping.fromJS(wg.templateCron, wg.configCron);
 };
 wg.backToHistory = function () {
 	app.mode('history')
@@ -690,14 +709,19 @@ wg.viewHistory = function (_id) {
 }
 wg.nextSetting = function() {
 	if (!app.isFormValid(".form-row-1")) {
-		var errors = $(".form-row-1").data("kendoValidator").errors();
-		errors = Lazy(errors).filter(function (d) {
-			return ["Interval Type cannot be empty","Start time cannot be empty","Expired time cannot be empty"].indexOf(d) == -1;
-		}).toArray();
+		if(wg.modeSetup() != 'interval'){
+			var errors = $(".form-row-1").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Interval Type cannot be empty","Start time cannot be empty","Expired time cannot be empty","Grab Interval cannot be empty","Timeout Interval cannot be empty"].indexOf(d) == -1;
+			}).toArray();
 
-		if (errors.length > 0) {
+			if (errors.length > 0) {
+				return;
+			}
+		}else{
 			return;
 		}
+		
 	}
 	
 
@@ -846,8 +870,8 @@ wg.parseGrabConf = function () {
 	var config = ko.mapping.toJS(wg.configScrapper);
 
 	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting).map(function (item) {
-		if (typeof item.connectioninfo.useheader == "string") {
-			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
+		if (typeof item.connectioninfo.settings.useheader == "string") {
+			item.connectioninfo.settings.useheader = (item.connectioninfo.settings.useheader == "true");
 		}
 
 		item.rowselector = wg.replaceEqWithNthChild(item.rowselector);
@@ -899,11 +923,26 @@ wg.parseGrabConf = function () {
 			hour: (cron.hour == "" ? "*" : cron.hour),
 			dayofmonth: (cron.dayofmonth == "" ? "*" : cron.dayofmonth),
 			month: (cron.month == "" ? "*" : cron.month),
-			dayofweek: (cron.dayofweek == "" ? "*" : cron.dayofweek)
+			dayofweek: (cron.dayofweek == "" ? "*" : cron.dayofweek),
+			mode: cron.mode
 		};
 
 		config.intervalconf.cronconf = cronconf;
+		config.intervalconf.expiredtime = "";
+		config.intervalconf.intervaltype = "";
+		config.intervalconf.grabinterval = 0;
+		config.intervalconf.timeoutinterval = 0;
 	}
+	else if(modeSetup == 'onetime'){
+		config.intervalconf.expiredtime = "";
+		config.intervalconf.intervaltype = "";
+		config.intervalconf.grabinterval = 0;
+		config.intervalconf.timeoutinterval = 0;
+		config.intervalconf.cronconf = {};
+	}else{
+		config.intervalconf.cronconf = {};
+	}
+
 
 	config.intervalconf.grabinterval = parseInt(config.intervalconf.grabinterval, 10);
 	config.intervalconf.timeoutinterval = parseInt(config.intervalconf.timeoutinterval, 10);
@@ -947,6 +986,7 @@ wg.saveSelectorConf = function(){
 		app.mode("");
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+		ko.mapping.fromJS(wg.templateCron, wg.configCron);
 		wg.selectorRowSetting([]);
 		wg.getScrapperData();
 		wg.modeSelector("");

@@ -46,7 +46,7 @@ var Setting_DataSource = {
 };
 
 var templatetree = "#: item.text# "+
-             "<a style='display:none' path=\"#:item.pathf #\" name=\"#:item.text #\"></a> ";
+             "<a style='display:none' path=\"#:item.pathf #\" name=\"#:item.text #\" permission=\"#:item.permissions#\"></a> ";
 
 var methodsFB = {
 	init:function(options){
@@ -57,6 +57,7 @@ var methodsFB = {
 		settings["serverSource"] = serverSource;
 
 		settings["dataSource"].GetDirAction = "GetDir";
+		settings["dataSource"].originUrl = settingsSource.url;
 
 		templatetree = templatetree.replace("text",options.dataSource.nameField).replace("text",options.dataSource.nameField);
 		templatetree = templatetree.replace("pathf",options.dataSource.pathField);
@@ -93,6 +94,7 @@ var methodsFB = {
 			dataTextField: options.serverSource.dataTextField,
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
+            		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
 		});
@@ -108,9 +110,8 @@ var methodsFB = {
 		strtree = "<div></div>"
 		$strtree = $(strtree);
 		$strtree.appendTo($strpre);
-
 		var ds = options.dataSource;
-		var url = ds.url;
+		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
@@ -177,6 +178,10 @@ var methodsFB = {
 
 		methodsFB.BuildEditor(elem,options);
 		methodsFB.BuildPopUp(elem,options);
+	},
+	SetUrl:function(elem,action){
+		$(elem).data("ecFileBrowser").dataSource.url = $(elem).data("ecFileBrowser").dataSource.originUrl + "/"+action.toLowerCase();
+		return $(elem).data("ecFileBrowser").dataSource.url;
 	},
 	BuildEditor:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
@@ -289,6 +294,17 @@ var methodsFB = {
 		$edtxt.appendTo($edli);
 
 	},
+	BuildPermission:function(elemarr,permstr){
+		var idx = 0;
+		$(elemarr).each(function(){
+			$($(this).find("input")).each(function(){
+				if(permstr.charAt(idx)!="-"){
+					$(this)[0].checked = true;
+				}
+				idx++;
+			});
+		});
+	},
 	BuildPopUp : function(elem,options){
 		$div = $("<div class='modal fade modal-fb' tabindex='-1' role='dialog'></div>");
 		$div.appendTo($(elem));
@@ -327,8 +343,8 @@ var methodsFB = {
 		$btn =	$($(elem).find(".fb-submit"));
 		$btn.unbind("click");
 		$body.html("");
-		var name = $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("name");
-		var type = methodsFB.DetectType($(elem).find("span[class='k-in k-state-selected']"),name);
+		var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
@@ -421,7 +437,7 @@ var methodsFB = {
 					content.permission = strperm;
 					methodsFB.SendActionRequest(elem,content);
 			});	
-
+			methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
 		}else if (content.action=="Upload"){
 			if (type!="folder"){
 				alert("Please choose folder !");
@@ -440,15 +456,19 @@ var methodsFB = {
 	},
 	ActionRequest:function(elem,options,content,sender){
 		// console.log(content);		
-		var SelectedPath = $($(elem).find("span[class='k-in k-state-selected']")).length > 0 ?  $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("path"):"";
+		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
 		// console.log(SelectedPath);
+		var name = "";
+		var type = "";
 		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
 			alert("Select the directory/file !");
 			return;
 		}
 
-		var name = $($($(elem).find("span[class='k-in k-state-selected']")).find("a")).attr("name");
-		var type = methodsFB.DetectType($(elem).find("span[class='k-in k-state-selected']"),name);
+		if(content.action!="Search"){
+			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+		}
 
 		content.path = SelectedPath;
 		if(content.action=="Cancel"){
@@ -458,31 +478,35 @@ var methodsFB = {
 		}else if(content.action=="GetContent"){
 			var path = ($($(sender).find("a")).attr("path")); 
 			content.path = path;
+			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Rename"){
 			methodsFB.CallPopUp(elem,content,"Rename File");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="NewFile"){
 			methodsFB.CallPopUp(elem,content,"Create New File");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="NewFolder"){
 			methodsFB.CallPopUp(elem,content,"Create New Folder");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Delete"){
-
+			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Permission"){
 			methodsFB.CallPopUp(elem,content,"Edit Permission");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Upload"){
 			methodsFB.CallPopUp(elem,content,"Upload File");
+			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Edit"){
 			content.contents = $($(elem).find(".fb-editor")).getKendoEditor().value();
+			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Search"){
-			if($($(elem).find(".fb-txt-search")).val()!=""){
-					$(elem).data("ecFileBrowser").dataSource.GetDirAction = content.action;
-			}else{
-				$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
-			}
+			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
+            $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			return;
 		}else if(content.action=="Download"){
@@ -490,10 +514,13 @@ var methodsFB = {
 				alert("Please choose file !");
 				return;
 			}
+			methodsFB.SetUrl(elem,content.action);
 		}
 		methodsFB.SendActionRequest(elem,content);
 	},
 	SendActionRequest:function(elem,param){
+		param.serverId = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+		
 		var ds = $(elem).data("ecFileBrowser").dataSource;
 		var url = ds.url;
 		var data = ds.callData;
@@ -506,7 +533,7 @@ var methodsFB = {
                 url: url,
                 type: call,
                 dataType: 'json',
-                data : param,
+                data : JSON.stringify(param),
                 contentType: contentType,
                 success : function(res) {
                 	alert("OK");
@@ -514,7 +541,10 @@ var methodsFB = {
                 	if(param.action == "GetContent"){
                 		$($(elem).find(".fb-filename")).html(param.path);
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
+                	}else{
+                		methodsFB.RefreshTreeView(elem);
                 	}
+                		$(elem).find(".modal").modal("hide");
                 },
                 error: function (a, b, c) {
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
@@ -530,7 +560,7 @@ var methodsFB = {
 		if (options.serverSource.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		 $.ajax({
+		$.ajax({
                 url: url,
                 type: call,
                 dataType: 'json',
@@ -553,6 +583,7 @@ var methodsFB = {
 							dataTextField: options.serverSource.dataTextField,
 							dataValueField:options.serverSource.dataValueField,
 							change: function(){
+            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
 						});					
@@ -578,5 +609,20 @@ var methodsFB = {
 		}else {
 			return "html"
 		}
+	},
+	RefreshTreeView:function(elem){
+		var tree = $($("#FileBrowser").find(".k-treeview")).getKendoTreeView();
+		var selectedUid = $($($($("#FileBrowser").find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
+		var selectedparent = tree.parent(tree.findByUid(selectedUid));
+		if(selectedparent.length==0){
+			tree.dataSource.read();
+			return;
+		}
+		var dtItem = tree.dataItem(selectedparent);
+		dtItem.dirty = false;
+		dtItem.expanded = false;
+		dtItem.loaded(false);
+		$(selectedparent[0].firstChild.firstChild).click();
+		$(selectedparent[0].firstChild.firstChild).trigger("click");
 	}
 }
