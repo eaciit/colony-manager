@@ -135,7 +135,7 @@ br.ViewBrowserName = function(id){
 	                  fieldTotal: "DataCount",
 	                  fieldData: "DataValue",
 	                  serverPaging: true,
-	                  pageSize: 1,
+	                  pageSize: 10,
 	                  serverSorting: true,
 	            },
 			metadata: res.data.dataresult.MetaData,

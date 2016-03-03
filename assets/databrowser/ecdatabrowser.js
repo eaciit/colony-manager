@@ -118,7 +118,8 @@ var methodsDataBrowser = {
 		// var dataResult = $.grep(Setting_TypeData.number, function(e){ 
 		// 	return settingFilter.Format.toLowerCase().indexOf(e) >= 0; 
 		// });
-		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == 'float'){
+
+		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() || "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
 			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="number" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
@@ -150,13 +151,14 @@ var methodsDataBrowser = {
 		}
 	},
 	createGrid: function(element, options, id){
-		var colums = [], format="";
+		var colums = [], format="", aggr= "";
 		for(var key in options.metadata){
-			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() || "float") && options.metadata[key].Format != "" ){
+			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() || "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
 			} else {
 				format = "";
 			}
+			aggr = options.metadata[key].Aggregate.split(",");
 			if (options.metadata[key].HiddenField != true){
 				colums.push({
 					field: options.metadata[key].Field,
@@ -168,7 +170,8 @@ var methodsDataBrowser = {
 					},
 					headerAttributes: {
 						style: "text-align: "+options.metadata[key].Align+";",
-					}
+					},
+					aggregates: aggr,
 				});
 			}
 		}
