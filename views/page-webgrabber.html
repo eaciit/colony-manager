@@ -313,22 +313,23 @@
 			    			</div>
 			    			<hr style="width: 100%; color: #FDFDFD; height: 1px;" />
 			    			<section class="form-horizontal" data-bind="with: wg.configCron">
+			    			<div>
 			    				<div class="col-md-12" style="padding-left:0px">
 								    <label class="col-md-4 filter-label">Time Presets</label>
 								    <div class="col-md-8">
 							       		<select class="input-md" name="setup" data-bind="kendoDropDownList: { data: wg.taskMode, dataValueField: 'value', dataTextField: 'title', value: wg.configCron.mode}"></select>
 										<span class="k-invalid-msg" data-for="setup"></span>
 							       	</div>
-							       <div>
+							       
 							       		<div class="clearfix">&nbsp;</div>
 							       		<label class="col-md-4">&nbsp;</label>
 										<div class="col-md-8 form-group">
-											<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.timePreset() == 'monthly'">
+											<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
 								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...', max: 23, min:0 }" style="width: 100px"></select>
 								       			</div>
 								       		</div>
-								       		<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.timePreset() == 'monthly' || wg.timePreset() != '' && wg.timePreset() != 'custom' ">
+								       		<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly' || wg.configCron.mode() != '' && wg.configCron.mode() != 'custom' ">
 								       			<div class="col-md-6">
 									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min, max: 59, min:0 }" style="width: 90px"></select>
 								       			</div>
@@ -383,7 +384,7 @@
 											<tbody data-bind="foreach: wg.selectorRowSetting">
 												<tr>
 													<td>
-														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: _id, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
+														<input required class="form-control input-sm full-width" type="text" data-required-msg="Name cannot be empty" placeholder="Type name here" data-bind="value: nameid, attr: { 'name': 'selector-setting-key-' + $index() }" style="width:100px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'selector-setting-key-' + $index() }"></span>
 													</td>
 													<td>
@@ -548,7 +549,7 @@
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">File Name</label>
 				    						<div class="col-md-6">
-				    							<input required type="text" class="form-control input-sm full-width" name="FileName" placeholder="Type filename here" data-bind="value: connectioninfo.filename"/>
+				    							<input required type="text" class="form-control input-sm full-width" name="FileName" placeholder="Type filename here" data-bind="value: connectioninfo.settings.filename"/>
 												<span class="k-invalid-msg" data-for="FileName"></span>
 				    						</div>
 				    						<div class="clearfix"></div>
@@ -556,7 +557,7 @@
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">Use Header</label>
 				    						<div class="col-md-6">
-				    							<select style="width: 100%;" name="UseHeader" required data-required-msg="Use header cannot be empty" data-bind="kendoDropDownList: { data: wg.useHeaderOptions, dataValueField: 'value', dataTextField: 'title', value: wg.configSelector.connectioninfo.useheader }"></select>
+				    							<select style="width: 100%;" name="UseHeader" required data-required-msg="Use header cannot be empty" data-bind="kendoDropDownList: { data: wg.useHeaderOptions, dataValueField: 'value', dataTextField: 'title', value: wg.configSelector.connectioninfo.settings.useheader }"></select>
 												<span class="k-invalid-msg" data-for="UseHeader"></span>
 				    						</div>
 				    						<div class="clearfix"></div>
@@ -564,7 +565,7 @@
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">Delimiter</label>
 				    						<div class="col-md-6">
-				    							<input required type="text" class="form-control input-sm full-width" name="Delimiter" placeholder="Type delimiter here" data-bind="value: connectioninfo.delimiter"/>
+				    							<input required type="text" class="form-control input-sm full-width" name="Delimiter" placeholder="Type delimiter here" data-bind="value: connectioninfo.settings.delimiter"/>
 												<span class="k-invalid-msg" data-for="Delimiter"></span>
 				    						</div>
 				    						<div class="clearfix"></div>
