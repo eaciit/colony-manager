@@ -106,14 +106,14 @@
 	    		</div>
     		</div>
     		<div class="col-md-6">
-	    		<div class="form-group">
+	    		<div class="form-group" data-bind="visible: srv.isServerTypeNode">
 		    		<label class="col-md-3 filter-label">App Path</label>
 		    		<div class="col-md-9">
 		    			<input required type="text" class="form-control input-sm" name="apppath" placeholder="Example: /Users/test/app-path" data-bind="value: appPath">
 						<span class="k-invalid-msg" data-for="apppath"></span>
 		    		</div>
 	    		</div>
-	    		<div class="form-group">
+	    		<div class="form-group" data-bind="visible: srv.isServerTypeNode">
 		    		<label class="col-md-3 filter-label">Data Path</label>
 		    		<div class="col-md-9">
 		    			<input required type="text" class="form-control input-sm" name="datapath" placeholder="Example: /Users/test/data-path" data-bind="value: dataPath">
@@ -156,11 +156,14 @@
 	    		<div class="form-group" data-bind="visible: sshtype() == 'File'">
 		    		<label class="col-md-3 filter-label">File</label>
 		    		<div class="col-md-7">
-		    			<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
-						    <span class="glyphicon glyphicon-upload"></span> Upload 
-						    <input id="privatekey" type="file">
-						    <!-- srv.getServerFile -->
-						</span>
+		    			<div>
+		    				<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
+							    <span class="glyphicon glyphicon-upload"></span> Upload 
+							    <input required name="file" id="privatekey" type="file">
+							    <!-- srv.getServerFile -->
+							</span>
+						</div>
+						<div><span class="k-invalid-msg" data-for="file"></span></div>
 		    		</div>
 	    		</div>
     		</div>
@@ -168,7 +171,7 @@
 		    	<div class="form-group">
 		    		<label class="col-md-3 filter-label">Type</label>
 		    		<div class="col-md-7">
-		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype}">
+		    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype, enabled: srv.isServerTypeNode }">
 				        </select>
 				        <span class="k-invalid-msg" data-for="type-ssh"></span>
 		    		</div>
@@ -181,11 +184,11 @@
 		    		</div>
 		    	</div>
     		</div>
-    		<div class="col-md-12 row">
+    		<div class="col-md-12 row" data-bind="visible: srv.isServerTypeNode">
     			<p class="pcustom">Command</p>
     		</div>
 
-	    	<div class="col-md-12">
+	    	<div class="col-md-12" data-bind="visible: srv.isServerTypeNode">
 	    		<div class="form-group">
 		    		<label class="col-md-2 filter-label">Extract</label>
 		    		<div class="col-md-9">

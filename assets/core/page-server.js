@@ -124,14 +124,23 @@ srv.createNewServer = function () {
 srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
 		var errors = $(".form-server").data("kendoValidator").errors();
-		if (srv.isMultiServer()) {
-			errors = Lazy(errors).filter(function (d) {
-				return ["ID is required", "host is required"].indexOf(d) == -1;
-			}).toArray();
+		var excludeErrors = []; 
+		if (srv.configServer.serverType() == "node") {
+			if (srv.isMultiServer()) {
+				excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
+			}
+		} else {
+			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required"]);
+		}
+
+		if (srv.configServer.sshtype() == "File") {
+			excludeErrors = excludeErrors.concat(["user is required", "password is required"]);
+		}  else {
+			excludeErrors = excludeErrors.concat(["file is required"]);
 		}
 
 		errors = Lazy(errors).filter(function (d) {
-			return ["user is required", "password is required"].indexOf(d) == -1;
+			return excludeErrors.indexOf(d) == -1;
 		}).toArray();
 
 		if (errors.length > 0) {
@@ -164,10 +173,9 @@ srv.doSaveServer = function (c) {
 
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
 				if (!res.success) {
+					failedHosts.push(d);
 					return;
 				}
-
-				failedHosts.push(d);
 			}, function (a) {
 				failedHosts.push(d);
 			}, {
@@ -218,10 +226,14 @@ srv.isServerTypeNode = ko.computed(function () {
 srv.changeServerOS = function () {
 	if (this.value() == "node") {
 		srv.configServer.os("linux");
+		srv.configServer.appPath("");
+		srv.configServer.dataPath("");
+		srv.configServer.sshtype("Credentials");
 	}
 };
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
+		srv.isNew(false);
 		srv.getServers();
 		apl.getApplications();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
@@ -259,8 +271,14 @@ srv.doTestConnection = function (_id) {
 		}
 	}
 
-	_id = (_id == undefined) ? srv.configServer._id() : _id;
-	app.ajaxPost("/server/testconnection", { _id: _id }, function(res) {
+	var payload = { };
+	if (_id == undefined) {
+		payload = Lazy(srv.ServerData()).find({ _id: _id });
+	} else {
+		payload = ko.mapping.toJS(srv.configServer);
+	}
+
+	app.ajaxPost("/server/testconnection", payload, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}

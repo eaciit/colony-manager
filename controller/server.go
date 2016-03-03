@@ -6,12 +6,14 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
+	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
 	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"golang.org/x/crypto/ssh"
 	"path/filepath"
+	"time"
 )
 
 type ServerController struct {
@@ -136,6 +138,25 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if data.ServerType == "hadoop" {
+		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
+		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHPass))
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		_, err = hadeepes.List("/")
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		hadeepes.Config.TimeOut = 5 * time.Millisecond
+		hadeepes.Config.PoolSize = 100
+
+		return helper.CreateResult(true, nil, "")
 	}
 
 	log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
@@ -305,6 +326,20 @@ func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 	err = colonycore.Get(payload, payload.ID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if payload.ServerType == "hadoop" {
+		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(payload.Host, payload.SSHPass))
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		_, err = hadeepes.List("/")
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		return helper.CreateResult(true, payload, "")
 	}
 
 	a, b, err := s.SSHConnect(payload)
