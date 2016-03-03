@@ -348,7 +348,7 @@ var methodsFB = {
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
-				alert("Please choose folder !");
+                swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
 
@@ -361,7 +361,7 @@ var methodsFB = {
 			});
 		}else if(content.action=="NewFolder"){
 			if (type!="folder"){
-				alert("Please choose folder !");
+                swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
 
@@ -440,7 +440,7 @@ var methodsFB = {
 			methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
 		}else if (content.action=="Upload"){
 			if (type!="folder"){
-				alert("Please choose folder !");
+                swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
 
@@ -459,7 +459,7 @@ var methodsFB = {
 		var name = "";
 		var type = "";
 		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
-			alert("Select the directory/file !");
+            swal("Warning!", "Please choose folder or file !", "error");
 			return;
 		}
 
@@ -471,7 +471,7 @@ var methodsFB = {
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
 			var dtitm = methodsFB.GetSelectedData(elem);
 			if(!dtitm.iseditable){
-				alert("Action not permitted !");
+            swal("Warning!", "Action not permitted !", "error");
 				return;
 			}
 		}
@@ -517,7 +517,7 @@ var methodsFB = {
 			return;
 		}else if(content.action=="Download"){
 			if (type=="folder"){
-				alert("Please choose file !");
+            swal("Warning!", "Please choose file !", "error");
 				return;
 			}
 			methodsFB.SetUrl(elem,content.action);
@@ -543,12 +543,12 @@ var methodsFB = {
                 data : JSON.stringify(param),
                 contentType: contentType,
                 success : function(res) {
-                	alert("OK");
+                	 swal("Saved!", "Your request has been processed !", "success");
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
                 		$($(elem).find(".fb-filename")).html(param.path);
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
-                	}else{
+                	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem);
                 	}
                 		$(elem).find(".modal").modal("hide");
