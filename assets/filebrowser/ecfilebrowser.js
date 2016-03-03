@@ -519,6 +519,8 @@ var methodsFB = {
 		methodsFB.SendActionRequest(elem,content);
 	},
 	SendActionRequest:function(elem,param){
+		param.serverId = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+		
 		var ds = $(elem).data("ecFileBrowser").dataSource;
 		var url = ds.url;
 		var data = ds.callData;
@@ -531,7 +533,7 @@ var methodsFB = {
                 url: url,
                 type: call,
                 dataType: 'json',
-                data : param,
+                data : JSON.stringify(param),
                 contentType: contentType,
                 success : function(res) {
                 	alert("OK");
@@ -555,7 +557,7 @@ var methodsFB = {
 		if (options.serverSource.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		 $.ajax({
+		$.ajax({
                 url: url,
                 type: call,
                 dataType: 'json',

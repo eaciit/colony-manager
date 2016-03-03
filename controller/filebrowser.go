@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
-	// "github.com/eaciit/errorlib"
+	"github.com/eaciit/errorlib"
 	. "github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/sshclient"
@@ -69,13 +69,13 @@ func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "FORM")
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		path := ""
 		search := ""
 
@@ -166,7 +166,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -192,7 +192,7 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -223,7 +223,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -249,7 +249,7 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -275,7 +275,7 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -301,13 +301,13 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		path := ""
 		permission := ""
 
@@ -342,7 +342,7 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -372,7 +372,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Downnload(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 	_ = payload
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -396,11 +396,20 @@ func (s *FileBrowserController) Downnload(r *knot.WebContext) interface{} {
 	return helper.CreateResult(false, nil, "")
 }
 
-func getServer(r *knot.WebContext) (server colonycore.Server, payload map[string]interface{}, err error) {
+func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload map[string]interface{}, err error) {
 
-	err = r.GetForms(&payload)
+	if tp == "FORM" {
+		err = r.GetForms(&payload)
+	} else if tp == "PAYLOAD" {
+		err = r.GetPayload(&payload)
+	}
 
 	if err != nil {
+		return
+	}
+
+	if payload["serverId"] == nil {
+		err = errorlib.Error("", "", "getServer", "Please input serverId")
 		return
 	}
 
