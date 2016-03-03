@@ -344,7 +344,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	if pid != "" {
 		log.AddLog("PID of sedotand: "+pid, "SUCCESS")
 
-		killProcessCmd := fmt.Sprintf("sudo kill -9 %s", pid)
+		killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
 		log.AddLog(killProcessCmd, "INFO")
 		_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
 		if err != nil {
