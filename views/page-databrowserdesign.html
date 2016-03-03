@@ -13,10 +13,10 @@
 <!-- main area -->
 <div class="col-md-12">
 	<nav class="navbar" >
-        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.saveAndBack">
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){db.saveAndBack('goback')}">
     		<span class="glyphicon glyphicon-chevron-left"></span> Save and Back to List
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" >
+        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: function(){db.saveAndBack('goview')}">
     		<span class="glyphicon glyphicon-plus"></span> Save and Go to View
     	</button>
     	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: db.backToFront">
@@ -66,7 +66,7 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Connection</label>
 					    		<div class="col-md-7">
-					    			<select required id="connectionlist" data-required-msg="Connection cannot be empty" name="connectionlist" data-placeholder="Select Connection" class="form-control col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: db.populateTable, filter: 'contains', suggest: true, minLength: 2}">
+					    			<select required id="connectionlist" data-required-msg="Connection cannot be empty" name="connectionlist" data-placeholder="Select Connection" class="form-control col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: function(e) {db.populateTable(this.dataItem(e.item)._id)}, filter: 'contains', suggest: true, minLength: 2}">
 							        </select>
 							        <span class="k-invalid-msg" data-for="connectionlist"></span>
 					    		</div>
@@ -78,7 +78,7 @@
 			    			<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Table</label>
 					    		<div class="input-group col-md-7">
-						    		<select required id="table" data-required-msg="Table cannot be empty" name="table" class="form-control col-100" data-bind="kendoDropDownList: { data: db.collectionListData, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Select one', value: TableNames, filter: 'contains', suggest: true, minLength: 2 }">
+						    		<select id="table" data-required-msg="Table cannot be empty" name="table" class="form-control col-100" data-bind="kendoDropDownList: { data: db.collectionListData, dataValueField: 'value', dataTextField: 'text', value: TableNames, optionLabel: 'Select one', filter: 'contains', suggest: true, minLength: 2 }">
 							        </select>
 							        <span class="k-invalid-msg" data-for="table"></span> 
 					    		</div>
@@ -121,9 +121,10 @@
 						        </div> -->
 							</div>
 					    		<div class="input-group col-md-11">
-									<input type="textquery" name="textquery" id="textquery" class="form-control" placeholder="Query Text">
+									<input type="text" name="textquery" class="form-control" id="querytext" placeholder="Query builder" data-bind="value: QueryText">
+									<span class="k-invalid-msg" data-for="textquery"></span>
 									<span class="input-group-btn">
-										<button class="btn btn-primary" type="button">Builder</button>
+									<button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
 									</span>
 								</div>
 				    		</div>
