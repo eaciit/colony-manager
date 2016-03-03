@@ -120,54 +120,72 @@ br.ViewBrowserName = function(id){
 		if (!res.data) {
 			res.data = [];
 		}
-		var ondata = res.data;
-		var ondataval =ondata.DataValue;
-		var ondatacol = ondata.dataresult.MetaData;
-		for(var i=0; i< ondatacol.length; i++){
-			datacol.push({field: ondatacol[i].Field , title: ondatacol[i].Label, sortable: ondatacol[i].Sortable})
-		}
-		//br.dataBrowserDescColumns(datacol);
-		br.dataBrowserDesc(ondataval);
-		br.dataBrowserDescColumns(datacol);
-		
+
 		br.pageVisible("view");
 		br.onVisible("simple");
+		console.log(res.data.dataresult.MetaData);
+		$('#grid-databrowser-decription').ecDataBrowser({
+			title: "",
+			widthPerColumn: 6,
+			showFilter: "Simple",
+			dataSource: { 
+	                  url: "/databrowser/detaildb",
+	                  type: "post",
+	                  callData: {id: id},
+	                  fieldTotal: "DataCount",
+	                  fieldData: "DataValue",
+	                  serverPaging: true,
+	                  pageSize: 1,
+	                  serverSorting: true,
+	            },
+			metadata: res.data.dataresult.MetaData,
+		});
+	// 	var ondata = res.data;
+	// 	var ondataval =ondata.DataValue;
+	// 	var ondatacol = ondata.dataresult.MetaData;
+	// 	for(var i=0; i< ondatacol.length; i++){
+	// 		datacol.push({field: ondatacol[i].Field , title: ondatacol[i].Label, sortable: ondatacol[i].Sortable})
+	// 	}
+	// 	//br.dataBrowserDescColumns(datacol);
+	// 	br.dataBrowserDesc(ondataval);
+	// 	br.dataBrowserDescColumns(datacol);
+		
 
-		$("#grid-databrowser-decription").kendoGrid({
-            columns: datacol,
-            // dataSource: {  	
-            //     // data: ondataval,
-            //     pageSize: 5,
-            // },
-            dataSource: {
-				   transport: {
-					   read:function(options){
-                        var parm = {
-                        		id: id
-                        	};
-                        for(var i in options.data){
-                            parm[i] = options.data[i];
-                        }
-                        app.ajaxPost("/databrowser/detaildb",parm, function (res){
-	                          	options.success(res);
-	                          	console.log(res.data)
-	                        });
-	                     },
-				   },
-				   schema: {
-					   data: "data.DataValue",
-					   total: "data.DataCount",
-				   },
-				   pageSize: 5,
-				   serverPaging: true, 
-				   serverSorting: true,
-				   serverFiltering: true,
-			   },
-            pageable: true,
-            scrollable: true,
-			sortable: true,
-            columns:datacol
-        });
+	// 	$("#grid-databrowser-decription").kendoGrid({
+ //            columns: datacol,
+ //            // dataSource: {  	
+ //            //     // data: ondataval,
+ //            //     pageSize: 5,
+ //            // },
+ //            dataSource: {
+	// 			   transport: {
+	// 				   read:function(options){
+ //                        var parm = {
+ //                        		id: id
+ //                        	};
+ //                        for(var i in options.data){
+ //                            parm[i] = options.data[i];
+ //                        }
+ //                        app.ajaxPost("/databrowser/detaildb",parm, function (res){
+	//                           	options.success(res);
+	//                           	console.log(res.data)
+	//                         });
+	//                      },
+	// 			   },
+	// 			   schema: {
+	// 				   data: "data.DataValue",
+	// 				   total: "data.DataCount",
+	// 			   },
+	// 			   pageSize: 5,
+	// 			   serverPaging: true, 
+	// 			   serverSorting: true,
+	// 			   serverFiltering: true,
+	// 		   },
+ //            pageable: true,
+ //            scrollable: true,
+	// 		sortable: true,
+ //            columns:datacol
+ //        });
 	});
 	
 }
@@ -197,11 +215,16 @@ br.saveAndBack = function (){
 br.filterAdvance = function(){
 	//alert("masuk advance");
 	br.onVisible("advance");
+	$('#grid-databrowser-decription').ecDataBrowser("setShowFilter","advance");
 }
 
 br.filterSimple = function(){
 	//alert("masuk advance");
 	br.onVisible("simple");
+	$('#grid-databrowser-decription').ecDataBrowser("setShowFilter","simple");
+}
+br.filterDataBrowser = function(){
+	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter");
 }
 
 $(function (){

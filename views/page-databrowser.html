@@ -1,8 +1,9 @@
 <!-- core -->
+<link href="/res/databrowser/ecdatabrowser.css" rel="stylesheet">
 <script src="/res/core/page-databrowser.js"></script>
 <script src="/res/core/page-databrowserdesign.js"></script>
 <script src="/res/databrowser/eclookup.js"></script>
-
+<script src="/res/databrowser/ecdatabrowser.js"></script>
 <!-- main -->
 <div class="col-xs-12 col-sm-12" id="content">
 	<div class="col-md-12">
@@ -49,7 +50,7 @@
 				<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.backToFront">
 		    		<span class="glyphicon glyphicon-chevron-left"></span> Back to List
 		    	</button>
-		        <button class="btn btn-sm btn-primary navbar-btn" >
+		        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.filterDataBrowser">
 		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 		    	</button>
 		        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.filterSimple, visible: (br.onVisible() == 'advance')">
@@ -64,9 +65,11 @@
 					<h1 class="panel-title">Data Browser <span data-bind="text: br.selectedID"></span></h1>
 				</div>
 				<div class="panel-body">
+
+							<div class="col-md-12" id="grid-databrowser-decription">
 					<form class="form-horizontal" >
 						<div class="col-md-12">
-							<div class="col-md-12">
+							<!-- <div class="col-md-12">
 								<div class="col-md-6">
 									<div class="form-group">
 										<label class="col-md-2 databrowser-label">ID</label>
@@ -101,13 +104,12 @@
 								</div>
 								<div class="col-md-12">
 									<div class="form-group">
-										<!-- <div class="grid grid-databrowser-decription" data-bind="kendoGrid: {dataSource :{ pageSize: 10 }, data: br.dataBrowserDesc, serverPaging: true, columns: br.dataBrowserDescColumns, selectable: 'multiple, row', filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-decription') }"></div> -->
 										<div id="grid-databrowser-decription"></div>
 									</div>
 
 									
 								</div>
-							</div>
+							</div> -->
 						</div>
 					</form>
 				</div>
