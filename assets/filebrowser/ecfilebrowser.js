@@ -455,9 +455,7 @@ var methodsFB = {
 		$($(elem).find(".modal")).modal("show");		
 	},
 	ActionRequest:function(elem,options,content,sender){
-		// console.log(content);		
 		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
-		// console.log(SelectedPath);
 		var name = "";
 		var type = "";
 		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
@@ -468,6 +466,14 @@ var methodsFB = {
 		if(content.action!="Search"){
 			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
 			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+		}
+
+		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
+			var dtitm = methodsFB.GetSelectedData(elem);
+			if(!dtitm.iseditable){
+				alert("Action not permitted !");
+				return;
+			}
 		}
 
 		content.path = SelectedPath;
@@ -529,6 +535,7 @@ var methodsFB = {
 		if (ds.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
+		app.isLoading(true);
 		 $.ajax({
                 url: url,
                 type: call,
@@ -545,6 +552,7 @@ var methodsFB = {
                 		methodsFB.RefreshTreeView(elem);
                 	}
                 		$(elem).find(".modal").modal("hide");
+                		app.isLoading(false)
                 },
                 error: function (a, b, c) {
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
@@ -611,8 +619,8 @@ var methodsFB = {
 		}
 	},
 	RefreshTreeView:function(elem){
-		var tree = $($("#FileBrowser").find(".k-treeview")).getKendoTreeView();
-		var selectedUid = $($($($("#FileBrowser").find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
+		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
+		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
 		var selectedparent = tree.parent(tree.findByUid(selectedUid));
 		if(selectedparent.length==0){
 			tree.dataSource.read();
@@ -624,5 +632,11 @@ var methodsFB = {
 		dtItem.loaded(false);
 		$(selectedparent[0].firstChild.firstChild).click();
 		$(selectedparent[0].firstChild.firstChild).trigger("click");
+	},
+	GetSelectedData:function(elem){
+		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
+		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
+		var dataItem = tree.dataItem(tree.findByUid(selectedUid));
+		return dataItem;
 	}
 }
