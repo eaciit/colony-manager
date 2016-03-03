@@ -75,11 +75,11 @@ db.databrowserColumns = ko.observableArray([
             }).appendTo(container);
         }
     },
-	{ title: "Position", width: 110,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;''>#= ShowIndex #</span>"},
-	{ title: "Hidden Field", template: "<input type='checkbox' #= HiddenField ? \"checked='checked'\" : '' # class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' />"},
-	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' />"},
-	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
-	{ title: "Advance Filter", template: "<input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ title: "Position", width: 110,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;'>#= ShowIndex #</span>"},
+	{ title: "Hidden Field", template: "<center><input type='checkbox' #=HiddenField ? \"checked='checked'\" : ''# class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallhiddenfield' onclick=\"db.checkAll(this, 'HiddenField')\" /> Hidden Field</center>"},
+	{ title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" /> Sortable</center>"},
+	{ title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" /> Simple Filter</center>"},
+	{ title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" /> Advance Filter</center>"},
 	{ field: "Aggregate", title: "Aggregate"},
 ]);
 
@@ -193,6 +193,7 @@ db.changeCheckboxOnGrid = function (o) {
 	var plainData = JSON.parse(kendo.stringify(data));
 	db.databrowserData(plainData);
 	db.setDataSource();
+	db.headerCheckedAll();
 
 	return true;
 }
@@ -263,8 +264,7 @@ db.designDataBrowser = function(_id) {
 		
 		db.isChecked($("#isFreetext").prop("checked"))
 		db.showHideFreeQuery();
-		
-
+		db.headerCheckedAll();
 	});
 }
 
@@ -288,10 +288,8 @@ db.populateTable = function (_id) {
 					datavalue.push(data);
 				});
 			}
-			console.log(datavalue)
-			console.log(db.queryType())
+
 			db.collectionListData(datavalue);
-			// db.configDataBrowser;
 		}
 	});
 };
@@ -333,7 +331,6 @@ db.testQuery = function() {
 		db.configDataBrowser.MetaData([]);
 		db.databrowserData(res.data.MetaData);
 		db.setDataSource();
-		param.QueryText = ""
 	});
 };
 
@@ -353,11 +350,49 @@ db.checkBuilderNotEmpty = function() {
 	}
 }
 
+db.checkAll = function(ele, field) {
+    var state = $(ele).is(':checked');    
+    var grid = $('.grid-databrowser-design').data('kendoGrid');
+    $.each(grid.dataSource.view(), function () {
+        if (this[field] != state) 
+            this.dirty=true;
+        this[field] = state;
+    });
+    grid.refresh();
+}
+
+db.headerCheckedAll = function() {
+	if ($(".hiddenfield:checked").length == $(".hiddenfield").length) {
+		$("#selectallhiddenfield").prop("checked", true);
+	} else {
+		$("#selectallhiddenfield").prop("checked", false);
+	}
+
+	if ($(".sortable:checked").length == $(".sortable").length) {
+		$("#selectallsortable").prop("checked", true);
+	} else {
+		$("#selectallsortable").prop("checked", false);
+	}
+
+	if ($(".simplefilter:checked").length == $(".simplefilter").length) {
+		$("#selectallsimplefilter").prop("checked", true);
+	} else {
+		$("#selectallsimplefilter").prop("checked", false);
+	}
+
+	if ($(".advancefilter:checked").length == $(".advancefilter").length) {
+		$("#selectalladvancefilter").prop("checked", true);
+	} else {
+		$("#selectalladvancefilter").prop("checked", false);
+	}
+}
+
 db.backToFront = function() {
 	app.mode('');
 	br.pageVisible("");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	$("#isFreetext").prop("checked", false);
+	$("#selectallhiddenfield").prop("checked", false);
 	$("#freeQuery").hide();
 	$("#fromTable").show();
 	br.getDataBrowser();
@@ -410,18 +445,19 @@ db.showHideFreeQuery = function() {
 		$("#isFreetext").attr("checked", false)
 		$("#freeQuery").hide();
 		$("#querytype").hide();
-		$("#isFreetext").change(function() {
-			if (this.checked){
-				$("#freeQuery").show();
-				$("#querytype").show();
-				$("#fromTable").hide();	
-			}else{
-				$("#freeQuery").hide();
-				$("#querytype").hide();
-				$("#fromTable").show();
-			}
-		});
 	}
+
+	$("#isFreetext").change(function() {
+		if (this.checked){
+			$("#freeQuery").show();
+			$("#querytype").show();
+			$("#fromTable").hide();	
+		}else{
+			$("#freeQuery").hide();
+			$("#querytype").hide();
+			$("#fromTable").show();
+		}
+	});
 
 	if (db.isChecked()) {
 		$("#freeQuery").show();
