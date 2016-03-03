@@ -141,7 +141,7 @@ wg.templateCron = {
 
 }
 wg.templateConfigSelector = {
-	_id: "",
+	nameid: "",
 	rowselector: "",
 	filtercond: "",
 	conditionlist: [],
@@ -320,13 +320,20 @@ wg.editScrapper = function (_id) {
 		wg.modeSetting(1);
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
-		if(wg.configScrapper.intervalconf.intervaltype() == "" && $.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === true){
+
+		if($.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === true && wg.configScrapper.intervalconf.intervaltype() == ""){
 			wg.modeSetup('onetime');
-		}else if($.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === false){
+		}
+
+		if($.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === false){
 			wg.modeSetup('schedule');
-		}else if(wg.configScrapper.intervalconf.intervaltype() != ""){
+			ko.mapping.fromJS(wg.configScrapper.intervalconf.cronconf, wg.configCron);
+		}
+
+		if(wg.configScrapper.intervalconf.intervaltype() != ""){
 			wg.modeSetup('interval');
 		}
+
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
 			item.filtercond = {};
@@ -408,6 +415,7 @@ wg.backToFront = function () {
 	wg.scrapperMode('');
 	wg.modeSetup('');
 	wg.timePreset('');
+	wg.configScrapper.intervalconf.cronconf = {};
 	ko.mapping.fromJS(wg.templateCron, wg.configCron);
 };
 wg.backToHistory = function () {
@@ -990,6 +998,7 @@ wg.saveSelectorConf = function(){
 		wg.selectorRowSetting([]);
 		wg.getScrapperData();
 		wg.modeSelector("");
+		wg.modeSetup("")
 	});
 }
 wg.viewHistoryRecord = function (id) {
