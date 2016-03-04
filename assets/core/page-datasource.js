@@ -354,6 +354,7 @@ ds.saveNewConnection = function () {
 		}
 
 		ds.backToFrontPage();
+		ds.connectionListMode("edit");
 	});
 };
 ds.testConnectionFromGrid = function (_id) {
@@ -616,6 +617,7 @@ ds.saveDataSource = function (c) {
 
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		if (typeof c !== "undefined") c(res);
+		ds.dataSourceMode("edit");
 	});
 };
 ds.testQuery = function () {

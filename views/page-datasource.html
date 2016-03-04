@@ -127,7 +127,7 @@ body {
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Connection ID</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
+				            <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
 							<span class="k-invalid-msg" data-for="ID"></span>
 				        </div>
 				    </div>
@@ -273,7 +273,7 @@ body {
 						<div class="col-md-6">
 				        	<label class="col-md-4 filter-label">Data Source ID</label>
 				        	<div class="col-md-8">
-				        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
+				        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
 								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
 				        </div>

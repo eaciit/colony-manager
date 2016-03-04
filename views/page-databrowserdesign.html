@@ -13,15 +13,18 @@
 <!-- main area -->
 <div class="col-md-12">
 	<nav class="navbar" >
-        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){db.saveAndBack('goback')}">
-    		<span class="glyphicon glyphicon-chevron-left"></span> Save and Back to List
+        <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: function(){db.back('back')}">
+    		<span class="glyphicon glyphicon-chevron-left"></span> Back
     	</button>
-        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: function(){db.saveAndBack('goview')}">
-    		<span class="glyphicon glyphicon-plus"></span> Save and Go to View
+    	<button class="btn btn-sm btn-primary" data-bind="click: function(){db.saveAndBack('nothing')}">
+    		<span class="glyphicon glyphicon-save"></span> Save
     	</button>
-    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: db.backToFront">
+    	<button class="btn btn-sm btn-primary" data-bind="click: function(){db.saveAndBack('goview')}">
+    		<span class="glyphicon glyphicon-save"></span> Save and View
+    	</button>
+    	<!-- <button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: db.backToFront">
     		<span class="glyphicon glyphicon-remove"></span> Cancel
-    	</button>
+    	</button> -->
 	</nav>
 
 	<div class="panel">
