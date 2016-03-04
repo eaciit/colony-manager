@@ -728,6 +728,10 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 		return helper.CreateResult(true, result, "")
 	}
 
+	if !dataDS.QueryInfo.Has("take") {
+		query = query.Take(10)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
