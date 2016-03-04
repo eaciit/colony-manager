@@ -17,20 +17,20 @@ br.onVisible 	= ko.observable("");
 br.selectedID = ko.observable("");
 
 br.browserColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 5, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
-	{field:"_id", title: "ID", width: 80},
-	{title: "Name", width: 130, template: function(d){
+	{field:"_id", title: "ID" },
+	{title: "Name", template: function(d){
 		return[
 			"<div onclick= 'br.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
 		]
 	}},
-	{title: "", width: 40, attributes:{class:"align-center"}, template: function(d){
+	{title: "", width: 80, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<div onclick= 'db.designDataBrowser(\"" + d._id + "\")' style= 'cursor: pointer;'>Design</div>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Design the Data Browser' onclick='db.designDataBrowser(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	}}
 ]);

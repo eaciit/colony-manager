@@ -59,9 +59,9 @@ db.databrowserData = ko.observableArray([]);
 db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
 db.configDboxData = ko.mapping.fromJS(db.templateDboxData);
 db.databrowserColumns = ko.observableArray([
-	{ field: "Field", title: "Field", editable: false },
-	{ field: "Label", title: "label"},
-	{ field: "DataType", title: "Data Type", template: "#= db.dataTypeOption(DataType) #",
+	{ width: 150, locked: true, field: "Field", title: "Field", editable: false },
+	{ width: 150, locked: true, field: "Label", title: "label"},
+	{ width: 100, field: "DataType", title: "Data Type", template: "#= db.dataTypeOption(DataType) #",
 		editor: function(container, options) {
             var input = $('<input id="datatypeId" name="datatype" data-bind="value:' + options.field + '">');
             input.appendTo(container);
@@ -71,8 +71,8 @@ db.databrowserColumns = ko.observableArray([
                 dataSource: db.dataType() // bind it to the models array
             }).appendTo(container);
         }},
-	{ field: "Format", title: "Format"},
-	{ title: "Align", field: "Align", template: "#= db.alignOption(Align) #",
+	{ width: 100, field: "Format", title: "Format"},
+	{ width: 100, title: "Align", field: "Align", template: "#= db.alignOption(Align) #",
 		editor: function(container, options) {
             var input = $('<input id="alignId" name="alignId" data-bind="value:' + options.field + '">');
             input.appendTo(container);
@@ -83,12 +83,12 @@ db.databrowserColumns = ko.observableArray([
             }).appendTo(container);
         }
     },
-	{ title: "Position", width: 110,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;'>#= ShowIndex #</span>"},
-	{ title: "Hidden Field", template: "<center><input type='checkbox' #=HiddenField ? \"checked='checked'\" : ''# class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallhiddenfield' onclick=\"db.checkAll(this, 'HiddenField')\" /> Hidden Field</center>"},
-	{ title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" /> Sortable</center>"},
-	{ title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" /> Simple Filter</center>"},
-	{ title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" /> Advance Filter</center>"},
-	{ field: "Aggregate", title: "Aggregate"},
+	{ width: 120, title: "Position", template: "<a class='btn btn-xs btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-xs btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;'>#= ShowIndex #</span>"},
+	{ width: 100, title: "Hidden Field", template: "<center><input type='checkbox' #=HiddenField ? \"checked='checked'\" : ''# class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallhiddenfield' onclick=\"db.checkAll(this, 'HiddenField')\" />&nbsp;&nbsp;Hidden Field</center>"},
+	{ width: 100, title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" />&nbsp;&nbsp;Sortable</center>"},
+	{ width: 100, title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" />&nbsp;&nbsp;Simple Filter</center>"},
+	{ width: 100, title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" />&nbsp;&nbsp;Advance Filter</center>"},
+	{ width: 100, field: "Aggregate", title: "Aggregate"},
 ]);
 
 
@@ -367,6 +367,11 @@ db.populateTable = function (_id) {
 			}
 
 			db.collectionListData(datavalue);
+
+			// // remapping data
+			// a = ko.mapping.toJS(db.configDataBrowser);
+			// ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+			// ko.mapping.fromJS(a, db.configDataBrowser);
 		}
 	});
 };
