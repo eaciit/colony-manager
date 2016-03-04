@@ -71,9 +71,9 @@ var methodsDataBrowser = {
 		$(element).html("");
 		var $o = $(element), settingFilter = {}, widthfilter = 0, dataSimple= [], dataAdvance= [];
 
-		$divFilterSimple = $('<div class="col-md-12 ecdatabrowser-filtersimple"></div>');
+		$divFilterSimple = $('<div class="ecdatabrowser-filtersimple"></div>');
 		$divFilterSimple.appendTo($o);
-		$divFilterAdvance = $('<div class="col-md-12 ecdatabrowser-filteradvance"></div>');
+		$divFilterAdvance = $('<div class="ecdatabrowser-filteradvance"></div>');
 		$divFilterAdvance.appendTo($o);
 		for (var key in options.metadata){
 			settingFilter = $.extend({}, Setting_ColumnGridDB, options.metadata[key] || {});
@@ -102,7 +102,7 @@ var methodsDataBrowser = {
 		$(element).data("ecDataBrowser").dataSimple = dataSimple;
 		$(element).data("ecDataBrowser").dataAdvance = dataAdvance;
 
-		$divContainerGrid = $('<div class="col-md-12 ecdatabrowser-gridview"></div>');
+		$divContainerGrid = $('<div class="ecdatabrowser-gridview"></div>');
 		$divContainerGrid.appendTo($o);
 
 		$divGrid = $('<div class="ecdatabrowser-grid"></div>');
@@ -185,7 +185,7 @@ var methodsDataBrowser = {
 			return e;
 		}).toArray();
 
-		$divElementGrid = $('<div class="col-md-12" idfilter="gridFilterBrowser"></div>');
+		$divElementGrid = $('<div idfilter="gridFilterBrowser"></div>');
 		$divElementGrid.appendTo(element);
 		if (options.dataSource.data.length > 0){
 			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({

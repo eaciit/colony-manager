@@ -5,18 +5,13 @@ viewModel.dataGrabber = {}; var dg = viewModel.dataGrabber;
 dg.templateConfigScrapper = {
 	_id: "",
 	DataSourceOrigin: "",
-
-	IsFromWizard:"",
-	ConnectionOrigin : "",
-	ConnectionDestination : "",
-	TableOrigin : "",
-	TableDestination : "",
-	
+	IsFromWizard: false,
 	DataSourceDestination: "",
 	UseInterval: false,
 	IntervalType: "seconds",
 	GrabInterval: 20,
 	TimeoutInterval: 20,
+	InsertMode: "append",
 	Maps: [],
 	RunAt: [],
 	PreTransferCommand: "",
@@ -44,7 +39,11 @@ dg.templateWizardTable = {
 	id : "",
 	TableSource :"",
 	TableDestination: "",
-}
+};
+dg.templateInsertMode = [
+	{ value: "append", title: "Append" }, 
+	{ value: "fresh", title: "Fresh insert" }, 
+];
 
 dg.config = ko.mapping.fromJS(dg.templatewizard);
 dg.connectionListData = ko.observableArray([]);
@@ -192,12 +191,12 @@ dg.removetable = function (each){
 
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
-	dg.configScrapper.Map.push(o);
+	dg.configScrapper.Maps.push(o);
 };
 dg.removeMap = function (index) {
 	return function () {
-		var item = dg.configScrapper.Map()[index];
-		dg.configScrapper.Map.remove(item);
+		var item = dg.configScrapper.Maps()[index];
+		dg.configScrapper.Maps.remove(item);
 	};
 }
 

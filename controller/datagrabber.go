@@ -82,15 +82,11 @@ func (d *DataGrabberController) SaveDataGrabber(r *knot.WebContext) interface{} 
 	}
 
 	before := new(colonycore.DataGrabber)
-	err = colonycore.Get(before, payload.ID)
+	cursor, err := colonycore.Find(before, dbox.Eq("_id", payload.ID))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	err = colonycore.Delete(payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
+	defer cursor.Close()
 
 	payload.RunAt = before.RunAt
 	err = colonycore.Save(payload)
@@ -128,11 +124,15 @@ func (d *DataGrabberController) FindDataGrabber(r *knot.WebContext) interface{} 
 
 	data := []colonycore.DataGrabber{}
 	cursor, err := colonycore.Find(new(colonycore.DataGrabber), query)
-	cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer cursor.Close()
+
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	return helper.CreateResult(true, data, "")
 }
@@ -687,7 +687,12 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 		tableName := dsDestination.QueryInfo.GetString("from")
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
-		err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
+		if dataGrabber.InsertMode == "fresh" {
+			queryWrapper.Delete(tableName, dbox.Or())
+		}
+		if eachTransformedData.Has("_id") {
+			err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
+		}
 
 		queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 
