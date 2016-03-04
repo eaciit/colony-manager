@@ -177,9 +177,7 @@ var methodsDataBrowser = {
 			}
 		}
 
-		colums = Lazy(colums).sortBy(function (e, i) {
-			return (e.field != "_id") ? 1 : -1;
-		}).map(function (e, i) {
+		colums = Lazy(colums).map(function (e, i) {
 			if (colums.length > 5) {
 				e.width = 150;
 
