@@ -373,11 +373,11 @@ var methodsFB = {
 				dataSource : filetype
 			});
 			$btn.click(function(){
-					content.path = content.path	+ $($body.find(".form-control")).val() +"."+ $($(elem).find("input[class='fb-ddl-filetype']")).getKendoDropDownList().value();
+					content.path = content.path;
 					if ((content.path).substr((content.path).length - 1, 1) != "/") {
 						content.path = content.path + "/"
 					}
-					content.path = content.path	+ $($body.find("input")).val();
+					content.path = content.path	+ $($body.find(".form-control")).val() +"."+ $($(elem).find("input[class='fb-ddl-filetype']")).getKendoDropDownList().value();
 					methodsFB.SendActionRequest(elem,content);
 			});
 		}else if(content.action=="NewFolder"){
