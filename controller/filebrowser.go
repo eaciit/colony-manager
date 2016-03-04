@@ -163,7 +163,36 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				}
 			}
 		} else if server.ServerType == SERVER_HDFS {
+			var e error
+			h := SetHDFSConnection(server.Host, USER)
 
+			//check whether SourcePath type is directory or file
+			if path == "" {
+				path = "/"
+			}
+			res, e := h.List(path)
+			if e != nil {
+				return helper.CreateResult(false, nil, e.Error())
+			}
+
+			for _, files := range res.FileStatuses {
+				var xNode colonycore.FileInfo
+
+				xNode.Name = files.PathSuffix
+				xNode.Size = files.Length
+				xNode.Group = files.Group
+				xNode.Permissions = files.Permission
+				xNode.User = files.Owner
+				xNode.Path = strings.Replace(path+"/", "//", "/", -1) + files.PathSuffix
+
+				if files.Type == "FILE" {
+					xNode.IsDir = false
+				} else {
+					xNode.IsDir = true
+				}
+
+				result = append(result, xNode)
+			}
 		}
 
 		return helper.CreateResult(true, result, "")
@@ -198,7 +227,24 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 			}
 			return helper.CreateResult(true, result, "")
 		} else if server.ServerType == SERVER_HDFS {
+			//get hdfs file to server.apppath
+			h := SetHDFSConnection(server.Host, USER)
 
+			e := h.GetToLocal(path, server.AppPath, "")
+			if e != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			//open downloaded hdfs file
+			setting, err := sshConnect(&server)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			result, err := sshclient.Cat(setting, path)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			return helper.CreateResult(true, result, "")
 		}
 	}
 
@@ -348,7 +394,13 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 
 			return helper.CreateResult(true, nil, "")
 		} else if server.ServerType == SERVER_HDFS {
+			h := SetHDFSConnection(server.Host, USER)
 
+			e := h.SetPermission(path, permission)
+			if e != nil {
+				fmt.Println(e)
+			}
+			return e
 		}
 	}
 
