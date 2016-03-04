@@ -14,24 +14,16 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 )
 
 var (
-	unzipDest            = filepath.Join(EC_APP_PATH, "src")
-	zipSource            = filepath.Join(EC_APP_PATH, "src")
-	parents              = make(map[string]*colonycore.TreeSource)
-	basePath             string
-	newDirName           string
-	currentPathSeparator string = (func() string {
-		if runtime.GOOS == "windows" {
-			return `\`
-		} else {
-			return `/`
-		}
-	}())
+	unzipDest  = filepath.Join(EC_APP_PATH, "src")
+	zipSource  = filepath.Join(EC_APP_PATH, "src")
+	parents    = make(map[string]*colonycore.TreeSource)
+	basePath   string
+	newDirName string
 )
 
 type ApplicationController struct {
@@ -86,7 +78,7 @@ func createJson(object *colonycore.TreeSource) {
 }
 
 func createTree(i int, path string, isDir bool) error {
-	contentList := strings.Split(path, string(filepath.Separator))
+	contentList := strings.Split(path, toolkit.PathSeparator)
 	content := contentList[len(contentList)-1]
 	var sprite string
 	var text string
@@ -236,6 +228,14 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 	return result, newNameParsed, nil
 }
 
+func (a *ApplicationController) GetServerPathSeparator(server *colonycore.Server) string {
+	if server.ServerType == "windows" {
+		return `\`
+	}
+
+	return `/`
+}
+
 func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -269,6 +269,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	serverPathSeparator := a.GetServerPathSeparator(server)
+
 	changeDeploymentStatus := func(status bool) {
 		deployedTo := []string{}
 		for _, each := range app.DeployedTo {
@@ -296,8 +298,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	defer sshClient.Close()
 
 	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
-	destinationPath := strings.Join([]string{server.AppPath, "src"}, currentPathSeparator)
-	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, currentPathSeparator)
+	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
+	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
 	var sourceZipPath string
 	var unzipCmd string
 	var destinationZipPath string
@@ -365,11 +367,6 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
 	log.AddLog(fmt.Sprintf("scp from %s to %s", sourceZipPath, destinationPath), "INFO")
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
 
 	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
 	log.AddLog(rmCmdZipOutput, "INFO")
@@ -380,8 +377,26 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	mkdirDestCmd := fmt.Sprintf("mkdir %s%s%s", destinationPath, serverPathSeparator, app.ID)
+	log.AddLog(mkdirDestCmd, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(mkdirDestCmd)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
+	log.AddLog(chmodDestCmd, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	log.AddLog(unzipCmd, "INFO")
-	_, err = sshSetting.RunCommandSsh(unzipCmd)
+	_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
@@ -406,6 +421,13 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if installerPath == "" {
+		errString := "installer not found"
+		log.AddLog(errString, "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, errString)
+	}
+
 	chmodCommand := fmt.Sprintf("chmod 755 %s", installerPath)
 	log.AddLog(chmodCommand, "INFO")
 	_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
@@ -416,8 +438,8 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 
 	installerBasePath, installerFile := func(path string) (string, string) {
-		comps := strings.Split(path, currentPathSeparator)
-		ibp := strings.Join(comps[:len(comps)-1], currentPathSeparator)
+		comps := strings.Split(path, serverPathSeparator)
+		ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
 		ilf := comps[len(comps)-1]
 
 		return ibp, ilf
@@ -472,6 +494,21 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	o.AppsName = r.Request.FormValue("AppsName")
 	o.Type = r.Request.FormValue("Type")
 	o.Port = r.Request.FormValue("Port")
+
+	var Command, Variable interface{}
+	err = json.Unmarshal([]byte(r.Request.FormValue("Command")), &Command)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = json.Unmarshal([]byte(r.Request.FormValue("Variable")), &Variable)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o.Command = Command
+	o.Variable = Variable
+
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -482,14 +519,6 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer cursor.Close()
-
-	o.AppsName = r.Request.FormValue("AppsName")
-	o.Type = r.Request.FormValue("Type")
-	var Command, Variable interface{}
-	err = json.Unmarshal([]byte(r.Request.FormValue("Command")), &Command)
-	err = json.Unmarshal([]byte(r.Request.FormValue("Variable")), &Variable)
-	o.Command = Command
-	o.Variable = Variable
 
 	err = colonycore.Delete(o)
 	if err != nil {
@@ -507,8 +536,8 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	fileExtract := strings.Join([]string{zipSource, fileName}, currentPathSeparator)
-	destinationExtract := strings.Join([]string{zipSource, o.ID}, currentPathSeparator)
+	fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
+	destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
 	if strings.Contains(fileName, ".gz") {
 		return helper.CreateResult(false, nil, "Unsupported format")
 	} else if strings.Contains(fileName, ".tar") {
@@ -523,7 +552,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		}
 	}
 
-	os.Remove(zipSource + "/" + fileName)
+	os.Remove(filepath.Join(zipSource, fileName))
 	var zipFile string
 	if fileName != "" {
 		zipFile = filepath.Join(zipSource, fileName)
@@ -796,9 +825,9 @@ func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface
 	pathfolder := payload["Path"].(string)
 	ID := payload["ID"].(string)
 
-	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), string(filepath.Separator))
+	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), toolkit.PathSeparator)
 	pathlist = append(pathlist[:len(pathlist)-1])
-	path := strings.Join(pathlist, string(filepath.Separator))
+	path := strings.Join(pathlist, toolkit.PathSeparator)
 
 	err = os.Rename(filepath.Join(unzipDest, ID, pathfolder), filepath.Join(path, Filename))
 
