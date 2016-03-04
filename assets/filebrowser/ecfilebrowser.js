@@ -267,7 +267,7 @@ var methodsFB = {
 		$conted = $($(elem).find("ul[data-role='editortoolbar']"));
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
-		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn' unselectable='on' title='Save' aria-pressed='false'></a>");
+		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn tooltipster' unselectable='on' title='Save' aria-pressed='false'></a>");
 		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-floppy-disk'></span>");
 		$edlbl = $("<span class='k-tool-text'>Save</span>");
 
@@ -281,7 +281,7 @@ var methodsFB = {
 		});
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
-		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn' unselectable='on' title='Cancel' aria-pressed='false'></a>");
+		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end tooltipster fb-ed-btn-cancel' unselectable='on' title='Cancel' aria-pressed='false'></a>");
 		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-repeat'></span>");
 		$edlbl = $("<span class='k-tool-text'>Cancel</span>");
 
@@ -299,7 +299,7 @@ var methodsFB = {
 
 		$edli.appendTo($conted);
 		$edtxt.appendTo($edli);
-
+		app.prepareTooltipster();
 	},
 	BuildPermission:function(elemarr,permstr){
 		var idx = 0;
