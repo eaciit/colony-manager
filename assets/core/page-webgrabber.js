@@ -216,9 +216,26 @@ wg.scrapperColumns = ko.observableArray([
 	}, locked: true },
 	{ field: "grabconf.calltype", title: "Request Type", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
-	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
-	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
-	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ title: "Execution setting", template: function (d) {
+		var k = JSON.parse(kendo.stringify(d));
+
+		if($.isEmptyObject(k.intervalconf.cronconf) === true && k.intervalconf.intervaltype == ""){
+			return 'onetime';
+		}
+
+		if($.isEmptyObject(k.intervalconf.cronconf) === false){
+			return 'schedule';
+		}
+
+		if(k.intervalconf.intervaltype != ""){
+			return 'interval';
+		}
+
+		return "invalid setting";
+	}, width: 150 },
+	// { field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
+	// { field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
+	// { field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
 	{ field: "note", title: "NOTE", encoded: false, filterable: false, width: 200 },
 ]);
 wg.historyColumns = ko.observableArray([
@@ -1149,13 +1166,13 @@ wg.changeConnectionID = function (e) {
 			return;
 		}
 
-		if (res.data.Driver != 'mongo') {
-			wg.collectionInput(false);
-			swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
-			return;
-		} else {
-			wg.collectionInput(true);
-		}
+		// if (res.data.Driver != 'mongo') {
+		// 	wg.collectionInput(false);
+		// 	swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
+		// 	return;
+		// } else {
+		// 	wg.collectionInput(true);
+		// }
 		
 		wg.configSelector.desttype(res.data.Driver);
 		var connInfo = wg.configSelector.connectioninfo;
@@ -1164,6 +1181,7 @@ wg.changeConnectionID = function (e) {
 		connInfo.database(res.data.Database);
 		connInfo.username(res.data.UserName);
 		connInfo.password(res.data.Password);
+		connInfo.settings(res.data.Settings);
 	});
 
 	return true;
