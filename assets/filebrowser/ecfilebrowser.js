@@ -146,7 +146,6 @@ var methodsFB = {
 							}
 						});
 						if($(elem).data("ecFileBrowser").isHold){
-				                		$(elem).data("ecFileBrowser").isHold = false;
 										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
 				                	}else{
 				                		app.isLoading(false);
@@ -376,7 +375,6 @@ var methodsFB = {
 				dataSource : filetype
 			});
 			$btn.click(function(){
-					content.path = content.path;
 					if ((content.path).substr((content.path).length - 1, 1) != "/") {
 						content.path = content.path + "/"
 					}
@@ -396,6 +394,9 @@ var methodsFB = {
 				"</div>");
 			$divNewFile.appendTo($body);
 			$btn.click(function(){
+					if ((content.path).substr((content.path).length - 1, 1) != "/") {
+						content.path = content.path + "/"
+					}
 					content.path = content.path	+ $($body.find("input")).val();
 					methodsFB.SendActionRequest(elem,content);
 			});
@@ -499,7 +500,7 @@ var methodsFB = {
 	},
 	ActionRequest:function(elem,options,content,sender){
 
-		if($(elem).data("ecFileBrowser").isHold){
+		if($(elem).data("ecFileBrowser").isHold && content.action!="GetContent"){
 			if(content.action=="Edit" || content.action=="Cancel"){
 				var divtree = $($(elem).find(".fb-pre")[0]);
                 divtree.removeAttr("style");
@@ -544,6 +545,16 @@ var methodsFB = {
 			var path = ($($(sender).find("a")).attr("path")); 
 			content.path = path;
 			methodsFB.SetUrl(elem,content.action);
+			if($(elem).data("ecFileBrowser").isHold){
+					var divtree = $($(elem).find(".fb-pre")[0]);
+					$($(elem).find(".fb-filename")).html(content.path);
+					$($(elem).find(".fb-editor")).data("kendoEditor").value("");
+					$($(elem).find(".fb-editor")).data("kendoEditor").focus();
+                	app.isLoading(false);
+                	divtree.css("pointer-events", "none");
+                	divtree.attr("class", divtree.attr("class")+" k-state-disabled");
+                	return;
+			}
 		}else if(content.action=="Rename"){
 			methodsFB.CallPopUp(elem,content,"Rename File");
 			methodsFB.SetUrl(elem,content.action);
@@ -585,7 +596,7 @@ var methodsFB = {
 		if (content.action=="Delete"){
 			 swal({
 			    title: "Are you sure?",
-			    text: "You will delete this file.",
+			    text: "You will delete this "+(type=="folder"?"folder":"file"),
 			    type: "warning",
 			    showCancelButton: true,
 			    confirmButtonText: "Yes",
@@ -670,7 +681,7 @@ var methodsFB = {
 						$(elem).data("ecFileBrowser").isHold = true;
                 		app.isLoading(false);
                 		divtree.css("pointer-events", "none");
-                		divtree.attr("class", divtree.attr("class")+" k-state-disabled")
+                		divtree.attr("class", divtree.attr("class")+" k-state-disabled");
                 	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem,param);
                 		if(param.action=="NewFile"){
