@@ -152,7 +152,7 @@ var methodsDataBrowser = {
 	createGrid: function(element, options, id){
 		var colums = [], format="", aggr= "", footerText = "";
 		for(var key in options.metadata){
-			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() || "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
+			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
 			} else {
 				format = "";
@@ -268,7 +268,7 @@ $.ecDataBrowserSetting = function(element,options){
 		}
 	};
 	this.GetDataFilter = function(){
-		var resFilter = {}, dataTemp = [], $elem = '';
+		var resFilter = {}, dataTemp = [], $elem = '', valtype = '';
 		if (this.mapdatabrowser.showFilter.toLowerCase() == "simple"){
 			dataTemp = $(element).data('ecDataBrowser').dataSimple;
 		} else {
@@ -277,7 +277,14 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			resFilter[field] = $elem.val();
+			if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64" || $elem.attr("typedata") == "number"){
+				if ($elem.val() == '')
+					valtype = 0;
+				else
+					valtype = parseInt($elem.val());
+			} else
+				valtype = $elem.val();
+			resFilter[field] = valtype;
 		}
 		return resFilter;
 	};
