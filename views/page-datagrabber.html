@@ -222,8 +222,7 @@
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Prefix</label>
 								<div class="col-md-5">
-									<input required data-required-msg="Prefix cannot be empty" class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix" name="prefix"></input>
-									<span class="k-invalid-msg" data-for="prefix"></span>
+									<input class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix" name="prefix"></input>
 								</div>	
 							</div>
 							
@@ -255,8 +254,8 @@
 													<span class="k-invalid-msg" data-for="table-Destination"></span>
 												</td>
 												<td>
-													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 )">
-													<span class="glyphicon glyphicon-remove" data-bind="click : dg.removetable($data)"></span>
+													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 ), click : dg.removetable($data)">
+													<span class="glyphicon glyphicon-remove"></span>
 													</button>
 												</td>
 											</tr>	
