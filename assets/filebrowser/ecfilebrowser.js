@@ -351,11 +351,12 @@ var methodsFB = {
                 swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
-
-
 			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>File Name</label></div><div class='col-md-9'><input placeholder='Type File Name ..' class='form control'></input></div></div>");
 			$divNewFile.appendTo($body);
 			$btn.click(function(){
+					if ((content.path).substr((content.path).length - 1, 1) != "/") {
+						content.path = content.path + "/"
+					}
 					content.path = content.path	+ $($body.find("input")).val();
 					methodsFB.SendActionRequest(elem,content);
 			});
@@ -364,11 +365,12 @@ var methodsFB = {
                 swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
-
-
 			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>Folder Name</label></div><div class='col-md-9'><input placeholder='Type Folder Name ..' class='form control'></input></div></div>");
 			$divNewFile.appendTo($body);
 			$btn.click(function(){
+					if ((content.path).substr((content.path).length - 1, 1) != "/") {
+						content.path = content.path + "/"
+					}
 					content.path = content.path	+ $($body.find("input")).val();
 					methodsFB.SendActionRequest(elem,content);
 			});
@@ -378,7 +380,6 @@ var methodsFB = {
 				lbl = "Folder";
 			    $($(elem).find("h4")).html(lbl + " Name");
 			}
-
 			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>" +lbl+ " Name</label></div><div class='col-md-9'><input placeholder='Type "+lbl+" Name ..' class='form control'></input></div></div>");
 			$($divNewFile.find("input")).val(name);
 			$divNewFile.appendTo($body);
