@@ -23,15 +23,15 @@ This is what we do!
 | 37 | | Web Grabber | grab for excel? |
 | 36 | ✔ | Web Grabber | remove the blink whenever check stat |
 | 35 | ✔ | Web Grabber | prepare user interface for scheduler |
-| 34 | | Data Browser | use query builder on data source on the dbox query part |
+| 34 | ✔ | Data Browser | use query builder on data source on the dbox query part |
 | 33 | | Data Browser | implements the format, text alignment, and etc |
 | 32 | ✔ | Data Browser | add new options to hide/show the field |
 | 31 | | Data Browser | implements aggregate |
 | 30 | ✔ | Data Browser | complete the filter |
-| 29 | | Data Browser | make the grid scrollable if the total columns is much enough |
+| 29 | ✔ | Data Browser | make the grid scrollable if the total columns is much enough |
 | 28 | ✔ | Data Browser | icon up/down to change position. move the column to side |
 | 27 | ✔ | Data Browser | bug on delete |
-| 26 | | Data Browser | prepare example to show serialized data from example on data source, from both mongo and json |
+| 26 | ✔ | Data Browser | prepare example to show serialized data from example on data source, from both mongo and json |
 | 25 | | Application | show error when path is invalid |
 | 24 | | Application | add command and variable (both key-valued-pair), later this will be used to control the application |
 | 23 | | Application | prepare sample app to test accessing data from example on data source |
