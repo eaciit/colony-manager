@@ -34,6 +34,18 @@
 
 }	
 
+.fb-ed-btn-cancel {
+    color: #fff!important;
+    background-color: #d9534f!important;
+    border-color: #d43f3a!important;
+}
+
+.fb-ed-btn-cancel:hover {
+    color: #fff!important;    
+    background-color: #c9302c!important;    
+    border-color: #ac2925!important;
+}
+
 .modal-body{
 	overflow: auto;
 }
