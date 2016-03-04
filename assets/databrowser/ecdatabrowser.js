@@ -118,9 +118,8 @@ var methodsDataBrowser = {
 		// var dataResult = $.grep(Setting_TypeData.number, function(e){ 
 		// 	return settingFilter.Format.toLowerCase().indexOf(e) >= 0; 
 		// });
-
-		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() || "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="number" fielddata="'+ settingFilter.Field +'"/>');
+		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
+			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
 			return '';
@@ -151,14 +150,19 @@ var methodsDataBrowser = {
 		}
 	},
 	createGrid: function(element, options, id){
-		var colums = [], format="", aggr= "";
+		var colums = [], format="", aggr= "", footerText = "";
 		for(var key in options.metadata){
-			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() || "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
+			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
 			} else {
 				format = "";
 			}
 			aggr = options.metadata[key].Aggregate.split(",");
+			// footerText = "";
+			// for (var i in aggr){
+			// 	if (aggr[i] != '')
+			// 		footerText += aggr[i] + ' : ' + 50;
+			// }
 			if (options.metadata[key].HiddenField != true){
 				var column = {
 					field: options.metadata[key].Field,
@@ -172,6 +176,7 @@ var methodsDataBrowser = {
 						style: "text-align: "+options.metadata[key].Align+";",
 					},
 					aggregates: aggr,
+					footerTemplate: footerText,
 				};
 				colums.push(column);
 			}
@@ -203,8 +208,8 @@ var methodsDataBrowser = {
 				dataSource: {
 					transport: {
 	                    read: function(yo){
-							// var callData = $(id).data('ecDataBrowser').GetDataFilter(), $parentElem = id;
-							var callData = {}, $parentElem = id;
+							var callData = $(id).data('ecDataBrowser').GetDataFilter(), $parentElem = id;
+							// var callData = {}, $parentElem = id;
 							$.each( options.dataSource.callData, function( key, value ) {
 								callData[key] = value;
 							});
@@ -213,6 +218,7 @@ var methodsDataBrowser = {
 	                        }
 				            app.ajaxPost($parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.url,callData, function (res){
 				            	yo.success(res.data);
+				            	$parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.callOK(res.data);
 	                        });
 	                    }
 	                },
@@ -262,7 +268,7 @@ $.ecDataBrowserSetting = function(element,options){
 		}
 	};
 	this.GetDataFilter = function(){
-		var resFilter = {}, dataTemp = [], $elem = '';
+		var resFilter = {}, dataTemp = [], $elem = '', valtype = '';
 		if (this.mapdatabrowser.showFilter.toLowerCase() == "simple"){
 			dataTemp = $(element).data('ecDataBrowser').dataSimple;
 		} else {
@@ -271,7 +277,19 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			resFilter[field] = $elem.val();
+			if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "number"){
+				if ($elem.val() == '')
+					valtype = "";
+				else
+					valtype = parseInt($elem.val());
+			} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
+				if ($elem.val() == '')
+					valtype = "";
+				else
+					valtype = parseFloat($elem.val());
+			} else
+				valtype = $elem.val();
+			resFilter[field] = valtype;
 		}
 		return resFilter;
 	};
