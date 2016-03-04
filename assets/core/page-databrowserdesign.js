@@ -213,10 +213,6 @@ db.saveAndBack = function(section) {
 		return;
 	}
 
-	var grids = $(".grid-databrowser-design").data("kendoGrid")
-	
-	// var data = grids.dataSource.data();
-	
 	if (!db.isChecked()) {
 		param.QueryText = ""
 		param.QueryType = ""
@@ -235,26 +231,10 @@ db.saveAndBack = function(section) {
 		}
 	}
      	
-	
+	var grids = $(".grid-databrowser-design").data("kendoGrid")
 	var ds = grids.dataSource.data();
-	var dirty = $.grep(ds, function(item) {
-	    return item.dirty
-	});
-	
-	for (var data in param.MetaData){
-		for (var idxDirty in dirty) {
-			if (dirty[idxDirty].ShowIndex == param.MetaData[data].ShowIndex) {
-				var splitString = dirty[idxDirty].Aggregate.split(",");
-				var obj = {};
-				for (var s in splitString) {
-					obj[splitString[s]] = ""
-				}
-				param.MetaData[data].Aggregate = JSON.stringify(obj)
-			}
-		}
-	}
-	// param.MetaData = JSON.parse(kendo.stringify(ds));
-	// console.log("dirty", param);
+	param.MetaData = JSON.parse(kendo.stringify(ds));
+
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
