@@ -284,8 +284,6 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	logAt := time.Now().Format("20060102-150405")
-
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
 		serviceHolder[dataGrabber.ID] = false
 		delete(serviceHolder, dataGrabber.ID)
@@ -314,6 +312,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 
 	yo := func() {
+		logAt := time.Now().Format("20060102-150405")
 		logConfTransformation, err := d.getLogger(dataGrabber)
 		if err != nil {
 			logConfTransformation.AddLog(err.Error(), "ERROR")
