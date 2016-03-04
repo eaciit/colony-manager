@@ -17,7 +17,7 @@ import (
 	"io"
 	// "net/http"
 	"os"
-	// "path/filepath"
+	"path/filepath"
 	"strconv"
 	// "log"
 	// "bufio"
@@ -160,7 +160,35 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				}
 			}
 		} else if server.ServerType == SERVER_HDFS {
+			h := SetHDFSConnection(server.Host, server.SSHUser)
 
+			//check whether SourcePath type is directory or file
+			if path == "" {
+				path = "/"
+			}
+			res, err := h.List(path)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			for _, files := range res.FileStatuses.FileStatus {
+				var xNode colonycore.FileInfo
+
+				xNode.Name = files.PathSuffix
+				xNode.Size = float64(files.Length)
+				xNode.Group = files.Group
+				xNode.Permissions = files.Permission
+				xNode.User = files.Owner
+				xNode.Path = strings.Replace(path+"/", "//", "/", -1) + files.PathSuffix
+
+				if files.Type == "FILE" {
+					xNode.IsDir = false
+				} else {
+					xNode.IsDir = true
+				}
+
+				result = append(result, xNode)
+			}
 		}
 
 		return helper.CreateResult(true, result, "")
@@ -191,7 +219,23 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, result, "")
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				err := h.GetToLocal(path, server.AppPath, "")
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				//open downloaded hdfs file
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				result, err := sshclient.Cat(setting, path)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, result, "")
 			}
 		}
 
@@ -226,7 +270,38 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				err = sshclient.MakeFile(setting, content, path, permission, false)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+				isDirectory := false
+				SourcePath := path
+				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
+
+				if !strings.Contains(strings.Split(SourcePath, "/")[len(SourcePath)-1], ".") {
+					isDirectory = true
+				}
+
+				if isDirectory {
+					_, emap := h.PutDir(SourcePath, DestPath)
+					if emap != nil {
+						for k, v := range emap {
+							fmt.Sprintf("Error when create %v : %v \n", k, v)
+						}
+					}
+				} else {
+					err := h.Put(SourcePath, DestPath, "", nil)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+				}
+				return helper.CreateResult(true, "", "")
 			}
 		}
 
@@ -260,7 +335,34 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				//create file on local
+				tempPath := strings.Replace(os.Getenv(server.AppPath)+"/", "//", "/", -1)
+
+				if tempPath == "" {
+					return helper.CreateResult(false, nil, "No Temporary Directory")
+				}
+				FileName := path
+
+				file, err := os.Create(tempPath + FileName)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				defer file.Close()
+
+				//put new file to hdfs
+				err = h.Put(tempPath+FileName, strings.Replace(path+"/", "//", "/", -1)+FileName, "", nil)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				//remove file on local
+				err = os.Remove(tempPath + FileName)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, "", "")
 			}
 		}
 
@@ -294,7 +396,14 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				//create new directory on hdfs
+				err = h.MakeDir(path, "")
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, "", "")
 			}
 		}
 
@@ -329,7 +438,17 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				errs := h.Delete(true, path)
+				if errs != nil {
+					if len(errs) > 0 {
+						for _, err := range errs {
+							return helper.CreateResult(false, nil, err.Error())
+						}
+					}
+				}
+				return helper.CreateResult(true, "", "")
 			}
 		}
 
@@ -366,7 +485,13 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				err := h.SetPermission(path, permission)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, nil, "")
 			}
 		}
 
@@ -455,7 +580,29 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+				isDirectory := false
+				SourcePath := path
+				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
 
+				if !strings.Contains(strings.Split(SourcePath, "/")[len(SourcePath)-1], ".") {
+					isDirectory = true
+				}
+
+				if isDirectory {
+					_, emap := h.PutDir(SourcePath, DestPath)
+					if emap != nil {
+						for k, v := range emap {
+							fmt.Sprintf("Error when create %v : %v \n", k, v)
+						}
+					}
+				} else {
+					err := h.Put(SourcePath, DestPath, "", nil)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+				}
+				return helper.CreateResult(true, "", "")
 			}
 		}
 
@@ -505,7 +652,14 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 
 				return ""
 			} else if server.ServerType == SERVER_HDFS {
+				//get hdfs file to server.apppath
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				err := h.GetToLocal(path, server.AppPath, "")
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, "", "")
 			}
 		}
 	}
@@ -540,7 +694,12 @@ func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
+				err := h.Rename(path, newPath)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 			}
 
 		}
