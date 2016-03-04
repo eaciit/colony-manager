@@ -172,6 +172,7 @@ var methodsDataBrowser = {
 						style: "text-align: "+options.metadata[key].Align+";",
 					},
 					aggregates: aggr,
+					footerTemplate: "",
 				});
 			}
 		}
