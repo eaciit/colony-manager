@@ -37,7 +37,7 @@ dg.templatewizard = {
 	ConnectionSource : "",
 	ConnectionDestination : "",
 	prefix :"",
-	Transformation : [],
+	Transformations : [],
 };
 
 dg.templateWizardTable = {
@@ -180,13 +180,13 @@ dg.getScrapperData = function (){
 dg.addtable = function (){
 	var table = $.extend(true, {}, dg.templateWizardTable);
 	table.id = "s"+ moment.now();
-	dg.config.Transformation.push(ko.mapping.fromJS(table));
+	dg.config.Transformations.push(ko.mapping.fromJS(table));
 }
 
 dg.removetable = function (each){
 	return function (){
 		console.log(each);
-		dg.config.Transformation.remove(each);
+		dg.config.Transformations.remove(each);
 	}
 }
 
@@ -256,14 +256,17 @@ dg.getDataSourceData = function () {
 };
 
 dg.SaveDataGrabberWizard = function (){
-	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
-		if (!app.isFine(res)){
-			return;
-		}
-		if (res.data == null){
-			res.data = "";
-		}
-	})
+	if (!app.isFormValid("#form-add-wizard")) {
+		return;
+	}
+	setTimeout (function(){
+		app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
+			if (!app.isFine(res)){
+				return;
+			}
+		});dg.backToFrontPage();
+	},1000);
+	swal({ title: "Data successfully saved", type: "success" });
 };
 
 dg.getConnectionsData = function (){
@@ -299,17 +302,6 @@ dg.changeConnectionDestination = function (){
 		}
 		dg.tableConnectionDestination(res.data);
 	});
-}
-
-dg.parsetablewizard = function (){
-	if (this.value() == ''){
-		return 
-	}
-	var table = {
-		tableSource : this.value()
-	}
-	console.log(table);
-	dg.templatewizard.Transformation(table);	
 }
 
 dg.selectGridDataGrabber = function (e) {

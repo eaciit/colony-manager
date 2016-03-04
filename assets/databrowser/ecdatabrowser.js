@@ -160,7 +160,7 @@ var methodsDataBrowser = {
 			}
 			aggr = options.metadata[key].Aggregate.split(",");
 			if (options.metadata[key].HiddenField != true){
-				colums.push({
+				var column = {
 					field: options.metadata[key].Field,
 					title: options.metadata[key].Label,
 					format: format,
@@ -172,10 +172,24 @@ var methodsDataBrowser = {
 						style: "text-align: "+options.metadata[key].Align+";",
 					},
 					aggregates: aggr,
-					footerTemplate: "",
-				});
+				};
+				colums.push(column);
 			}
 		}
+
+		colums = Lazy(colums).map(function (e, i) {
+			if (colums.length > 5) {
+				e.width = 150;
+
+				if (i == 0) {
+					e.width = 200;
+					e.locked = true;
+				}
+			}
+
+			return e;
+		}).toArray();
+
 		$divElementGrid = $('<div class="col-md-12" idfilter="gridFilterBrowser"></div>');
 		$divElementGrid.appendTo(element);
 		if (options.dataSource.data.length > 0){

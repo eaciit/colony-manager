@@ -348,7 +348,7 @@ var methodsFB = {
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
-				alert("Please choose folder !");
+                swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
 
@@ -361,7 +361,7 @@ var methodsFB = {
 			});
 		}else if(content.action=="NewFolder"){
 			if (type!="folder"){
-				alert("Please choose folder !");
+                swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
 
@@ -440,7 +440,7 @@ var methodsFB = {
 			methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
 		}else if (content.action=="Upload"){
 			if (type!="folder"){
-				alert("Please choose folder !");
+                swal("Warning!", "Please choose folder !", "error");
 				return;
 			}
 
@@ -455,19 +455,25 @@ var methodsFB = {
 		$($(elem).find(".modal")).modal("show");		
 	},
 	ActionRequest:function(elem,options,content,sender){
-		// console.log(content);		
 		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
-		// console.log(SelectedPath);
 		var name = "";
 		var type = "";
 		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
-			alert("Select the directory/file !");
+            swal("Warning!", "Please choose folder or file !", "error");
 			return;
 		}
 
 		if(content.action!="Search"){
 			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
 			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+		}
+
+		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
+			var dtitm = methodsFB.GetSelectedData(elem);
+			if(!dtitm.iseditable){
+            swal("Warning!", "Action not permitted !", "error");
+				return;
+			}
 		}
 
 		content.path = SelectedPath;
@@ -511,7 +517,7 @@ var methodsFB = {
 			return;
 		}else if(content.action=="Download"){
 			if (type=="folder"){
-				alert("Please choose file !");
+            swal("Warning!", "Please choose file !", "error");
 				return;
 			}
 			methodsFB.SetUrl(elem,content.action);
@@ -529,6 +535,7 @@ var methodsFB = {
 		if (ds.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
+		app.isLoading(true);
 		 $.ajax({
                 url: url,
                 type: call,
@@ -536,17 +543,19 @@ var methodsFB = {
                 data : JSON.stringify(param),
                 contentType: contentType,
                 success : function(res) {
-                	alert("OK");
+                	 swal("Saved!", "Your request has been processed !", "success");
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
                 		$($(elem).find(".fb-filename")).html(param.path);
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
-                	}else{
+                	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem);
                 	}
                 		$(elem).find(".modal").modal("hide");
+                		app.isLoading(false);
                 },
                 error: function (a, b, c) {
+                	app.isLoading(false);
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
 			},
         });
@@ -611,8 +620,8 @@ var methodsFB = {
 		}
 	},
 	RefreshTreeView:function(elem){
-		var tree = $($("#FileBrowser").find(".k-treeview")).getKendoTreeView();
-		var selectedUid = $($($($("#FileBrowser").find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
+		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
+		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
 		var selectedparent = tree.parent(tree.findByUid(selectedUid));
 		if(selectedparent.length==0){
 			tree.dataSource.read();
@@ -624,5 +633,11 @@ var methodsFB = {
 		dtItem.loaded(false);
 		$(selectedparent[0].firstChild.firstChild).click();
 		$(selectedparent[0].firstChild.firstChild).trigger("click");
+	},
+	GetSelectedData:function(elem){
+		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
+		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
+		var dataItem = tree.dataItem(tree.findByUid(selectedUid));
+		return dataItem;
 	}
 }

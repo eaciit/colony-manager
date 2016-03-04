@@ -75,11 +75,11 @@ db.databrowserColumns = ko.observableArray([
             }).appendTo(container);
         }
     },
-	{ title: "Position", width: 110,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;''>#= ShowIndex #</span>"},
-	{ title: "Hidden Field", template: "<input type='checkbox' #= HiddenField ? \"checked='checked'\" : '' # class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' />"},
-	{ title: "Sortable", template: "<input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' />"},
-	{ title: "Simple Filter", template: "<input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
-	{ title: "Advance Filter", template: "<input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' />"},
+	{ title: "Position", width: 110,template: "<a class='btn btn-sm btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-sm btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;'>#= ShowIndex #</span>"},
+	{ title: "Hidden Field", template: "<center><input type='checkbox' #=HiddenField ? \"checked='checked'\" : ''# class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallhiddenfield' onclick=\"db.checkAll(this, 'HiddenField')\" /> Hidden Field</center>"},
+	{ title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" /> Sortable</center>"},
+	{ title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" /> Simple Filter</center>"},
+	{ title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" /> Advance Filter</center>"},
 	{ field: "Aggregate", title: "Aggregate"},
 ]);
 
@@ -193,9 +193,11 @@ db.changeCheckboxOnGrid = function (o) {
 	var plainData = JSON.parse(kendo.stringify(data));
 	db.databrowserData(plainData);
 	db.setDataSource();
+	db.headerCheckedAll();
 
 	return true;
 }
+
 
 db.saveAndBack = function(section) {
 
@@ -204,18 +206,27 @@ db.saveAndBack = function(section) {
 	}
 
 	db.checkBuilderNotEmpty();
+
+	var param = ko.mapping.toJS(db.configDataBrowser);
+
 	if (!db.isChecked()) {
+		param.QueryText = ""
+		param.QueryType = ""
 		if ($("#table option:selected").text() == 'Select one') {
 			return;
-		} else if ($("#querytext").val() != '' || $("#querytype option:selected").text() != 'Select Query Type') {
+		}
+	} else if (db.isChecked()) {
+		param.TableNames = ""
+		var querytype = $("#querytype option:selected").text()
+		if (querytype == 'Select Query Type') {
+			return;
+		} else if (querytype == 'SQL' && $("#querytext").val() == '') {
+			return;
+		} else if (querytype == 'Dbox' && $("#textquery").val() == '') {
 			return;
 		}
 	}
-
-	var param = ko.mapping.toJS(db.configDataBrowser);
-	grid = $(".grid-databrowser-design").data("kendoGrid");
-
-	var idsToSend = [];         	
+     	
 	var grids = $(".grid-databrowser-design").data("kendoGrid")
 	var ds = grids.dataSource.data();
 	param.MetaData = JSON.parse(kendo.stringify(ds));
@@ -254,6 +265,12 @@ db.designDataBrowser = function(_id) {
 		db.databrowserData(res.data.MetaData);
 		
 
+
+		// db.connectionID(res.data.ConnectionID);
+		dbq.clearQuery()
+		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
+			dbq.setQuery(JSON.parse(res.data.QueryText));
+		}
 		db.setDataSource();
 		db.populateTable(res.data.ConnectionID);
 		if (typeof _id === "function") {
@@ -263,8 +280,7 @@ db.designDataBrowser = function(_id) {
 		
 		db.isChecked($("#isFreetext").prop("checked"))
 		db.showHideFreeQuery();
-		
-
+		db.headerCheckedAll();
 	});
 }
 
@@ -288,10 +304,8 @@ db.populateTable = function (_id) {
 					datavalue.push(data);
 				});
 			}
-			console.log(datavalue)
-			console.log(db.queryType())
+
 			db.collectionListData(datavalue);
-			// db.configDataBrowser;
 		}
 	});
 };
@@ -305,8 +319,8 @@ db.testQuery = function() {
 	if (!app.isFormValid(".form-databrowserdesign")) {
 		return;
 	}
-
-	var param = ko.mapping.toJS(db.configDataBrowser); //{};
+	
+	var param = ko.mapping.toJS(db.configDataBrowser);
 	db.checkBuilderNotEmpty();
 	if (!db.isChecked()) { //if false by default query with dbox
 		if ($("#table option:selected").text() != 'Select one') {
@@ -316,11 +330,15 @@ db.testQuery = function() {
 			return;
 		}
 	}else {
-		if ($("#querytext").val() != '' || $("#querytype option:selected").text() != 'Select Query Type') {
+		if ($("#querytext").val() != '' && $("#querytype option:selected").text() == 'SQL') {
 			param.QueryType = db.configDataBrowser.QueryType();
 			param.QueryText = db.configDataBrowser.QueryText();
-		} else {
-			return;
+			console.log(param)
+		} else if ($("#textquery").val() != '' && $("#querytype option:selected").text() == 'Dbox') {
+			param.QueryType = $("#querytype option:selected").text();
+			param.QueryText = JSON.stringify(dbq.getQuery());
+			db.configDataBrowser.QueryType(param.QueryType);
+			db.configDataBrowser.QueryText(param.QueryText);
 		}
 	}
 	// console.log(param)
@@ -333,7 +351,35 @@ db.testQuery = function() {
 		db.configDataBrowser.MetaData([]);
 		db.databrowserData(res.data.MetaData);
 		db.setDataSource();
-		param.QueryText = ""
+	});
+};
+
+
+db.fetchDataSourceMetaData = function (from) {
+	var param = {
+		connectionID: db.configDataBrowser.ConnectionID(),
+		from: from
+	};
+
+	db.configDataBrowser.MetaData([]);
+	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) {
+		if (!res.success && res.message == "[eaciit.dbox.dbc.mongo.Cursor.Fetch] Not found") {
+			db.configDataBrowser.MetaData([]);
+			dbq.clearQuery();
+			return;
+		}
+		if (!app.isFine(res)) {
+			dbq.clearQuery();
+			return;
+		}
+
+		db.configDataBrowser.MetaData(res.data);
+		// db.saveDataSource();
+	}, function (a) {
+        sweetAlert("Oops...", a.statusText, "error");
+		dbq.clearQuery();
+	}, {
+		timeout: 10000
 	});
 };
 
@@ -345,11 +391,56 @@ db.checkBuilderNotEmpty = function() {
 			return;
 		}
 	}else {
-		if ($("#querytext").val() == '' || $("#querytype option:selected").text() == 'Select Query Type') {
-			var mustFilled = ($("#querytext").val() == "") ? "type the query text" : "choose the query type";
+		var sqltext = $("#querytext").val()
+		var dboxtext = $("#textquery").val()
+		var querytype = $("#querytype option:selected").text()
+		var mustFilled = ""
+		if (querytype == 'Select Query Type') {
+			mustFilled = "choose the query type";
+		} else if ((sqltext == "" && querytype == 'SQL') || (dboxtext == "" && querytype == 'Dbox') ) {
+			var mustFilled = "type the query text"
+		}
+		if (mustFilled != "") {
 			swal({ title: "Warning", text: "Please "+mustFilled+"", type: "warning" });
 			return;
 		}
+	}
+}
+
+db.checkAll = function(ele, field) {
+    var state = $(ele).is(':checked');    
+    var grid = $('.grid-databrowser-design').data('kendoGrid');
+    $.each(grid.dataSource.view(), function () {
+        if (this[field] != state) 
+            this.dirty=true;
+        this[field] = state;
+    });
+    grid.refresh();
+}
+
+db.headerCheckedAll = function() {
+	if ($(".hiddenfield:checked").length == $(".hiddenfield").length) {
+		$("#selectallhiddenfield").prop("checked", true);
+	} else {
+		$("#selectallhiddenfield").prop("checked", false);
+	}
+
+	if ($(".sortable:checked").length == $(".sortable").length) {
+		$("#selectallsortable").prop("checked", true);
+	} else {
+		$("#selectallsortable").prop("checked", false);
+	}
+
+	if ($(".simplefilter:checked").length == $(".simplefilter").length) {
+		$("#selectallsimplefilter").prop("checked", true);
+	} else {
+		$("#selectallsimplefilter").prop("checked", false);
+	}
+
+	if ($(".advancefilter:checked").length == $(".advancefilter").length) {
+		$("#selectalladvancefilter").prop("checked", true);
+	} else {
+		$("#selectalladvancefilter").prop("checked", false);
 	}
 }
 
@@ -358,7 +449,9 @@ db.backToFront = function() {
 	br.pageVisible("");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	$("#isFreetext").prop("checked", false);
+	$("#selectallhiddenfield").prop("checked", false);
 	$("#freeQuery").hide();
+	$("#builderButton").hide();
 	$("#fromTable").show();
 	br.getDataBrowser();
 };
@@ -409,19 +502,23 @@ db.showHideFreeQuery = function() {
 	if (db.configDataBrowser.QueryType() == "") {
 		$("#isFreetext").attr("checked", false)
 		$("#freeQuery").hide();
+		$("#builderButton").hide();
 		$("#querytype").hide();
-		$("#isFreetext").change(function() {
-			if (this.checked){
-				$("#freeQuery").show();
-				$("#querytype").show();
-				$("#fromTable").hide();	
-			}else{
-				$("#freeQuery").hide();
-				$("#querytype").hide();
-				$("#fromTable").show();
-			}
-		});
 	}
+
+	$("#isFreetext").change(function() {
+		if (this.checked){
+			$("#freeQuery").show();
+			$("#builderButton").show();
+			$("#querytype").show();
+			$("#fromTable").hide();	
+		}else{
+			$("#freeQuery").hide();
+			$("#builderButton").hide();
+			$("#querytype").hide();
+			$("#fromTable").show();
+		}
+	});
 
 	if (db.isChecked()) {
 		$("#freeQuery").show();

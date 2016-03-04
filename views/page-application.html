@@ -152,6 +152,78 @@
 						    		</div>
 								</div>
 				    		</div>
+
+							<div class="col-md-12">
+								<div class="form-group">
+							        <label class="col-sm-2 filter-label">Command</label>
+							        <div class="col-sm-8">
+							        	<div class="nav">
+							        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addCommand">
+							        			<span class="glyphicon glyphicon-plus"></span> Add
+							        		</button>
+							        	</div>
+							        	<table class="table" id="datasource-settings">
+						        			<thead>
+						        				<tr>
+						        					<th>Key</th>
+						        					<th>Value</th>
+						        				</tr>
+						        			</thead>
+						        			<tbody data-bind="foreach: apl.configApplication.Command" > 
+						        				<tr>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+						        					</td>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+						        					</td>
+						        					<td>
+						        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0)">
+						        							<span class="glyphicon glyphicon-remove" data-bind="click: apl.removeCommand($data)"></span>
+						        						</button>
+						        					</td>
+						        				</tr>
+						        			</tbody>
+							        	</table>
+							        </div>
+							    </div>
+						    </div>
+
+							<div class="col-md-12">
+								<div class="form-group">
+							        <label class="col-sm-2 filter-label">Variable</label>
+							        <div class="col-sm-8">
+							        	<div class="nav">
+							        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addVariable">
+							        			<span class="glyphicon glyphicon-plus"></span> Add
+							        		</button>
+							        	</div>
+							        	<table class="table" id="datasource-settings">
+						        			<thead>
+						        				<tr>
+						        					<th>Key</th>
+						        					<th>Value</th>
+						        				</tr>
+						        			</thead>
+						        			<tbody data-bind="foreach: apl.configApplication.Variable" > 
+						        				<tr>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+						        					</td>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+						        					</td>
+						        					<td>
+						        						<button class="btn btn-sm btn-danger"  data-bind="visible: ($index() >= 0)" > 
+						        							<span class="glyphicon glyphicon-remove" data-bind="click: apl.removeVariable($data)"></span>
+						        						</button>
+						        					</td>
+						        				</tr>
+						        			</tbody>
+							        	</table>
+							        </div>
+							    </div>
+						    </div>
 				    	</form>
 			    	</div>
 				    <div class="tab-pane fade" id="Editor">
