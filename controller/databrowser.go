@@ -74,6 +74,23 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 	// if payload.QueryText != "" {
 	// 	payload.TableNames = ""
 	// }
+	_, _, err := d.connToDatabase(payload.ConnectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	// var dataQuery dbox.IQuery
+	for _, v := range payload.MetaData {
+		if v.Aggregate != "" {
+			result := toolkit.M{}
+			toolkit.UnjsonFromString(v.Aggregate, &result)
+			if sum := result.Get("sum").(string); sum == "" {
+				toolkit.Println("masuk")
+			}
+		}
+	}
+	// query := d.parseQuery(conn, *payload, datacon)
+	// toolkit.Println(toolkit.JsonString(query))
 
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -147,7 +164,7 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	query := d.parseQuery(conn, data)
+	query := d.parseQuery(conn, data, datacon)
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
@@ -230,11 +247,9 @@ func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, *c
 	return connection, dataConn, nil
 }
 
-func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser) dbox.IQuery {
+func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser, datacon *colonycore.Connection) dbox.IQuery {
 	var dataQuery dbox.IQuery
 
-	// result := toolkit.M{}
-	// toolkit.UnjsonFromString(dbrowser.QueryText, &result)
 	if dbrowser.QueryType == "nonQueryText" {
 		dataQuery = conn.NewQuery().From(dbrowser.TableNames)
 	} else if dbrowser.QueryType == "SQL" {
@@ -283,6 +298,6 @@ func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
 	result.Set("DataCount", count)
 	result.Set("DataValue", data)
 	result.Set("dataresult", dataDS)
-	toolkit.Printf("result:%v\n", toolkit.JsonString(result))
+	// toolkit.Printf("result:%v\n", toolkit.JsonString(result))
 	return helper.CreateResult(true, result, "")
 }
