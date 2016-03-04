@@ -206,10 +206,6 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil && payload != nil {
-		path := ""
-		content := ""
-		permission := ""
-
 		if payload["path"] != nil && payload["contents"] != nil && payload["permission"] != nil {
 			path := payload["path"].(string)
 			content := payload["contents"].(string)
@@ -611,7 +607,7 @@ func (d *FileBrowserController) UploadHDFS(Server, SourcePath, DestPath string) 
 	return retVal.(error)
 }
 
-func (d *FileBrowserController) Download(Server, SourcePath, DestPath string) error {
+func (d *FileBrowserController) DownloadX(Server, SourcePath, DestPath string) error {
 	h := SetHDFSConnection(Server, USER)
 
 	e := h.GetToLocal(SourcePath, DestPath, "")
@@ -631,7 +627,7 @@ func (d *FileBrowserController) SetPermission(Server, FilePath, Permission strin
 	return e
 }
 
-/*func (d *FileBrowserController) Rename(Server, FilePath, NewName string) error {
+func (d *FileBrowserController) RenameX(Server, FilePath, NewName string) error {
 	h := SetHDFSConnection(Server, USER)
 
 	e := h.Rename(FilePath, NewName)
@@ -639,4 +635,4 @@ func (d *FileBrowserController) SetPermission(Server, FilePath, Permission strin
 		fmt.Println(e)
 	}
 	return e
-}*/
+}
