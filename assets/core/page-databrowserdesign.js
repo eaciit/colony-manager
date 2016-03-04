@@ -208,6 +208,10 @@ db.saveAndBack = function(section) {
 	db.checkBuilderNotEmpty();
 
 	var param = ko.mapping.toJS(db.configDataBrowser);
+	if (/\s/g.test(param._id)) {
+		swal({ title: "error", text: "Whitespace not allowed on ID field name", type: "error" });
+		return;
+	}
 
 	if (!db.isChecked()) {
 		param.QueryText = ""
