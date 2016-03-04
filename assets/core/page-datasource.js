@@ -169,7 +169,7 @@ ds.labelForHost = ko.computed(function () {
 	return "Host";
 }, ds);
 ds.gridMetaDataSchema = {
-	pageSize: 15,
+	pageSize: 10,
 	schema: {
 		model: {
 			id: "_id",
@@ -309,7 +309,7 @@ ds.populateGridConnections = function () {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data=[];
 		}
 		ds.connectionListData(res.data);
 	});
@@ -573,7 +573,7 @@ ds.populateGridDataSource = function () {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data=[];
 		}
 		ds.dataSourcesData(res.data);
 	});
@@ -653,6 +653,17 @@ ds.testQuery = function () {
 			var metadata = (res.data.metadata == undefined || res.data.metadata == null) ? [] : res.data.metadata;
 			if (metadata.length > 0) {
 				columns = columns.concat(metadata.map(function (e) {
+					if (res.data.data.length > 0) {
+						return Lazy(res.data.data).find(function (a) {
+							for (var k in a) {
+								if (a.hasOwnProperty(k) && e.hasOwnProperty(k)) {
+									return true;
+								}
+							}
+
+							return false;
+						}) != undefined;
+					}
 					var columnConfig = { field: e._id, title: e.Label, width: 150 };
 
 					if (e.Lookup._id != "") {
@@ -671,6 +682,10 @@ ds.testQuery = function () {
 
 					return columnConfig;
 				}));
+
+				columns = Lazy(columns).filter(function (e) {
+
+				}).toArray();
 			} else if (res.data.data.length > 0) {
 				var sampleData = res.data.data[0];
 				for (var key in sampleData) {
@@ -688,7 +703,7 @@ ds.testQuery = function () {
 				columns: columns,
 				dataSource: {
 					data: res.data.data,
-					pageSize: 15
+					pageSize: 10
 				},
 				sortable: true,
 				filterfable: false,
@@ -741,6 +756,10 @@ ds.fetchAllCollections = function () {
 
 	var param = { connectionID: ds.confDataSource.ConnectionID() };
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
 		ds.collectionNames(res.data);
 	}, function (a) {
 		ds.backToFrontPage();
