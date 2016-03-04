@@ -732,10 +732,6 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 		return helper.CreateResult(true, result, "")
 	}
 
-	if !dataDS.QueryInfo.Has("take") {
-		query = query.Take(10)
-	}
-
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -768,10 +764,22 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	}
 	defer cursor.Close()
 
+	take := 10
+	if totalData := cursor.Count(); totalData < take && totalData > 0 {
+		take = totalData
+	}
+	if dataDS.QueryInfo.Has("take") {
+		take = 0
+	}
+
 	data := []toolkit.M{}
-	err = cursor.Fetch(&data, 0, false)
+	err = cursor.Fetch(&data, take, false)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		cursor.ResetFetch()
+		err = cursor.Fetch(&data, 0, false)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	result := toolkit.M{"metadata": dataDS.MetaData, "data": data}

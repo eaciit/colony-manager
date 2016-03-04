@@ -27,6 +27,13 @@ db.templateConfig = {
     MetaData : [],
 }
 
+db.templateDboxData = {
+     _id : "",
+    MetaData : [],
+}
+
+
+
 db.alignList = ko.observableArray([
     { Align: "Left", name: "Left" },
     { Align: "Center", name: "Center" },
@@ -50,6 +57,7 @@ db.collectionListData = ko.observableArray([]);
 db.databrowserData = ko.observableArray([]);
 // db.configMetaData = ko.mapping.fromJS(db.templateConfigMetaData);
 db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
+db.configDboxData = ko.mapping.fromJS(db.templateDboxData);
 db.databrowserColumns = ko.observableArray([
 	{ field: "Field", title: "Field", editable: false },
 	{ field: "Label", title: "label"},
@@ -198,6 +206,31 @@ db.changeCheckboxOnGrid = function (o) {
 	return true;
 }
 
+db.back = function(section){
+	if (section == "back") {
+			swal({
+				title: "Do you want to exit?",
+				text: "",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Exit & Save",
+				cancelButtonText: "Exit",
+				closeOnConfirm: true,
+				closeOnCancel: true
+			},
+				function(isConfirm){
+					if (isConfirm) {
+						db.saveAndBack('goback');
+					}else{
+						db.backToFront();
+					}
+				}
+			);			
+		} else {
+			br.ViewBrowserName(param._id)
+		}
+}
 
 db.saveAndBack = function(section) {
 
@@ -264,7 +297,9 @@ db.saveAndBack = function(section) {
 		}
 		
 		if (section == "goback") {
-			db.backToFront();	
+			db.backToFront();
+		} else if (section == "nothing") {
+			// nothing
 		} else {
 			br.ViewBrowserName(param._id)
 		}
@@ -273,6 +308,7 @@ db.saveAndBack = function(section) {
 
 db.designDataBrowser = function(_id) {
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
 	db.databrowserData([]);
 	app.ajaxPost("/databrowser/getdesignview", { _id: _id}, function(res){
 		if(!app.isFine(res)){
@@ -287,20 +323,21 @@ db.designDataBrowser = function(_id) {
 		br.pageVisible("editor");
 		app.mode('editor')
 		db.databrowserData(res.data.MetaData);
-		
-
-
-		// db.connectionID(res.data.ConnectionID);
 		dbq.clearQuery()
-		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
-			dbq.setQuery(JSON.parse(res.data.QueryText));
-		}
 		db.setDataSource();
 		db.populateTable(res.data.ConnectionID);
 		if (typeof _id === "function") {
 			_id();
 		}
 		ko.mapping.fromJS(res.data, db.configDataBrowser);
+
+		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
+			var querytext = JSON.parse(res.data.QueryText)
+			dbq.setQuery(querytext);
+			if (querytext.hasOwnProperty("from") && db.configDboxData.MetaData().length == 0) {
+				db.fetchDataSourceMetaData(querytext.from);
+			}
+		}
 		
 		db.isChecked($("#isFreetext").prop("checked"))
 		db.showHideFreeQuery();
@@ -365,7 +402,7 @@ db.testQuery = function() {
 			db.configDataBrowser.QueryText(param.QueryText);
 		}
 	}
-	// console.log(param)
+	
 	app.ajaxPost("/databrowser/testquery", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -385,10 +422,10 @@ db.fetchDataSourceMetaData = function (from) {
 		from: from
 	};
 
-	db.configDataBrowser.MetaData([]);
+	db.configDboxData.MetaData([]);
 	app.ajaxPost("/datasource/fetchdatasourcemetadata", param, function (res) {
 		if (!res.success && res.message == "[eaciit.dbox.dbc.mongo.Cursor.Fetch] Not found") {
-			db.configDataBrowser.MetaData([]);
+			db.configDboxData.MetaData([]);
 			dbq.clearQuery();
 			return;
 		}
@@ -396,9 +433,7 @@ db.fetchDataSourceMetaData = function (from) {
 			dbq.clearQuery();
 			return;
 		}
-
-		db.configDataBrowser.MetaData(res.data);
-		// db.saveDataSource();
+		db.configDboxData.MetaData(res.data);
 	}, function (a) {
         sweetAlert("Oops...", a.statusText, "error");
 		dbq.clearQuery();
@@ -422,7 +457,7 @@ db.checkBuilderNotEmpty = function() {
 		if (querytype == 'Select Query Type') {
 			mustFilled = "choose the query type";
 		} else if ((sqltext == "" && querytype == 'SQL') || (dboxtext == "" && querytype == 'Dbox') ) {
-			var mustFilled = "type the query text"
+			mustFilled = "type the query text"
 		}
 		if (mustFilled != "") {
 			swal({ title: "Warning", text: "Please "+mustFilled+"", type: "warning" });
@@ -472,10 +507,10 @@ db.backToFront = function() {
 	app.mode('');
 	br.pageVisible("");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
 	$("#isFreetext").prop("checked", false);
 	$("#selectallhiddenfield").prop("checked", false);
 	$("#freeQuery").hide();
-	$("#builderButton").hide();
 	$("#fromTable").show();
 	br.getDataBrowser();
 };
@@ -526,19 +561,16 @@ db.showHideFreeQuery = function() {
 	if (db.configDataBrowser.QueryType() == "") {
 		$("#isFreetext").attr("checked", false)
 		$("#freeQuery").hide();
-		$("#builderButton").hide();
 		$("#querytype").hide();
 	}
 
 	$("#isFreetext").change(function() {
 		if (this.checked){
 			$("#freeQuery").show();
-			$("#builderButton").show();
 			$("#querytype").show();
 			$("#fromTable").hide();	
 		}else{
 			$("#freeQuery").hide();
-			$("#builderButton").hide();
 			$("#querytype").hide();
 			$("#fromTable").show();
 		}

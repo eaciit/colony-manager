@@ -10,7 +10,7 @@ This is what we do!
 | 50 | ✔ | Connection | prepare at least 5 sample connection |
 | 49 | ✔ | Data Source | add timeout when run the query |
 | 48 | ✔ | Data Source | show sub data which type is object as tree view |
-| 47 | | Data Source | prepare at least 5 sample data source |
+| 47 | ✔ | Data Source | prepare at least 5 sample data source |
 | 46 | | Data Serializer | complete the add wizard |
 | 45 | | Data Serializer | on wizard, auto create datasource based on the selected connections & tables |
 | 44 | ✔ | Data Serializer | on wizard, add input prefix, used as prefix of generated ID  |
