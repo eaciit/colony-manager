@@ -273,14 +273,18 @@ body {
 						<div class="col-md-6">
 				        	<label class="col-md-4 filter-label">Data Source ID</label>
 				        	<div class="col-md-8">
-				        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
+				        		<input required type="text" class="form-control input-sm" name="ID" id="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
 								<span class="k-invalid-msg" data-for="ID"></span>
+								<span id="invalidID" class="k-widget k-tooltip k-tooltip-validation k-invalid-msg" role="alert">
+									<span class="k-icon k-warning"></span> 
+									ID is invalid
+								</span>
 				        	</div>
 				        </div>
 					    <div class="col-md-6">
 				            <label class="col-md-4 filter-label">Connection</label>
 				            <div class="col-md-8">
-				                <select required class="data-connection full-width" data-bind="kendoComboBox: { data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: ds.changeDataSourceConnection, filter: 'contains', suggest: true, minLength: 2 }" name="connection"></select>
+				                <select id="dsconnection" required class="data-connection full-width" data-bind="kendoComboBox: { data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: ds.changeDataSourceConnection, filter: 'contains', suggest: true, minLength: 2 }" name="connection"></select>
 								<span class="k-invalid-msg" data-for="connection"></span>
 				            </div>
 				        </div>

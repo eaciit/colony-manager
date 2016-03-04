@@ -467,7 +467,7 @@ ds.editDataSource = function (_id) {
 		qr.setQuery(res.data.QueryInfo);
 
 		setTimeout(function () {
-			$("select.data-connection").data("kendoComboBox").trigger("change");
+			$("select#dsconnection").data("kendoComboBox").trigger("change");
 		}, 200);
 	});
 };
@@ -486,17 +486,23 @@ ds.saveNewDataSource = function(){
 		return;
 	}
 
-	var _id = ds.confDataSource._id();
-	ds.saveDataSource(function (res) {
-		ko.mapping.fromJS(res.data.data, ds.confDataSource);
+	var dsID = $("#ID").val();
+	var pattern = /[^0-9a-z_]/g;
+	if(pattern.test(dsID)){
+	    $("#invalidID").show();  
+	}else{
+		var _id = ds.confDataSource._id();
+		ds.saveDataSource(function (res) {
+			ko.mapping.fromJS(res.data.data, ds.confDataSource);
 
-		if (_id == "") {
-			var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
-			if (queryInfo.hasOwnProperty("from")) {
-				ds.fetchDataSourceMetaData(queryInfo.from);
+			if (_id == "") {
+				var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
+				if (queryInfo.hasOwnProperty("from")) {
+					ds.fetchDataSourceMetaData(queryInfo.from);
+				}
 			}
-		}
-	});
+		});
+	}
 };
 ds.populateGridDataSource = function () {
 	app.ajaxPost("/datasource/getdatasources", {search: ds.search2field}, function (res) {
@@ -561,85 +567,91 @@ ds.testQuery = function () {
 
 	$("#grid-ds-result").replaceWith("<div id='grid-ds-result'></div>");
 
-	ds.saveDataSource(function (res) {
-		ds.idThereAnyDataSourceResult(false);
+	var dsID = $("#ID").val();
+	var pattern = /[^0-9a-z_]/g;
+	if(pattern.test(dsID)){
+	    $("#invalidID").show();  
+	}else{
+		ds.saveDataSource(function (res) {
+			ds.idThereAnyDataSourceResult(false);
 
-		var param = ko.mapping.toJS(ds.confDataSource);
-		param.MetaData = JSON.stringify(param.MetaData);
-		param.QueryInfo = JSON.stringify(param.QueryInfo);
-		app.ajaxPost("/datasource/rundatasourcequery", param, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
+			var param = ko.mapping.toJS(ds.confDataSource);
+			param.MetaData = JSON.stringify(param.MetaData);
+			param.QueryInfo = JSON.stringify(param.QueryInfo);
+			app.ajaxPost("/datasource/rundatasourcequery", param, function (res) {
+				if (!app.isFine(res)) {
+					return;
+				}
 
-			$('a[data-target="#ds-tab-3"]').tab('show');
-			ds.idThereAnyDataSourceResult(true);
+				$('a[data-target="#ds-tab-3"]').tab('show');
+				ds.idThereAnyDataSourceResult(true);
 
-			var columns = [{
-				title: "&nbsp;",
-				width: 20,
-				locked: true
-			}];
+				var columns = [{
+					title: "&nbsp;",
+					width: 20,
+					locked: true
+				}];
 
-			var metadata = (res.data.metadata == undefined || res.data.metadata == null) ? [] : res.data.metadata;
-			if (metadata.length > 0) {
-				columns = columns.concat(metadata.map(function (e) {
-					var columnConfig = { field: e._id, title: e.Label, width: 150 };
+				var metadata = (res.data.metadata == undefined || res.data.metadata == null) ? [] : res.data.metadata;
+				if (metadata.length > 0) {
+					columns = columns.concat(metadata.map(function (e) {
+						var columnConfig = { field: e._id, title: e.Label, width: 150 };
 
-					if (e.Lookup._id != "") {
-						columnConfig.template = function (f) {
-							return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
-						}
-					} else if ((e.Type === "object") || (e.Type === "array-objects") || (e.Type.indexOf("array") > -1)) {
-						columnConfig.template = function (f) {
-							if (f[e._id] === undefined){
-								return "";
-							}else{
-								return "<a title='show lookup data for " + f._id + "' onclick='ds.showSubData(\"" + e._id + "\", \"" + f._id + "\")'>" + "Show details" + "</a>";
+						if (e.Lookup._id != "") {
+							columnConfig.template = function (f) {
+								return "<a title='show lookup data for " + f._id + "' onclick='ds.showLookupData(\"" + e._id + "\", \"" + f._id + "\")'>" + f._id + "</a>";
+							}
+						} else if ((e.Type === "object") || (e.Type === "array-objects") || (e.Type.indexOf("array") > -1)) {
+							columnConfig.template = function (f) {
+								if (f[e._id] === undefined){
+									return "";
+								}else{
+									return "<a title='show lookup data for " + f._id + "' onclick='ds.showSubData(\"" + e._id + "\", \"" + f._id + "\")'>" + "Show details" + "</a>";
+								}
 							}
 						}
-					}
 
-					return columnConfig;
-				}));
-			} else if (res.data.data.length > 0) {
-				var sampleData = res.data.data[0];
-				for (var key in sampleData) {
-					if (sampleData.hasOwnProperty(key)) {
-						columns.push({ field: key, title: key, width: 150 });
+						return columnConfig;
+					}));
+				} else if (res.data.data.length > 0) {
+					var sampleData = res.data.data[0];
+					for (var key in sampleData) {
+						if (sampleData.hasOwnProperty(key)) {
+							columns.push({ field: key, title: key, width: 150 });
+						}
 					}
 				}
-			}
 
-			if (columns.length == 1) {
-				columns[0].locked = false;
-			}
+				if (columns.length == 1) {
+					columns[0].locked = false;
+				}
 
-			var gridConfig = {
-				columns: columns,
-				dataSource: {
-					data: res.data.data,
-					pageSize: 15
-				},
-				sortable: true,
-				filterfable: false,
-				pageable: true
-			};
+				var gridConfig = {
+					columns: columns,
+					dataSource: {
+						data: res.data.data,
+						pageSize: 15
+					},
+					sortable: true,
+					filterfable: false,
+					pageable: true
+				};
 
-			$("#grid-ds-result").kendoGrid(gridConfig);
+				$("#grid-ds-result").kendoGrid(gridConfig);
 
-			// ======= this line of code make lookup data overrided everytime trying to edit datasourcce
-			var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
-			if (queryInfo.hasOwnProperty("from") && ds.confDataSource.MetaData().length == 0) {
-				ds.fetchDataSourceMetaData(queryInfo.from);
-			}
-		}, function (a, b, c) {
-        	sweetAlert("Oops...", a.statusText, "error");
-			console.log(a);
-		}, {
-			timeout: 10000
+				// ======= this line of code make lookup data overrided everytime trying to edit datasourcce
+				var queryInfo = ko.mapping.toJS(ds.confDataSource).QueryInfo;
+				if (queryInfo.hasOwnProperty("from") && ds.confDataSource.MetaData().length == 0) {
+					ds.fetchDataSourceMetaData(queryInfo.from);
+				}
+			}, function (a, b, c) {
+	        	sweetAlert("Oops...", a.statusText, "error");
+				console.log(a);
+			}, {
+				timeout: 10000
+			});
 		});
-	});
+	}
 };
 ds.showMetadataLookup = function (_id, o) {
 	var $grid = $(o).closest(".k-grid").data("kendoGrid");
@@ -682,6 +694,12 @@ ds.fetchAllCollections = function () {
 };
 ds.changeDataSourceConnection = function () {
 	ko.mapping.fromJS(ds.templateConfig, ds.confDataSourceConnectionInfo);
+
+	$("#dsconnection").change( function(){
+		$(".token-input-list-facebook").empty();
+		$("#grid-metadata").empty();
+		idThereAnyDataSourceResult(false);
+	});
 
 	var param = { _id: this.value() };
 	app.ajaxPost("/datasource/selectconnection", param, function (res) {

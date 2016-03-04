@@ -198,6 +198,31 @@ db.changeCheckboxOnGrid = function (o) {
 	return true;
 }
 
+db.back = function(section){
+	if (section == "back") {
+			swal({
+				title: "Do you want to exit?",
+				text: "",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Exit & Save",
+				cancelButtonText: "Exit",
+				closeOnConfirm: true,
+				closeOnCancel: true
+			},
+				function(isConfirm){
+					if (isConfirm) {
+						db.saveAndBack('goback');
+					}else{
+						db.backToFront();
+					}
+				}
+			);			
+		} else {
+			br.ViewBrowserName(param._id)
+		}
+}
 
 db.saveAndBack = function(section) {
 
@@ -240,7 +265,7 @@ db.saveAndBack = function(section) {
 		}
 		
 		if (section == "goback") {
-			db.backToFront();	
+			db.backToFront();
 		} else {
 			br.ViewBrowserName(param._id)
 		}
