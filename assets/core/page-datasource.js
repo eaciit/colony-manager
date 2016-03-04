@@ -2,8 +2,10 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "csv", text: "CSV (Weblink)" },
-	{ value: "json", text: "JSON (Weblink)" },
+	{ value: "csv", text: "CSV" },
+	{ value: "csvs", text: "CSVS" },
+	{ value: "json", text: "JSON" },
+	{ value: "jsons", text: "JSONS" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mysql", text: "MySQL" },
 	{ value: "hive", text: "Hive" },
@@ -96,7 +98,7 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Driver", title: "Driver" },
 	{ field: "Host", title: "Host" },
 	{ field: "Database", title: "Database" },
-	{ field: "UserName", title: "User Name" },
+	// { field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
@@ -150,7 +152,7 @@ ds.metadataColumns = ko.observableArray([
 	}, width: 60, attributes: { style: "text-align: center;" } },
 ]);
 ds.labelForHost = ko.computed(function () {
-	if (["csv", "json"].indexOf(ds.config.Driver()) > -1) {
+	if (["csv", "json", "csvs", "jsons"].indexOf(ds.config.Driver()) > -1) {
 		return "File URL";
 	}
 
@@ -262,7 +264,7 @@ ds.populateGridConnections = function () {
 
 ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
+		if (["json", "csv", "jsons", "csvs", "hive"].indexOf(ds.config.Driver()) > -1) {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
 			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
 				// no problem
