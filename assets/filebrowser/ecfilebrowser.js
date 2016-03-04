@@ -467,11 +467,16 @@ var methodsFB = {
 
 			$form =	$("<form class='form-signin' method='post' action='/Test/Upload' enctype='multipart/form-data'></form>");
 			$fs =	$("<fieldset></fieldset>");
-			$inp =	$("<div class='col-md-3'><label class='filter-label'>Upload File</label></div><div class='col-md-9'><input type='file' name='myfiles' multiple='multiple'></div>");
+			$inp =	$("<div class='col-md-3'><label class='filter-label'>Upload File</label></div><div class='col-md-9'><input type='file' name='myfiles' id='myfiles' multiple='multiple'></div>");
 
 			$form.appendTo($body);
 			$fs.appendTo($form);
 			$inp.appendTo($fs);	
+
+			$btn.click(function(){
+				// content.file = $($body.find("input")).val();
+				methodsFB.SendActionRequest(elem,content);
+			});
 		}
 		$($(elem).find(".modal")).modal("show");		
 	},
@@ -559,6 +564,36 @@ var methodsFB = {
 		}
 		methodsFB.SendActionRequest(elem,content);
 	},
+	UploadAjax: function(param){
+       	var inputFiles = document.getElementById("myfiles");
+       	var formdata = new FormData();
+
+       	for (i = 0; i < inputFiles.files.length; i++) {
+            formdata.append('myfiles', inputFiles.files[i]);
+            formdata.append('filetypes', inputFiles.files[i].type);
+            formdata.append('filesizes', inputFiles.files[i].size);
+            formdata.append('filename', inputFiles.files[i].name);
+        }
+       
+        formdata.append('path', param.path);
+        formdata.append('serverId', param.serverId);
+
+        app.isLoading(true);
+
+       	var xhr = new XMLHttpRequest();
+        xhr.open('POST', param.url); 
+        xhr.send(formdata);
+        xhr.onreadystatechange = function () {
+            /*if (xhr.readyState == 4 && xhr.status == 200) {
+                alert(xhr.responseText);
+            }
+*/
+            app.isLoading(false);
+        }
+        
+
+        return false;
+	},
 	SendActionRequest:function(elem,param){
 		param.serverId = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
 		
@@ -567,45 +602,51 @@ var methodsFB = {
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
-		if (ds.call.toLowerCase() == 'post'){
-			contentType = 'application/json; charset=utf-8';
-		}
-		app.isLoading(true);
-		 $.ajax({
-                url: url,
-                type: call,
-                dataType: 'json',
-                data : JSON.stringify(param),
-                contentType: contentType,
-                success : function(res) {
 
-                	$(elem).data('ecFileBrowser').serverSource.callOK(res);
-                	if(param.action == "GetContent"){
-                		$($(elem).find(".fb-filename")).html(param.path);
-						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
-						$($(elem).find(".fb-editor")).data("kendoEditor").focus();
-						$(elem).data("ecFileBrowser").isHold = true;
-                		app.isLoading(false);
-                	}else if(param.action!="Edit"){
-                		methodsFB.RefreshTreeView(elem,param);
+		if (param.action == "Upload") {
+			param.url = url;
+			methodsFB.UploadAjax(param);
+		}else{
+			if (ds.call.toLowerCase() == 'post'){
+				contentType = 'application/json; charset=utf-8';
+			}
+			app.isLoading(true);
+			$.ajax({
+	                url: url,
+	                type: call,
+	                dataType: 'json',
+	                data : JSON.stringify(param),
+	                contentType: contentType,
+	                success : function(res) {
 
-                		if(param.action=="NewFile"){
+	                	$(elem).data('ecFileBrowser').serverSource.callOK(res);
+	                	if(param.action == "GetContent"){
+	                		$($(elem).find(".fb-filename")).html(param.path);
+							$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
+							$($(elem).find(".fb-editor")).data("kendoEditor").focus();
 							$(elem).data("ecFileBrowser").isHold = true;
-							$(elem).data("ecFileBrowser").Content = param;	
-	                	}
-                	}
-                		$(elem).find(".modal").modal("hide");
+	                		app.isLoading(false);
+	                	}else if(param.action!="Edit"){
+	                		methodsFB.RefreshTreeView(elem,param);
 
-                	if(!$(elem).data("ecFileBrowser").isHold){
-                		swal("Saved!", "Your request has been processed !", "success");
-                		app.isLoading(false);
-                	}
-                },
-                error: function (a, b, c) {
-                	app.isLoading(false);
-					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
-			},
-        });
+	                		if(param.action=="NewFile"){
+								$(elem).data("ecFileBrowser").isHold = true;
+								$(elem).data("ecFileBrowser").Content = param;	
+		                	}
+	                	}
+	                		$(elem).find(".modal").modal("hide");
+
+	                	if(!$(elem).data("ecFileBrowser").isHold){
+	                		swal("Saved!", "Your request has been processed !", "success");
+	                		app.isLoading(false);
+	                	}
+	                },
+	                error: function (a, b, c) {
+	                	app.isLoading(false);
+						$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
+				},
+	        });
+		}
 	},
 	AfterCreateNewFile:function(elem,content){
 		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
