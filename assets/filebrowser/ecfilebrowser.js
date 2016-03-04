@@ -602,7 +602,7 @@ var methodsFB = {
 			methodsFB.SendActionRequest(elem,content);
 		}
 	},
-	UploadAjax: function(param){
+	UploadAjax: function(elem,param){
        	var inputFiles = document.getElementById("myfiles");
        	var formdata = new FormData();
 
@@ -627,6 +627,8 @@ var methodsFB = {
             }
 */
             app.isLoading(false);
+            $(elem).find(".modal").modal("hide");
+            methodsFB.RefreshTreeView(elem,param);
         }
         
 
@@ -643,7 +645,7 @@ var methodsFB = {
 
 		if (param.action == "Upload") {
 			param.url = url;
-			methodsFB.UploadAjax(param);
+			methodsFB.UploadAjax(elem,param);
 		}else{
 		if (ds.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
