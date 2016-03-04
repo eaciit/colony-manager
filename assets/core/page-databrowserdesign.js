@@ -208,7 +208,15 @@ db.saveAndBack = function(section) {
 	db.checkBuilderNotEmpty();
 
 	var param = ko.mapping.toJS(db.configDataBrowser);
+	if (/\s/g.test(param._id)) {
+		swal({ title: "error", text: "Whitespace not allowed on ID field name", type: "error" });
+		return;
+	}
 
+	var grids = $(".grid-databrowser-design").data("kendoGrid")
+	
+	// var data = grids.dataSource.data();
+	
 	if (!db.isChecked()) {
 		param.QueryText = ""
 		param.QueryType = ""
@@ -227,10 +235,26 @@ db.saveAndBack = function(section) {
 		}
 	}
      	
-	var grids = $(".grid-databrowser-design").data("kendoGrid")
+	
 	var ds = grids.dataSource.data();
-	param.MetaData = JSON.parse(kendo.stringify(ds));
-
+	var dirty = $.grep(ds, function(item) {
+	    return item.dirty
+	});
+	
+	for (var data in param.MetaData){
+		for (var idxDirty in dirty) {
+			if (dirty[idxDirty].ShowIndex == param.MetaData[data].ShowIndex) {
+				var splitString = dirty[idxDirty].Aggregate.split(",");
+				var obj = {};
+				for (var s in splitString) {
+					obj[splitString[s]] = ""
+				}
+				param.MetaData[data].Aggregate = JSON.stringify(obj)
+			}
+		}
+	}
+	// param.MetaData = JSON.parse(kendo.stringify(ds));
+	// console.log("dirty", param);
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
