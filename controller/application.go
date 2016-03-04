@@ -279,11 +279,11 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 	}else if(strings.Contains(server.CmdExtract, "zip")){
 		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
-		extractCmd =server.CmdExtract+" "+destinationPath+".zip -d "+destinationZipPathOutput
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
+		toolkit.ZipCompress(sourcePath)
+		extractCmd =server.CmdExtract+" "+destinationPath+"/"+app.ID+".zip -d "+destinationPath
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }		
 	}else if(strings.Contains(server.CmdExtract, "zip")){
 
 	}
@@ -338,6 +338,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 	createExtractDir := "sudo mkdir "+destinationPath+"/"+app.ID
 	perExtractDire := "sudo chmod -R 777 "+destinationPath+"/"+app.ID
+	fmt.Println(createExtractDir,perExtractDire,extractCmd)
 	_, err = sshSetting.RunCommandSsh([]string{createExtractDir,perExtractDire,extractCmd}...)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -353,7 +354,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	err = os.Remove(sourceZipPath)
+	// err = os.Remove(sourceZipPath)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -704,3 +705,5 @@ func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface
 
 	return helper.CreateResult(true, err, "")
 }
+
+

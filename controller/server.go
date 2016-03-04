@@ -12,6 +12,8 @@ import (
 	"github.com/eaciit/toolkit"
 	"golang.org/x/crypto/ssh"
 	"path/filepath"
+	// "strings"
+
 )
 
 type ServerController struct {
@@ -102,6 +104,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	
 	defer cursor.Close()
 
 	if len(oldDataAll) > 0 {
@@ -119,6 +123,11 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	}
 
 	sshSetting, client, err := s.SSHConnect(data)
+	// output,err := sshclient.Search(sshSetting,data.AppPath,false,"panjang")
+	output, err := sshSetting.GetOutputCommandSsh("ls")
+	// // find , err sshclient.Search("/ho")
+	fmt.Println(output)
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -301,3 +310,69 @@ func (s *ServerController) CheckPing(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, p.LastStatus, "")
 }
+
+// func (s *ServerController) CheckPath(r *knot.WebContext) interface{} {
+// 	r.Config.OutputType = knot.OutputJson
+
+// 	payload := struct {
+// 		Path   string `json:"Path"`
+// 		Server string
+// 	}{}
+// 	err := r.GetPayload(&payload)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+ 
+// 	Path := payload.Path
+// 	// res, errr := sshSetting.GetOutputCommandSsh("find "+Path)
+// 	// if errr != nil {
+// 	// 	return helper.CreateResult(false, nil, errr.Error())
+// 	// }
+// 	// if !strings.Contains(string(res), "No such file or directory") {
+// 	// 	return helper.CreateResult(true, nil, "Ok")
+// 	// }else{
+// 	// 	return helper.CreateResult(true, nil, "Nok")
+// 	// }
+
+// 	server := new(colonycore.Server)
+// 	err = colonycore.Get(server, payload.Server)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+
+// 	sshSetting, _, err := new(ServerController).SSHConnect(server)
+
+
+	
+	 
+// }
+
+// func (s *ServerController) CheckPath(r *knot.WebContext) interface{} {
+// 	r.Config.OutputType = knot.OutputJson
+
+// 	payload := new(colonycore.Server)
+// 	err := r.GetPayload(&payload)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+
+// 	err = colonycore.Get(payload, payload.ID)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+
+// 	sshSetting, b, err := s.SSHConnect(payload)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+
+// 	if output, err := sshSetting.RunCommandSsh("find "+Path); err != nil || strings.Contains(output, "No such file or directory") {
+// 		return helper.CreateResult(false, nil, "Path is not exists")
+
+
+// 	}else{
+// 		return helper.CreateResult(false, nil, "ok")
+// 	}
+
+// 	defer b.Close()
+// }

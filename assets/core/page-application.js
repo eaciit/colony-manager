@@ -142,7 +142,7 @@ apl.removeCommand = function (each) {
 	};
 };
 
-apl.removeVariable = function (each) {
+apl.removeVariable = function (each) {	
 	return function () {
 		console.log(each);
 		apl.configApplication.Variable.remove(each);
