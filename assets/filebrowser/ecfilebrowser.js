@@ -578,6 +578,9 @@ var methodsFB = {
                 data : JSON.stringify(param),
                 contentType: contentType,
                 success : function(res) {
+                	var divtree = $($(elem).find(".fb-pre")[0]);
+                	divtree.removeAttr("style");
+                	divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
 
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
@@ -586,6 +589,8 @@ var methodsFB = {
 						$($(elem).find(".fb-editor")).data("kendoEditor").focus();
 						$(elem).data("ecFileBrowser").isHold = true;
                 		app.isLoading(false);
+                		divtree.css("pointer-events", "none");
+                		divtree.attr("class", divtree.attr("class")+" k-state-disabled")
                 	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem,param);
 
