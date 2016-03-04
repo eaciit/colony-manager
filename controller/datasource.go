@@ -641,7 +641,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 
 	data := toolkit.M{}
 
-	if !toolkit.HasMember([]string{"csv", "json"}, dataConn.Driver) {
+	if !toolkit.HasMember([]string{"csv", "json", "mysql"}, dataConn.Driver) {
 		err = cursor.Fetch(&data, 1, false)
 	} else {
 		dataAll := []toolkit.M{}
