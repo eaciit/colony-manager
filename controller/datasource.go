@@ -555,28 +555,32 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	}
 
 	if driver == "json" || driver == "csv" {
-		fileTempID := helper.RandomIDWithPrefix("f")
-		fileType := helper.GetFileExtension(host)
-		fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
+		if strings.Contains(host, "http") {
+			fileTempID := helper.RandomIDWithPrefix("f")
+			fileType := helper.GetFileExtension(host)
+			fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
 
-		file, err := os.Create(fakeDataConn.FileLocation)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer file.Close()
+			file, err := os.Create(fakeDataConn.FileLocation)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer file.Close()
 
-		resp, err := http.Get(host)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer resp.Body.Close()
+			resp, err := http.Get(host)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer resp.Body.Close()
 
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else {
+			fakeDataConn.FileLocation = host
 		}
 	}
 
@@ -641,7 +645,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 
 	data := toolkit.M{}
 
-	if !toolkit.HasMember([]string{"csv", "json", "mysql"}, dataConn.Driver) {
+	if !toolkit.HasMember([]string{"json", "mysql"}, dataConn.Driver) {
 		err = cursor.Fetch(&data, 1, false)
 	} else {
 		dataAll := []toolkit.M{}
