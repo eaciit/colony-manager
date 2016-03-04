@@ -13,6 +13,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"golang.org/x/crypto/ssh"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -215,6 +216,14 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 
 		if oldData.AppPath == "" || oldData.DataPath == "" {
+			cmdRmAppPath := fmt.Sprintf("rm -rf %s", data.AppPath)
+			log.AddLog(cmdRmAppPath, "INFO")
+			sshSetting.GetOutputCommandSsh(cmdRmAppPath)
+
+			cmdRmDataPath := fmt.Sprintf("rm -rf %s", data.DataPath)
+			log.AddLog(cmdRmDataPath, "INFO")
+			sshSetting.GetOutputCommandSsh(cmdRmDataPath)
+
 			cmds := []string{
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "bin")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "cli")),
@@ -239,6 +248,15 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			checkPathCmd := fmt.Sprintf("ls %s", data.AppPath)
+			isPathCreated, err := sshSetting.GetOutputCommandSsh(checkPathCmd)
+			log.AddLog(checkPathCmd, "INFO")
+			if err != nil || strings.TrimSpace(isPathCreated) == "" {
+				errString := fmt.Sprintf("Invalid path. %s", err.Error())
+				log.AddLog(errString, "ERROR")
+				return helper.CreateResult(false, nil, errString)
 			}
 
 			if res := setEnvPath(); res != nil {
