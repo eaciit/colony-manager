@@ -675,14 +675,7 @@ var methodsFB = {
                 		methodsFB.RefreshTreeView(elem,param);
                 		if(param.action=="NewFile"){
 							$(elem).data("ecFileBrowser").isHold = true;
-	                		app.isLoading(false);
-	                	}else if(param.action!="Edit"){
-	                		methodsFB.RefreshTreeView(elem,param);
-
-	                		if(param.action=="NewFile"){
-								$(elem).data("ecFileBrowser").isHold = true;
-								$(elem).data("ecFileBrowser").Content = param;	
-		                	}
+							$(elem).data("ecFileBrowser").Content = param;	
 	                	}
                 	}else  if(param.action=="Edit") {
                 		$($(elem).find(".fb-filename")).html("");
@@ -782,6 +775,9 @@ var methodsFB = {
 		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
 		var selectedparent = methodsFB.GetParent(elem,content);
 		if(selectedparent.length==0){
+			setTimeout(function(){
+				app.isLoading(true);
+			},500);
 			tree.dataSource.read();
 			return;
 		}
@@ -792,7 +788,7 @@ var methodsFB = {
 		
 		setTimeout(function () {
 			dtItem.set("expanded",true);
-		}, 2000);
+		}, 1500);
 			
 	},
 	GetSelectedData:function(elem){
