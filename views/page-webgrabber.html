@@ -516,7 +516,7 @@
 				    					</div>
 			    						<div class="row">
 			    							<label class="col-md-4 filter-label">Destination Type</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<select style="width: 100%;" required data-required-msg="Destination type cannot be empty" data-bind="kendoDropDownList: { data: wg.templatedesttype, value: destoutputtype}" name="desttype"></select>
 												<span class="k-invalid-msg" for="desttype"></span>
 				    						</div>
@@ -524,7 +524,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
 			    							<label class="col-md-4 filter-label">Connection ID</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<select style="width: 100%;" name="ConnectionId" required data-required-msg="Connection cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.configSelector.connectioninfo.connectionid, change: wg.changeConnectionID }"></select>
 												<span class="k-invalid-msg" for="ConnectionId"></span>
 				    						</div>
@@ -532,7 +532,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
 			    							<label class="col-md-4 filter-label">Database</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" readonly="read" class="form-control input-sm full-width" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
 												<span class="k-invalid-msg" data-for="Database"></span>
 				    						</div>
@@ -540,7 +540,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
 			    							<label class="col-md-4 filter-label">Collection</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" class="form-control input-sm full-width" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>
 												<span class="k-invalid-msg" data-for="Collection"></span>
 				    						</div>
@@ -548,7 +548,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">File Name</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" class="form-control input-sm full-width" name="FileName" placeholder="Type filename here" data-bind="value: connectioninfo.settings.filename"/>
 												<span class="k-invalid-msg" data-for="FileName"></span>
 				    						</div>
@@ -556,7 +556,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">Use Header</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<select style="width: 100%;" name="UseHeader" required data-required-msg="Use header cannot be empty" data-bind="kendoDropDownList: { data: wg.useHeaderOptions, dataValueField: 'value', dataTextField: 'title', value: wg.configSelector.connectioninfo.settings.useheader }"></select>
 												<span class="k-invalid-msg" data-for="UseHeader"></span>
 				    						</div>
@@ -564,7 +564,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">Delimiter</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" class="form-control input-sm full-width" name="Delimiter" placeholder="Type delimiter here" data-bind="value: connectioninfo.settings.delimiter"/>
 												<span class="k-invalid-msg" data-for="Delimiter"></span>
 				    						</div>

@@ -354,8 +354,27 @@ wg.editScrapper = function (_id) {
 
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
-			item.filtercond = {};
-			item["conditionlist"] = [];
+			item.conditionlist = [];
+			for (var k in item.filtercond) {
+				if (item.filtercond.hasOwnProperty(k)) {
+					item.filtercond[k].forEach(function (d) {
+						for (var column in d) {
+							if (d.hasOwnProperty(column)) {
+								for (var valueKey in d[column]) {
+									if (d[column].hasOwnProperty(valueKey)) {
+										item.conditionlist.push(ko.mapping.fromJS({
+											column: column,
+											operator: valueKey,
+											value: d[column][valueKey]
+										}));
+									}
+								}
+							}
+						}
+					});
+				}
+			}
+
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
@@ -1181,7 +1200,16 @@ wg.changeConnectionID = function (e) {
 		connInfo.database(res.data.Database);
 		connInfo.username(res.data.UserName);
 		connInfo.password(res.data.Password);
-		connInfo.settings(res.data.Settings);
+		for (key in res.data.Settings) {
+			if (res.data.Settings.hasOwnProperty(key)) {
+				var val = res.data.Settings[key];
+				if (connInfo.settings.hasOwnProperty(key)) {
+					connInfo.settings[key](val);
+				} else {
+					connInfo.settings[key] = ko.observable(val);
+				}
+			}
+		}
 	});
 
 	return true;
