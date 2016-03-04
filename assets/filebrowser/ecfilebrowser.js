@@ -94,6 +94,7 @@ var methodsFB = {
 			dataTextField: options.serverSource.dataTextField,
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
+					app.isLoading(true);
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
@@ -105,6 +106,7 @@ var methodsFB = {
 
 		$($strsearch.find("button")).click(function(){
 				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
+				app.isLoading(true);
 		});
 
 		strtree = "<div></div>"
@@ -140,14 +142,15 @@ var methodsFB = {
 											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
 										});
 									}
-
-									if($(elem).data("ecFileBrowser").isHold){
-				                		$(elem).data("ecFileBrowser").isHold = false;
-										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
-				                	}
 								}
 							}
 						});
+						if($(elem).data("ecFileBrowser").isHold){
+				                		$(elem).data("ecFileBrowser").isHold = false;
+										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
+				                	}else{
+				                		app.isLoading(false);
+				                	}
 	                },
 	            },
 	            parameterMap:function(data,type){
@@ -478,6 +481,17 @@ var methodsFB = {
 			$fs.appendTo($form);
 			$inp.appendTo($fs);	
 		}
+		$body.find("input").each(function(){
+				$(this).keydown(function(e){
+				    if (e.which === 32) {
+				        e.preventDefault();      
+				    }
+				}).blur(function() {
+				    // for variety's sake here's another way to remove the spaces:
+				    $(this).val(function(i,oldVal){ return oldVal.replace(/\s/g,''); });         
+				});
+		});
+
 		$($(elem).find(".modal")).modal("show");		
 	},
 	ActionRequest:function(elem,options,content,sender){
