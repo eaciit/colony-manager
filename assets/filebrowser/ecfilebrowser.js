@@ -499,6 +499,9 @@ var methodsFB = {
 		$($(elem).find(".modal")).modal("show");		
 	},
 	ActionRequest:function(elem,options,content,sender){
+		if(!$(elem).data("ecFileBrowser").isHold && (content.action=="Edit"||content.action=="Cancel")){
+			return;
+		}
 
 		if($(elem).data("ecFileBrowser").isHold && content.action!="GetContent"){
 			if(content.action=="Edit" || content.action=="Cancel"){
@@ -511,7 +514,6 @@ var methodsFB = {
 				return;
 			}
 		}
-
 
 		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
 		var name = "";
