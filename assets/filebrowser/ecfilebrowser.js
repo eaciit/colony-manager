@@ -94,6 +94,7 @@ var methodsFB = {
 			dataTextField: options.serverSource.dataTextField,
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
+					app.isLoading(true);
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
@@ -105,6 +106,7 @@ var methodsFB = {
 
 		$($strsearch.find("button")).click(function(){
 				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
+				app.isLoading(true);
 		});
 
 		strtree = "<div></div>"
@@ -140,14 +142,15 @@ var methodsFB = {
 											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
 										});
 									}
-
-									if($(elem).data("ecFileBrowser").isHold){
-				                		$(elem).data("ecFileBrowser").isHold = false;
-										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
-				                	}
 								}
 							}
 						});
+						if($(elem).data("ecFileBrowser").isHold){
+				                		$(elem).data("ecFileBrowser").isHold = false;
+										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
+				                	}else{
+				                		app.isLoading(false);
+				                	}
 	                },
 	            },
 	            parameterMap:function(data,type){
@@ -229,8 +232,8 @@ var methodsFB = {
 
 		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-trash'></span> Delete</button>");
 		$strbtn.appendTo($strcont);
-		$strbtn.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"Delete"},$strbtn);
+		$strbtn.click(function(){			
+				methodsFB.ActionRequest(elem,options,{action:"Delete"},$strbtn);   
 		})
 
 		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-cog'></span> Permission</button>");
@@ -353,10 +356,9 @@ var methodsFB = {
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
-                swal("Warning!", "Please choose folder !", "error");
+                swal("Warning!", "Please choose folder !", "warning");
 				return;
 			}
-
 
 			$divNewFile = $("<div class='col-md-12'>"+
 				"<div class='col-md-12 btn-cont'>"+
@@ -374,12 +376,16 @@ var methodsFB = {
 				dataSource : filetype
 			});
 			$btn.click(function(){
+					content.path = content.path;
+					if ((content.path).substr((content.path).length - 1, 1) != "/") {
+						content.path = content.path + "/"
+					}
 					content.path = content.path	+ $($body.find(".form-control")).val() +"."+ $($(elem).find("input[class='fb-ddl-filetype']")).getKendoDropDownList().value();
 					methodsFB.SendActionRequest(elem,content);
 			});
 		}else if(content.action=="NewFolder"){
 			if (type!="folder"){
-                swal("Warning!", "Please choose folder !", "error");
+                swal("Warning!", "Please choose folder !", "warning");
 				return;
 			}
 
@@ -461,7 +467,7 @@ var methodsFB = {
 			methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
 		}else if (content.action=="Upload"){
 			if (type!="folder"){
-                swal("Warning!", "Please choose folder !", "error");
+                swal("Warning!", "Please choose folder !", "warning");
 				return;
 			}
 
@@ -478,15 +484,29 @@ var methodsFB = {
 				methodsFB.SendActionRequest(elem,content);
 			});
 		}
+		$body.find("input").each(function(){
+				$(this).keydown(function(e){
+				    if (e.which === 32) {
+				        e.preventDefault();      
+				    }
+				}).blur(function() {
+				    // for variety's sake here's another way to remove the spaces:
+				    $(this).val(function(i,oldVal){ return oldVal.replace(/\s/g,''); });         
+				});
+		});
+
 		$($(elem).find(".modal")).modal("show");		
 	},
 	ActionRequest:function(elem,options,content,sender){
 
 		if($(elem).data("ecFileBrowser").isHold){
 			if(content.action=="Edit" || content.action=="Cancel"){
+				var divtree = $($(elem).find(".fb-pre")[0]);
+                divtree.removeAttr("style");
+                divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
 				$(elem).data("ecFileBrowser").isHold = false;
 			}else{
-           		 swal("Warning!", "Please finish editing file !", "error");
+           		 swal("Warning!", "Please finish editing file !", "warning");
 				return;
 			}
 		}
@@ -497,7 +517,7 @@ var methodsFB = {
 		var type = "";
 		var permiss = "";
 		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
-            swal("Warning!", "Please choose folder or file !", "error");
+            swal("Warning!", "Please choose folder or file !", "warning");
 			return;
 		}
 
@@ -510,7 +530,7 @@ var methodsFB = {
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
 			var dtitm = methodsFB.GetSelectedData(elem);
 			if(!dtitm.iseditable){
-            swal("Warning!", "Action not permitted !", "error");
+            swal("Warning!", "Action not permitted !", "warning");
 				return;
 			}
 		}
@@ -557,14 +577,32 @@ var methodsFB = {
 			return;
 		}else if(content.action=="Download"){
 			if (type=="folder"){
-            swal("Warning!", "Please choose file !", "error");
+            swal("Warning!", "Please choose file !", "warning");
 				return;
 			}
 			methodsFB.SetUrl(elem,content.action);
 		}
-		methodsFB.SendActionRequest(elem,content);
+		if (content.action=="Delete"){
+			 swal({
+			    title: "Are you sure?",
+			    text: "You will delete this file.",
+			    type: "warning",
+			    showCancelButton: true,
+			    confirmButtonText: "Yes",
+			    cancelButtonText: "No",
+			    closeOnConfirm: true,
+			    closeOnCancel: true
+			  },
+			  function(isConfirm){
+			    if (isConfirm) {
+					methodsFB.SendActionRequest(elem,content);
+					 } 
+			  });
+		}else{
+			methodsFB.SendActionRequest(elem,content);
+		}
 	},
-	UploadAjax: function(param){
+	UploadAjax: function(elem,param){
        	var inputFiles = document.getElementById("myfiles");
        	var formdata = new FormData();
 
@@ -589,6 +627,8 @@ var methodsFB = {
             }
 */
             app.isLoading(false);
+            $(elem).find(".modal").modal("hide");
+            methodsFB.RefreshTreeView(elem,param);
         }
         
 
@@ -605,25 +645,35 @@ var methodsFB = {
 
 		if (param.action == "Upload") {
 			param.url = url;
-			methodsFB.UploadAjax(param);
+			methodsFB.UploadAjax(elem,param);
 		}else{
-			if (ds.call.toLowerCase() == 'post'){
-				contentType = 'application/json; charset=utf-8';
-			}
-			app.isLoading(true);
-			$.ajax({
-	                url: url,
-	                type: call,
-	                dataType: 'json',
-	                data : JSON.stringify(param),
-	                contentType: contentType,
-	                success : function(res) {
+		if (ds.call.toLowerCase() == 'post'){
+			contentType = 'application/json; charset=utf-8';
+		}
+		app.isLoading(true);
+		 $.ajax({
+                url: url,
+                type: call,
+                dataType: 'json',
+                data : JSON.stringify(param),
+                contentType: contentType,
+                success : function(res) {
+                	var divtree = $($(elem).find(".fb-pre")[0]);
+                	divtree.removeAttr("style");
+                	divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
 
-	                	$(elem).data('ecFileBrowser').serverSource.callOK(res);
-	                	if(param.action == "GetContent"){
-	                		$($(elem).find(".fb-filename")).html(param.path);
-							$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
-							$($(elem).find(".fb-editor")).data("kendoEditor").focus();
+                	$(elem).data('ecFileBrowser').serverSource.callOK(res);
+                	if(param.action == "GetContent"){
+                		$($(elem).find(".fb-filename")).html(param.path);
+						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
+						$($(elem).find(".fb-editor")).data("kendoEditor").focus();
+						$(elem).data("ecFileBrowser").isHold = true;
+                		app.isLoading(false);
+                		divtree.css("pointer-events", "none");
+                		divtree.attr("class", divtree.attr("class")+" k-state-disabled")
+                	}else if(param.action!="Edit"){
+                		methodsFB.RefreshTreeView(elem,param);
+                		if(param.action=="NewFile"){
 							$(elem).data("ecFileBrowser").isHold = true;
 	                		app.isLoading(false);
 	                	}else if(param.action!="Edit"){
@@ -634,8 +684,12 @@ var methodsFB = {
 								$(elem).data("ecFileBrowser").Content = param;	
 		                	}
 	                	}
-	                		$(elem).find(".modal").modal("hide");
+                	}else  if(param.action=="Edit") {
+                		$($(elem).find(".fb-filename")).html("");
+						$($(elem).find(".fb-editor")).data("kendoEditor").value("");
+                	}
 
+                	$(elem).find(".modal").modal("hide");
 	                	if(!$(elem).data("ecFileBrowser").isHold){
 	                		swal("Saved!", "Your request has been processed !", "success");
 	                		app.isLoading(false);
@@ -714,7 +768,7 @@ var methodsFB = {
 			return "html"
 		}
 	},
-	RefreshTreeView:function(elem,content){
+	GetParent:function(elem,content){
 		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
 		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
 		var selectedparent = tree.findByUid(selectedUid);
@@ -722,16 +776,24 @@ var methodsFB = {
 		if(action != "newfile" && action != "newfolder" && action != "upload"){
 			selectedparent = tree.parent(selectedparent);
 		}
-
+		return selectedparent;
+	},
+	RefreshTreeView:function(elem,content){
+		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
+		var selectedparent = methodsFB.GetParent(elem,content);
 		if(selectedparent.length==0){
 			tree.dataSource.read();
 			return;
 		}
+
 		var dtItem = tree.dataItem(selectedparent);
-		dtItem.dirty = false;
-		dtItem.expanded = false;
+		dtItem.set("expanded",false);
 		dtItem.loaded(false);
-		$($($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent())[0].firstChild.firstChild).click();
+		
+		setTimeout(function () {
+			dtItem.set("expanded",true);
+		}, 2000);
+			
 	},
 	GetSelectedData:function(elem){
 		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();

@@ -95,7 +95,7 @@ body {
 		    	<h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
+		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -127,7 +127,7 @@ body {
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Connection ID</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
+				            <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
 							<span class="k-invalid-msg" data-for="ID"></span>
 				        </div>
 				    </div>
@@ -255,7 +255,7 @@ body {
 		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
+		    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -273,7 +273,7 @@ body {
 						<div class="col-md-6">
 				        	<label class="col-md-4 filter-label">Data Source ID</label>
 				        	<div class="col-md-8">
-				        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
+				        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
 								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
 				        </div>
