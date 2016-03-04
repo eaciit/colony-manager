@@ -24,6 +24,7 @@ wg.collectionInput = ko.observable();
 wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
+wg.filtercond = ko.observable('');
 wg.modeSetup = ko.observable();
 wg.timePreset = ko.observable();
 wg.selectedSeconds = ko.observable(0);
@@ -168,8 +169,6 @@ wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:
 wg.templateFilterCond = ko.observableArray([
 	{Id:"$and",Title:"AND"},
 	{Id:"$or",Title:"OR"},
-	{Id:"$nand",Title:"NAND"},
-	{Id:"$nor",Title:"NOR"},
 ]),
 wg.templatedesttype = ["database", "csv"];
 wg.templateColumnType = [{key:"string",value:"string"},{key:"float",value:"float"},{key:"integer",value:"integer"}, {key:"date",value:"date"}];
@@ -408,6 +407,7 @@ wg.createNewScrapper = function () {
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
 	wg.modeSetup('');
+	wg.filtercond('');
 	//wg.timePreset('');
 };
 wg.backToFront = function () {
@@ -417,6 +417,7 @@ wg.backToFront = function () {
 	app.mode("");
 	wg.selectedID('');
 	wg.getScrapperData();
+	wg.filtercond('');
 	wg.modeSelector("");
 	wg.showWebGrabber(false);
 	wg.scrapperMode('');
@@ -837,10 +838,13 @@ wg.saveSettingSelector = function() {
 		}
 	}
 
-	var selector = ko.mapping.toJS(wg.configSelector);
-	wg.selectorRowSetting.replace(wg.selectorRowSetting()[wg.tempIndexColumn()], selector);
-
-	wg.modeSelector("");
+	if(wg.filtercond() !== "" && wg.isJson(wg.filtercond()) == false){
+		swal({ title: "Invalid Filter condition", type: "error" });
+	}else{
+		var selector = ko.mapping.toJS(wg.configSelector);
+		wg.selectorRowSetting.replace(wg.selectorRowSetting()[wg.tempIndexColumn()], selector);
+		wg.modeSelector("");
+	}
 }
 wg.addColumnSetting = function() {
 	var selector = $.extend(true, {}, ko.mapping.toJS(wg.configSelector));
@@ -937,7 +941,9 @@ wg.parseGrabConf = function () {
 		if (item.filtercond == "") {
 			item.filtercond = {};
 		}
-
+		if (wg.filtercond() != ""){
+			item.filtercond = JSON.parse(wg.filtercond());
+		}
 		delete item["conditionlist"];
 		delete item["__ko_mapping__"];
 		return JSON.parse(ko.mapping.toJSON(item));
@@ -1019,7 +1025,8 @@ wg.saveSelectorConf = function(){
 		wg.selectorRowSetting([]);
 		wg.getScrapperData();
 		wg.modeSelector("");
-		wg.modeSetup("")
+		wg.modeSetup("");
+		wg.filtercond("");
 	});
 }
 wg.viewHistoryRecord = function (id) {
@@ -1207,6 +1214,17 @@ wg.showSetupForm = function(mode){
 
 }
 
+wg.isJson = function(str) {
+    try {
+        var obj = JSON.parse(str);
+         //console.log("Valid JSON",obj)
+    } catch (e) {
+     var obj = "Error: Parse error"
+     //console.log(obj)
+        return false;
+    }
+    return true;
+}
 $(function () {
 	wg.getConnection();
 	wg.getScrapperData();
