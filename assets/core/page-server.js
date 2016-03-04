@@ -270,6 +270,7 @@ srv.saveServer = function(){
 		srv.getServers();
 		apl.getApplications();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
+		srv.backToFront();
 	});
 };
 

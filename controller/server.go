@@ -193,7 +193,24 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	defer client.Close()
+	
+	_, errpath1 := sshSetting.GetOutputCommandSsh("find "+ data.AppPath)
+	_, errpath2 := sshSetting.GetOutputCommandSsh("find "+ data.DataPath)
+	if errpath1 != nil || errpath2 != nil {
+		error := ""
+		if errpath1 != nil{
+			error += " App Path"
+		}
+		if errpath2 != nil{
+			if error != ""{
+				error += " &"
+			}
+			error += " Data Path"
+		}
 
+		return helper.CreateResult(false, nil, "Invalid: "+ error +"!")
+	}
+	
 	if data.OS == "linux" {
 		setEnvPath := func() interface{} {
 			cmd1 := `sed -i '/export EC_APP_PATH/d' ~/.bashrc`
