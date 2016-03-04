@@ -277,19 +277,16 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "number"){
-				if ($elem.val() == '')
-					valtype = "";
-				else
+			if ($elem.val() != ''){
+				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
 					valtype = parseInt($elem.val());
-			} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
-				if ($elem.val() == '')
-					valtype = "";
-				else
+				} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
 					valtype = parseFloat($elem.val());
-			} else
-				valtype = $elem.val();
-			resFilter[field] = valtype;
+				} else {
+					valtype = $elem.val();
+				}
+				resFilter[field] = valtype;
+			}
 		}
 		return resFilter;
 	};
