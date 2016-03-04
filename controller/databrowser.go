@@ -183,9 +183,14 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 			sInfo.Field = keyField
 			sInfo.Label = keyField
 
-			rf := toolkit.TypeName(dataField)
-			if rf == "time.Time" {
-				rf = "date"
+			rf := "string"
+
+			if dataField != nil {
+				rf = toolkit.TypeName(dataField)
+
+				if rf == "time.Time" {
+					rf = "date"
+				}
 			}
 			// toolkit.Println(dataField, ">", rf)
 			// if rf == "bson.ObjectId" {
