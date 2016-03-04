@@ -83,12 +83,11 @@
 							        <span class="k-invalid-msg" data-for="table"></span> 
 					    		</div>
 				    		</div>
-				    		<div class="form-group">
-				    			<label class="col-md-3"></label>
+				    		<!-- <div class="form-group">
 				    			<div class="col-md-7" id="builderButton" >
 				    				 <button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
 				    			</div>
-				    		</div>
+				    		</div> -->
 			    		</div>
 			    		<div class="col-md-6" id="querytype">
 			    			<div class="form-group">
@@ -114,20 +113,26 @@
 												</a>
 											</li>
 										</ul>
+										<span>
+											<button class="col-md-12 btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
+										</span>
 							        </div>
 							        <div class="col-md-10 area-command">
 							        	<label class="title-command">Query Editor</label>
-							        	<input type='text' id='textquery' name='textquery' />
+							        	<input type='text' id='textquery' name='textquery'/>
 							        </div>
-							</div>
-
-							<label class="databrowser-query-label query-text" data-bind="visible:(db.configDataBrowser.QueryType() == 'SQL')">Query Editor</label>
-					    		<div class="input-group">
-									<input type="text" name="textquery" class="form-control" id="querytext" placeholder="Query builder" data-bind="value: QueryText, visible:(db.configDataBrowser.QueryType() == 'SQL')">
-									<span class="k-invalid-msg" data-for="textquery"></span>
-									<span class="input-group-btn">
-									<button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
-									</span>
+								</div>
+								<div class="row form-datasource" data-bind="visible:(db.configDataBrowser.QueryType() == 'SQL')"> 
+									<div class="col-md-12">
+										<label class="databrowser-query-label query-text">Query Editor</label>
+							    		<div class="input-group">
+											<input type="text" name="textquery" class="form-control" id="querytext" placeholder="Query builder" data-bind="value: QueryText">
+											<span class="k-invalid-msg" data-for="textquery"></span>
+											<span class="input-group-btn">
+											<button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
+											</span>
+										</div>
+									</div>
 								</div>
 				    		</div>
 			    		</div>
@@ -159,7 +164,7 @@
 			    <div class="form-group">
 		    		<label class="col-md-4 filter-label">Fields</label>
 		        	<div class="col-md-5">
-		        		<select data-bind="kendoMultiSelect: { data: db.configDataBrowser.MetaData, dataValueField: '_id', dataTextField: 'Label', value: dbq.queryOfSelect, placeholder: 'Choose the fields', filter: 'contains', minLength: 2 }" class="full-width" multiple='multiple'></select>
+		        		<select data-bind="kendoMultiSelect: { data: db.configDboxData.MetaData, dataValueField: '_id', dataTextField: 'Label', value: dbq.queryOfSelect, placeholder: 'Choose the fields', filter: 'contains', minLength: 2 }" class="full-width" multiple='multiple'></select>
 		        	</div>
 		        	<div class="clearfix"></div>
 	        	</div>
@@ -175,45 +180,6 @@
 		        	<div class="clearfix"></div>
 	        	</div>
         	</div>
-
-			<!-- <div class="modal-body" data-bind="visible: dbq.queryBuilderMode() == 'order'">
-				<div class="col-md-12" style="margin-bottom: 10px;">
-					<button class="btn btn-sm btn-primary" data-bind="click: addQueryOfOrder">
-						<span class="glyphicon glyphicon-plus"></span>
-						Add more
-					</button>
-				</div>
-	        	<div class="col-md-12">
-					<table class="table">
-						<thead>
-							<tr>
-								<th>Field</th>
-								<th>Direction</th>
-								<th>&nbsp;</th>
-							</tr>
-						</thead>
-						<tbody class="query-of-order" data-bind="foreach: queryOfOrder">
-							<tr>
-								<td>
-			        				<select required data-required-msg="Field cannot be empty" data-bind="kendoDropDownList: { data: db.configDataBrowser.MetaData, dataValueField: '_id', dataTextField: 'Label', value: field, optionLabel: 'Select one' }, attr: { 'name': 'query-order-field-' + $index() }"></select>
-									<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-order-field-' + $index() }"></span>
-								</td>
-								<td>
-			        				<select required data-required-msg="Value cannot be empty" data-bind="kendoDropDownList: { data: dbq.dataQueryOfOrder, dataValueField: 'value', dataTextField: 'title', value: direction, optionLabel: 'Select one' }, attr: { 'name': 'query-order-direction-' + $index() }"></select>
-									<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'query-order-direction-' + $index() }"></span>
-								</td>
-								<td>
-									<button class="btn btn-sm btn-danger" data-bind="style: { 'visibility': ($index() > 0) ? 'visible' : 'hidden' }, click: dbq.removeQueryOfOrder($index())">
-										<span class="glyphicon glyphicon-remove"></span>
-									</button>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div class="clearfix"></div>
-        	</div> -->
-
 			<div class="modal-footer">
 				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
 					<span class="glyphicon glyphicon-remove"></span> Close
