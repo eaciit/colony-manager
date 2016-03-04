@@ -119,7 +119,7 @@ var methodsDataBrowser = {
 		// 	return settingFilter.Format.toLowerCase().indexOf(e) >= 0; 
 		// });
 		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="number" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
 			return '';
@@ -277,11 +277,16 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64" || $elem.attr("typedata") == "number"){
+			if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "number"){
 				if ($elem.val() == '')
-					valtype = 0;
+					valtype = "";
 				else
 					valtype = parseInt($elem.val());
+			} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
+				if ($elem.val() == '')
+					valtype = "";
+				else
+					valtype = parseFloat($elem.val());
 			} else
 				valtype = $elem.val();
 			resFilter[field] = valtype;
