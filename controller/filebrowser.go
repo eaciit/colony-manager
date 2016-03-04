@@ -14,12 +14,15 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/sshclient"
 	// "github.com/eaciit/toolkit"
-	// "io"
+	"io"
 	// "net/http"
 	"os"
 	// "path/filepath"
 	"strconv"
 	// "log"
+	// "bufio"
+	// "io/ioutil"
+	"bytes"
 	"mime/multipart"
 	"strings"
 	"time"
@@ -431,7 +434,6 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil && payload != nil {
-
 		if payload["path"] != nil && payload["file"] != nil {
 			path := payload["path"].(string)
 			file := payload["file"].(multipart.File)
@@ -464,29 +466,51 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 }
 
 func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
+	r.Config.OutputType = knot.OutputHtml
+	/*r.Writer.Header().Set("Content-Disposition", "attachment; filename=test.jpg")
+	r.Writer.Header().Set("Content-Type", r.Header.Get("Content-Type"))*/
+
+	// f, err := os.Open("file.csv")
+
+	/*if err != nil {
+		fmt.Println(err.Error())
+	}*/
+
 	server, payload, err := getServer(r, "PAYLOAD")
-	_ = payload
+
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return ""
 	}
 
 	if server.RecordID() != nil && payload != nil {
-		/*path := ""
-
 		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}*/
+			path := payload["path"].(string)
 
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
 
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				result, err := setting.SshGetFile(path)
+
+				r.Writer.Header().Set("Content-Disposition", "attachment; filename='"+path[strings.LastIndex(path, DELIMITER)+1:]+"'")
+				r.Writer.Header().Set("Content-Type", r.Writer.Header().Get("Content-Type"))
+				r.Writer.Header().Set("Content-Length", strconv.Itoa(len(result.Bytes())))
+
+				fmt.Printf("============== \n%#v\n", r.Writer)
+
+				io.Copy(r.Writer, bytes.NewReader(result.Bytes()))
+
+				return ""
+			} else if server.ServerType == SERVER_HDFS {
+
+			}
 		}
 	}
 
-	return helper.CreateResult(false, nil, "")
+	return ""
 }
 
 func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
