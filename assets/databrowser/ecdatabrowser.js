@@ -118,8 +118,7 @@ var methodsDataBrowser = {
 		// var dataResult = $.grep(Setting_TypeData.number, function(e){ 
 		// 	return settingFilter.Format.toLowerCase().indexOf(e) >= 0; 
 		// });
-
-		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() || "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
+		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
 			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="number" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
@@ -151,7 +150,7 @@ var methodsDataBrowser = {
 		}
 	},
 	createGrid: function(element, options, id){
-		var colums = [], format="", aggr= "";
+		var colums = [], format="", aggr= "", footerText = "";
 		for(var key in options.metadata){
 			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() || "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
@@ -159,6 +158,11 @@ var methodsDataBrowser = {
 				format = "";
 			}
 			aggr = options.metadata[key].Aggregate.split(",");
+			// footerText = "";
+			// for (var i in aggr){
+			// 	if (aggr[i] != '')
+			// 		footerText += aggr[i] + ' : ' + 50;
+			// }
 			if (options.metadata[key].HiddenField != true){
 				var column = {
 					field: options.metadata[key].Field,
@@ -172,6 +176,7 @@ var methodsDataBrowser = {
 						style: "text-align: "+options.metadata[key].Align+";",
 					},
 					aggregates: aggr,
+					footerTemplate: footerText,
 				};
 				colums.push(column);
 			}
@@ -203,8 +208,8 @@ var methodsDataBrowser = {
 				dataSource: {
 					transport: {
 	                    read: function(yo){
-							// var callData = $(id).data('ecDataBrowser').GetDataFilter(), $parentElem = id;
-							var callData = {}, $parentElem = id;
+							var callData = $(id).data('ecDataBrowser').GetDataFilter(), $parentElem = id;
+							// var callData = {}, $parentElem = id;
 							$.each( options.dataSource.callData, function( key, value ) {
 								callData[key] = value;
 							});
@@ -213,6 +218,7 @@ var methodsDataBrowser = {
 	                        }
 				            app.ajaxPost($parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.url,callData, function (res){
 				            	yo.success(res.data);
+				            	$parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.callOK(res.data);
 	                        });
 	                    }
 	                },
