@@ -6,8 +6,8 @@ This is what we do!
 
 | No  | Done? | Module | Issue |
 | --: | :---: | :----- | :---- | 
-| 51 | | Connection | prepare defaults settings for each driver (cannot be deleted) |
-| 50 | | Connection | prepare at least 5 sample connection |
+| 51 | ✔ | Connection | prepare defaults settings for each driver (cannot be deleted) |
+| 50 | ✔ | Connection | prepare at least 5 sample connection |
 | 49 | ✔ | Data Source | add timeout when run the query |
 | 48 | ✔ | Data Source | show sub data which type is object as tree view |
 | 47 | | Data Source | prepare at least 5 sample data source |
@@ -30,7 +30,7 @@ This is what we do!
 | 30 | ✔ | Data Browser | complete the filter |
 | 29 | | Data Browser | make the grid scrollable if the total columns is much enough |
 | 28 | ✔ | Data Browser | icon up/down to change position. move the column to side |
-| 27 | | Data Browser | bug on delete |
+| 27 | ✔ | Data Browser | bug on delete |
 | 26 | | Data Browser | prepare example to show serialized data from example on data source, from both mongo and json |
 | 25 | | Application | show error when path is invalid |
 | 24 | | Application | add command and variable (both key-valued-pair), later this will be used to control the application |
