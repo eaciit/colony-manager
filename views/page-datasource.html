@@ -134,7 +134,7 @@ body {
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Driver</label>
 				        <div class="col-sm-5">
-				        	<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one' }"></select>
+				        	<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one', change: ds.changeDriver }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
 				        <p class="mgTop5">*) not yet tested</p>
@@ -192,7 +192,7 @@ body {
 			        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: value" />
 			        					</td>
 			        					<td>
-			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
+			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0 && deletable)">
 			        							<span class="glyphicon glyphicon-remove" data-bind="click: ds.removeSetting($data)"></span>
 			        						</button>
 			        					</td>
