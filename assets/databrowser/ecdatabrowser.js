@@ -115,34 +115,24 @@ var methodsDataBrowser = {
 	},
 	createElementFilter: function(settingFilter, filterchoose, index, element, id){
 		var $divElementFilter;
-		// var dataResult = $.grep(Setting_TypeData.number, function(e){ 
-		// 	return settingFilter.Format.toLowerCase().indexOf(e) >= 0; 
-		// });
 		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="number" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
 			return '';
 		}
-		// dataResult = $.grep(Setting_TypeData.date, function(e){ 
-		// 	return settingFilter.Format.toLowerCase().indexOf(e) >= 0; 
-		// });
 		else if (settingFilter.DataType.toLowerCase() == 'date'){
-			// var splitElement = settingFilter.Format.split('#'), formatCreate = '';
-			// for (var i in splitElement){
-			// 	var res = splitElement[i].substring(0,1);
-			// 	if (res == '*'){
-			// 		formatCreate += splitElement[i].substring(1,splitElement[i].length);
-			// 	} 
-			// }
 			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoDatePicker({
 				format: settingFilter.Format,
 			});
 			return '';
+		} else if (settingFilter.DataType.toLowerCase() == 'bool') {
+			$divElementFilter = $('<input type="checkbox" class="form-control" idfilter="filter-'+filterchoose+'-'+index+'" typedata="bool" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			return '';
 		}
-		// else if (settingFilter.Format.toLowerCase() == "string" || settingFilter.Format.toLowerCase() == ""){
 		else {
 			$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
@@ -152,7 +142,7 @@ var methodsDataBrowser = {
 	createGrid: function(element, options, id){
 		var colums = [], format="", aggr= "", footerText = "";
 		for(var key in options.metadata){
-			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() || "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
+			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
 			} else {
 				format = "";
@@ -268,7 +258,7 @@ $.ecDataBrowserSetting = function(element,options){
 		}
 	};
 	this.GetDataFilter = function(){
-		var resFilter = {}, dataTemp = [], $elem = '';
+		var resFilter = {}, dataTemp = [], $elem = '', valtype = '';
 		if (this.mapdatabrowser.showFilter.toLowerCase() == "simple"){
 			dataTemp = $(element).data('ecDataBrowser').dataSimple;
 		} else {
@@ -277,7 +267,18 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			resFilter[field] = $elem.val();
+			if ($elem.val() != ''){
+				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
+					valtype = parseInt($elem.val());
+				} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
+					valtype = parseFloat($elem.val());
+				} else if ($elem.attr("typedata") == "bool"){
+					valtype = $(element).find('input[idfilter='+dataTemp[i]+']')[0].checked;
+				}else {
+					valtype = $elem.val();
+				}
+				resFilter[field] = valtype;
+			}
 		}
 		return resFilter;
 	};
