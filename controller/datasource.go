@@ -70,7 +70,7 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql json csv hive"
+	supportedDrivers := "mongo mysql json csv jsons csvs hive"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
@@ -398,25 +398,29 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if o.Driver == "json" || o.Driver == "csv" {
-		fileType := helper.GetFileExtension(o.Host)
-		o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
+	if toolkit.HasMember([]string{"csv", "json", "csvs", "jsons"}, o.Driver) {
+		if strings.Contains(o.FileLocation, "http") {
+			fileType := helper.GetFileExtension(o.Host)
+			o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 
-		file, err := os.Create(o.FileLocation)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer file.Close()
+			file, err := os.Create(o.FileLocation)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer file.Close()
 
-		resp, err := http.Get(o.Host)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer resp.Body.Close()
+			resp, err := http.Get(o.Host)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer resp.Body.Close()
 
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else {
+			o.FileLocation = o.Host
 		}
 	}
 
@@ -551,28 +555,32 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	}
 
 	if driver == "json" || driver == "csv" {
-		fileTempID := helper.RandomIDWithPrefix("f")
-		fileType := helper.GetFileExtension(host)
-		fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
+		if strings.Contains(host, "http") {
+			fileTempID := helper.RandomIDWithPrefix("f")
+			fileType := helper.GetFileExtension(host)
+			fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
 
-		file, err := os.Create(fakeDataConn.FileLocation)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer file.Close()
+			file, err := os.Create(fakeDataConn.FileLocation)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer file.Close()
 
-		resp, err := http.Get(host)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer resp.Body.Close()
+			resp, err := http.Get(host)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer resp.Body.Close()
 
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else {
+			fakeDataConn.FileLocation = host
 		}
 	}
 
@@ -625,7 +633,7 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 
 	var query = conn.NewQuery().Take(1)
 
-	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
+	if !toolkit.HasMember([]string{"csv", "json"}, dataConn.Driver) {
 		query = query.From(from)
 	}
 
@@ -636,7 +644,8 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 	defer cursor.Close()
 
 	data := toolkit.M{}
-	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
+
+	if !toolkit.HasMember([]string{"json", "mysql"}, dataConn.Driver) {
 		err = cursor.Fetch(&data, 1, false)
 	} else {
 		dataAll := []toolkit.M{}
@@ -721,6 +730,10 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	if len(dataDS.QueryInfo) == 0 {
 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
 		return helper.CreateResult(true, result, "")
+	}
+
+	if !dataDS.QueryInfo.Has("take") {
+		query = query.Take(10)
 	}
 
 	if err != nil {
@@ -1088,7 +1101,7 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if dataConn.Driver == "csv" || dataConn.Driver == "json" {
+	if toolkit.HasMember([]string{"csv", "json"}, dataConn.Driver) {
 		return helper.CreateResult(true, []string{dataConn.Driver}, "")
 	}
 
