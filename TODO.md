@@ -16,7 +16,7 @@ This is what we do!
 | 43 | ✔ | Data Serializer | on wizard, add input prefix, used as prefix of generated ID  |
 | 42 | ✔ | Data Serializer | on wizard, add button to execute all of the transofrmation |
 | 41 | ✔ | Data Serializer | remove the blink whenever check stat |
-| 40 | | Data Serializer | on map, change destination field selection as text box with suggestion |
+| 40 | ✔ | Data Serializer | on map, change destination field selection as text box with suggestion |
 | 39 | | Data Serializer | improve the log |
 | 38 | | Data Serializer | prepare example to serialize data from mongo to json |
 | 37 | ✔ | Web Grabber | make the edit work |
