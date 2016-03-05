@@ -656,7 +656,16 @@ var methodsFB = {
 		var call = ds.call;
 		var contentType = "";
 
-		if (param.action == "Upload") {
+		if (param.action == "Download") {
+			var arr = [];
+			for (var k in param) {
+				if (param.hasOwnProperty(k)) {
+					arr.push([k, encodeURIComponent(param[k])].join("="));
+				}
+			}
+			var url = [url.split('#')[0], arr.join("&")].join("?");
+			document.location.href = url;
+		} else if (param.action == "Upload") {
 			param.url = url;
 			methodsFB.UploadAjax(elem,param);
 		}else{
