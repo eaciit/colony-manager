@@ -3,7 +3,6 @@ viewModel.dbquery = {}; var dbq = viewModel.dbquery;
 dbq.dataCommand = ko.observableArray([
 	{ id: 0, key: "select", type: "field, field", value: ""},
 	{ id: 0, key: "from", type: "table", value: ""},
-	{ id: 0, key: "order", type: "string", value: ""},
 ]);
 dbq.dataQueryOfOrder = ko.observableArray([
 	{ value: "asc", title: "Ascending" },
@@ -102,7 +101,7 @@ dbq.addFilter = function (filter) {
 			var keywords = Lazy($('#textquery').tokenInput("get")).where({ key: "from" }).toArray();
 
 			if (keywords.length == 0) {
-				sweetAlert("Oops...", 'Cannot use "select" / "order" / "where" without using "from" first', "error");
+				sweetAlert("Oops...", 'Cannot use "select" without using "from" first', "error");
 				return;
 			}
 		}
@@ -193,9 +192,8 @@ dbq.querySave = function () {
 		if (!app.isFormValid(".query-of-from")) {
 			return;
 		}
-
 		o.value = dbq.queryOfFrom();
-		ds.fetchDataSourceMetaData(o.value);
+		db.fetchDataSourceMetaData(o.value);
 	}
 
 	if (dbq.queryBuilderMode() == "order") {

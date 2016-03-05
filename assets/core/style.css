@@ -273,6 +273,9 @@ table.table tr:hover td {
 .col-100 {
   width: 100%; }
 
+.col-44 {
+  width: 44%; }
+
 #myTab {
   margin-bottom: 2%; }
 
@@ -531,6 +534,30 @@ body {
       body #content > .col-md-12 .panel .grid-service tr.started td.scrapper-status {
         background-color: #5CB85C; }
         body #content > .col-md-12 .panel .grid-service tr.started td.scrapper-status span:after {
+          content: "STARTED"; }
+      body #content > .col-md-12 .panel .grid-service-grabber tr td .btn-start {
+        display: inherit; }
+      body #content > .col-md-12 .panel .grid-service-grabber tr td .btn-stop {
+        display: none; }
+      body #content > .col-md-12 .panel .grid-service-grabber tr td.scrapper-status {
+        background-color: #D9534F;
+        position: relative; }
+        body #content > .col-md-12 .panel .grid-service-grabber tr td.scrapper-status span:after {
+          content: "STOPPED";
+          position: absolute;
+          top: 33px;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          text-align: center;
+          color: white; }
+      body #content > .col-md-12 .panel .grid-service-grabber tr.started td .btn-start {
+        display: none; }
+      body #content > .col-md-12 .panel .grid-service-grabber tr.started td .btn-stop {
+        display: inherit; }
+      body #content > .col-md-12 .panel .grid-service-grabber tr.started td.scrapper-status {
+        background-color: #5CB85C; }
+        body #content > .col-md-12 .panel .grid-service-grabber tr.started td.scrapper-status span:after {
           content: "STARTED"; }
     body #content > .col-md-12 .nav.nav-tabs li:hover {
       cursor: pointer; }

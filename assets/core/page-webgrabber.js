@@ -24,6 +24,51 @@ wg.collectionInput = ko.observable();
 wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
+wg.modeSetup = ko.observable();
+wg.timePreset = ko.observable();
+wg.selectedSeconds = ko.observable(0);
+wg.selectedMinutes = ko.observable(0);
+wg.selectedHour = ko.observable('');
+wg.selectedDay = ko.observable('');
+wg.selectedMonth = ko.observable('');
+wg.selectedDayweek = ko.observable('');
+wg.hours = ko.observableArray([]);
+wg.minutes = ko.observableArray([]);
+wg.seconds = ko.observableArray([]);
+wg.days = ko.observableArray([]);
+wg.months = ko.observableArray([
+	{value: 1 , title: "January"},
+	{value: 2 , title: "February"},
+	{value: 3 , title: "March"},
+	{value: 4 , title: "April"},
+	{value: 5 , title: "May"},
+	{value: 6 , title: "June"},
+	{value: 7 , title: "July"},
+	{value: 8 , title: "August"},
+	{value: 9 , title: "September"},
+	{value: 10 , title: "October"},
+	{value: 11 , title: "November"},
+	{value: 12 , title: "December"},
+]);
+wg.dayweek = ko.observableArray([
+	{value: 0 , title: "Sunday"},
+	{value: 1 , title: "Monday"},
+	{value: 2 , title: "Tuesday"},
+	{value: 3 , title: "Wednesday"},
+	{value: 4 , title: "Thursday"},
+	{value: 5 , title: "Friday"},
+	{value: 6 , title: "Saturday"},
+]);
+for (var i = 0; i < 60; i++) {
+	wg.minutes.push(""+i+"")
+	wg.seconds.push(""+i+"")
+}
+for (var hour = 0; hour < 24; hour++) {
+	wg.hours.push(""+hour+"")
+}
+for (var day = 1; day <= 31; day++) {
+	wg.days.push(day)
+}
 wg.templateConfigScrapper = {
     _id: "",
     sourcetype: "SourceType_HttpHtml",
@@ -46,9 +91,10 @@ wg.templateConfigScrapper = {
     intervalconf:
             {
                 "starttime": new Date(),
+                "expiredtime": new Date(),
                 "intervaltype": "seconds",
-                "grabinterval": 20,
-                "timeoutinterval": 20,
+                "grabinterval": "20" ,
+                "timeoutinterval": "20",
                 "cronconf": {}
             },
     logconf:
@@ -65,8 +111,9 @@ wg.templateConfigScrapper = {
                 "filepattern": "YYYYMMDD"
             },
     datasettings: [],
-    running: true
+    running: false
 };
+
 wg.parametersPattern = ko.observableArray([
 	{ value: "", title: "-" },
 	{ value: "time.Now()", title: "Now" },
@@ -76,8 +123,25 @@ wg.useHeaderOptions = ko.observableArray([
 	{ value: true, title: 'YES' }, 
 	{ value: false, title: 'NO' }
 ]);
+wg.taskMode = ko.observableArray([
+	{value: "hourly", title:"Hourly"},
+	{value: "daily", title: "Daily"},
+	{value: "weekly", title: "Weekly" },
+	{value: "monthly", title: "Monthly" },
+	//{value: "custom", title: "Custom" },
+]);
+wg.templateCron = {
+	second : "*",
+	min: "",
+	hour: "",
+	dayofmonth: "",
+	month: "",
+	dayofweek: "",
+	mode:"hourly", 
+
+}
 wg.templateConfigSelector = {
-	_id: "",
+	nameid: "",
 	rowselector: "",
 	filtercond: "",
 	conditionlist: [],
@@ -85,18 +149,20 @@ wg.templateConfigSelector = {
 	desttype: "mongo",
 	columnsettings: [],
 	connectioninfo: {
-		filename: "",
-		useheader: true,
-		delimiter: ",",
-
 		host: "",
 		database: "",
 		username: "",
 		password: "",
 		collection: "",
-		connectionid: ""
+		connectionid: "",
+		settings: {
+			filename: "",
+			useheader: true,
+			delimiter: "",
+		}
 	}
 }
+
 wg.templateStepSetting = ko.observableArray(["Set Up", "Data Setting", "Preview"]);
 wg.templateIntervalType = [{key:"seconds",value:"seconds"},{key:"minutes",value:"minutes"},{key:"hours",value:"hours"}];
 wg.templateFilterCond = ko.observableArray([
@@ -123,30 +189,54 @@ wg.templateScrapperPayload = {
 	pattern: "",
 	value: "",
 };
+wg.configSetup = ko.observableArray([
+	{value: "onetime", title:"One Time"},
+	{value: "interval", title: "Interval"},
+	{value: "schedule", title: "Schedule" }
+]);
 wg.scrapperPayloads = ko.observableArray([]);
 wg.selectorRowSetting = ko.observableArray([]);
 wg.configScrapper = ko.mapping.fromJS(wg.templateConfigScrapper);
 wg.configSelector = ko.mapping.fromJS(wg.templateConfigSelector);
+wg.configCron = ko.mapping.fromJS(wg.templateCron);
 wg.scrapperColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='webgrabbercheckall' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabberall', 'all')\"/></center>", width: 40, attributes: { class: "align-center" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='webgrabbercheck' idcheck='"+d._id+"' onclick=\"wg.checkDeleteWebGrabber(this, 'webgrabber')\" />"
 		].join(" ");
-	} },
-	{ field: "_id", title: "Web Grabber ID", width: 130 },
-	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
+	}, locked: true },
+	{ field: "_id", title: "Web Grabber ID", width: 130, locked: true },
+	{ title: "Status", width: 80, attributes: { class:'scrapper-status' }, template: "<span></span>", headerTemplate: "<center>Status</center>", locked: true },
 	{ title: "", width: 160, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' onclick='wg.startScrapper(\"" + d._id + "\")' title='Start Service'><span class='fa fa-play'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' onclick='wg.stopScrapper(\"" + d._id + "\")' title='Stop Service'><span class='fa fa-stop'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-primary tooltipster' onclick='wg.viewHistory(\"" + d._id + "\")' title='View History'><span class='fa fa-history'></span></button>", 
 		].join(" ");
-	} },
+	}, locked: true },
 	{ field: "grabconf.calltype", title: "Request Type", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
-	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
-	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
-	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ title: "Execution setting", template: function (d) {
+		var k = JSON.parse(kendo.stringify(d));
+
+		if($.isEmptyObject(k.intervalconf.cronconf) === true && k.intervalconf.intervaltype == ""){
+			return 'onetime';
+		}
+
+		if($.isEmptyObject(k.intervalconf.cronconf) === false){
+			return 'schedule';
+		}
+
+		if(k.intervalconf.intervaltype != ""){
+			return 'interval';
+		}
+
+		return "invalid setting";
+	}, width: 150 },
+	// { field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
+	// { field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
+	// { field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ field: "note", title: "NOTE", encoded: false, filterable: false, width: 200 },
 ]);
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
@@ -178,10 +268,11 @@ wg.filterRequestTypes = ko.observable('');
 wg.filterRequestLogView = ko.observable('');
 wg.searchRequestLogView = ko.observable('');
 wg.filterDataSourceTypes= ko.observable('');
+wg.tempViewLog = ko.observableArray([]);
 wg.dataSourceTypes = ko.observableArray([
 	{ value: "SourceType_HttpHtml", title: "HTTP / Web" },
-	// { value: "SourceType_HttpJson", title: "HTTP / Json" },
-	// { value: "SourceType_DocExcel", title: "Data File" },
+	{ value: "SourceType_HttpJson", title: "HTTP / Json" },
+	//{ value: "SourceType_DocExcel", title: "Data File" },
 ]);
 wg.dataRequestTypes = ko.observableArray([
 	{ value: "GET", title: "GET" },
@@ -248,10 +339,43 @@ wg.editScrapper = function (_id) {
 		ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 		ko.mapping.fromJS(res.data, wg.configScrapper);
 
+		if($.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === true && wg.configScrapper.intervalconf.intervaltype() == ""){
+			wg.modeSetup('onetime');
+		}
+
+		if($.isEmptyObject(wg.configScrapper.intervalconf.cronconf) === false){
+			wg.modeSetup('schedule');
+			ko.mapping.fromJS(wg.configScrapper.intervalconf.cronconf, wg.configCron);
+		}
+
+		if(wg.configScrapper.intervalconf.intervaltype() != ""){
+			wg.modeSetup('interval');
+		}
+
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
-			item.filtercond = {};
-			item["conditionlist"] = [];
+			item.conditionlist = [];
+			for (var k in item.filtercond) {
+				if (item.filtercond.hasOwnProperty(k)) {
+					wg.configSelector.filtercond(k);
+					item.filtercond[k].forEach(function (d) {
+						for (var column in d) {
+							if (d.hasOwnProperty(column)) {
+								for (var valueKey in d[column]) {
+									if (d[column].hasOwnProperty(valueKey)) {
+										item.conditionlist.push(ko.mapping.fromJS({
+											column: column,
+											operator: valueKey,
+											value: d[column][valueKey]
+										}));
+									}
+								}
+							}
+						}
+					});
+				}
+			}
+
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
@@ -300,6 +424,12 @@ wg.getScrapperData = function () {
 		if (res.data==null){
 			res.data="";
 		}
+
+		res.data = res.data.map(function (each) {
+			each.note = "Start 0 <br> Grab 0 times <br> Data retreive 0 rows <br> Error 0 times";
+			return each;
+		});
+
 		wg.scrapperData(res.data);
 		wg.runBotStats();
 	});
@@ -307,11 +437,15 @@ wg.getScrapperData = function () {
 wg.createNewScrapper = function () {
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
+	ko.mapping.fromJS(wg.templateCron, wg.configCron);
+	//ko.mapping.fromJS(res.data, wg.configScrapper);
 	wg.scrapperMode('');
 	wg.isContentFetched(false);
 	wg.addScrapperPayload();
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
+	wg.modeSetup('');
+	//wg.timePreset('');
 };
 wg.backToFront = function () {
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
@@ -322,6 +456,11 @@ wg.backToFront = function () {
 	wg.getScrapperData();
 	wg.modeSelector("");
 	wg.showWebGrabber(false);
+	wg.scrapperMode('');
+	wg.modeSetup('');
+	wg.timePreset('');
+	wg.configScrapper.intervalconf.cronconf = {};
+	ko.mapping.fromJS(wg.templateCron, wg.configCron);
 };
 wg.backToHistory = function () {
 	app.mode('history')
@@ -348,10 +487,10 @@ wg.runBotStats = function () {
 		wg.scrapperData().forEach(function (each) {
 			var checkStat = function () {
 				app.ajaxPost("/webgrabber/stat", { _id: each._id }, function (res) {
-					if (res.success) {
-						var $grid = $(".grid-web-grabber").data("kendoGrid");
-						var row = Lazy($grid.dataSource.data()).find({ _id: each._id });
+					var $grid = $(".grid-web-grabber").data("kendoGrid");
+					var row = Lazy($grid.dataSource.data()).find({ _id: each._id });
 
+					if (res.success) {
 						if (row != undefined) {
 							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
 
@@ -362,6 +501,20 @@ wg.runBotStats = function () {
 							}
 						}
 					}
+
+					app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res) {
+						if (res.data.length > 0 && row != undefined){
+							var k = res.data[0];
+					        var summary = [
+					        	"Start",  k.starttime,
+					        	"<br> Grab",  k.grabcount,
+					        	"times <br> Data retreive",  k.rowgrabbed,
+					        	"rows <br> Error",  k.errorfound,
+					        	"times"
+					        ].join(" ");
+							row.set("note", summary);
+						}
+					});
 
 					if (isThereAnyError) {
 						return;
@@ -532,7 +685,7 @@ wg.GetElement = function(obj,parent,linenumber,index,selector, contentid){
 		if($(this).html()!==undefined && nodeelement.node!== "link" && nodeelement.node !=="script" && nodeelement.node !=="br" && nodeelement.node !=="hr" ){
 			linenumber = wg.GetElement($(this),parseFloat(parent+1),linenumber,idx,selector, contentid);
 		}
-	})
+	});
 	return linenumber;
 };
 wg.GetCurrentSelector = function(id,selector, node){
@@ -622,8 +775,21 @@ wg.viewHistory = function (_id) {
 }
 wg.nextSetting = function() {
 	if (!app.isFormValid(".form-row-1")) {
-		return;
+		if(wg.modeSetup() != 'interval'){
+			var errors = $(".form-row-1").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Interval Type cannot be empty","Start time cannot be empty","Expired time cannot be empty","Grab Interval cannot be empty","Timeout Interval cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else{
+			return;
+		}
+		
 	}
+	
 
 	wg.modeSetting(wg.modeSetting()+1);
 	if (wg.selectorRowSetting().length == 0)
@@ -753,6 +919,12 @@ wg.GetRowSelector = function(index){
 	}
 	wg.selectedItem('');
 };
+wg.DeleteColumnSelector = function(index){
+	if (wg.configScrapper.columnsettings().length > index) {
+		var item = wg.configScrapper.columnsettings()[index];
+		wg.configScrapper.columnsettings.remove(item);
+	}
+};
 wg.saveSelectedElement = function(index){
 	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
@@ -768,9 +940,10 @@ wg.parseGrabConf = function () {
 	wg.configSelector.desttype(wg.configSelector.destoutputtype());
 
 	var config = ko.mapping.toJS(wg.configScrapper);
+
 	config.datasettings = ko.mapping.toJS(wg.selectorRowSetting).map(function (item) {
-		if (typeof item.connectioninfo.useheader == "string") {
-			item.connectioninfo.useheader = (item.connectioninfo.useheader == "true");
+		if (typeof item.connectioninfo.settings.useheader == "string") {
+			item.connectioninfo.settings.useheader = (item.connectioninfo.settings.useheader == "true");
 		}
 
 		item.rowselector = wg.replaceEqWithNthChild(item.rowselector);
@@ -812,7 +985,39 @@ wg.parseGrabConf = function () {
 		delete item["__ko_mapping__"];
 		return JSON.parse(ko.mapping.toJSON(item));
 	});
-	return config;
+
+	var modeSetup = wg.modeSetup();
+	if(modeSetup == 'schedule'){
+		var cron =ko.mapping.toJS(wg.configCron);
+		var cronconf = {
+			second : (cron.second),
+			min: (cron.min == "" ? "*" : cron.min),
+			hour: (cron.hour == "" ? "*" : cron.hour),
+			dayofmonth: (cron.dayofmonth == "" ? "*" : cron.dayofmonth),
+			month: (cron.month == "" ? "*" : cron.month),
+			dayofweek: (cron.dayofweek == "" ? "*" : cron.dayofweek),
+			mode: cron.mode
+		};
+
+		config.intervalconf.cronconf = cronconf;
+		config.intervalconf.expiredtime = "";
+		config.intervalconf.intervaltype = "";
+		config.intervalconf.grabinterval = 0;
+		config.intervalconf.timeoutinterval = 0;
+	}
+	else if(modeSetup == 'onetime'){
+		config.intervalconf.expiredtime = "";
+		config.intervalconf.intervaltype = "";
+		config.intervalconf.grabinterval = 0;
+		config.intervalconf.timeoutinterval = 0;
+		config.intervalconf.cronconf = {};
+	}else{
+		config.intervalconf.cronconf = {};
+	}
+
+
+	config.intervalconf.grabinterval = parseInt(config.intervalconf.grabinterval, 10);
+	config.intervalconf.timeoutinterval = parseInt(config.intervalconf.timeoutinterval, 10);
 
 	var grabConfData = {};
 	var tempParameters = [];
@@ -853,9 +1058,11 @@ wg.saveSelectorConf = function(){
 		app.mode("");
 		wg.modeSetting(0);
 		ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
+		ko.mapping.fromJS(wg.templateCron, wg.configCron);
 		wg.selectorRowSetting([]);
 		wg.getScrapperData();
 		wg.modeSelector("");
+		wg.modeSetup("")
 	});
 }
 wg.viewHistoryRecord = function (id) {
@@ -921,6 +1128,7 @@ wg.viewLog = function (date) {
 		try {
 			// wg.logData(res.data.logs.join(''));
 			wg.logData(res.data.logs);
+			wg.tempViewLog(wg.logData());
 		} catch (err) {
 
 		}
@@ -928,16 +1136,34 @@ wg.viewLog = function (date) {
 };
 
 wg.findLogView = function(){
-	var obj = wg.logData();
+	wg.tempViewLog(wg.logData());
+	var obj = wg.tempViewLog();
 	var key = wg.filterRequestLogView();
 	var val = wg.searchRequestLogView();
+	if (val == ""){
+		wg.tempViewLog(wg.logData());
+		return false
+	}
+	
 	var returnedData = $.grep(obj, function (element, index) {
-	    return element.key == val;
+		if (key == "Desc"){
+			return element.Desc == val;
+		}else{
+			return element.Type == val;
+		}
+	    
 	});
-	wg.logData([]);
-    wg.logData(returnedData);
+	wg.tempViewLog([]);
+    wg.tempViewLog(returnedData);
 
 }
+
+wg.refreshLogView = function(){
+	wg.filterRequestLogView("");
+	wg.searchRequestLogView("");
+	wg.tempViewLog(wg.logData());
+}
+
 function filterWebGrabber(event) {
 	app.ajaxPost("/webgrabber/findwebgrabber", {inputText : wg.valWebGrabberFilter()}, function (res) {
 		if (!app.isFine(res)) {
@@ -966,13 +1192,13 @@ wg.changeConnectionID = function (e) {
 			return;
 		}
 
-		if (res.data.Driver != 'mongo') {
-			wg.collectionInput(false);
-			swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
-			return;
-		} else {
-			wg.collectionInput(true);
-		}
+		// if (res.data.Driver != 'mongo') {
+		// 	wg.collectionInput(false);
+		// 	swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
+		// 	return;
+		// } else {
+		// 	wg.collectionInput(true);
+		// }
 		
 		wg.configSelector.desttype(res.data.Driver);
 		var connInfo = wg.configSelector.connectioninfo;
@@ -981,6 +1207,16 @@ wg.changeConnectionID = function (e) {
 		connInfo.database(res.data.Database);
 		connInfo.username(res.data.UserName);
 		connInfo.password(res.data.Password);
+		for (key in res.data.Settings) {
+			if (res.data.Settings.hasOwnProperty(key)) {
+				var val = res.data.Settings[key];
+				if (connInfo.settings.hasOwnProperty(key)) {
+					connInfo.settings[key](val);
+				} else {
+					connInfo.settings[key] = ko.observable(val);
+				}
+			}
+		}
 	});
 
 	return true;
@@ -1015,6 +1251,13 @@ wg.checkDeleteWebGrabber = function(elem, e){
 			wg.tempCheckIdWebGrabber.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
+}
+
+wg.showSetupForm = function(mode){
+	$("#IntervalMode").hide();
+	$("#ScheduleMode").hide();
+	$("#Onetime").hide();
+
 }
 
 $(function () {

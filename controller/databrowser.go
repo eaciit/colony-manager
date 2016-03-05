@@ -2,7 +2,7 @@ package controller
 
 import (
 	// "encoding/json"
-	// "errors"
+	"errors"
 	// "fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
@@ -10,17 +10,21 @@ import (
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	// "gopkg.in/mgo.v2/bson"
+	// "reflect"
 	// "io"
 	// "net/http"
 	// "os"
 	// "path/filepath"
 	// "strconv"
-	// "strings"
+	"strings"
 )
 
 type DataBrowserController struct {
 	App
 }
+
+var rdbms = []string{"mysql", "mssql", "oracle", "postgres"}
 
 func CreateDataBrowserController(s *knot.Server) *DataBrowserController {
 	var controller = new(DataBrowserController)
@@ -69,9 +73,26 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// if err := colonycore.Delete(payload); err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
+	// if payload.QueryText != "" {
+	// 	payload.TableNames = ""
 	// }
+	_, _, err := d.connToDatabase(payload.ConnectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	// var dataQuery dbox.IQuery
+	for _, v := range payload.MetaData {
+		if v.Aggregate != "" {
+			result := toolkit.M{}
+			toolkit.UnjsonFromString(v.Aggregate, &result)
+			if sum := result.Get("sum").(string); sum == "" {
+				toolkit.Println("masuk")
+			}
+		}
+	}
+	// query := d.parseQuery(conn, *payload, datacon)
+	// toolkit.Println(toolkit.JsonString(query))
 
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -127,7 +148,6 @@ func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	// toolkit.Printf("metadata:%#v\n", payload)
 	return helper.CreateResult(true, payload, "")
 }
 
@@ -145,7 +165,10 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	query := d.parseQuery(conn, data)
+	query, err := d.parseQuery(conn, data, datacon)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
@@ -169,16 +192,36 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 	}
 
 	metadata := []*colonycore.StructInfo{}
+	// var dt string
 	for i, dataFields := range dataFetch {
 		if i > 0 {
 			break
 		}
 
 		j := 1
-		for keyField, _ := range dataFields {
+		for keyField, dataField := range dataFields {
+			if strings.Contains(keyField, "id") && !strings.Contains(data.QueryText, "id") {
+				continue
+			}
 			sInfo := &colonycore.StructInfo{}
 			sInfo.Field = keyField
 			sInfo.Label = keyField
+
+			rf := "string"
+
+			if dataField != nil {
+				rf = toolkit.TypeName(dataField)
+
+				if rf == "time.Time" {
+					rf = "date"
+				}
+			}
+			// toolkit.Println(dataField, ">", rf)
+			// if rf == "bson.ObjectId" {
+			// 	dt = dataField.(bson.ObjectId).Hex()
+			// }
+			sInfo.DataType = rf
+
 			sInfo.Format = ""
 			sInfo.Align = "Left"
 			sInfo.ShowIndex = toolkit.ToInt(j, toolkit.RoundingAuto)
@@ -211,16 +254,34 @@ func (d *DataBrowserController) connToDatabase(_id string) (dbox.IConnection, *c
 	return connection, dataConn, nil
 }
 
-func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser) dbox.IQuery {
+func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colonycore.DataBrowser, datacon *colonycore.Connection) (dbox.IQuery, error) {
 	var dataQuery dbox.IQuery
+
 	if dbrowser.QueryType == "nonQueryText" {
-		result := toolkit.M{}
-		toolkit.UnjsonFromString(dbrowser.QueryText, &result)
-		if qFrom := result.Get("from", "").(string); qFrom != "" {
-			dataQuery = conn.NewQuery().From(qFrom)
+		dataQuery = conn.NewQuery().From(dbrowser.TableNames)
+	} else if dbrowser.QueryType == "SQL" {
+		if toolkit.HasMember(rdbms, datacon.Driver) {
+			dataQuery = conn.NewQuery().Command("freequery", toolkit.M{}.
+				Set("syntax", dbrowser.QueryText))
+		} else {
+			return nil, errors.New("Free Text Query with SQL only for RDBMS, please use Dbox")
+		}
+	} else if dbrowser.QueryType == "Dbox" {
+		queryInfo := toolkit.M{}
+		toolkit.UnjsonFromString(dbrowser.QueryText, &queryInfo)
+		toolkit.Println("queryinfo", queryInfo)
+
+		if qFrom := queryInfo.Get("from", "").(string); qFrom != "" {
+			dataQuery = conn.NewQuery()
+			dataQuery = dataQuery.From(qFrom)
+		}
+		if qSelect := queryInfo.Get("select", "").(string); qSelect != "" {
+			if qSelect != "*" {
+				dataQuery = dataQuery.Select(strings.Split(qSelect, ",")...)
+			}
 		}
 	}
-	return dataQuery
+	return dataQuery, nil
 }
 
 func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
@@ -240,6 +301,6 @@ func (d *DataBrowserController) DetailDB(r *knot.WebContext) interface{} {
 	result.Set("DataCount", count)
 	result.Set("DataValue", data)
 	result.Set("dataresult", dataDS)
-
+	// toolkit.Printf("result:%v\n", toolkit.JsonString(result))
 	return helper.CreateResult(true, result, "")
 }

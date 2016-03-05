@@ -1,250 +1,289 @@
-var Settings_EcDataBrowserFilter = {
-	dataSource: {data:[]},
-	maxColumn:3
+$.fn.ecDataBrowser = function (method) {
+	if (methodsDataBrowser[method]) {
+		return methodsDataBrowser[method].apply(this, Array.prototype.slice.call(arguments, 1));
+	} else {
+		methodsDataBrowser['init'].apply(this,arguments);
+	}
+}
+// Format : Integer, Double, Float, Currency, Date, DateTime and Date Format
+var Setting_DataBrowser = {
+	title: "",
+	widthPerColumn: 4,
+	widthKeyFilter: 3,
+	showFilter: "Simple",
+	dataSource: {
+		data:[],
+	},
+	metadata: [],
+	dataSimple: [],
+	dataAdvance: [],
+};
+var Setting_ColumnGridDB = {
+	Field: "",
+    Label: "",
+    DataType: "",
+    Format: "",
+    Align: "",
+    ShowIndex: 1,
+    Sortable: true,
+    SimpleFilter: true,
+    AdvanceFilter: true,
+    Aggregate: ""
+};
+var SettingDataSourceBrowser = {
+	data: [],
+	url: "",
+	type: "",
+	fieldTotal: "",
+	fieldData: "",
+	serverPaging: true,
+	pageSize: 10,
+	serverSorting: true,
+	callOK: function(a){
+
+	}, 
+	callFail: function(a,b,c){
+
+	},
+}
+var Setting_TypeData = {
+	number: ['integer', 'int', 'double', 'float', 'n0'],
+	date: ['date','datetime'],
 }
 
-var Setting_DataSource = {
-	data: [],
-	url: '',
-	call: 'get',
-	callData: 'q',
-	timeout: 20,
-	callOK: function(res){
-		console.log('callOK');
-	},
-	callFail: function(a,b,c){
-		console.log('callFail');
-	}
-};
-
-var methodsDB = {
+var methodsDataBrowser = {
 	init: function(options){
-		var settings = $.extend({}, Settings_EcDataBrowserFilter, options || {});
-		var settingsSource = $.extend({}, Setting_DataSource, settings['dataSource'] || {});
-		settings["dataSource"] = settingsSource;
-		if(settingsSource.data.length==0||settingsSource.url!=""){
-			methodsDB.CallAjax(this,settings);
-		}else{
-			methodsDB.GenerateFilter(this, settings);		
-		}
-
+		var databrowser = $.extend({}, SettingDataSourceBrowser, options.dataSource || {});
+		var settings = $.extend({}, Setting_DataBrowser, options || {});
+		settings.dataSource = databrowser;
+		var sortMeta = settings.metadata.sort(function(a, b) {
+		    return parseFloat(a.ShowIndex) - parseFloat(b.ShowIndex);
+		});
+		settings.metadata = sortMeta;
+		// var settingDataSources = $.extend({}, Setting_DataBrowser, settings['dataSource'] || {});
 		return this.each(function () {
-			$(this).data("ecDataBrowserFilter", settings);
+			// $(this).data("ecDataSource", settingDataSources);
+			$(this).data("ecDataBrowser", new $.ecDataBrowserSetting(this, settings));
+			methodsDataBrowser.createElement(this, settings);
 		});
 	},
-	GenerateFilter :function(elem,options){
-		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
-		var datax = options.dataSource.data;
-		var data = [];
-		var lastindex = 0;
+	createElement: function(element, options){
+		$(element).html("");
+		var $o = $(element), settingFilter = {}, widthfilter = 0, dataSimple= [], dataAdvance= [];
 
-		for(var i in datax){
-			if(datax[i].ShowIndex<=lastindex){
-				data.unshift(datax[i]);
-			}else{
-				data.push(datax[i]);
+		$divFilterSimple = $('<div class="ecdatabrowser-filtersimple"></div>');
+		$divFilterSimple.appendTo($o);
+		$divFilterAdvance = $('<div class="ecdatabrowser-filteradvance"></div>');
+		$divFilterAdvance.appendTo($o);
+		for (var key in options.metadata){
+			settingFilter = $.extend({}, Setting_ColumnGridDB, options.metadata[key] || {});
+			widthfilter = 12-options.widthKeyFilter;
+			if (settingFilter.SimpleFilter){
+				$divFilter = $('<div class="col-md-'+options.widthPerColumn+' filter-'+key+'"></div>');
+				$divFilter.appendTo($divFilterSimple);
+				$labelFilter = $("<label class='col-md-"+options.widthKeyFilter+" ecdatabrowser-filter'>"+settingFilter.Label+"</label>");
+				$labelFilter.appendTo($divFilter);
+				$divContentFilter = $('<div class="col-md-'+widthfilter+'"></div>');
+				$divContentFilter.appendTo($divFilter);
+				methodsDataBrowser.createElementFilter(settingFilter, 'simple', key, $divContentFilter, $o);
+				dataSimple.push('filter-simple-'+key);
 			}
-			lastindex = datax[i].ShowIndex;
-		}
-
-		var width = "col-md-"+(12/options.maxColumn)
-		for(var i in data){
-			var str = "<div class='"+width+" DB-margin' >";
-			str += "</div>";
-			$str = $(str); 
-			$str.appendTo($ox);
-
-			$o = $str;
-			var strlabel = "<div class='col-md-3 align-right'><label class='filter-label' >";
-				strlabel += data[i].Label;
-			strlabel+="</label></div>";
-			$strlabel = $(strlabel);
-			$strlabel.appendTo($o)
-
-			var strField = "<div  class='col-md-7'> <input>";
-			strField += "</input></div>";
-			$strField = $(strField);
-			$strField.appendTo($o);
-
-			$Field = $($strField.find("input"));
-
-			$Field.attr("placeholder","Fill "+ data[i].Label);
-
-			var dtype = data[i].Format.toLowerCase().indexOf("n0") > -1 ? "int" : data[i].Format.toLowerCase().indexOf("n") > -1 ? "float" : data[i].Format.toLowerCase().indexOf("m") > -1 || data[i].Format.toLowerCase().indexOf("d") > -1 || data[i].Format.toLowerCase().indexOf("y") > -1 ? "date":data[i].Format.toLowerCase().indexOf("bool") > -1? "bool":"string";
-			if(dtype.toLowerCase() == "bool"){
-				$Field.attr("type","checkbox");
-			}else if(dtype.toLowerCase() =="float" || dtype.toLowerCase() =="double"){
-				$Field.attr("class","form-control");
-				$Field.attr("type","number");
-			}else if(dtype.toLowerCase() =="int"){
-				$Field.attr("class","form-control");
-				$Field.attr("type","number");
-			}else if(dtype.toLowerCase() =="date") {
-				var depthx = data[i].Format.indexOf("dd") > -1 ? "month" : data[i].Format.toLowerCase().indexOf("m") > -1 ? "year":"decade";
-				// if(data[i].DateRange){
-				// 	$FieldParent = $("#DBField"+i).parent();
-				// 	$FieldDate = $("<input id='DBField"+i+"a'> </input> - ")
-				// 	$FieldDate.appendTo($FieldParent);
-				// 	$("#DBField"+i).kendoDatePicker({
-				// 		format: data[i].Format,
-				// 		depth: depthx
-				// 	});
-				// 	$("#DBField"+i+"a").kendoDatePicker({
-				// 		format: data[i].Format,
-				// 		depth: depthx
-				// 	});
-				// }else{
-					$Field.kendoDatePicker({
-						format: data[i].Format,
-						depth: depthx,
-						start:depthx
-					});
-				// }
-			}else {
-				$Field.attr("class","form-control");
-			}
-
-			if(!data[i].SimpleFilter && data[i].AdvanceFilter){
-				$str.hide();
-				$str.attr("class",$str.attr("class")+" advance-filter")
-			}else if(!data[i].SimpleFilter){
-				$str.hide();
+			if (settingFilter.AdvanceFilter){
+				$divFilter = $('<div class="col-md-'+options.widthPerColumn+' filter-'+key+'"></div>');
+				$divFilter.appendTo($divFilterAdvance);
+				$labelFilter = $("<label class='col-md-"+options.widthKeyFilter+" ecdatabrowser-filter'>"+settingFilter.Label+"</label>");
+				$labelFilter.appendTo($divFilter);
+				$divContentFilter = $('<div class="col-md-'+widthfilter+'"></div>');
+				$divContentFilter.appendTo($divFilter);
+				methodsDataBrowser.createElementFilter(settingFilter, 'advance', key, $divContentFilter, $o);
+				dataAdvance.push('filter-advance-'+key);
 			}
 		}
+		$(element).data("ecDataBrowser").dataSimple = dataSimple;
+		$(element).data("ecDataBrowser").dataAdvance = dataAdvance;
 
-		var strBtn = "<div class='col-md-12 DB-margin' >";
-		strBtn+= "<button class='btn btn-primary pull left refresh'><span class='glyphicon glyphicon-repeat'></span> Refresh</button>";
-		strBtn+= "<button class='btn btn-primary pull left DB-margin-left af' ><span class='glyphicon glyphicon-plus'></span> Advance Filter</button>";
-		strBtn+= "</div>";
-		$strBtn = $(strBtn);
-		$strBtn.appendTo($ox)
+		$divContainerGrid = $('<div class="ecdatabrowser-gridview"></div>');
+		$divContainerGrid.appendTo($o);
 
-		$($strBtn.find(".refresh")).bind("click").click(function(){
-			methodsDB.GetFilter(elem);
-		});
+		$divGrid = $('<div class="ecdatabrowser-grid"></div>');
+		$divGrid.appendTo($divContainerGrid);
 
-		$($strBtn.find(".af")).bind("click").click(function(){
-			methodsDB.ShowAdvance(elem);
-		});
+		methodsDataBrowser.createGrid($divGrid, options, $o);
+
+		$(element).data("ecDataBrowser").ChangeViewFilter(options.showFilter);
 
 	},
-	ShowAdvance:function(elem){
-		$($(elem).find(".advance-filter")).each(function(){
-		if($(this).attr("style")!= undefined && $(this).attr("style").indexOf("none")>-1)
-			$(this).show();
-		else
-			$(this).hide();
-		});
+	createElementFilter: function(settingFilter, filterchoose, index, element, id){
+		var $divElementFilter;
+		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
+			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
+			return '';
+		}
+		else if (settingFilter.DataType.toLowerCase() == 'date'){
+			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoDatePicker({
+				format: settingFilter.Format,
+			});
+			return '';
+		} else if (settingFilter.DataType.toLowerCase() == 'bool') {
+			$divElementFilter = $('<input type="checkbox" class="form-control" idfilter="filter-'+filterchoose+'-'+index+'" typedata="bool" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			return '';
+		}
+		else {
+			$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			return '';
+		}
 	},
-	GetFilter:function(elem){
-		var res = {};
-		var opt = $(elem).data("ecDataBrowserFilter").dataSource.data;
-		for(var i in opt){
-			var value = $($(elem).find("input")[i]).val();
-			var field = opt[i].Field;
-			if($($(elem).find("input")[i]).attr("type") == "checkbox"){
-				res[field] = $($(elem).find("input")[i])[0].checked;
-			}else{
-				res[field] = value;
+	createGrid: function(element, options, id){
+		var colums = [], format="", aggr= "", footerText = "";
+		for(var key in options.metadata){
+			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
+				format = "{0:"+options.metadata[key].Format+"}"
+			} else {
+				format = "";
+			}
+			aggr = options.metadata[key].Aggregate.split(",");
+			// footerText = "";
+			// for (var i in aggr){
+			// 	if (aggr[i] != '')
+			// 		footerText += aggr[i] + ' : ' + 50;
+			// }
+			if (options.metadata[key].HiddenField != true){
+				var column = {
+					field: options.metadata[key].Field,
+					title: options.metadata[key].Label,
+					format: format,
+					sortable: options.metadata[key].Sortable,
+					attributes: {
+						style: "text-align: "+options.metadata[key].Align+";",
+					},
+					headerAttributes: {
+						style: "text-align: "+options.metadata[key].Align+";",
+					},
+					aggregates: aggr,
+					footerTemplate: footerText,
+				};
+				colums.push(column);
 			}
 		}
+
+		colums = Lazy(colums).map(function (e, i) {
+			if (colums.length > 5) {
+				e.width = 150;
+
+				if (i == 0) {
+					e.width = 200;
+					e.locked = true;
+				}
+			}
+
+			return e;
+		}).toArray();
+
+		$divElementGrid = $('<div idfilter="gridFilterBrowser"></div>');
+		$divElementGrid.appendTo(element);
+		if (options.dataSource.data.length > 0){
+			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
+				dataSource: {data: options.dataSource.data},
+				sortable: true,
+				columns: colums,
+			});
+		} else {
+			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
+				dataSource: {
+					transport: {
+	                    read: function(yo){
+							var callData = $(id).data('ecDataBrowser').GetDataFilter(), $parentElem = id;
+							// var callData = {}, $parentElem = id;
+							$.each( options.dataSource.callData, function( key, value ) {
+								callData[key] = value;
+							});
+      						for(var i in yo.data){
+	                            callData[i] = yo.data[i];
+	                        }
+				            app.ajaxPost($parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.url,callData, function (res){
+				            	yo.success(res.data);
+				            	$parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.callOK(res.data);
+	                        });
+	                    }
+	                },
+	                schema: {
+	                    data: options.dataSource.fieldData,
+	                    total: options.dataSource.fieldTotal
+	                },
+	                pageSize: options.dataSource.pageSize,
+	                serverPaging: options.dataSource.serverPaging, // enable server paging
+	                serverSorting: options.dataSource.serverSorting,
+					serverFiltering: true,
+				},
+				sortable: true,
+	            pageable: true,
+	            scrollable: true,
+				columns: colums,
+			});
+		}
+	},
+	setShowFilter: function(res){
+		$(this).data("ecDataBrowser").ChangeViewFilter(res);
+	},
+	getDataFilter: function(){
+		var res = $(this).data('ecDataBrowser').GetDataFilter();
 		return res;
 	},
-	CallAjax:function(elem,options){
-		var ds = options.dataSource;
-		var url = ds.url;
-		var data = ds.callData;
-		var call = ds.call;
-		var contentType = "";
-		if (options.dataSource.call.toLowerCase() == 'post'){
-			contentType = 'application/json; charset=utf-8';
-		}
-		 $.ajax({
-                url: url,
-                type: call,
-                dataType: 'json',
-                data : data,
-                contentType: contentType,
-                success : function(res) {
-                	$(elem).data('ecDataBrowserFilter').dataSource.callOK(res);
-					options.dataSource.data = res;
-					methodsDB.GenerateFilter(elem, options);
-                },
-                error: function (a, b, c) {
-					$(elem).data('ecDataBrowserFilter').dataSource.callFail(a,b,c);
-			},
-        });
-		
-	}
-
-}
-
-$.fn.ecDataBrowserFilter = function (method) {
-	if (methodsDB[method]) {
-		return methodsDB[method].apply(this, Array.prototype.slice.call(arguments, 1));
-	} else {
-		methodsDB['init'].apply(this,arguments);
+	postDataFilter: function(){
+		$(this).data('ecDataBrowser').refreshDataGrid();
+	},
+	setDataGrid: function(res){
+		// var mapNewGrid = $.extend({}, $(this).data("ecDataBrowser").mapdatabrowser, res || {});
+		// var mapNewGrid = $(this).data("ecDataBrowser").mapdatabrowser
 	}
 }
 
-/* Sample for use
-$("#TestFilter").ecDataBrowserFilter({
-		dataSource:{data:[
-
-		{
-			"Field": "Name",
-			"Label":"User Name",
-			"Format":"",
-			"Align":"Left",
-			"ShowIndex":1,
-			"Sortable":true,
-			"SimpleFilter":true,
-			"AdvanceFilter":true,
-			"Aggregate":"",
-		},
-		{
-			"Field": "Date",
-			"Label":"Birth Date",
-			"Format":"MMM-yyyy",
-			"Align":"Left",
-			"ShowIndex":2,
-			"Sortable":true,
-			"SimpleFilter":true,
-			"AdvanceFilter":true,
-			"Aggregate":"",
-		},
-		{
-			"Field": "Salary",
-			"Label":"Salary",
-			"Format":"N2",
-			"Align":"Left",
-			"ShowIndex":3,
-			"Sortable":true,
-			"SimpleFilter":true,
-			"AdvanceFilter":true,
-			"Aggregate":"",
-		},
-		{
-			"Field": "Bool",
-			"Label":"Is Active",
-			"Format":"bool",
-			"Align":"Left",
-			"ShowIndex":4,
-			"Sortable":true,
-			"SimpleFilter":false,
-			"AdvanceFilter":true,
-			"Aggregate":"",
+$.ecDataBrowserSetting = function(element,options){
+	this.mapdatabrowser = options;
+	this.ChangeViewFilter = function(res){
+		if (res.toLowerCase() == 'simple'){
+			$(element).find('div.ecdatabrowser-filtersimple').show();
+			$(element).find('div.ecdatabrowser-filteradvance').hide();
+			this.mapdatabrowser.showFilter = "Simple";
+		} else {
+			$(element).find('div.ecdatabrowser-filtersimple').hide();
+			$(element).find('div.ecdatabrowser-filteradvance').show();
+			this.mapdatabrowser.showFilter = "Advance";
 		}
-			]},
-	maxColumn:3
-	});
-	
-	$("#TestFilter2").ecDataBrowserFilter({		
--	dataSource:{		
--			url: 'https://gist.githubusercontent.com/yanda15/2d7147452690a5bbaf96/raw/5a365c260025480ea3ae689ade4681f4e6b91e29/gistfile1.txt',		
--			call: 'GET',		
--			callData: 'search'		
--	}, 		
--	maxColumn:3		
--	});
-*/
+	};
+	this.GetDataFilter = function(){
+		var resFilter = {}, dataTemp = [], $elem = '', valtype = '';
+		if (this.mapdatabrowser.showFilter.toLowerCase() == "simple"){
+			dataTemp = $(element).data('ecDataBrowser').dataSimple;
+		} else {
+			dataTemp = $(element).data('ecDataBrowser').dataAdvance;
+		}
+		for (var i in dataTemp){
+			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
+			field = $elem.attr('fielddata');
+			if ($elem.val() != ''){
+				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
+					valtype = parseInt($elem.val());
+				} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
+					valtype = parseFloat($elem.val());
+				} else if ($elem.attr("typedata") == "bool"){
+					valtype = $(element).find('input[idfilter='+dataTemp[i]+']')[0].checked;
+				}else {
+					valtype = $elem.val();
+				}
+				resFilter[field] = valtype;
+			}
+		}
+		return resFilter;
+	};
+	this.refreshDataGrid = function(){
+		$(element).find('div[idfilter=gridFilterBrowser]').data('kendoGrid').dataSource.read();
+		$(element).find('div[idfilter=gridFilterBrowser]').data('kendoGrid').refresh();
+	}
+}

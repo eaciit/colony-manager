@@ -27,6 +27,10 @@ type MetaSave struct {
 	data    string
 }
 
+var (
+	sorter string
+)
+
 func CreateDataSourceController(s *knot.Server) *DataSourceController {
 	var controller = new(DataSourceController)
 	controller.Server = s
@@ -66,7 +70,7 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql json csv hive"
+	supportedDrivers := "mongo mysql json csv jsons csvs hive"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
@@ -105,10 +109,28 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []toolkit.M, *colonycore.DataBrowser, error) {
 
 	_id := toolkit.ToString(payload.Get("id", ""))
+	sort := payload.Get("sort")
+	search := payload.Get("search")
 	take := toolkit.ToInt(payload.Get("take", ""), toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
+	fmt.Println("===== >> seacrch", search)
+
 	TblName := toolkit.M{}
+	//sorter = ""
+	if sort != nil {
+		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
+		fmt.Printf("====== sort %#v\n", tmsort["dir"])
+		if tmsort["dir"] == "asc" {
+			sorter = tmsort["field"].(string)
+		} else if tmsort["dir"] == "desc" {
+			sorter = "-" + tmsort["field"].(string)
+		} else if tmsort["dir"] == nil {
+			sorter = " "
+		}
+	} else {
+		sorter = " "
+	}
 
 	dataDS := new(colonycore.DataBrowser)
 	err := colonycore.Get(dataDS, _id)
@@ -136,7 +158,8 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	TblName.Set("from", dataDS.TableNames)
 
 	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
-	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take), TblName)
+	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
+
 	_ = metaSave
 	// fmt.Println("Meta Save : ", metaSave)
 
@@ -375,25 +398,29 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if o.Driver == "json" || o.Driver == "csv" {
-		fileType := helper.GetFileExtension(o.Host)
-		o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
+	if toolkit.HasMember([]string{"csv", "json", "csvs", "jsons"}, o.Driver) {
+		if strings.Contains(o.FileLocation, "http") {
+			fileType := helper.GetFileExtension(o.Host)
+			o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 
-		file, err := os.Create(o.FileLocation)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer file.Close()
+			file, err := os.Create(o.FileLocation)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer file.Close()
 
-		resp, err := http.Get(o.Host)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer resp.Body.Close()
+			resp, err := http.Get(o.Host)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer resp.Body.Close()
 
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else {
+			o.FileLocation = o.Host
 		}
 	}
 
@@ -528,28 +555,32 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	}
 
 	if driver == "json" || driver == "csv" {
-		fileTempID := helper.RandomIDWithPrefix("f")
-		fileType := helper.GetFileExtension(host)
-		fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
+		if strings.Contains(host, "http") {
+			fileTempID := helper.RandomIDWithPrefix("f")
+			fileType := helper.GetFileExtension(host)
+			fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
 
-		file, err := os.Create(fakeDataConn.FileLocation)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer file.Close()
+			file, err := os.Create(fakeDataConn.FileLocation)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer file.Close()
 
-		resp, err := http.Get(host)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		defer resp.Body.Close()
+			resp, err := http.Get(host)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			defer resp.Body.Close()
 
-		_, err = io.Copy(file, resp.Body)
-		if err != nil {
-			os.Remove(fakeDataConn.FileLocation)
-			return helper.CreateResult(false, nil, err.Error())
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				os.Remove(fakeDataConn.FileLocation)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else {
+			fakeDataConn.FileLocation = host
 		}
 	}
 
@@ -567,6 +598,51 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 }
 
 /** DATA SOURCE */
+
+func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Connection, from string) (bool, []*colonycore.FieldInfo, error) {
+	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
+		return false, nil, err
+	}
+
+	var conn dbox.IConnection
+	conn, err := helper.ConnectUsingDataConn(dataConn).Connect()
+	if err != nil {
+		return false, nil, err
+	}
+	defer conn.Close()
+
+	var query = conn.NewQuery().Take(1)
+
+	if !toolkit.HasMember([]string{"csv", "json"}, dataConn.Driver) {
+		query = query.From(from)
+	}
+
+	cursor, err := query.Cursor(nil)
+	if err != nil {
+		return false, nil, err
+	}
+	defer cursor.Close()
+
+	data := toolkit.M{}
+
+	if !toolkit.HasMember([]string{"json", "mysql"}, dataConn.Driver) {
+		err = cursor.Fetch(&data, 1, false)
+	} else {
+		dataAll := []toolkit.M{}
+		err = cursor.Fetch(&dataAll, 1, false)
+		if len(dataAll) > 0 {
+			data = dataAll[0]
+		}
+	}
+
+	metadata := d.parseMetadata(data)
+
+	if err != nil {
+		return false, nil, err
+	}
+
+	return false, metadata, nil
+}
 
 func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
@@ -589,47 +665,12 @@ func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if err := d.checkIfDriverIsSupported(dataConn.Driver); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	var conn dbox.IConnection
-	conn, err = helper.ConnectUsingDataConn(dataConn).Connect()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer conn.Close()
-
-	var query = conn.NewQuery().Take(1)
-
-	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
-		query = query.From(from)
-	}
-
-	cursor, err := query.Cursor(nil)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	data := toolkit.M{}
-	if dataConn.Driver != "csv" && dataConn.Driver != "json" {
-		err = cursor.Fetch(&data, 1, false)
-	} else {
-		dataAll := []toolkit.M{}
-		err = cursor.Fetch(&dataAll, 1, false)
-		if len(dataAll) > 0 {
-			data = dataAll[0]
-		}
-	}
-
-	metadata := d.parseMetadata(data)
-
+	res, data, err := d.DoFetchDataSourceMetaData(dataConn, from)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, metadata, "")
+	return helper.CreateResult(res, data, "")
 }
 
 func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.FieldInfo {
@@ -647,32 +688,35 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 		meta.Type, _ = helper.GetBetterType(val)
 		meta.Format = ""
 		meta.Lookup = lookup
+		meta.Type = "string"
 
-		switch toolkit.TypeName(val) {
-		case "toolkit.M":
-			meta.Type = "object"
+		if val != nil {
+			switch toolkit.TypeName(val) {
+			case "toolkit.M":
+				meta.Type = "object"
 
-			meta.Sub = d.parseMetadata(val.(toolkit.M))
-		case "[]interface {}":
-			meta.Type = "array"
+				meta.Sub = d.parseMetadata(val.(toolkit.M))
+			case "[]interface {}":
+				meta.Type = "array"
 
-			valArray := val.([]interface{})
-			if len(valArray) > 0 {
-				if toolkit.TypeName(valArray[0]) == "toolkit.M" {
-					meta.Type = "array-objects"
-					meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))
-				} else {
-					switch target := toolkit.TypeName(valArray[0]); {
-					case strings.Contains(target, "interface"):
-					case strings.Contains(target, "string"):
-						meta.Type = "array-string"
-					case strings.Contains(target, "int"):
-						meta.Type = "array-int"
-					case strings.Contains(target, "float"):
-					case strings.Contains(target, "double"):
-						meta.Type = "array-double"
-					default:
-						meta.Type = "array-string"
+				valArray := val.([]interface{})
+				if len(valArray) > 0 {
+					if toolkit.TypeName(valArray[0]) == "toolkit.M" {
+						meta.Type = "array-objects"
+						meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))
+					} else {
+						switch target := toolkit.TypeName(valArray[0]); {
+						case strings.Contains(target, "interface"):
+						case strings.Contains(target, "string"):
+							meta.Type = "array-string"
+						case strings.Contains(target, "int"):
+							meta.Type = "array-int"
+						case strings.Contains(target, "float"):
+						case strings.Contains(target, "double"):
+							meta.Type = "array-double"
+						default:
+							meta.Type = "array-string"
+						}
 					}
 				}
 			}
@@ -732,10 +776,22 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	}
 	defer cursor.Close()
 
+	take := 10
+	if totalData := cursor.Count(); totalData < take && totalData > 0 {
+		take = totalData
+	}
+	if dataDS.QueryInfo.Has("take") {
+		take = 0
+	}
+
 	data := []toolkit.M{}
-	err = cursor.Fetch(&data, 0, false)
+	err = cursor.Fetch(&data, take, false)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		cursor.ResetFetch()
+		err = cursor.Fetch(&data, 0, false)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
 
 	result := toolkit.M{"metadata": dataDS.MetaData, "data": data}
@@ -1065,7 +1121,7 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if dataConn.Driver == "csv" || dataConn.Driver == "json" {
+	if toolkit.HasMember([]string{"csv", "json"}, dataConn.Driver) {
 		return helper.CreateResult(true, []string{dataConn.Driver}, "")
 	}
 

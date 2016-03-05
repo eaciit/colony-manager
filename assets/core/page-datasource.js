@@ -2,8 +2,10 @@ app.section('connection-list');
 
 viewModel.datasource = {}; var ds = viewModel.datasource;
 ds.templateDrivers = ko.observableArray([
-	{ value: "csv", text: "CSV (Weblink)" },
-	{ value: "json", text: "JSON (Weblink)" },
+	{ value: "csv", text: "CSV" },
+	{ value: "csvs", text: "CSVS" },
+	{ value: "json", text: "JSON" },
+	{ value: "jsons", text: "JSONS" },
 	{ value: "mongo", text: "MongoDb" },
 	{ value: "mysql", text: "MySQL" },
 	{ value: "hive", text: "Hive" },
@@ -13,6 +15,7 @@ ds.templateDrivers = ko.observableArray([
 ]);
 ds.templateConfigSetting = {
 	id: "",
+	deletable: true,
 	key: "",
 	value: ""
 };
@@ -51,7 +54,16 @@ ds.templateLookup = {
 ds.delimiterOptions = ko.observableArray([
 	{ value: "csv", text: "CSV" },
 	{ value: "tsv", text: "TSV" },
-])
+]);
+ds.constSettings = {
+	csv: ["useheader", "newfile", "delimiter", "comment", "fieldsperrecord", "lazyquotes", "trailingcomma", "trimleadingspace"],
+	csvs: ["useheader", "newfile", "delimiter", "comment", "fieldsperrecord", "lazyquotes", "trailingcomma", "trimleadingspace", "pooling"],
+	hive: ["path", "delimiter"],
+	json: ["newfile"],
+	jsons: ["newfile", "pooling"],
+	mongo: ["poollimit", "timeout"],
+	xlsx: ["useheader", "rowstart", "newfile"]
+};
 ds.config = ko.mapping.fromJS(ds.templateConfig);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
@@ -96,7 +108,7 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Driver", title: "Driver" },
 	{ field: "Host", title: "Host" },
 	{ field: "Database", title: "Database" },
-	{ field: "UserName", title: "User Name" },
+	// { field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
 	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
 		return [
@@ -150,14 +162,14 @@ ds.metadataColumns = ko.observableArray([
 	}, width: 60, attributes: { style: "text-align: center;" } },
 ]);
 ds.labelForHost = ko.computed(function () {
-	if (["csv", "json"].indexOf(ds.config.Driver()) > -1) {
+	if (["csv", "json", "csvs", "jsons"].indexOf(ds.config.Driver()) > -1) {
 		return "File URL";
 	}
 
 	return "Host";
 }, ds);
 ds.gridMetaDataSchema = {
-	pageSize: 15,
+	pageSize: 10,
 	schema: {
 		model: {
 			id: "_id",
@@ -221,6 +233,49 @@ ds.fetchDataSourceMetaData = function (from) {
 		timeout: 10000
 	});
 };
+ds.changeDriver = function (a, b) {
+	ds.config.Settings([]);
+	var driver = (b == undefined) ? this.value() : b;
+
+	if (ds.constSettings.hasOwnProperty(driver)) {
+		ds.constSettings[driver].forEach(function (d) {
+			var setting = $.extend(true, {}, ds.templateConfigSetting);
+			setting.id = "s" + moment.now();
+			setting.deletable = false;
+			setting.key = d;
+
+			if (b != undefined) {
+				for (var p in a) {
+					if (a.hasOwnProperty(p) && p == d) {
+						setting.value = String(a[p]);
+					}
+				}
+			}
+
+			ds.config.Settings.push(ko.mapping.fromJS(setting));
+		});
+	}
+
+	if (b != undefined) {
+		for (var p in a) {
+			if (a.hasOwnProperty(p)) {
+				isConst = Lazy(ds.config.Settings()).find(function (d) {
+					return d["key"]() == p;
+				}) != undefined;
+
+				if (!isConst) {
+					var setting = $.extend(true, {}, ds.templateConfigSetting);
+					setting.id = "s" + moment.now();
+					setting.deletable = true;
+					setting.key = p;
+					setting.value = a[p];
+
+					ds.config.Settings.push(ko.mapping.fromJS(setting));
+				}
+			}
+		}
+	}
+};
 ds.openConnectionForm = function () {
 	app.mode('edit');
 	ds.connectionListMode('');
@@ -232,7 +287,7 @@ ds.openConnectionForm = function () {
 ds.addSettings = function () {
 	var setting = $.extend(true, {}, ds.templateConfigSetting);
 	setting.id = "s" + moment.now();
-	ds.config.Settings.push(setting);
+	ds.config.Settings.push(ko.mapping.fromJS(setting));
 };
 ds.removeSetting = function (each) {
 	return function () {
@@ -254,7 +309,7 @@ ds.populateGridConnections = function () {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data=[];
 		}
 		ds.connectionListData(res.data);
 	});
@@ -262,7 +317,7 @@ ds.populateGridConnections = function () {
 
 ds.isFormAddConnectionValid = function () {
 	if (!app.isFormValid("#form-add-connection")) {
-		if (["json", "csv", "hive"].indexOf(ds.config.Driver()) > -1) {
+		if (["json", "csv", "jsons", "csvs", "hive"].indexOf(ds.config.Driver()) > -1) {
 			var err = $("#form-add-connection").data("kendoValidator").errors();
 			if (err.length == 1 && (err.indexOf("Database is required") > -1)) {
 				// no problem
@@ -299,6 +354,7 @@ ds.saveNewConnection = function () {
 		}
 
 		ds.backToFrontPage();
+		ds.connectionListMode("edit");
 	});
 };
 ds.testConnectionFromGrid = function (_id) {
@@ -364,6 +420,20 @@ ds.editConnection = function (_id) {
 		ds.connectionListMode('edit');
 		app.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
+		ds.config.Settings(function (s) {
+			var settings = [];
+			for (var key in s) {
+				if (s.hasOwnProperty(key)) {
+					var setting = $.extend(true, { }, ds.templateConfigSetting);
+					setting.id = "s" + moment.now();
+					setting.key = key;
+					setting.value = s[key];
+					settings.push(setting);
+				}
+			}
+			return settings;
+		}(res.data.Settings));
+		ds.changeDriver(res.data.Settings, res.data.Driver);
 		ds.addSettings();
 		ds.showConnection(true);		
 	});
@@ -504,7 +574,7 @@ ds.populateGridDataSource = function () {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data=[];
 		}
 		ds.dataSourcesData(res.data);
 	});
@@ -547,6 +617,7 @@ ds.saveDataSource = function (c) {
 
 		ko.mapping.fromJS(res.data, ds.confDataSource);
 		if (typeof c !== "undefined") c(res);
+		ds.dataSourceMode("edit");
 	});
 };
 ds.testQuery = function () {
@@ -584,6 +655,17 @@ ds.testQuery = function () {
 			var metadata = (res.data.metadata == undefined || res.data.metadata == null) ? [] : res.data.metadata;
 			if (metadata.length > 0) {
 				columns = columns.concat(metadata.map(function (e) {
+					if (res.data.data.length > 0) {
+						return Lazy(res.data.data).find(function (a) {
+							for (var k in a) {
+								if (a.hasOwnProperty(k) && e.hasOwnProperty(k)) {
+									return true;
+								}
+							}
+
+							return false;
+						}) != undefined;
+					}
 					var columnConfig = { field: e._id, title: e.Label, width: 150 };
 
 					if (e.Lookup._id != "") {
@@ -602,6 +684,10 @@ ds.testQuery = function () {
 
 					return columnConfig;
 				}));
+
+				columns = Lazy(columns).filter(function (e) {
+
+				}).toArray();
 			} else if (res.data.data.length > 0) {
 				var sampleData = res.data.data[0];
 				for (var key in sampleData) {
@@ -619,7 +705,7 @@ ds.testQuery = function () {
 				columns: columns,
 				dataSource: {
 					data: res.data.data,
-					pageSize: 15
+					pageSize: 10
 				},
 				sortable: true,
 				filterfable: false,
@@ -672,6 +758,10 @@ ds.fetchAllCollections = function () {
 
 	var param = { connectionID: ds.confDataSource.ConnectionID() };
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
 		ds.collectionNames(res.data);
 	}, function (a) {
 		ds.backToFrontPage();

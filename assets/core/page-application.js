@@ -9,6 +9,8 @@ apl.templateConfigApplication = {
 	Port: "8080",
 	AppPath: "",
 	DeployedTo: [],
+	Command: [],
+	Variable: [],
 };
 apl.appTypes = ko.observableArray([
 	{ value: "web", title: "Web" },
@@ -21,7 +23,20 @@ apl.templateFile = {
 	Filename: "",
 	Type: "folder",
 	Content: "",
-}
+};
+apl.templateFilter = {
+	search: "",
+	type: "",
+};
+apl.templateConfigCommand = {
+	key: "",
+	value: ""
+};
+apl.templateConfigVariable = {
+	key: "",
+	value: ""
+};
+apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
 apl.tempCheckIdServer = ko.observableArray([]);
@@ -30,6 +45,7 @@ apl.filterValue = ko.observable('');
 apl.filterAplType = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
+apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
@@ -117,6 +133,28 @@ apl.gridServerDeployDataBound = function () {
 		}
 	});
 };
+apl.addCommand = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
+	apl.configApplication.Command.push(item); 
+};
+
+apl.addVariable = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigVariable));
+	apl.configApplication.Variable.push(item); 
+};
+apl.removeCommand = function (each) {
+	return function () {
+		console.log(each);
+		apl.configApplication.Command.remove(each);
+	};
+};
+
+apl.removeVariable = function (each) {
+	return function () {
+		console.log(each);
+		apl.configApplication.Variable.remove(each);
+	};
+};
 apl.refreshGridModalDeploy = function () {
 	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
 	$(".grid-server-deploy").kendoGrid({
@@ -193,7 +231,7 @@ apl.getApplications = function(c) {
 	$(ongrid.tbody).on("mouseleave", "tr", function (e) {
 	    $(this).removeClass("k-state-hover");
 	});
-	app.ajaxPost("/application/getapps", {search: apl.searchfield}, function (res) {
+	app.ajaxPost("/application/getapps", apl.filter, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -241,6 +279,8 @@ apl.createNewApplication = function () {
 	apl.configApplication._id("");
 	apl.configApplication.AppsName("");
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
+	apl.addVariable();
+	apl.addCommand();
 };
 
 apl.saveApplication = function() {
@@ -250,21 +290,23 @@ apl.saveApplication = function() {
 
 	var data = ko.mapping.toJS(apl.configApplication);
 	var formData = new FormData();
-	
 	formData.append("Enable", data.Enable);
 	formData.append("AppsName", data.AppsName);
 	formData.append("userfile", $('input[type=file]')[0].files[0]);
 	formData.append("_id", data._id);
 	formData.append("Type", data.Type);
 	formData.append("Port", data.Port);
-	
-	var request = new XMLHttpRequest();
-	request.open("POST", "/application/saveapps");
-	request.onload = function(){
+	formData.append("Command",JSON.stringify(data.Command));
+	formData.append("Variable", JSON.stringify(data.Variable));
+
+	app.ajaxPost("/application/saveapps", formData, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		
 		swal({title: "Application successfully created", type: "success",closeOnConfirm: true});
 		apl.backToFront();
-	}
-	request.send(formData);
+	});
 };
 
 apl.getUploadFile = function() {
@@ -616,3 +658,4 @@ $(function () {
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
+

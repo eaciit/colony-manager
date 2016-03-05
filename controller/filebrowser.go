@@ -9,17 +9,21 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
-	// "github.com/eaciit/errorlib"
+	"github.com/eaciit/errorlib"
 	. "github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/sshclient"
 	// "github.com/eaciit/toolkit"
-	// "io"
+	"io"
 	// "net/http"
 	"os"
-	// "path/filepath"
-	// "strconv"
+	"path/filepath"
+	"strconv"
 	// "log"
+	// "bufio"
+	// "io/ioutil"
+	"bytes"
+	"mime/multipart"
 	"strings"
 	"time"
 )
@@ -32,6 +36,7 @@ const (
 	USER        = "hdfs"
 	SERVER_NODE = "node"
 	SERVER_HDFS = "hdfs"
+	DELIMITER   = "/"
 )
 
 func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
@@ -42,16 +47,6 @@ func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
 
 func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-
-	/*payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	search := payload["search"].(string)
-
-	query := dbox.Or(dbox.Contains("_id", search), dbox.Contains("os", search), dbox.Contains("host", search), dbox.Contains("sshtype", search))*/
-
 	cursor, err := colonycore.Find(new(colonycore.Server), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -69,33 +64,80 @@ func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "FORM")
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
+	if server.RecordID() != nil && payload != nil {
 		path := ""
+		search := ""
 
 		if payload["path"] != nil {
 			path = payload["path"].(string)
 		}
 
+		if payload["search"] != nil {
+			search = payload["search"].(string)
+		}
+
 		var result []colonycore.FileInfo
 
 		if server.ServerType == SERVER_NODE {
-			if len(strings.TrimSpace(path)) == 0 {
+			if search != "" {
+				setting, err := sshConnect(&server)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				// search in app-path
+				listApp, err := sshclient.Search(setting, server.AppPath, true, search)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				resultApp, err := colonycore.ConstructFileInfo(listApp, server.AppPath)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				// search in data-path
+				listData, err := sshclient.Search(setting, server.DataPath, true, search)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				resultData, err := colonycore.ConstructFileInfo(listData, server.DataPath)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				if len(resultApp) > 0 {
+					resultApp = colonycore.ConstructSearchResult(resultApp, server.AppPath)
+					result = append(result, resultApp...)
+				}
+				if len(resultData) > 0 {
+					resultData = colonycore.ConstructSearchResult(resultData, server.DataPath)
+					result = append(result, resultData...)
+				}
+
+			} else if path == "" {
 				appFolder := colonycore.FileInfo{
-					Name:  "APP",
-					Path:  server.AppPath,
-					IsDir: true,
+					Name:       "APP",
+					Path:       server.AppPath,
+					IsDir:      true,
+					IsEditable: false,
 				}
 
 				dataFolder := colonycore.FileInfo{
-					Name:  "DATA",
-					Path:  server.DataPath,
-					IsDir: true,
+					Name:       "DATA",
+					Path:       server.DataPath,
+					IsDir:      true,
+					IsEditable: false,
 				}
 
 				result = append(result, appFolder)
@@ -118,7 +160,35 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				}
 			}
 		} else if server.ServerType == SERVER_HDFS {
+			h := SetHDFSConnection(server.Host, server.SSHUser)
 
+			//check whether SourcePath type is directory or file
+			if path == "" {
+				path = "/"
+			}
+			res, err := h.List(path)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			for _, files := range res.FileStatuses.FileStatus {
+				var xNode colonycore.FileInfo
+
+				xNode.Name = files.PathSuffix
+				xNode.Size = float64(files.Length)
+				xNode.Group = files.Group
+				xNode.Permissions = files.Permission
+				xNode.User = files.Owner
+				xNode.Path = strings.Replace(path+"/", "//", "/", -1) + files.PathSuffix
+
+				if files.Type == "FILE" {
+					xNode.IsDir = false
+				} else {
+					xNode.IsDir = true
+				}
+
+				result = append(result, xNode)
+			}
 		}
 
 		return helper.CreateResult(true, result, "")
@@ -129,25 +199,47 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
+	server, payload, err := getServer(r, "PAYLOAD")
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		/*path := ""
-
+	if server.RecordID() != nil && payload != nil {
 		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}*/
+			path := payload["path"].(string)
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				result, err := sshclient.Cat(setting, path)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, result, "")
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
 
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
+				err := h.GetToLocal(path, server.AppPath, "")
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 
+				//open downloaded hdfs file
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				result, err := sshclient.Cat(setting, path)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, result, "")
+			}
 		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
 	}
 
 	return helper.CreateResult(false, nil, "")
@@ -155,30 +247,65 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
+	server, payload, err := getServer(r, "PAYLOAD")
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		/*path := ""
-		content := ""
+	if server.RecordID() != nil && payload != nil {
+		if payload["path"] != nil && payload["contents"] != nil && payload["permission"] != nil {
+			path := payload["path"].(string)
+			content := payload["contents"].(string)
+			permission := payload["permission"].(string)
 
-		if payload["path"] != nil {
-			path = payload["path"].(string)
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				err = sshclient.MakeFile(setting, content, path, permission, false)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, nil, "")
+			} else if server.ServerType == SERVER_HDFS {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				err = sshclient.MakeFile(setting, content, path, permission, false)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+				isDirectory := false
+				SourcePath := path
+				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
+
+				if !strings.Contains(strings.Split(SourcePath, "/")[len(SourcePath)-1], ".") {
+					isDirectory = true
+				}
+
+				if isDirectory {
+					_, emap := h.PutDir(SourcePath, DestPath)
+					if emap != nil {
+						for k, v := range emap {
+							fmt.Sprintf("Error when create %v : %v \n", k, v)
+						}
+					}
+				} else {
+					err := h.Put(SourcePath, DestPath, "", nil)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+				}
+				return helper.CreateResult(true, "", "")
+			}
 		}
 
-		if payload["content"] != nil {
-			content = payload["content"].(string)
-		}*/
-
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
-
-		}
+		return helper.CreateResult(false, nil, "Please check your param")
 	}
 
 	return helper.CreateResult(false, nil, "")
@@ -186,25 +313,60 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
+	server, payload, err := getServer(r, "PAYLOAD")
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		/*path := ""
-
+	if server.RecordID() != nil && payload != nil {
 		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}*/
+			path := payload["path"].(string)
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
+				err = sshclient.MakeFile(setting, " ", path, "", false)
 
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, nil, "")
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+
+				//create file on local
+				tempPath := strings.Replace(os.Getenv(server.AppPath)+"/", "//", "/", -1)
+
+				if tempPath == "" {
+					return helper.CreateResult(false, nil, "No Temporary Directory")
+				}
+				FileName := path
+
+				file, err := os.Create(tempPath + FileName)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				defer file.Close()
+
+				//put new file to hdfs
+				err = h.Put(tempPath+FileName, strings.Replace(path+"/", "//", "/", -1)+FileName, "", nil)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				//remove file on local
+				err = os.Remove(tempPath + FileName)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, "", "")
+			}
 		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
 	}
 
 	return helper.CreateResult(false, nil, "")
@@ -212,25 +374,40 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
+	server, payload, err := getServer(r, "PAYLOAD")
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		/*path := ""
-
+	if server.RecordID() != nil && payload != nil {
 		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}*/
+			path := payload["path"].(string)
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
+				err = sshclient.MakeDir(setting, path, "")
 
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, nil, "")
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+
+				//create new directory on hdfs
+				err = h.MakeDir(path, "")
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, "", "")
+			}
 		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
 	}
 
 	return helper.CreateResult(false, nil, "")
@@ -238,25 +415,44 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
+	server, payload, err := getServer(r, "PAYLOAD")
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		/*path := ""
-
+	if server.RecordID() != nil && payload != nil {
 		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}*/
+			path := payload["path"].(string)
 
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 
+				er := sshclient.Remove(setting, true, path)
+
+				if er != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, nil, "")
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+
+				errs := h.Delete(true, path)
+				if errs != nil {
+					if len(errs) > 0 {
+						for _, err := range errs {
+							return helper.CreateResult(false, nil, err.Error())
+						}
+					}
+				}
+				return helper.CreateResult(true, "", "")
+			}
 		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
 	}
 
 	return helper.CreateResult(false, nil, "")
@@ -264,110 +460,273 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
+	server, payload, err := getServer(r, "PAYLOAD")
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if server.RecordID() != nil {
-		path := ""
-		permission := ""
+	if server.RecordID() != nil && payload != nil {
+		if payload["path"] != nil && payload["permission"] != nil {
+			path := payload["path"].(string)
+			permission := payload["permission"].(string)
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
 
-		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}
-		if payload["permission"] != nil {
-			permission = payload["permission"].(string)
-		}
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 
-		if server.ServerType == SERVER_NODE {
-			setting, err := sshConnect(&server)
+				err = sshclient.Chmod(setting, path, permission, true)
 
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				return helper.CreateResult(true, nil, "")
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+
+				err := h.SetPermission(path, permission)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, nil, "")
 			}
-
-			err = sshclient.Chmod(setting, path, permission, true)
-
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			return helper.CreateResult(true, nil, "")
-		} else if server.ServerType == SERVER_HDFS {
-
 		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
 	}
 
 	return helper.CreateResult(false, nil, "")
 }
 
-func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
+func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server, payload map[string]interface{}, err error) {
+	payload = make(map[string]interface{})
+	file, _, err := r.Request.FormFile(fileName)
+
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return
 	}
+	defer file.Close()
 
-	if server.RecordID() != nil {
-		/*path := ""
-		files := ""
+	payload["file"] = file
 
-		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}
-		if payload["files"] != nil {
-			files = payload["files"].(string)
-		}*/
-
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
-
-		}
-	}
-
-	return helper.CreateResult(false, nil, "")
-}
-
-func (s *FileBrowserController) Downnload(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	server, payload, err := getServer(r)
-	_ = payload
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	if server.RecordID() != nil {
-		/*path := ""
-
-		if payload["path"] != nil {
-			path = payload["path"].(string)
-		}*/
-
-		if server.ServerType == SERVER_NODE {
-			/*setting, err := sshConnect(&server)
-			return helper.CreateResult(true, result, "")*/
-		} else if server.ServerType == SERVER_HDFS {
-
-		}
-	}
-
-	return helper.CreateResult(false, nil, "")
-}
-
-func getServer(r *knot.WebContext) (server colonycore.Server, payload map[string]interface{}, err error) {
-
-	err = r.GetForms(&payload)
+	var tmp map[string]interface{}
+	_, s, err := r.GetPayloadMultipart(&tmp)
 
 	if err != nil {
 		return
 	}
 
-	serverId := payload["serverid"].(string)
+	payload["path"] = s["path"][0]
+	payload["serverId"] = s["serverId"][0]
+	payload["filename"] = s["filename"][0]
+	payload["filesizes"] = s["filesizes"][0]
+
+	/*fmt.Printf("s =========> %#v\n", s)
+	fmt.Printf("h =========> %#v\n", h)*/
+
+	serverId := payload["serverId"].(string)
+	query := dbox.Eq("_id", serverId)
+
+	cursor, err := colonycore.Find(new(colonycore.Server), query)
+	if err != nil {
+		return
+	}
+
+	data := []colonycore.Server{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return
+	}
+	defer cursor.Close()
+
+	if len(data) != 0 {
+		server = data[0]
+	}
+
+	return
+}
+
+func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	server, payload, err := getMultipart(r, "myfiles")
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if server.RecordID() != nil && payload != nil {
+		if payload["path"] != nil && payload["file"] != nil {
+			path := payload["path"].(string)
+			file := payload["file"].(multipart.File)
+			filename := payload["filename"].(string)
+			size, _ := strconv.ParseInt(payload["filesizes"].(string), 10, 64)
+
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				err = setting.SshCopyByFile(file, size, 0666, filename, path)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				return helper.CreateResult(true, nil, "")
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+				isDirectory := false
+				SourcePath := path
+				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
+
+				if !strings.Contains(strings.Split(SourcePath, "/")[len(SourcePath)-1], ".") {
+					isDirectory = true
+				}
+
+				if isDirectory {
+					_, emap := h.PutDir(SourcePath, DestPath)
+					if emap != nil {
+						for k, v := range emap {
+							fmt.Sprintf("Error when create %v : %v \n", k, v)
+						}
+					}
+				} else {
+					err := h.Put(SourcePath, DestPath, "", nil)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+				}
+				return helper.CreateResult(true, "", "")
+			}
+		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
+	}
+
+	return helper.CreateResult(false, nil, "")
+}
+
+func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputHtml
+	/*r.Writer.Header().Set("Content-Disposition", "attachment; filename=test.jpg")
+	r.Writer.Header().Set("Content-Type", r.Header.Get("Content-Type"))*/
+
+	// f, err := os.Open("file.csv")
+
+	/*if err != nil {
+		fmt.Println(err.Error())
+	}*/
+
+	server, payload, err := getServer(r, "FORM")
+
+	if err != nil {
+		return ""
+	}
+
+	if server.RecordID() != nil && payload != nil {
+		if payload["path"] != nil {
+			path := payload["path"].(string)
+
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				result, err := setting.SshGetFile(path)
+
+				r.Writer.Header().Set("Content-Disposition", "attachment; filename='"+path[strings.LastIndex(path, DELIMITER)+1:]+"'")
+				r.Writer.Header().Set("Content-Type", r.Writer.Header().Get("Content-Type"))
+				r.Writer.Header().Set("Content-Length", strconv.Itoa(len(result.Bytes())))
+
+				fmt.Printf("============== \n%#v\n", r.Writer)
+
+				io.Copy(r.Writer, bytes.NewReader(result.Bytes()))
+
+				return ""
+			} else if server.ServerType == SERVER_HDFS {
+				//get hdfs file to server.apppath
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+
+				err := h.GetToLocal(path, server.AppPath, "")
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				return helper.CreateResult(true, "", "")
+			}
+		}
+	}
+
+	return ""
+}
+
+func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	server, payload, err := getServer(r, "PAYLOAD")
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if server.RecordID() != nil && payload != nil {
+		if payload["path"] != nil && payload["newname"] != nil {
+			path := payload["path"].(string)
+			newName := payload["newname"].(string)
+			newPath := path[:strings.LastIndex(path, DELIMITER)+1] + newName
+
+			if server.ServerType == SERVER_NODE {
+				setting, err := sshConnect(&server)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+
+				err = sshclient.Rename(setting, path, newPath)
+
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+			} else if server.ServerType == SERVER_HDFS {
+				h := SetHDFSConnection(server.Host, server.SSHUser)
+
+				err := h.Rename(path, newPath)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+			}
+
+		}
+
+		return helper.CreateResult(false, nil, "Please check your param")
+	}
+
+	return helper.CreateResult(false, nil, "")
+}
+
+func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload map[string]interface{}, err error) {
+	if tp == "FORM" {
+		err = r.GetForms(&payload)
+	} else if tp == "PAYLOAD" {
+		err = r.GetPayload(&payload)
+	}
+
+	if err != nil {
+		return
+	}
+
+	if payload["serverId"] == nil {
+		err = errorlib.Error("", "", "getServer", "Please input serverId")
+		return
+	}
+
+	serverId := payload["serverId"].(string)
 	query := dbox.Eq("_id", serverId)
 
 	cursor, err := colonycore.Find(new(colonycore.Server), query)
@@ -500,7 +859,7 @@ func (d *FileBrowserController) UploadHDFS(Server, SourcePath, DestPath string) 
 	return retVal.(error)
 }
 
-func (d *FileBrowserController) Download(Server, SourcePath, DestPath string) error {
+func (d *FileBrowserController) DownloadX(Server, SourcePath, DestPath string) error {
 	h := SetHDFSConnection(Server, USER)
 
 	e := h.GetToLocal(SourcePath, DestPath, "")
@@ -520,7 +879,7 @@ func (d *FileBrowserController) SetPermission(Server, FilePath, Permission strin
 	return e
 }
 
-func (d *FileBrowserController) Rename(Server, FilePath, NewName string) error {
+func (d *FileBrowserController) RenameX(Server, FilePath, NewName string) error {
 	h := SetHDFSConnection(Server, USER)
 
 	e := h.Rename(FilePath, NewName)

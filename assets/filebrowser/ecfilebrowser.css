@@ -34,6 +34,18 @@
 
 }	
 
+.fb-ed-btn-cancel {
+    color: #fff!important;
+    background-color: #d9534f!important;
+    border-color: #d43f3a!important;
+}
+
+.fb-ed-btn-cancel:hover {
+    color: #fff!important;    
+    background-color: #c9302c!important;    
+    border-color: #ac2925!important;
+}
+
 .modal-body{
 	overflow: auto;
 }
@@ -61,6 +73,32 @@
 	color: #777;
 	margin:10px;
 }
+
+.fb-pre .col-md-3 {
+	padding-right: 	0px!important;
+	padding-left: 	0px!important;
+}
+
+.fb-pre .col-md-1 {
+	padding-right: 	0px!important;
+	padding-left: 	0px!important;
+}
+
+.fb-pre .col-md-8 {
+	padding-right: 	0px!important;
+}
+
+.fb-pre .col-md-8 .form-control {
+	border-radius: 4px 0 0 4px;
+	width: 	95%;
+}
+
+.fb-pre .col-md-1 .btn-primary {
+	border-radius: 0 4px 4px 0;
+	margin-left:-37%;
+}
+
+
 
 .dropdown-menu .divider{
 	margin: 3px 0 !important;
