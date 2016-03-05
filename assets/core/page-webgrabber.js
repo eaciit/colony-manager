@@ -216,9 +216,26 @@ wg.scrapperColumns = ko.observableArray([
 	}, locked: true },
 	{ field: "grabconf.calltype", title: "Request Type", width: 150 },
 	{ field: "sourcetype", title: "Source Type", width: 150 },
-	{ field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
-	{ field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
-	{ field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
+	{ title: "Execution setting", template: function (d) {
+		var k = JSON.parse(kendo.stringify(d));
+
+		if($.isEmptyObject(k.intervalconf.cronconf) === true && k.intervalconf.intervaltype == ""){
+			return 'onetime';
+		}
+
+		if($.isEmptyObject(k.intervalconf.cronconf) === false){
+			return 'schedule';
+		}
+
+		if(k.intervalconf.intervaltype != ""){
+			return 'interval';
+		}
+
+		return "invalid setting";
+	}, width: 150 },
+	// { field: "intervalconf.intervaltype", title: "Interval Unit", width: 150 },
+	// { field: "intervalconf.grabinterval", title: "Interval Duration", width: 150 },
+	// { field: "intervalconf.timeoutinterval", title: "Timeout Duration", width: 150 },
 	{ field: "note", title: "NOTE", encoded: false, filterable: false, width: 200 },
 ]);
 wg.historyColumns = ko.observableArray([
@@ -337,8 +354,28 @@ wg.editScrapper = function (_id) {
 
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
-			item.filtercond = {};
-			item["conditionlist"] = [];
+			item.conditionlist = [];
+			for (var k in item.filtercond) {
+				if (item.filtercond.hasOwnProperty(k)) {
+					wg.configSelector.filtercond(k);
+					item.filtercond[k].forEach(function (d) {
+						for (var column in d) {
+							if (d.hasOwnProperty(column)) {
+								for (var valueKey in d[column]) {
+									if (d[column].hasOwnProperty(valueKey)) {
+										item.conditionlist.push(ko.mapping.fromJS({
+											column: column,
+											operator: valueKey,
+											value: d[column][valueKey]
+										}));
+									}
+								}
+							}
+						}
+					});
+				}
+			}
+
 			wg.selectorRowSetting.push(ko.mapping.fromJS(item));
 		});
 
@@ -882,6 +919,12 @@ wg.GetRowSelector = function(index){
 	}
 	wg.selectedItem('');
 };
+wg.DeleteColumnSelector = function(index){
+	if (wg.configScrapper.columnsettings().length > index) {
+		var item = wg.configScrapper.columnsettings()[index];
+		wg.configScrapper.columnsettings.remove(item);
+	}
+};
 wg.saveSelectedElement = function(index){
 	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
@@ -1149,13 +1192,13 @@ wg.changeConnectionID = function (e) {
 			return;
 		}
 
-		if (res.data.Driver != 'mongo') {
-			wg.collectionInput(false);
-			swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
-			return;
-		} else {
-			wg.collectionInput(true);
-		}
+		// if (res.data.Driver != 'mongo') {
+		// 	wg.collectionInput(false);
+		// 	swal({ title: "Connection driver is " + res.data.Driver + ". Currently supported connection driver only \"mongo\"", type: "success" });
+		// 	return;
+		// } else {
+		// 	wg.collectionInput(true);
+		// }
 		
 		wg.configSelector.desttype(res.data.Driver);
 		var connInfo = wg.configSelector.connectioninfo;
@@ -1164,6 +1207,16 @@ wg.changeConnectionID = function (e) {
 		connInfo.database(res.data.Database);
 		connInfo.username(res.data.UserName);
 		connInfo.password(res.data.Password);
+		for (key in res.data.Settings) {
+			if (res.data.Settings.hasOwnProperty(key)) {
+				var val = res.data.Settings[key];
+				if (connInfo.settings.hasOwnProperty(key)) {
+					connInfo.settings[key](val);
+				} else {
+					connInfo.settings[key] = ko.observable(val);
+				}
+			}
+		}
 	});
 
 	return true;

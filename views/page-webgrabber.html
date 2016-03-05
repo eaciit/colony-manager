@@ -442,19 +442,20 @@
 											<tbody data-bind="foreach: columnsettings">
 												<tr>
 													<td>
-														<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
+														<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:80px;" />
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
 													</td>
 													<td>
-														<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
+														<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:80px;"></select>
 														<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
 													</td>
 													<td>
 														<div>
-															<div class="input-group input-group-sm" style="width:130px;">
+															<div class="input-group input-group-sm" style="width:150px;">
 																<input class="form-control input-sm" type="text" required data-required-msg="Selector cannot be empty" placeholder="Type selector here" data-bind="value: selector, attr: { 'name': 'column-selector-value-' + $index() }" />
 																<span class="input-group-btn">
 																	<button class="btn btn-sm btn-info" type="button" data-bind="click:function(){wg.GetRowSelector($index())}"><span class="glyphicon glyphicon-search"></span></button>
+																	<button class="btn btn-sm btn-danger" type="button" data-bind="click:function(){wg.DeleteColumnSelector($index())}"><span class="fa fa-trash"></span></button>
 																</span>
 															</div>
 															<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-value-' + $index() }"></span>
@@ -473,7 +474,7 @@
 		    							<div class="row">
 			    							<label class="col-md-4 filter-label">Filter Cond.</label>
 				    						<div class="col-md-6">
-				    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: filtercond, dataValueField: 'Id', dataTextField: 'Title', optionLabel: 'Select one'}"></select>
+				    							<select data-bind="kendoDropDownList: { data: wg.templateFilterCond, value: filtercond, dataValueField: 'Id', dataTextField: 'Title', optionLabel: 'Select one'}" style="width: 100px;"></select>
 				    							<button class="btn btn-sm btn-primary" data-bind="visible: filtercond() != '', click: wg.addFilterCondition"><span class="glyphicon glyphicon-plus"></span></button>
 				    						</div>
 				    						<div class="clearfix"></div>
@@ -516,7 +517,7 @@
 				    					</div>
 			    						<div class="row">
 			    							<label class="col-md-4 filter-label">Destination Type</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<select style="width: 100%;" required data-required-msg="Destination type cannot be empty" data-bind="kendoDropDownList: { data: wg.templatedesttype, value: destoutputtype}" name="desttype"></select>
 												<span class="k-invalid-msg" for="desttype"></span>
 				    						</div>
@@ -524,7 +525,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
 			    							<label class="col-md-4 filter-label">Connection ID</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<select style="width: 100%;" name="ConnectionId" required data-required-msg="Connection cannot be empty" data-bind="kendoComboBox: { data: wg.connectionListData, dataValueField: '_id', dataTextField: '_id', placeholder: 'Type something here', filter: 'contains', suggest: true, minLength: 2, value: wg.configSelector.connectioninfo.connectionid, change: wg.changeConnectionID }"></select>
 												<span class="k-invalid-msg" for="ConnectionId"></span>
 				    						</div>
@@ -532,7 +533,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
 			    							<label class="col-md-4 filter-label">Database</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" readonly="read" class="form-control input-sm full-width" name="Database" placeholder="Type Database here" data-bind="value: connectioninfo.database"/>
 												<span class="k-invalid-msg" data-for="Database"></span>
 				    						</div>
@@ -540,7 +541,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'database'">
 			    							<label class="col-md-4 filter-label">Collection</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" class="form-control input-sm full-width" name="Collection" placeholder="Type Collection here" data-bind="value: connectioninfo.collection"/>
 												<span class="k-invalid-msg" data-for="Collection"></span>
 				    						</div>
@@ -548,7 +549,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">File Name</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" class="form-control input-sm full-width" name="FileName" placeholder="Type filename here" data-bind="value: connectioninfo.settings.filename"/>
 												<span class="k-invalid-msg" data-for="FileName"></span>
 				    						</div>
@@ -556,7 +557,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">Use Header</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<select style="width: 100%;" name="UseHeader" required data-required-msg="Use header cannot be empty" data-bind="kendoDropDownList: { data: wg.useHeaderOptions, dataValueField: 'value', dataTextField: 'title', value: wg.configSelector.connectioninfo.settings.useheader }"></select>
 												<span class="k-invalid-msg" data-for="UseHeader"></span>
 				    						</div>
@@ -564,7 +565,7 @@
 			    						</div>
 			    						<div class="row" data-bind="visible: destoutputtype() == 'csv'">
 			    							<label class="col-md-4 filter-label">Delimiter</label>
-				    						<div class="col-md-6">
+				    						<div class="col-md-8">
 				    							<input required type="text" class="form-control input-sm full-width" name="Delimiter" placeholder="Type delimiter here" data-bind="value: connectioninfo.settings.delimiter"/>
 												<span class="k-invalid-msg" data-for="Delimiter"></span>
 				    						</div>

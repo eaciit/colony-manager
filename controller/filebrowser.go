@@ -623,7 +623,7 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 		fmt.Println(err.Error())
 	}*/
 
-	server, payload, err := getServer(r, "PAYLOAD")
+	server, payload, err := getServer(r, "FORM")
 
 	if err != nil {
 		return ""
