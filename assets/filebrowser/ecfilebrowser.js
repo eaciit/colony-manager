@@ -647,6 +647,20 @@ var methodsFB = {
 
         return false;
 	},
+	HandleError: function (res) {
+		console.log(res);
+		if (!res.success) {
+    		if (typeof sweetAlert !== "undefined") {
+				sweetAlert("Oops...", res.message, "error");
+    		} else {
+    			alert("ERROR: " + res.message);
+    		}
+
+    		return false;
+    	}
+
+    	return true;
+	},
 	SendActionRequest:function(elem,param){
 		param.serverId = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
 		
@@ -680,6 +694,7 @@ var methodsFB = {
                 data : JSON.stringify(param),
                 contentType: contentType,
                 success : function(res) {
+                	methodsFB.HandleError(res);
                 	var divtree = $($(elem).find(".fb-pre")[0]);
                 	divtree.removeAttr("style");
                 	divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
@@ -740,6 +755,7 @@ var methodsFB = {
                 data : data,
                 contentType: contentType,
                 success : function(res) {
+                	methodsFB.HandleError(res);
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
 					options.serverSource.data = res.data;
 					$(elem).data("ecFileBrowser", options);

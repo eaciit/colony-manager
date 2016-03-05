@@ -21,7 +21,7 @@ srv.templateConfigServer = {
 };
 srv.templatetypeServer = ko.observableArray([
 	{ value: "node", text: "Node Server" },
-	{ value: "hadoop", text: "Hadoop Server" }
+	{ value: "hdfs", text: "Hadoop Server" }
 ]);
 srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
