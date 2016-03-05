@@ -33,7 +33,7 @@ This is what we do!
 | 26 | ✔ | Data Browser | prepare example to show serialized data from example on data source, from both mongo and json |
 | 25 | ✔ | Application | show error when path is invalid |
 | 24 | ✔ | Application | add command and variable (both key-valued-pair), later this will be used to control the application |
-| 23 | | Application | prepare sample app to test accessing data from example on data source |
+| 23 | ✔ | Application | prepare sample app to test accessing data from example on data source |
 | 22 | | Application | can upload app in zip/gz/tar.gz/tar |
 | 21 | ✔ | Server | connect to hadoop server |
 | 20 | ✔ | Server | fix bug on add wizard add IP |
