@@ -357,6 +357,7 @@ wg.editScrapper = function (_id) {
 			item.conditionlist = [];
 			for (var k in item.filtercond) {
 				if (item.filtercond.hasOwnProperty(k)) {
+					wg.configSelector.filtercond(k);
 					item.filtercond[k].forEach(function (d) {
 						for (var column in d) {
 							if (d.hasOwnProperty(column)) {
