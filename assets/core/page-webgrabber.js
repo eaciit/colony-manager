@@ -919,6 +919,12 @@ wg.GetRowSelector = function(index){
 	}
 	wg.selectedItem('');
 };
+wg.DeleteColumnSelector = function(index){
+	if (wg.configScrapper.columnsettings().length > index) {
+		var item = wg.configScrapper.columnsettings()[index];
+		wg.configScrapper.columnsettings.remove(item);
+	}
+};
 wg.saveSelectedElement = function(index){
 	app.resetValidation(".form-row-selector");
 	if (wg.modeSelector() === 'editElementSelector'){
