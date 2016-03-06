@@ -73,32 +73,77 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// if payload.QueryText != "" {
-	// 	payload.TableNames = ""
-	// }
-	_, _, err := d.connToDatabase(payload.ConnectionID)
+	ctx, _, err := d.connToDatabase(payload.ConnectionID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// var dataQuery dbox.IQuery
-	for _, v := range payload.MetaData {
-		if v.Aggregate != "" {
-			result := toolkit.M{}
-			toolkit.UnjsonFromString(v.Aggregate, &result)
-			if sum := result.Get("sum").(string); sum == "" {
-				toolkit.Println("masuk")
-			}
+	if payload.HasAggr {
+		payload, err = d.hasAggr(ctx, payload)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
-	// query := d.parseQuery(conn, *payload, datacon)
-	// toolkit.Println(toolkit.JsonString(query))
 
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, payload, "")
+}
+
+func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.DataBrowser) (*colonycore.DataBrowser, error) {
+	for _, v := range data.MetaData {
+		var query dbox.IQuery
+		query = ctx.NewQuery().From(data.TableNames)
+		if v.Aggregate != "" {
+			result := toolkit.M{}
+			toolkit.UnjsonFromString(v.Aggregate, &result)
+
+			if result != nil {
+				toolkit.Println("field", v.Field)
+				if _, sumOK := result["SUM"]; sumOK {
+					query = query.Aggr(dbox.AggrSum, v.Field, "SUM")
+				}
+				if _, avgOK := result["AVG"]; avgOK {
+					query = query.Aggr(dbox.AggrAvr, v.Field, "AVG")
+				}
+				if _, maxOK := result["MAX"]; maxOK {
+					query = query.Aggr(dbox.AggrMax, v.Field, "MAX")
+				}
+				if _, minOK := result["MIN"]; minOK {
+					query = query.Aggr(dbox.AggrMin, v.Field, "MIN")
+				}
+				if _, meanOK := result["MEAN"]; meanOK {
+					query = query.Aggr(dbox.AggrMean, v.Field, "MEAN")
+				}
+				if _, medianOK := result["MEDIAN"]; medianOK {
+					query = query.Aggr(dbox.AggrMed, v.Field, "MEDIAN")
+				}
+
+				csr, e := query.Cursor(nil)
+				if e != nil {
+					return nil, e
+				}
+				defer csr.Close()
+
+				cursor := []toolkit.M{}
+				e = csr.Fetch(&cursor, 0, false)
+				if e != nil {
+					return nil, e
+				}
+				toolkit.Printf("field:%v result:%v metadata:%v\n", v.Field, result, cursor)
+				var aggString string
+				for _, agg := range cursor {
+					aggString = toolkit.JsonString(agg)
+				}
+
+				v.Aggregate = aggString
+			}
+		}
+	}
+
+	return data, nil
 }
 
 func (d *DataBrowserController) DeleteBrowser(r *knot.WebContext) interface{} {
