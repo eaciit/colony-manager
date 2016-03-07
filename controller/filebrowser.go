@@ -646,7 +646,7 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 				r.Writer.Header().Set("Content-Type", r.Writer.Header().Get("Content-Type"))
 				r.Writer.Header().Set("Content-Length", strconv.Itoa(len(result.Bytes())))
 
-				fmt.Printf("============== \n%#v\n", r.Writer)
+				// fmt.Printf("============== \n%#v\n", r.Writer)
 
 				io.Copy(r.Writer, bytes.NewReader(result.Bytes()))
 
