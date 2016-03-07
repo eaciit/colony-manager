@@ -71,9 +71,9 @@ var methodsDataBrowser = {
 		$(element).html("");
 		var $o = $(element), settingFilter = {}, widthfilter = 0, dataSimple= [], dataAdvance= [];
 
-		$divFilterSimple = $('<div class="ecdatabrowser-filtersimple"></div>');
+		$divFilterSimple = $('<div class="col-md-12 ecdatabrowser-filtersimple"></div>');
 		$divFilterSimple.appendTo($o);
-		$divFilterAdvance = $('<div class="ecdatabrowser-filteradvance"></div>');
+		$divFilterAdvance = $('<div class="col-md-12 ecdatabrowser-filteradvance"></div>');
 		$divFilterAdvance.appendTo($o);
 		for (var key in options.metadata){
 			settingFilter = $.extend({}, Setting_ColumnGridDB, options.metadata[key] || {});
@@ -102,7 +102,7 @@ var methodsDataBrowser = {
 		$(element).data("ecDataBrowser").dataSimple = dataSimple;
 		$(element).data("ecDataBrowser").dataAdvance = dataAdvance;
 
-		$divContainerGrid = $('<div class="ecdatabrowser-gridview"></div>');
+		$divContainerGrid = $('<div class="col-md-12 ecdatabrowser-gridview"></div>');
 		$divContainerGrid.appendTo($o);
 
 		$divGrid = $('<div class="ecdatabrowser-grid"></div>');
@@ -140,19 +140,20 @@ var methodsDataBrowser = {
 		}
 	},
 	createGrid: function(element, options, id){
-		var colums = [], format="", aggr= "", footerText = "";
+		var colums = [], format="", aggr= {}, footerText = "";
 		for(var key in options.metadata){
 			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
 			} else {
 				format = "";
 			}
-			aggr = options.metadata[key].Aggregate.split(",");
-			// footerText = "";
-			// for (var i in aggr){
-			// 	if (aggr[i] != '')
-			// 		footerText += aggr[i] + ' : ' + 50;
-			// }
+			aggr = JSON.parse("{\"avg\":\"220000.0000\",\"sum\":\"1100000\"}");
+			// if (options.metadata[key].Aggregate != '')
+			// 	aggr = JSON.parse(options.metadata[key].Aggregate);
+			footerText = "";
+			$.each( aggr, function( key, value ) {
+				footerText+= key + ' : ' + value + '<br/>';
+			});
 			if (options.metadata[key].HiddenField != true){
 				var column = {
 					field: options.metadata[key].Field,
@@ -172,18 +173,18 @@ var methodsDataBrowser = {
 			}
 		}
 
-		colums = Lazy(colums).map(function (e, i) {
-			if (colums.length > 5) {
-				e.width = 150;
+		// colums = Lazy(colums).map(function (e, i) {
+		// 	if (colums.length > 5) {
+		// 		e.width = 150;
 
-				if (i == 0) {
-					e.width = 200;
-					e.locked = true;
-				}
-			}
+		// 		if (i == 0) {
+		// 			e.width = 200;
+		// 			e.locked = true;
+		// 		}
+		// 	}
 
-			return e;
-		}).toArray();
+		// 	return e;
+		// }).toArray();
 
 		$divElementGrid = $('<div idfilter="gridFilterBrowser"></div>');
 		$divElementGrid.appendTo(element);
@@ -219,7 +220,7 @@ var methodsDataBrowser = {
 	                pageSize: options.dataSource.pageSize,
 	                serverPaging: options.dataSource.serverPaging, // enable server paging
 	                serverSorting: options.dataSource.serverSorting,
-					serverFiltering: true,
+					// serverFiltering: true,
 				},
 				sortable: true,
 	            pageable: true,
