@@ -669,7 +669,7 @@ var methodsFB = {
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
-
+		app.isLoading(true);
 		if (param.action == "Download") {
 			var arr = [];
 			for (var k in param) {
@@ -679,6 +679,7 @@ var methodsFB = {
 			}
 			var url = [url.split('#')[0], arr.join("&")].join("?");
 			document.location.href = url;
+			setTimeout(function(){ app.isLoading(false); },5000);
 		} else if (param.action == "Upload") {
 			param.url = url;
 			methodsFB.UploadAjax(elem,param);
@@ -686,7 +687,6 @@ var methodsFB = {
 		if (ds.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		app.isLoading(true);
 		 $.ajax({
                 url: url,
                 type: call,
