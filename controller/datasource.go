@@ -630,6 +630,10 @@ func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Co
 	} else {
 		dataAll := []toolkit.M{}
 		err = cursor.Fetch(&dataAll, 1, false)
+		if err != nil {
+			return false, []*colonycore.FieldInfo{}, errors.New("No data found")
+		}
+
 		if len(dataAll) > 0 {
 			data = dataAll[0]
 		}
