@@ -132,7 +132,7 @@ var methodsFB = {
 	                	$strtree.find("span").each(function(){
 							if($(this).html()!=""){
 								if($($(this).find("span")).length==0){
-									var type = methodsFB.DetectType(this,$(this).html());
+									var type = methodsFB.DetectType(this,$(this).html(),elem);
 									var sp = "<span class='k-sprite "+type+"'></span>";
 									$sp = $(sp);
 									$sp.prependTo($(this));
@@ -351,7 +351,7 @@ var methodsFB = {
 		$btn.unbind("click");
 		$body.html("");
 		var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
-		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
@@ -527,7 +527,7 @@ var methodsFB = {
 		if(content.action!="Search"){
 			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
 			permiss = $($($(elem).find(".k-state-selected")).find("a")).attr("permission");
-			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 		}
 
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
@@ -648,7 +648,6 @@ var methodsFB = {
         return false;
 	},
 	HandleError: function (res) {
-		console.log(res);
 		if (!res.success) {
     		if (typeof sweetAlert !== "undefined") {
 				sweetAlert("Oops...", res.message, "error");
@@ -785,11 +784,14 @@ var methodsFB = {
 			},
         });
 	},
-	DetectType:function(elem,name){
+	DetectType:function(elem,name,elemmain){
 		name = name.toLowerCase();
 		var childcount = $(elem).prev("span").length
+		var tree = $($(elemmain).find(".k-treeview")).getKendoTreeView();
+		$li = $(elem).closest("li");
+		var isdir = tree.dataItem($li).isdir;
 
-		if (childcount > 0){
+		if (childcount > 0||isdir){
 			return "folder"
 		}else if (name.indexOf(".pdf")>-1){
 			return "pdf"
