@@ -140,7 +140,7 @@ var methodsDataBrowser = {
 		}
 	},
 	createGrid: function(element, options, id){
-		var colums = [], format="", aggr= {}, footerText = "";
+		var colums = [], format="", aggr= {}, footerText = "", column = {};
 		for(var key in options.metadata){
 			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
@@ -155,20 +155,42 @@ var methodsDataBrowser = {
 				footerText+= key + ' : ' + value + '<br/>';
 			});
 			if (options.metadata[key].HiddenField != true){
-				var column = {
-					field: options.metadata[key].Field,
-					title: options.metadata[key].Label,
-					format: format,
-					sortable: options.metadata[key].Sortable,
-					attributes: {
-						style: "text-align: "+options.metadata[key].Align+";",
-					},
-					headerAttributes: {
-						style: "text-align: "+options.metadata[key].Align+";",
-					},
-					aggregates: aggr,
-					footerTemplate: footerText,
-				};
+				if (options.metadata[key].DataType.toLowerCase() == 'date'){
+					if (options.metadata[key].Format != '')
+						format = "moment(Date.parse("+options.metadata[key].Field+")).format('"+options.metadata[key].Format.toUpperCase()+"')";
+					else 
+						format = options.metadata[key].Field;
+					column = {
+						field: options.metadata[key].Field,
+						title: options.metadata[key].Label,
+						// format: format,
+						sortable: options.metadata[key].Sortable,
+						attributes: {
+							style: "text-align: "+options.metadata[key].Align+";",
+						},
+						headerAttributes: {
+							style: "text-align: "+options.metadata[key].Align+";",
+						},
+						aggregates: aggr,
+						footerTemplate: footerText,
+						template: "#:"+format+"#",
+					};
+				} else {
+					column = {
+						field: options.metadata[key].Field,
+						title: options.metadata[key].Label,
+						format: format,
+						sortable: options.metadata[key].Sortable,
+						attributes: {
+							style: "text-align: "+options.metadata[key].Align+";",
+						},
+						headerAttributes: {
+							style: "text-align: "+options.metadata[key].Align+";",
+						},
+						aggregates: aggr,
+						footerTemplate: footerText,
+					};
+				}
 				colums.push(column);
 			}
 		}
