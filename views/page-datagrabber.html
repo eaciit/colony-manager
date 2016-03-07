@@ -90,7 +90,7 @@
 							<div class="form-group">
 					        	<label class="col-md-2 filter-label">ID</label>
 					        	<div class="col-md-3">
-					        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
+					        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
 									<span class="k-invalid-msg" data-for="ID"></span>
 					        	</div>
 
