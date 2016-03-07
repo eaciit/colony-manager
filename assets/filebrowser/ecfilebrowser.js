@@ -109,7 +109,7 @@ var methodsFB = {
 				app.isLoading(true);
 		});
 
-		strtree = "<div></div>"
+		strtree = "<div class='fb-tree'></div>"
 		$strtree = $(strtree);
 		$strtree.appendTo($strpre);
 		var ds = options.dataSource;
