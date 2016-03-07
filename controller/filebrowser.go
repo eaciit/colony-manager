@@ -160,7 +160,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				}
 			}
 		} else if server.ServerType == SERVER_HDFS {
-			h := SetHDFSConnection(server.Host, server.SSHUser)
+			h := setHDFSConnection(server.Host, server.SSHUser)
 
 			//check whether SourcePath type is directory or file
 			if path == "" {
@@ -219,7 +219,7 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, result, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				err := h.GetToLocal(path, server.AppPath, "")
 				if err != nil {
@@ -279,7 +279,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 				isDirectory := false
 				SourcePath := path
 				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
@@ -335,7 +335,7 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				//create file on local
 				tempPath := strings.Replace(os.Getenv(server.AppPath)+"/", "//", "/", -1)
@@ -396,7 +396,7 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				//create new directory on hdfs
 				err = h.MakeDir(path, "")
@@ -438,7 +438,7 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				errs := h.Delete(true, path)
 				if errs != nil {
@@ -485,7 +485,7 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				err := h.SetPermission(path, permission)
 				if err != nil {
@@ -523,9 +523,6 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 	payload["serverId"] = s["serverId"][0]
 	payload["filename"] = s["filename"][0]
 	payload["filesizes"] = s["filesizes"][0]
-
-	/*fmt.Printf("s =========> %#v\n", s)
-	fmt.Printf("h =========> %#v\n", h)*/
 
 	serverId := payload["serverId"].(string)
 	query := dbox.Eq("_id", serverId)
@@ -580,7 +577,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 				isDirectory := false
 				SourcePath := path
 				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
@@ -614,15 +611,6 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputHtml
-	/*r.Writer.Header().Set("Content-Disposition", "attachment; filename=test.jpg")
-	r.Writer.Header().Set("Content-Type", r.Header.Get("Content-Type"))*/
-
-	// f, err := os.Open("file.csv")
-
-	/*if err != nil {
-		fmt.Println(err.Error())
-	}*/
-
 	server, payload, err := getServer(r, "FORM")
 
 	if err != nil {
@@ -646,14 +634,12 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 				r.Writer.Header().Set("Content-Type", r.Writer.Header().Get("Content-Type"))
 				r.Writer.Header().Set("Content-Length", strconv.Itoa(len(result.Bytes())))
 
-				fmt.Printf("============== \n%#v\n", r.Writer)
-
 				io.Copy(r.Writer, bytes.NewReader(result.Bytes()))
 
 				return ""
 			} else if server.ServerType == SERVER_HDFS {
 				//get hdfs file to server.apppath
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				err := h.GetToLocal(path, server.AppPath, "")
 				if err != nil {
@@ -694,7 +680,7 @@ func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 			} else if server.ServerType == SERVER_HDFS {
-				h := SetHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				err := h.Rename(path, newPath)
 				if err != nil {
@@ -766,7 +752,7 @@ func sshConnect(payload *colonycore.Server) (sshclient.SshSetting, error) {
 	return client, err
 }
 
-func SetHDFSConnection(Server, User string) *WebHdfs {
+func setHDFSConnection(Server, User string) *WebHdfs {
 	h, err := NewWebHdfs(NewHdfsConfig("http://192.168.0.223:50070", "hdfs"))
 	if err != nil {
 		fmt.Println(err.Error())
@@ -774,117 +760,4 @@ func SetHDFSConnection(Server, User string) *WebHdfs {
 	h.Config.TimeOut = 2 * time.Millisecond
 	h.Config.PoolSize = 100
 	return h
-}
-
-func (d *FileBrowserController) CreateNewFile(Server, FilePath, FileName string) error {
-	var e error
-	h := SetHDFSConnection(Server, USER)
-
-	//create file on local
-	tempPath := os.Getenv("HOME")
-
-	if tempPath == "" {
-		fmt.Println("No Home Directory")
-	}
-
-	file, e := os.Create(tempPath + "/" + FileName)
-	if e != nil {
-		fmt.Println(e)
-	}
-	defer file.Close()
-
-	//put new file to hdfs
-	e = h.Put(tempPath+"/"+FileName, FilePath+"/"+FileName, "", nil)
-	if e != nil {
-		fmt.Println(e)
-	}
-
-	//remove file on local
-	e = os.Remove(tempPath + "/" + FileName)
-	if e != nil {
-		fmt.Println(e)
-	}
-	return e
-}
-
-func (d *FileBrowserController) CreateNewDirectory(Server, DirPath, Permission string) error {
-	var e error
-	h := SetHDFSConnection(Server, USER)
-
-	//create new directory on hdfs
-	e = h.MakeDir(DirPath, Permission)
-	if e != nil {
-		fmt.Println(e)
-	}
-
-	return e
-}
-
-func (d *FileBrowserController) List(Server, DirPath string) (*HdfsData, error) {
-	var e error
-	h := SetHDFSConnection(Server, USER)
-
-	//check whether SourcePath type is directory or file
-	res, e := h.List(DirPath)
-	if e != nil {
-		fmt.Println(e)
-	}
-	return res, e
-}
-
-func (d *FileBrowserController) UploadHDFS(Server, SourcePath, DestPath string) error {
-	var retVal interface{}
-	h := SetHDFSConnection(Server, USER)
-	isDirectory := false
-
-	if !strings.Contains(strings.Split(SourcePath, "/")[len(SourcePath)-1], ".") {
-		isDirectory = true
-	}
-
-	if isDirectory {
-		_, emap := h.PutDir(SourcePath, DestPath)
-		if emap != nil {
-			for k, v := range emap {
-				fmt.Sprintf("Error when create %v : %v \n", k, v)
-			}
-		}
-		retVal = emap
-	} else {
-		e := h.Put(SourcePath, DestPath, "", nil)
-		if e != nil {
-			fmt.Println(e)
-		}
-		retVal = e
-	}
-	return retVal.(error)
-}
-
-func (d *FileBrowserController) DownloadX(Server, SourcePath, DestPath string) error {
-	h := SetHDFSConnection(Server, USER)
-
-	e := h.GetToLocal(SourcePath, DestPath, "")
-	if e != nil {
-		fmt.Println(e)
-	}
-	return e
-}
-
-func (d *FileBrowserController) SetPermission(Server, FilePath, Permission string) error {
-	h := SetHDFSConnection(Server, USER)
-
-	e := h.SetPermission(FilePath, Permission)
-	if e != nil {
-		fmt.Println(e)
-	}
-	return e
-}
-
-func (d *FileBrowserController) RenameX(Server, FilePath, NewName string) error {
-	h := SetHDFSConnection(Server, USER)
-
-	e := h.Rename(FilePath, NewName)
-	if e != nil {
-		fmt.Println(e)
-	}
-	return e
 }
