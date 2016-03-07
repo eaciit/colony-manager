@@ -177,15 +177,10 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 	defer cursor.Close()
 
 	dataFetch := []toolkit.M{}
-	if datacon.Driver == "mongo" {
-		result := toolkit.M{}
-		err = cursor.Fetch(&result, 1, false)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		dataFetch = append(dataFetch, result)
-	} else {
-		err = cursor.Fetch(&dataFetch, 1, false)
+	err = cursor.Fetch(&dataFetch, 1, false)
+	if err != nil {
+		cursor.ResetFetch()
+		err = cursor.Fetch(&dataFetch, 0, false)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
