@@ -254,7 +254,7 @@ dg.getDataSourceData = function () {
 	});
 };
 
-dg.doSaveDataGrabber = function (c) {
+dg.doSaveDataGrabberWizard = function (c) {
 	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
 		if (!app.isFine(res)){
 			return;
@@ -271,7 +271,7 @@ dg.SaveDataGrabberWizard = function (){
 		return;
 	}
 	setTimeout (function(){
-		dg.doSaveDataGrabber(function (res) {
+		dg.doSaveDataGrabberWizard(function (res) {
 			if (!app.isFine(res)){
 				return;
 			}

@@ -641,7 +641,7 @@ func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Co
 		return false, nil, err
 	}
 
-	return false, metadata, nil
+	return true, metadata, nil
 }
 
 func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) interface{} {
