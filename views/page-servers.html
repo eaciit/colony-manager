@@ -105,7 +105,7 @@
 	    		<div class="form-group" data-bind="style: { visibility: (srv.isMultiServer() ? 'hidden' : 'visible') }">
 		    		<label class="col-md-3 filter-label">ID</label>
 		    		<div class="col-md-7">
-		    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
 						<span class="k-invalid-msg" data-for="ID"></span>					    			
 		    		</div>
 	    		</div>

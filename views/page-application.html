@@ -114,7 +114,7 @@
 					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">ID</label>
 						    		<div class="col-md-6">
-						    			<input required class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')" placeholder="Type application ID here" />
+						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')" placeholder="Type application ID here" />
 						    			<span class="k-invalid-msg" data-for="ID"></span>
 						    		</div>
 					    		</div>
