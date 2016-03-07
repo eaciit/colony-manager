@@ -538,8 +538,16 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 
 	fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
 	destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
-	if strings.Contains(fileName, ".gz") {
-		return helper.CreateResult(false, nil, "Unsupported format")
+	if strings.Contains(fileName, ".tar.gz") {
+		err = toolkit.TarGzExtract(fileExtract, destinationExtract)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	} else if strings.Contains(fileName, ".gz") {
+		err = toolkit.GzExtract(fileExtract, destinationExtract)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	} else if strings.Contains(fileName, ".tar") {
 		err = toolkit.TarExtract(fileExtract, destinationExtract)
 		if err != nil {
