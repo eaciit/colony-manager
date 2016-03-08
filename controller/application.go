@@ -14,8 +14,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -78,7 +78,7 @@ func createJson(object *colonycore.TreeSource) {
 }
 
 func createTree(i int, path string, isDir bool) error {
-	contentList := strings.Split(path, string(filepath.Separator))
+	contentList := strings.Split(path, toolkit.PathSeparator)
 	content := contentList[len(contentList)-1]
 	var sprite string
 	var text string
@@ -228,159 +228,261 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 	return result, newNameParsed, nil
 }
 
+func (a *ApplicationController) GetServerPathSeparator(server *colonycore.Server) string {
+	if server.ServerType == "windows" {
+		return `\`
+	}
+
+	return `/`
+}
+
 func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	path := filepath.Join(EC_DATA_PATH, "application", "log")
+	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-1504")
+
+	log.AddLog("Get payload", "INFO")
 	payload := struct {
 		ID     string `json:"_id",bson:"_id"`
 		Server string
 	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	log.AddLog("Get application with ID: "+payload.ID, "INFO")
 	app := new(colonycore.Application)
 	err = colonycore.Get(app, payload.ID)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	log.AddLog("Get server with ID: "+payload.Server, "INFO")
 	server := new(colonycore.Server)
 	err = colonycore.Get(server, payload.Server)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	serverPathSeparator := a.GetServerPathSeparator(server)
+
+	changeDeploymentStatus := func(status bool) {
+		deployedTo := []string{}
+		for _, each := range app.DeployedTo {
+			if each != server.ID {
+				deployedTo = append(deployedTo, server.ID)
+			}
+		}
+
+		if status {
+			app.DeployedTo = append(deployedTo, server.ID)
+		}
+		colonycore.Save(app)
+	}
+
+	server.CmdExtract = "unzip"
+	log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
-
 	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
-		return helper.CreateResult(false, nil, "Need to install unzip on the server!")
+		log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
 	}
-	defer sshClient.Close()
 
-	serverPathSeparator := `/`
-	if server.OS == "windows" {
-		serverPathSeparator = `\`
-	}
+	defer sshClient.Close()
 
 	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
 	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
 	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
-    sourceZipPath :=""
-    extractCmd:=""
-	if(strings.Contains(server.CmdExtract, "tar")){
+	var sourceZipPath string
+	var unzipCmd string
+	var destinationZipPath string
+
+	if strings.Contains(server.CmdExtract, "tar") {
 		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
-		extractCmd =server.CmdExtract+" "+destinationZipPathOutput+".tar -C "+destinationPath+"/"+app.ID
+		destinationZipPath = fmt.Sprintf("%s.tar", destinationZipPathOutput)
+		unzipCmd = fmt.Sprintf("tar -xvf %s -C %s", destinationZipPath, destinationZipPathOutput)
+		log.AddLog(unzipCmd, "INFO")
 		err = toolkit.TarCompress(sourcePath, sourceZipPath)
 		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
 			return helper.CreateResult(false, nil, err.Error())
 		}
-	}else if(strings.Contains(server.CmdExtract, "zip")){
+		// } else if strings.Contains(server.CmdExtract, "zip") {
+		// 	sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+		// 	err = toolkit.GzExtract(sourcePath, sourceZipPath)
+		// 	// extractCmd = server.CmdExtract + " " + destinationPath + ".zip -d " + destinationZipPathOutput
+		// 	if err != nil {
+		// 		return helper.CreateResult(false, nil, err.Error())
+		// 	}
+	} else if strings.Contains(server.CmdExtract, "zip") {
 		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-		toolkit.ZipCompress(sourcePath)
-		extractCmd =server.CmdExtract+" "+destinationPath+"/"+app.ID+".zip -d "+destinationPath
-		// if err != nil {
-		// 	return helper.CreateResult(false, nil, err.Error())
-		// }		
-	}else if(strings.Contains(server.CmdExtract, "zip")){
-
+		destinationZipPath = fmt.Sprintf("%s.zip", destinationZipPathOutput)
+		unzipCmd = fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+		log.AddLog(unzipCmd, "INFO")
+		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
 	}
-	
-	installerFile := ""
-	filepath.Walk(sourcePath, func(path string, f os.FileInfo, err error) error {
-		if installerFile != "" {
-			return nil
+
+	getPIDofPrevProccessCmd := fmt.Sprintf("lsof -i:%s -t", app.Port)
+	log.AddLog(getPIDofPrevProccessCmd, "INFO")
+	pid, err := sshSetting.GetOutputCommandSsh(getPIDofPrevProccessCmd)
+	pid = strings.TrimSpace(pid)
+	if err != nil || strings.TrimSpace(pid) == "" {
+		log.AddLog("Can't get PID of sedotand", "ERROR")
+	}
+
+	if pid != "" {
+		log.AddLog("PID of sedotand: "+pid, "SUCCESS")
+
+		killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
+		log.AddLog(killProcessCmd, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
 		}
+	}
 
-		comps := strings.Split(path, toolkit.PathSeparator)
-		filename := comps[len(comps)-1]
-		if server.OS == "linux" {
-			if strings.Contains(filename, ".sh") {
-				installerFile = filename
-			}
-		} else if server.OS == "windows" {
-			if strings.Contains(filename, ".bat") {
-				installerFile = filename
-			} else if strings.Contains(filename, ".exe") {
-				installerFile = filename
-			}
-		}
-
-		if installerFile != "" {
-			installerFile = strings.Replace(installerFile, sourcePath+toolkit.PathSeparator, "", -1)
-		}
-
-		return nil
-	 })
-
-	fmt.Println(destinationPath)	
-
-	// rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
-	// fmt.Println()
-	// _, err = sshSetting.RunCommandSsh(rmCmdZip)
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
+	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
+	log.AddLog(rmCmdZip, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(rmCmdZip)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
-	fmt.Println(sourceZipPath+" - "+destinationPath)
+	log.AddLog(fmt.Sprintf("scp from %s to %s", sourceZipPath, destinationPath), "INFO")
+
+	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+	log.AddLog(rmCmdZipOutput, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(rmCmdZipOutput)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
-	// _, err = sshSetting.RunCommandSsh(rmCmdZipOutput)
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
-
-	createExtractDir := "sudo mkdir "+destinationPath+"/"+app.ID
-	perExtractDire := "sudo chmod -R 777 "+destinationPath+"/"+app.ID
-	fmt.Println(createExtractDir,perExtractDire,extractCmd)
-	_, err = sshSetting.RunCommandSsh([]string{createExtractDir,perExtractDire,extractCmd}...)
+	mkdirDestCmd := fmt.Sprintf("mkdir %s%s%s", destinationPath, serverPathSeparator, app.ID)
+	log.AddLog(mkdirDestCmd, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(mkdirDestCmd)
 	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
+	log.AddLog(chmodDestCmd, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	log.AddLog(unzipCmd, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = os.Remove(sourceZipPath)
+	log.AddLog(fmt.Sprintf("remove %s", sourceZipPath), "INFO")
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	findCommand := fmt.Sprintf(`find %s -name "*install.sh"`, destinationZipPathOutput)
+	log.AddLog(findCommand, "INFO")
+	installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
+	installerPath = strings.TrimSpace(installerPath)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if installerPath == "" {
+		errString := "installer not found"
+		log.AddLog(errString, "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, errString)
+	}
+
+	chmodCommand := fmt.Sprintf("chmod 755 %s", installerPath)
+	log.AddLog(chmodCommand, "INFO")
+	_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	installerBasePath, installerFile := func(path string) (string, string) {
+		comps := strings.Split(path, serverPathSeparator)
+		ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
+		ilf := comps[len(comps)-1]
+
+		return ibp, ilf
+	}(installerPath)
+
+	cRunCommand := make(chan string, 1)
+	go func() {
+		runCommand := fmt.Sprintf("cd %s && ./%s &", installerBasePath, installerFile)
+		log.AddLog(runCommand, "INFO")
+		_, err = sshSetting.RunCommandSsh(runCommand)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			cRunCommand <- err.Error()
+		} else {
+			cRunCommand <- ""
+		}
+	}()
+
+	errorMessage := ""
+	select {
+	case receiveRunCommandOutput := <-cRunCommand:
+		errorMessage = receiveRunCommandOutput
+	case <-time.After(time.Second * 3):
+		errorMessage = ""
+	}
+
+	if errorMessage != "" {
+		log.AddLog(errorMessage, "ERROR")
+		changeDeploymentStatus(false)
+		return helper.CreateResult(false, nil, errorMessage)
 	}
 
 	if app.DeployedTo == nil {
 		app.DeployedTo = []string{}
 	}
 
-	app.DeployedTo = append(app.DeployedTo, server.ID)
-	err = colonycore.Save(app)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	// err = os.Remove(sourceZipPath)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	findLocation := strings.Join([]string{destinationZipPathOutput, "*install.sh"}, serverPathSeparator)
-	findCommand := "find " + findLocation
-	chmodCommand := "chmod -R 777 " + findLocation
-	runCommand := ". " + findLocation
-	res, err := sshSetting.RunCommandSsh([]string{findCommand}...)
-
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	} else {
-		if !strings.Contains(string(res), "No such file or directory") {
-			_, err := sshSetting.RunCommandSsh([]string{chmodCommand, runCommand}...)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		}
-	}
+	changeDeploymentStatus(true)
 	return helper.CreateResult(true, nil, "")
 }
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
-	// upload handler
-	//fmt.Printf("-------- %s\n", zipSource)
+	r.Config.OutputType = knot.OutputJson
+
 	err, fileName := helper.UploadHandler(r, "userfile", zipSource)
 
 	if err != nil {
@@ -388,54 +490,77 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	}
 
 	o := new(colonycore.Application)
-	o.ID = r.Request.FormValue("id")
+	o.ID = r.Request.FormValue("_id")
 	o.AppsName = r.Request.FormValue("AppsName")
-	enable, err := strconv.ParseBool(r.Request.FormValue("Enable"))
+	o.Type = r.Request.FormValue("Type")
+	o.Port = r.Request.FormValue("Port")
+
+	var Command, Variable interface{}
+	err = json.Unmarshal([]byte(r.Request.FormValue("Command")), &Command)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	o.Enable = enable
-	o.AppsName = r.Request.FormValue("AppsName")
-	o.Type = r.Request.FormValue("Type")	 
-	var Command,Variable interface{}
-	err = json.Unmarshal([]byte(r.Request.FormValue("Command")), &Command)
-	err = json.Unmarshal([]byte(r.Request.FormValue("Variable")) , &Variable)	
+
+	err = json.Unmarshal([]byte(r.Request.FormValue("Variable")), &Variable)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	o.Command = Command
-	o.Variable = Variable	
+	o.Variable = Variable
 
 	err = colonycore.Delete(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	cursor, err := colonycore.Find(new(colonycore.Application), dbox.Eq("Port", o.Port))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	err = colonycore.Delete(o)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.Application{}
+	err = cursor.Fetch(&data, 0, false)
+	if len(data) > 0 {
+		return helper.CreateResult(false, nil, fmt.Sprintf("Port %s already in use", o.Port))
+	}
+
 	err = colonycore.Save(o)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	fileExtract :=zipSource+"\\"+fileName
-	if(strings.Contains(fileName,".tar.gz")){
-		err = toolkit.GzExtract(fileExtract, zipSource)		
+
+	fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
+	destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
+	if strings.Contains(fileName, ".tar.gz") {
+		err = toolkit.TarGzExtract(fileExtract, destinationExtract)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
-		err = toolkit.TarExtract(zipSource+"\\"+strings.TrimRight(fileName, ".gz"), zipSource+"\\"+o.AppsName)		
+	} else if strings.Contains(fileName, ".gz") {
+		err = toolkit.GzExtract(fileExtract, destinationExtract)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
-		}	
-		os.Remove(zipSource+"\\"+strings.TrimRight(fileName, ".gz"))
-	}else if(strings.Contains(fileName,".tar")){
-		err = toolkit.TarExtract(fileExtract, zipSource+"\\"+o.AppsName)
+		}
+	} else if strings.Contains(fileName, ".tar") {
+		err = toolkit.TarExtract(fileExtract, destinationExtract)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
-		}	
-	}else if(strings.Contains(fileName,".zip")){
-		err = toolkit.ZipExtract(fileExtract, zipSource+"\\"+o.AppsName)		
+		}
+	} else if strings.Contains(fileName, ".zip") {
+		err = toolkit.ZipExtract(fileExtract, destinationExtract)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
-		}	
+		}
 	}
-	
-	os.Remove(zipSource+"/"+fileName)
+
+	os.Remove(filepath.Join(zipSource, fileName))
 	var zipFile string
 	if fileName != "" {
 		zipFile = filepath.Join(zipSource, fileName)
@@ -443,9 +568,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 
 	if zipFile != "" && o.ID != "" {
 		newDirName = o.ID
-		fmt.Println(zipFile)
 		directoryTree, zipName, _ := unzip(zipFile)
-		fmt.Println("test8 ",zipName)
 		createJson(directoryTree)
 
 		o.ZipName = zipName
@@ -461,15 +584,32 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 func (a *ApplicationController) GetApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
+	payload := struct {
+		Search string `json:"search"`
+		Type   string `json:"type"`
+	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	search := payload["search"].(string)
+
+	filters := []*dbox.Filter{}
+	if payload.Search != "" {
+		filters = append(filters, dbox.Or(
+			dbox.Contains("_id", payload.Search),
+			dbox.Contains("AppsName", payload.Search),
+			dbox.Contains("Type", payload.Search),
+			dbox.Contains("Port", payload.Search),
+		))
+	}
+	if payload.Type != "" {
+		filters = append(filters, dbox.Eq("Type", payload.Type))
+	}
 
 	var query *dbox.Filter
-	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("AppsName", search), dbox.Contains("Type", search))
+	if len(filters) > 0 {
+		query = dbox.And(filters...)
+	}
 
 	cursor, err := colonycore.Find(new(colonycore.Application), query)
 	if err != nil {
@@ -693,9 +833,9 @@ func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface
 	pathfolder := payload["Path"].(string)
 	ID := payload["ID"].(string)
 
-	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), string(filepath.Separator))
+	pathlist := strings.Split(filepath.Join(unzipDest, ID, pathfolder), toolkit.PathSeparator)
 	pathlist = append(pathlist[:len(pathlist)-1])
-	path := strings.Join(pathlist, string(filepath.Separator))
+	path := strings.Join(pathlist, toolkit.PathSeparator)
 
 	err = os.Rename(filepath.Join(unzipDest, ID, pathfolder), filepath.Join(path, Filename))
 
@@ -705,5 +845,3 @@ func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface
 
 	return helper.CreateResult(true, err, "")
 }
-
-

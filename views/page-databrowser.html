@@ -1,6 +1,19 @@
 <!-- core -->
+<link href="/res/databrowser/ecdatabrowser.css" rel="stylesheet">
 <script src="/res/core/page-databrowser.js"></script>
 <script src="/res/core/page-databrowserdesign.js"></script>
+<script src="/res/databrowser/eclookup.js"></script>
+<script src="/res/databrowser/ecdatabrowser.js"></script>
+
+<!-- token input -->
+<link href="/res/tokeninput/token-input.css" rel="stylesheet">
+<link href="/res/tokeninput/token-input-facebook.css" rel="stylesheet">
+<script src="/res/tokeninput/jquery.tokeninput.js"></script>
+
+<!-- core -->
+<script src="/res/core/page-databrowserdesign.js"></script>
+<script src="/res/core/page-datasource.js"></script>
+<script src="/res/core/page-databrowser-query.js"></script>
 
 <!-- main -->
 <div class="col-xs-12 col-sm-12" id="content">
@@ -8,26 +21,23 @@
 		<h1>Data Browser</h1>
 		<div data-bind="visible: (br.pageVisible() === '')">
 			<nav class="navbar">
-				<button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.OpenBrowserForm"><span class="glyphicon glyphicon-plus"></span> Add New</button>
-				<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: br.DeleteBrowser"><span class="glyphicon glyphicon-remove"></span> Delete Selected
+				<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.getDataBrowser">
+					<span class="glyphicon glyphicon-refresh"></span> Refresh
+				</button>
+				<button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.OpenBrowserForm">
+					<span class="glyphicon glyphicon-plus"></span> Add
+				</button>
+				<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: br.DeleteBrowser">
+					<span class="glyphicon glyphicon-remove"></span> Delete
 		    	</button>
 			</nav>
-
-			<nav class="navbar">
+			<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 				<div class="col-md-4">
-					<label class="col-md-4 filter-label">
+					<label class="col-md-3 filter-label no-left-padding">
 						Search
 					</label>
 					<div class="col-md-8">
-						<!-- <div class="input-group">
-							<input type="text" class="form-control input-sm" data-bind="value: br.searchfield" placeholder="Type keyword here"><button class="btn btn-sm btn-primary" data-bind="click: br.getDataBrowser" ><span class="glyphicon glyphicon-search"></span> </button>
-						</div> -->
-						<div class="input-group">
-							<input type="text" class="form-control" data-bind="value: br.searchfield" placeholder="Type keyword here">
-							<span class="input-group-btn">
-								<button class="btn btn-primary btn-secondary" data-bind="click: br.getDataBrowser" type="button"><span class="glyphicon glyphicon-search"></span></button>
-							</span>
-						</div>	
+						<input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="value: br.searchfield" placeholder="Type keyword here" />
 					</div>
 				</div>
 			</nav>
@@ -38,10 +48,81 @@
 				<div class="panel-body">
 					<div class="grid grid-databrowser" data-bind="kendoGrid: { dataSource:{ pageSize: 15 }, data: br.dataBrowser, columns: br.browserColumns, change: br.selectBrowser, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser') }"></div>
 				</div>
+				<p class="bg-danger bgcustom">Please click row to edit!</p>
 			</div> 
 		</div>
-		<div data-bind="visible: (br.pageVisible() != '')">
+		<div data-bind="visible: (br.pageVisible() == 'editor')">
 			{{template "page-databrowserdesign.html"}}
+		</div>
+		<div data-bind="visible: (br.pageVisible() == 'view')">
+			<nav class="navbar" >
+				<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: db.backToFront">
+		    		<span class="glyphicon glyphicon-chevron-left"></span> Back to List
+		    	</button>
+		        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.filterDataBrowser">
+		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+		    	</button>
+		        <button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.filterSimple, visible: (br.onVisible() == 'advance')">
+		    		Simple Filter
+		    	</button>
+		    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: br.filterAdvance, visible: (br.onVisible() == 'simple')">
+		    		Advance Filter
+		    	</button>
+			</nav>
+			<div class="panel">
+				<div class="panel-heading">
+					<h1 class="panel-title">Data Browser <span data-bind="text: br.selectedID"></span></h1>
+				</div>
+				<div class="panel-body">
+
+							<div id="grid-databrowser-decription">
+					<form class="form-horizontal" >
+						<div>
+							<!-- <div class="col-md-12">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="col-md-2 databrowser-label">ID</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm" id="filter-id" placeholder="Type ID's Here">
+											<span class="k-invalid-msg" data-for="ID"></span>
+										</div>
+									</div>
+									<div class="form-group" data-bind="visible: (br.onVisible() == 'advance')">
+										<label class="col-md-2 databrowser-label">Date</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm">
+											<span class="k-invalid-msg" data-for="Date"></span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="col-md-3 databrowser-label">Name</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm" placeholder="Type Name's Here">
+											<span class="k-invalid-msg" data-for="Name"></span>
+										</div>
+									</div>
+									<div class="form-group" data-bind="visible: (br.onVisible() == 'advance')">
+										<label class="col-md-3 databrowser-label">Salary</label>
+										<div class="col-md-7">
+											<input type="text" class="form-control input-sm">
+											<span class="k-invalid-msg" data-for="Salary"></span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12">
+									<div class="form-group">
+										<div id="grid-databrowser-decription"></div>
+									</div>
+
+									
+								</div>
+							</div> -->
+						</div>
+					</form>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

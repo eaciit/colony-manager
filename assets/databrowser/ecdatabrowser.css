@@ -1,7 +1,19 @@
-.DB-margin {
-  margin-top: 10px; }
-  
-.DB-margin-left{
-	margin-left: 5px;
-}
+.ecdatabrowser-filter {
+  line-height: 25px;
+  text-align: left; }
+  .ecdatabrowser-filter:after {
+    content: ":";
+    position: absolute;
+    right: 5px; }
+
+.databrowser-query-label {
+  line-height: 25px;
+  text-align: left; }
+
+.ecdatabrowser-filtersimple > div {
+  margin-bottom: 10px; }
+
+.ecdatabrowser-filteradvance > div {
+  margin-bottom: 10px; }
+
 /*# sourceMappingURL=ecdatabrowser.css.map */

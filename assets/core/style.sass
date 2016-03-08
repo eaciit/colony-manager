@@ -240,6 +240,19 @@ table.table
 .lbl
 	margin-left: -12%
 
+.daemon-container
+	position: absolute
+	right: 16px
+	top: 11px
+	z-index: 1
+
+	label
+		margin-right: 5px
+
+	.btn-success,
+	.btn-danger
+		pointer-events: none
+
 .intext
 	width: 100%
 	height: 350px
@@ -272,6 +285,9 @@ table.table
 .col-100
 	width: 100%
 
+.col-44
+	width: 44%
+
 #myTab
 	margin-bottom: 2%
 
@@ -290,7 +306,7 @@ table.table
 	width: 300px
 
 .mgTop5
-	margin-top: 15px
+	margin-top: 5px
 
 .mgTop15
 	margin-top: 15px
@@ -574,6 +590,41 @@ body
 									content: "STOPPED"
 									position: absolute
 									top: 10px
+									right: 0
+									bottom: 0
+									left: 0
+									text-align: center
+									color: white
+
+						&.started
+							td
+								.btn-start
+									display: none
+								.btn-stop
+									display: inherit
+
+								&.scrapper-status
+									background-color: #5CB85C
+
+									span:after
+										content: "STARTED"
+
+				.grid-service-grabber
+					tr
+						td
+							.btn-start
+								display: inherit
+							.btn-stop
+								display: none
+
+							&.scrapper-status
+								background-color: #D9534F
+								position: relative
+
+								span:after
+									content: "STOPPED"
+									position: absolute
+									top: 33px
 									right: 0
 									bottom: 0
 									left: 0

@@ -7,6 +7,43 @@
 <script src="/res/core/page-datasource.js"></script>
 <script src="/res/core/page-datasource-query.js"></script>
 
+<style>
+.k-widget.k-treeview {
+	color: black;
+}
+body {
+	font-size: 12px;
+}
+
+.k-treeview .k-top,
+.k-treeview .k-mid,
+.k-treeview .k-bot {
+	background-image: url('http://aspnet-skins.telerikstatic.com/mvc/2012.2.607/Default/treeview-nodes.png');
+	background-repeat: no-repeat;
+	margin-left: -16px;
+	padding-left: 16px;
+}
+
+.k-treeview .k-item { background-image: url('http://aspnet-skins.telerikstatic.com/mvc/2012.2.607/Default/treeview-line.png'); }
+.k-treeview .k-last { background-image: none; }
+
+
+.k-treeview .k-top { background-position: -91px 0; }
+.k-treeview .k-bot { background-position: -69px -22px; }
+.k-treeview .k-mid { background-position: -47px -44px; }
+.k-treeview .k-last .k-top { background-position: -25px -66px; }
+.k-treeview .k-group .k-last .k-bot { background-position: -69px -22px; }
+
+.k-treeview .k-item {
+	background-repeat: no-repeat;
+}
+
+.k-treeview .k-first {
+	background-repeat: no-repeat;
+	background-position: 0 16px;
+}
+</style>
+
 <!-- sidebar -->
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
@@ -58,7 +95,7 @@
 		    	<h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
+		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -90,17 +127,17 @@
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Connection ID</label>
 				        <div class="col-sm-5">
-				            <input required type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
+				            <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type connection id here" data-bind="value: _id, enable: (ds.connectionListMode() == '')">
 							<span class="k-invalid-msg" data-for="ID"></span>
 				        </div>
 				    </div>
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label">Driver</label>
 				        <div class="col-sm-5">
-				        	<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one' }"></select>
+				        	<select required data-required-msg="Driver cannot be empty" name="driver" class="full-width" data-bind="kendoDropDownList: { data: ds.templateDrivers, dataValueField: 'value', dataTextField: 'text', value: Driver, optionLabel: 'Select one', change: ds.changeDriver }"></select>
 							<span class="k-invalid-msg" data-for="driver"></span>
 				        </div>
-				        <p class="mgTop5">*)isnt working yet</p>
+				        <p class="mgTop5">*) not yet tested</p>
 				    </div>
 				    <div class="form-group">
 				        <label class="col-sm-4 filter-label" data-bind="text: ds.labelForHost"></label>
@@ -155,7 +192,7 @@
 			        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: value" />
 			        					</td>
 			        					<td>
-			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0)">
+			        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0 && deletable)">
 			        							<span class="glyphicon glyphicon-remove" data-bind="click: ds.removeSetting($data)"></span>
 			        						</button>
 			        					</td>
@@ -218,7 +255,7 @@
 		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
+		    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -236,7 +273,7 @@
 						<div class="col-md-6">
 				        	<label class="col-md-4 filter-label">Data Source ID</label>
 				        	<div class="col-md-8">
-				        		<input required type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
+				        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type data source id here" data-bind="value: _id, enable: (ds.dataSourceMode() == '')">
 								<span class="k-invalid-msg" data-for="ID"></span>
 				        	</div>
 				        </div>
@@ -584,8 +621,8 @@
 	</div>
 </div>
 
-<!-- Modal Lookup Data -->
-<div class="modal fade modal-lookup-data" tabindex="-1" role="dialog">
+<!-- Modal Sub/Lookup Data -->
+<div class="modal fade modal-sub-lookup-data" tabindex="-1" role="dialog">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -593,12 +630,11 @@
 					<span aria-hidden="true">&times;</span>
 				</button>
 				<h4 class="modal-title">
-					Lookup Data
-					<span data-bind="text: ds.lokupModalLabel"></span>
+					<span data-bind="text: ds.lookupSubModalLabel"></span>
 				</h4>
 			</div>
 			<div class="modal-body">
-				<div id="grid-lookup-data"></div>
+				<div id="grid-sub-lookup-data"></div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">

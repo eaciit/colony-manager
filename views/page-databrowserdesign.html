@@ -1,101 +1,182 @@
-<!-- core -->
-<!-- <script src="/res/core/page-databrowserdesign.js"></script> -->
-<script src="/res/core/page-datasource.js"></script>
-<script src="/res/core/page-datasource-query.js"></script>
-
 <!-- main area -->
-<div class="col-md-12">
-	<nav class="navbar" >
-        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: br.saveAndBack">
-    		<span class="glyphicon glyphicon-chevron-left"></span> Save and Back to List
-    	</button>
-        <button class="btn btn-sm btn-success navbar-btn" >
-    		<span class="glyphicon glyphicon-plus"></span> Save and Go to View
-    	</button>
-    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: db.backToFront">
-    		<span class="glyphicon glyphicon-remove"></span> Cancel
-    	</button>
-	</nav>
+<nav class="navbar" >
+    <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: function(){db.back('back')}">
+		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	</button>
+	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){db.saveAndBack('nothing')}">
+		<span class="glyphicon glyphicon-save"></span> Save
+	</button>
+	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){db.saveAndBack('goview')}">
+		<span class="glyphicon glyphicon-save"></span> Save and View
+	</button>
+	<!-- <button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: db.backToFront">
+		<span class="glyphicon glyphicon-remove"></span> Cancel
+	</button> -->
+</nav>
 
-	<div class="panel">
-		<div class="panel-heading">
-	        <h1 class="panel-title"><span >Data Browser Design</span>
-	        </h1>
-	    </div>
-		<div class="panel-body">
-	    	<form class="form-horizontal form-databrowserdesign" data-bind="with: db.configDataBrowser" novalidate>
+<div class="panel">
+	<div class="panel-heading">
+        <h1 class="panel-title"><span >Data Browser Design</span>
+        </h1>
+    </div>
+	<div class="panel-body">
+    	<form class="form-horizontal form-databrowserdesign" data-bind="with: db.configDataBrowser" novalidate>
+	    	<div class="col-md-12">
+	    		<div class="col-md-12">
+		    		<div class="col-md-6">
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">ID</label>
+				    		<div class="col-md-7">
+				    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: _id, enable: (app.mode() == '')">
+								<span class="k-invalid-msg" data-for="ID"></span>					    			
+				    		</div>
+			    		</div>
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Name</label>
+				    		<div class="col-md-7">
+				    			<input required type="text" class="form-control input-sm" name="BrowserName" placeholder="Type the browser name Here" data-bind="value: BrowserName">
+								<span class="k-invalid-msg" data-for="BrowserName"></span>					    			
+				    		</div>
+			    		</div>
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Free Text Query</label>
+				    		<div class="col-md-7">
+					    		<input type="checkbox" id="isFreetext" data-bind="checked: (db.configDataBrowser.QueryType() != 'nonQueryText')">
+				    		</div>
+			    		</div>
+		    		</div>
+		    		<div class="col-md-6">
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Description</label>
+				    		<div class="col-md-7">
+				    			<input type="text" class="form-control input-sm" name="description" placeholder="Type the description" data-bind="value: Description">
+								<span class="k-invalid-msg" data-for="description"></span>   			
+				    		</div>
+			    		</div>
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Connection</label>
+				    		<div class="col-md-7">
+				    			<select required id="connectionlist" data-required-msg="Connection cannot be empty" name="connectionlist" data-placeholder="Select Connection" class="col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: function(e) {db.populateTable(this.dataItem(e.item)._id)}, filter: 'contains', suggest: true, minLength: 2}">
+						        </select>
+						        <span class="k-invalid-msg" data-for="connectionlist"></span>
+				    		</div>
+			    		</div>
+		    		</div>
+		    	</div>
 		    	<div class="col-md-12">
-		    		<div class="col-md-12">
-			    		<div class="col-md-6">
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">ID</label>
-					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="ID" placeholder="Type the the ID Here" data-bind="value: _id, enable: (app.mode() == '')">
-									<span class="k-invalid-msg" data-for="ID"></span>					    			
-					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Connection</label>
-					    		<div class="col-md-7">
-					    			<select id="connection" data-required-msg="Connection cannot be empty" name="connection" data-placeholder="Select Connection" class="form-control col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', change: '', value: Connection, filter: 'contains', suggest: true, minLength: 2}">
-							        </select>
-							        <span class="k-invalid-msg" data-for="connection"></span>
-					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Free Text Query</label>
-					    		<div class="col-md-7">
-						    		<input type="checkbox" id="isFreetext">
-							        <span class="k-invalid-msg" data-for="table"></span>
-					    		</div>
+		    		<div class="col-md-6" id="fromTable">
+		    			<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Table</label>
+				    		<div class="input-group col-md-7">
+					    		<select id="table" data-required-msg="Table cannot be empty" name="table" class="col-100" data-bind="kendoDropDownList: { data: db.collectionListData, dataValueField: 'value', dataTextField: 'text', value: TableNames, optionLabel: 'Select one', change: function() {db.testQuery()}, filter: 'contains', suggest: true, minLength: 2 }">
+						        </select>
+						        <span class="k-invalid-msg" data-for="table"></span> 
 				    		</div>
 			    		</div>
-			    		<div class="col-md-6">
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Description</label>
-					    		<div class="col-md-7">
-					    			<input required type="text" class="form-control input-sm" name="description" placeholder="Type the description" data-bind="value: Description">
-									<span class="k-invalid-msg" data-for="description"></span>   			
-					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Query Type</label>
-					    		<div class="col-md-7">
-						    		<select id="querytype" data-required-msg="Query Type cannot be empty" name="querytype" data-placeholder="Select Query Type" class="form-control col-100" data-bind="kendoDropDownList: { data: db.queryType, dataValueField: 'value', dataTextField: 'text', value: QueryType, optionLabel: 'Select Query Type' }">
-							        </select>
-							        <span class="k-invalid-msg" data-for="querytype"></span>
-					    		</div>
+			    		<!-- <div class="form-group">
+			    			<div class="col-md-7" id="builderButton" >
+			    				 <button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
+			    			</div>
+			    		</div> -->
+		    		</div>
+		    		<div class="col-md-6" id="querytype">
+		    			<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Query Type</label>
+				    		<div class="col-md-7">
+					    		<select id="querytype" data-required-msg="Query Type cannot be empty" name="querytype" data-placeholder="Select Query Type" class="col-100" data-bind="kendoDropDownList: { data: db.queryType, dataValueField: 'value', dataTextField: 'text', value: QueryType, optionLabel: 'Select Query Type' }">
+						        </select>
+						        <span class="k-invalid-msg" data-for="querytype"></span>
 				    		</div>
 			    		</div>
-			    	</div>
-			    	<div class="col-md-12">
-			    		<div class="col-md-6" id="fromTable">
-			    			<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Table</label>
-					    		<div class="col-md-7">
-						    		<select id="table" data-required-msg="Table cannot be empty" name="querytype" data-placeholder="Select table" class="form-control col-100" data-bind="kendoComboBox: {data: db.tableList, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', change: '', value: '', filter: 'contains', suggest: true, minLength: 2}">
-							        </select>
-							        <span class="k-invalid-msg" data-for="table"></span>
-					    		</div>
-				    		</div>
-			    		</div>
-			    		<div class="col-md-12" id="freeQuery">
-			    			<div class="form-group">
-					    		<label class="col-md-2 databrowser-query-label query-text">Query Text</label>
-					    		<div class="input-group col-md-11">
-								<input type="text" class="form-control" placeholder="Query builder">
-									<span class="input-group-btn">
-									<button class="btn btn-primary" type="button">Builder</button>
+		    		</div>
+		    		<div class="col-md-12 form-horizontal">
+		    		<div class="col-md-12" id="freeQuery">
+		    			<div class="form-group">
+				    		<div class="row form-datasource" data-bind="with: viewModel.dbquery, visible:(db.configDataBrowser.QueryType() == 'Dbox')">
+						        <div class="col-md-2 nav-command">
+						        	<label class="title-command">Commands</label>
+						        	<ul class="nav" data-bind="foreach: dataCommand">
+										<li>
+											<a href="#" data-bind="click: viewModel.dbquery.addFilter($data)">
+												<span class="fa fa-caret-right"></span>&nbsp;
+												<span data-bind="text: $data.key" style="text-transform: capitalize;"></span>
+											</a>
+										</li>
+									</ul>
+									<span>
+										<button class="col-md-12 btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
 									</span>
+						        </div>
+						        <div class="col-md-10 area-command">
+						        	<label class="title-command">Query Editor</label>
+						        	<input type='text' id='textquery' name='textquery'/>
+						        </div>
+							</div>
+							<div class="row form-datasource" data-bind="visible:(db.configDataBrowser.QueryType() == 'SQL')"> 
+								<div class="col-md-12">
+									<label class="databrowser-query-label query-text">Query Editor</label>
+						    		<div class="input-group">
+										<input type="text" name="textquery" class="form-control" id="querytext" placeholder="Query builder" data-bind="value: QueryText">
+										<span class="k-invalid-msg" data-for="textquery"></span>
+										<span class="input-group-btn">
+										<button class="btn btn-primary" type="button" data-bind="click: db.testQuery">Builder</button>
+										</span>
+									</div>
 								</div>
-				    		</div>
+							</div>
 			    		</div>
-			    	</div>
-			    </div>
-			    <div class="col-md-12">
-			    	<div class="grid grid-databrowser-design" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { model: { id: 'Field', fields: { Field: { editable: false } } } } }, data: db.databrowserData, selectable: 'multiple, row', columns: db.databrowserColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser-design') }"></div>
-			    </div>
-	    	</form>
+		    		</div>
+		    		</div>
+		    	</div>
+		    </div>
+	    </form>
+	    <div class="col-md-12">
+	    	<div class="grid grid-databrowser-design" id="grid-databrowser-design"></div> 
 	    </div>
+    </div>
+</div>
+
+<!-- Modal Query -->
+<div class="modal fade modal-query" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content" data-bind="with:viewModel.dbquery">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					Data for <span data-bind="text: dbq.queryBuilderMode"></span>
+				</h4>
+			</div>
+
+			<div class="modal-body" data-bind="visible: dbq.queryBuilderMode() == 'select'">
+			    <div class="form-group">
+		    		<label class="col-md-4 filter-label">Fields</label>
+		        	<div class="col-md-5">
+		        		<select data-bind="kendoMultiSelect: { data: db.configDboxData.MetaData, dataValueField: '_id', dataTextField: 'Label', value: dbq.queryOfSelect, placeholder: 'Choose the fields', filter: 'contains', minLength: 2 }" class="full-width" multiple='multiple'></select>
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+
+			<div class="modal-body query-of-from" data-bind="visible: dbq.queryBuilderMode() == 'from'">
+			    <div class="form-group">
+		    		<label class="col-md-4 filter-label">Table Name</label>
+		        	<div class="col-md-6">
+		        		<select required data-required-msg="Table name cannot be empty" name="query-from" data-bind="kendoComboBox: { data: db.collectionListData, value: dbq.queryOfFrom, dataValueField: 'value', dataTextField: 'text', optionLabel: 'Type something here', filter: 'contains', suggest: true, minLength: 2 }" class="full-width"></select>
+		        		<span class="k-invalid-msg" data-for="query-from"></span>
+		        	</div>
+		        	<div class="clearfix"></div>
+	        	</div>
+        	</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span> Close
+				</button>
+				<button type="button" class="btn btn-sm btn-primary" data-bind="click: querySave">
+					<span class="glyphicon glyphicon-save"></span> Save
+				</button>
+			</div>
+		</div>
 	</div>
 </div>

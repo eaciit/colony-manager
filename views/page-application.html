@@ -17,6 +17,15 @@
 	.modal-deploy .modal-footer .loader-container .loader {
 	    margin-top: 0px !important;
 	}
+	.link-deploy,
+	.link-deploy:hover {
+		text-decoration: none;
+		color: white;
+		cursor: pointer;
+	}
+	.link-deploy:hover {
+		color: black;
+	}
 </style>
 
 <!-- sidebar -->
@@ -48,19 +57,19 @@
 
 		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
 			<div class="col-md-4">
-				<label class="col-md-3 filter-label">
+				<label class="col-md-4 filter-label">
 					Search
 				</label>
 				<div class="col-md-8">
-					<input class="form-control full-width input-sm search" name="search" type="text" data-bind="value: apl.searchfield" placeholder="Type keyword here" />
+					<input class="form-control full-width input-sm search" name="search" type="text" data-bind="value: apl.filter.search" placeholder="Type keyword here" />
 				</div>
 			</div>
 			<div class="col-md-4">
-		    	<label class="col-md-3 filter-label">
+		    	<label class="col-md-4 filter-label">
 		    		Type
 		    	</label>
 		    	<div class="col-md-8">
-		    		<select name="type" class="full-width" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: apl.filterAplType, optionLabel: 'Select one' }"></select>
+		    		<select name="type" class="full-width" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: apl.filter.type, optionLabel: 'Select one' }"></select>
 		    	</div>
 		    </div>
 		</nav>
@@ -101,116 +110,121 @@
 			    <div id="myTabContent" class="tab-content">
 			    	<div class="tab-pane fade in active" id="Form">
 			    		<form class="form-horizontal form-application" id="form-add-Application" data-bind="with: configApplication" novalidate>
-				    		<div class="col-md-12">
-					    		<div class="form-group row">
+				    		<div class="col-md-6">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">ID</label>
-						    		<div class="col-md-3">
-						    			<input required class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')"/>
+						    		<div class="col-md-6">
+						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')" placeholder="Type application ID here" />
 						    			<span class="k-invalid-msg" data-for="ID"></span>
 						    		</div>
-						    		<!-- <label class="col-md-2 filter-label">Enable</label>
-						    		<div class="col-md-2">
-						    			<input required type="checkbox" id="Enable" data-bind="checked: Enable" />
-						    			<span class="k-invalid-msg" data-for="Enable"></span>
-						    		</div> -->
 					    		</div>
-					    		<div class="form-group row">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">Name</label>
-						    		<div class="col-md-3">
-						    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" />
+						    		<div class="col-md-6">
+						    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" placeholder="Type application name here" />
 						    			<span class="k-invalid-msg" data-for="name"></span>
 						    		</div>
-						    		<div class="col-sm-4 btn-upload">
-							    		<div>
-							    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip .tar .tar.gz file">
-											    <span class="fa fa-file"></span> Upload .zip .tar .tar.gz file 
-											    <input required id="files" name="files" type="file" accept=".zip,.tar,.tar.gz">
-											</span>
-											<span id="nama" data-bind="value:AppPath"></span>
-							    		</div>
-										<span class="k-invalid-msg" data-for="files"></span>
-									</div>
 					    		</div>
-					    		<div class="form-group row">
+				    		</div>
+				    		<div class="col-md-6">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">Type</label>
-						    		<div class="col-md-3">
+						    		<div class="col-md-6">
 						    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
 						    			<span class="k-invalid-msg" data-for="AppType"></span>
 						    		</div>
 					    		</div>
 					    		<div class="form-group">
-								        <label class="col-sm-3 filter-label">Command</label>
-								        <div class="col-sm-8">
-								        	<div class="nav">
-								        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addCommand">
-								        			<span class="glyphicon glyphicon-plus"></span> Add
-								        		</button>
-								        	</div>
-								        	<table class="table" id="datasource-settings">
-							        			<thead>
-							        				<tr>
-							        					<th>Key</th>
-							        					<th>Value</th>
-							        				</tr>
-							        			</thead>
-							        			<tbody data-bind="foreach: apl.configApplication.Command" > 
-							        				<tr>
-							        					<td>
-							        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
-							        					</td>
-							        					<td>
-							        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
-							        					</td>
-							        					<td>
-							        						<a class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0)">
-							        							<span class="glyphicon glyphicon-remove" data-bind="click: apl.removeCommand($data)"></span>
-							        						</a>
-							        					</td>
-							        				</tr>
-							        			</tbody>
-								        	</table>
-								        </div>
-								    </div>
-								<div class="form-group">
-								        <label class="col-sm-3 filter-label">Variable</label>
-								        <div class="col-sm-8">
-								        	<div class="nav">
-								        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addVariable">
-								        			<span class="glyphicon glyphicon-plus"></span> Add
-								        		</button>
-								        	</div>
-								        	<table class="table" id="datasource-settings">
-							        			<thead>
-							        				<tr>
-							        					<th>Key</th>
-							        					<th>Value</th>
-							        				</tr>
-							        			</thead>
-							        			<tbody data-bind="foreach: apl.configApplication.Variable" > 
-							        				<tr>
-							        					<td>
-							        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
-							        					</td>
-							        					<td>
-							        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
-							        					</td>
-							        					<td>
-							        						<a class="btn btn-sm btn-danger"  data-bind="visible: ($index() >= 0)" > 
-							        							<span class="glyphicon glyphicon-remove" data-bind="click: apl.removeVariable($data)"></span>
-							        						</a>
-							        					</td>
-							        				</tr>
-							        			</tbody>
-								        	</table>
-								        </div>
-								    </div>								
-						    		<!-- <div class="form-group row"> 
-					    			<button class="btn btn-sm btn-primary btn2"><span class="glyphicon-plus"></span>New File</button> 
-					    		</div> -->
-
+						    		<label class="col-md-3 filter-label">Running Port</label>
+						    		<div class="col-md-6">
+						    			<input class="full-width" type="number" name="Port" required data-bind="kendoNumericTextBox: { min: 0, placeholder: 'Example: 8080', value: Port, format: '#' }" />
+						    			<span class="k-invalid-msg" data-for="Port"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<div class="col-md-6 col-md-offset-3">
+						    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
+										    <span class="fa fa-file"></span> Upload .zip / .tar / .tar.gz / .gz file 
+										    <input required id="files" name="files" type="file" accept=".zip,.tar,.tar.gz,.gz">
+										</span>
+										<div><span id="nama" data-bind="value:AppPath"></span></div>
+										<div><span class="k-invalid-msg" data-for="files"></span></div>
+						    		</div>
+								</div>
 				    		</div>
+
+							<div class="col-md-12">
+								<div class="form-group">
+							        <label class="col-sm-2 filter-label">Command</label>
+							        <div class="col-sm-8">
+							        	<div class="nav">
+							        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addCommand">
+							        			<span class="glyphicon glyphicon-plus"></span> Add
+							        		</button>
+							        	</div>
+							        	<table class="table" id="datasource-settings">
+						        			<thead>
+						        				<tr>
+						        					<th>Key</th>
+						        					<th>Value</th>
+						        				</tr>
+						        			</thead>
+						        			<tbody data-bind="foreach: apl.configApplication.Command" > 
+						        				<tr>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+						        					</td>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+						        					</td>
+						        					<td>
+						        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0)">
+						        							<span class="glyphicon glyphicon-remove" data-bind="click: apl.removeCommand($data)"></span>
+						        						</button>
+						        					</td>
+						        				</tr>
+						        			</tbody>
+							        	</table>
+							        </div>
+							    </div>
+						    </div>
+
+							<div class="col-md-12">
+								<div class="form-group">
+							        <label class="col-sm-2 filter-label">Variable</label>
+							        <div class="col-sm-8">
+							        	<div class="nav">
+							        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addVariable">
+							        			<span class="glyphicon glyphicon-plus"></span> Add
+							        		</button>
+							        	</div>
+							        	<table class="table" id="datasource-settings">
+						        			<thead>
+						        				<tr>
+						        					<th>Key</th>
+						        					<th>Value</th>
+						        				</tr>
+						        			</thead>
+						        			<tbody data-bind="foreach: apl.configApplication.Variable" > 
+						        				<tr>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+						        					</td>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+						        					</td>
+						        					<td>
+						        						<button class="btn btn-sm btn-danger"  data-bind="visible: ($index() >= 0)" > 
+						        							<span class="glyphicon glyphicon-remove" data-bind="click: apl.removeVariable($data)"></span>
+						        						</button>
+						        					</td>
+						        				</tr>
+						        			</tbody>
+							        	</table>
+							        </div>
+							    </div>
+						    </div>
 				    	</form>
-				    	 
 			    	</div>
 				    <div class="tab-pane fade" id="Editor">
 				    	<div class="col-md-12">

@@ -15,14 +15,17 @@
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
-		<h1>Data Grabber</h1>
+		<h1>Data Serializer</h1>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: dg.getScrapperData">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: dg.createNewScrapper">
-	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Grabber
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Serializer
+	    	</button>
+	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: dg.addWizard">
+	    		<span class="glyphicon glyphicon-plus"></span> Add Wizard
 	    	</button>
 	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeDataGrabber" data-bind="click: dg.removeScrapper">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
@@ -39,7 +42,7 @@
 		    	</div>
 		    </div>
 		    <div class="col-md-4">
-		    	<label class="col-md-3 filter-label">
+		    	<label class="col-md-4 filter-label">
 		    		Interval Unit		    		
 		    	</label>
 		    	<div class="col-md-8">
@@ -50,7 +53,7 @@
 
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
-		        <h1 class="panel-title">All Data Grabber</h1>
+		        <h1 class="panel-title">All Data Serializer</h1>
 		    </div>
 		    <div class="panel-body">
 		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
@@ -73,11 +76,11 @@
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (dg.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
-		        	Data Grabber
+		        	Data Serializer
 	        	</h1>
 		    </div>
 		    <div class="panel-body">
@@ -85,9 +88,9 @@
 					<div class="col-md-12 no-padding no-margin">
 						<div class="col-md-12">
 							<div class="form-group">
-					        	<label class="col-md-3 filter-label">ID</label>
+					        	<label class="col-md-2 filter-label">ID</label>
 					        	<div class="col-md-3">
-					        		<input required class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
+					        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" class="form-control input-sm full-width" type="text" name="ID" placeholder="Type ID here" data-bind="value: _id, enable: (dg.scrapperMode() == '')" />
 									<span class="k-invalid-msg" data-for="ID"></span>
 					        	</div>
 
@@ -99,7 +102,7 @@
 					        </div>
 
 					        <div class="form-group">
-					        	<label class="col-md-3 col-md-offset-5 filter-label">Destination</label>
+					        	<label class="col-md-2 col-md-offset-5 filter-label">Destination</label>
 					        	<div class="col-md-3">
 					        		<select required data-required-msg="Data Source Destination cannot be empty" class="full-width" name="data-source-destination" data-bind="kendoDropDownList: { data: dg.dataSourcesDataForSourceAndDest('destination'), value: DataSourceDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeDataSourceDestination }"></select>
 									<span class="k-invalid-msg" data-for="data-source-destination"></span>
@@ -107,7 +110,7 @@
 					        </div>
 
 					        <div class="form-group">
-					        	<label class="col-md-3 filter-label">Duration Type</label>
+					        	<label class="col-md-2 filter-label">Duration Type</label>
 					        	<div class="col-md-3">
 					        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateIntervalType, value: IntervalType, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
 									<span class="k-invalid-msg" data-for="interval-type"></span>
@@ -123,7 +126,12 @@
 					        </div>
 
 					        <div class="form-group">
-					        	<label class="col-md-3 col-md-offset-5 filter-label">Timeout Duration</label>
+					        	<label class="col-md-2 filter-label">Insert Mode</label>
+					        	<div class="col-md-3">
+					        		<select class="full-width" name="interval-type" required data-required-msg="Interval type cannot be empty" data-bind="kendoDropDownList: { data: dg.templateInsertMode, value: InsertMode, dataValueField: 'value', dataTextField: 'title', placeholder: 'Select one' }"></select>
+									<span class="k-invalid-msg" data-for="interval-type"></span>
+					        	</div>
+					        	<label class="col-md-2 filter-label">Timeout Duration</label>
 					        	<div class="col-md-3">
 					        		<input class="full-width" name="timeout-duration" required data-required-msg="Timeout duration cannot be empty" data-bind="kendoNumericTextBox: { value: TimeoutInterval, min: 0, format: '#', placeholder: 'Example: 20' }" />
 									<span class="k-invalid-msg" data-for="timeout-duration"></span>
@@ -131,14 +139,14 @@
 					        </div>
 
 					        <div class="form-group">
-					        	<label class="col-md-3 filter-label">Pre Transfer Command</label>
+					        	<label class="col-md-2 filter-label">Pre Transfer Command</label>
 					        	<div class="col-md-8">
 						        	<input class="form-control input-sm full-width" type="text" data-bind="value: PreTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --pre --data %1" />
 					        	</div>
 					        </div>
 
 					        <div class="form-group">
-					        	<label class="col-md-3 filter-label">Post Transfer Command</label>
+					        	<label class="col-md-2 filter-label">Post Transfer Command</label>
 					        	<div class="col-md-8">
 						        	<input class="form-control input-sm full-width" type="text" data-bind="value: PostTransferCommand" placeholder="Example: ./mods/bin/scmm-serializer --post --data %1" />
 					        	</div>
@@ -170,13 +178,103 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'history')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	All History Grabber of
+		        	All History Serializer of
 		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
 		        </h1>
 		    </div>
 		    <div class="panel-body">
 		    	<div class="grid grid-history-grabber" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.historyData, columns: dg.historyColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-history-grabber') }"></div>
 		    </div>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'addWizard')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click:dg.SaveDataGrabberWizard">
+	    		<span class="fa fa-play"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click:dg.SaveAndProccessDataGrabberWizard">
+	    		<span class="fa fa-save"></span> Save & Proccess 
+	    	</button>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'addWizard')" style="width: 600px;">
+			<div class="panel-heading">
+				<h1 class="panel-tittle">
+					Add New Data Wizard
+				</h1>
+			</div>
+			<div class="panel-body" >
+				<form class="form-horizontal" id="form-add-wizard" data-bind ="with:config" novalidate>
+					<div class="col-md-12 no-padding no-margin">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label class="col-md-4 filter-label">Connection Source</label>
+								<div class=" col-md-5">
+									<select required data-required-msg="Connection Source cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionSource, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeConnectionSource}" class="full-width" name="connection-source">
+									</select>
+									<span class="k-invalid-msg" data-for="connection-source"></span>
+								</div>	
+							</div>
+
+							<div class="form-group">
+								<label class="col-md-4 filter-label">Connection Destination</label>
+								<div class="col-md-5">
+									<select required data-required-msg="Connection Destination cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionDestination, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one',change: dg.changeConnectionDestination}" name="connection-destination">
+									</select>
+									<span class="k-invalid-msg" data-for="connection-destination"></span>
+								</div>	
+							</div>
+
+							<div class="form-group">
+								<label class="col-md-4 filter-label">Prefix</label>
+								<div class="col-md-5">
+									<input class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix" name="prefix"></input>
+								</div>	
+							</div>
+							
+							<div class="form-group">
+								<div class="nav">
+									<button class="col-md-offset-2 btn btn-sm btn-success" data-bind="click: dg.addtable">
+										<span class="glyphicon glyphicon-plus"></span> Add More
+									</button>
+								</div>	
+							</div>
+
+							<div class="form-group">
+								<div class="col-sm-12">
+									<table class="table" id="table-wizard">
+										<thead>
+											<th style="border-bottom: none;">Table Source</th>
+											<th style="border-bottom: none;">Table Destination</th>
+										</thead>
+										<tbody data-bind ="foreach:Transformations">
+											<tr>
+												<td>
+													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one', value: TableSource }" class="full-width" name="tableSource" name="table-source">
+													</select>
+													<span class="k-invalid-msg" data-for="table-source"></span>
+												</td>
+												<td>
+													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one', value: TableDestination }" class="full-width" name="table-Destination">
+													</select>
+													<span class="k-invalid-msg" data-for="table-Destination"></span>
+												</td>
+												<td>
+													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 ), click : dg.removetable($data)">
+													<span class="glyphicon glyphicon-remove"></span>
+													</button>
+												</td>
+											</tr>	
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>	
+				</form>
+			</div>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'log')">
@@ -188,7 +286,7 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'log')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	Log Grabber of
+		        	Log Serializer of
 		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
 		        	<span data-bind="text: dg.selectedLogDate"></span>
 	        	</h1>
@@ -209,7 +307,7 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'data')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">
-		        	Transformed Data Grabber of
+		        	Transformed Data Serializer of
 		        	<span data-bind="text: selectedDataGrabber" class="color-green"></span>
 		        	<span data-bind="text: dg.selectedLogDate"></span>
 	        	</h1>

@@ -21,12 +21,18 @@ srv.templateConfigServer = {
 };
 srv.templatetypeServer = ko.observableArray([
 	{ value: "node", text: "Node Server" },
-	{ value: "hadoop", text: "Hadoop Server" }
+	{ value: "hdfs", text: "Hadoop Server" }
 ]);
 srv.templatetypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
+srv.templateFilter = { 
+	search: "",
+	serverOS: "",
+	serverType: "",
+	sshType: "",
+};
 srv.WizardColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkWizardServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -45,6 +51,14 @@ srv.WizardColumns = ko.observableArray([
 	} },
 	{ field: "status", title: "Status" }
 ]);
+srv.computedOS = ko.computed(function() {
+	return srv.templateOS().map(function (a) {
+		if (a.text == "windows") {
+			a.text = "Windows *";
+		}
+		return a;
+	})
+}, srv);
 srv.isNew = ko.observable(false);
 srv.dataWizard = ko.observableArray([]);
 srv.validator = ko.observable('');
@@ -54,12 +68,13 @@ srv.filterValue = ko.observable('');
 srv.filterSrvSSHType = ko.observable('');
 srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
+srv.filter = ko.mapping.fromJS(srv.templateFilter);
 srv.showServer = ko.observable(true);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.tempCheckIdWizard = ko.observableArray([]);
-srv.searchfield = ko.observable('');
+srv.filterSearch = ko.observable('');
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -67,9 +82,8 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	{ field: "serverType", title: "Type", template: "#: serverType # server" },
-	{ field: "host", title: "Host" },
-	{ field: "os", title: "OS", template: function (d) {
+	{ field: "serverType", title: "Server Type" },
+	{ field: "os", title: "Server OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
 		if (row != undefined) {
 			return row.text;
@@ -77,6 +91,7 @@ srv.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
+	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type"},
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
@@ -90,7 +105,8 @@ srv.ServerColumns = ko.observableArray([
 
 srv.getServers = function(c) {
 	srv.ServerData([]);
-	app.ajaxPost("/server/getservers", {search: srv.searchfield}, function (res) {
+	var param = ko.mapping.toJS(srv.filter);
+	app.ajaxPost("/server/getservers", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -121,22 +137,48 @@ srv.createNewServer = function () {
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
 };
+srv.validateHost = function () {
+	if (srv.configServer.serverType() == "node") {
+		srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
+		return true;
+	} else {
+		if (srv.configServer.host().indexOf("http") == -1) {
+			sweetAlert("Oops...", "Protocol on host must be defined (Example: http://127.0.0.1:50070)", "error");
+			return false;
+		}
+	}
+
+	return true;
+};
 srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
 		var errors = $(".form-server").data("kendoValidator").errors();
-		if (srv.isMultiServer()) {
-			errors = Lazy(errors).filter(function (d) {
-				return ["ID is required", "host is required"].indexOf(d) == -1;
-			}).toArray();
+		var excludeErrors = []; 
+		if (srv.configServer.serverType() == "node") {
+			if (srv.isMultiServer()) {
+				excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
+			}
+		} else {
+			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required"]);
+		}
+
+		if (srv.configServer.sshtype() == "File") {
+			excludeErrors = excludeErrors.concat(["user is required", "password is required"]);
+		}  else {
+			excludeErrors = excludeErrors.concat(["file is required"]);
 		}
 
 		errors = Lazy(errors).filter(function (d) {
-			return ["user is required", "password is required"].indexOf(d) == -1;
+			return excludeErrors.indexOf(d) == -1;
 		}).toArray();
 
 		if (errors.length > 0) {
 			return;
 		}
+	}
+
+	if (!srv.validateHost()) {
+		return;
 	}
 
 	var data = ko.mapping.toJS(srv.configServer);
@@ -164,10 +206,9 @@ srv.doSaveServer = function (c) {
 
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
 				if (!res.success) {
+					failedHosts.push(d);
 					return;
 				}
-
-				failedHosts.push(d);
 			}, function (a) {
 				failedHosts.push(d);
 			}, {
@@ -206,7 +247,7 @@ srv.doSaveServer = function (c) {
 			}
 
 			srv.isNew(true);
-			if (typeof c != "undefined") {
+			if (typeof c == "function") {
 				c();
 			}
 		});
@@ -218,13 +259,18 @@ srv.isServerTypeNode = ko.computed(function () {
 srv.changeServerOS = function () {
 	if (this.value() == "node") {
 		srv.configServer.os("linux");
+		srv.configServer.appPath("");
+		srv.configServer.dataPath("");
+		srv.configServer.sshtype("Credentials");
 	}
 };
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
+		srv.isNew(false);
 		srv.getServers();
 		apl.getApplications();
 		swal({title: "Server successfully created", type: "success", closeOnConfirm: true});
+		srv.backToFront();
 	});
 };
 
@@ -259,8 +305,14 @@ srv.doTestConnection = function (_id) {
 		}
 	}
 
-	_id = (_id == undefined) ? srv.configServer._id() : _id;
-	app.ajaxPost("/server/testconnection", { _id: _id }, function(res) {
+	var payload = { };
+	if (_id == undefined) {
+		payload = Lazy(srv.ServerData()).find({ _id: _id });
+	} else {
+		payload = ko.mapping.toJS(srv.configServer);
+	}
+
+	app.ajaxPost("/server/testconnection", payload, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -414,36 +466,44 @@ srv.navModalWizard = function (status) {
 		}	
 
 		srv.dataWizard([]);
+		var allIP = [];
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
-			var ip = (e.indexOf(":") == -1) ? (e + ":80") : e;
-			var pattern = srv.txtWizard().replace(/\]|\[/g, "").split('.')[3];
-			var firstPattern = pattern.split('-')[0];
-			var secondPattern = pattern.split('-')[1];
-			
-			app.ajaxPost("/server/checkping", { ip: ip }, function (res) {
+			if (e.indexOf('[') == -1) {
+				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;				
+				allIP.push({ ip: ip1, label: e });
+			}else{
+				var patterns = e.match(/\[(.*?)\]/g);
+				if (patterns.length > 0) {
+					pattern = patterns[0];
+				}
+				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
+				var secondPattern = pattern.replace(/\]/g, "").split('-')[1];
+				for (i = firstPattern; i <= secondPattern; i++) { 
+					patternIP = e.replace( pattern, i )
+					var ip2 = (patternIP.indexOf(":") == -1) ? (patternIP + ":80") : patternIP;
+					allIP.push({ ip: ip2, label: patternIP });
+				}
+			}
+		});
+
+		allIP.forEach(function (ip) {
+			app.ajaxPost("/server/checkping", { ip: ip.ip }, function (res) {
 				app.isLoading(true);
-				var o = { 
-					host: ip, 
-					status: res.data 
-				};
+				var o = { host: ip.label, status: res.data };
 
 				if (!res.success) {
 					o.status = res.message;
 				}
 
 				srv.dataWizard.push(o);
-			}, function () { 
-				var o = { 
-					host: ip, 
-					status: "request timeout"
-				};
-
+			}, function () {
+				var o = { host: ip.label, status: "request timeout" };
 				srv.dataWizard.push(o);
 			}, {
 				timeout: 5000
 			});
 		});
-		
+
 		$(document).ajaxStop(function() {
 		  app.isLoading(false);
 		});

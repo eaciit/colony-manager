@@ -7,26 +7,30 @@ br.templateConfigDataBrowser= {
 	BrowserName: ""
 }
 
-br.confirBrowser = ko.mapping.fromJS(br.templateConfigDataBrowser);
-br.dataBrowser = ko.observableArray([]);
-br.searchfield = ko.observable("");
-br.pageVisible = ko.observable("");
+//br.confirBrowser= ko.mapping.fromJS(br.templateConfigDataBrowser);
+br.dataBrowser 	= ko.observableArray([]);
+br.dataBrowserDesc = ko.observableArray([]);
+br.dataBrowserDescColumns = ko.observableArray([]);
+br.searchfield 	= ko.observable("");
+br.pageVisible	= ko.observable("");
+br.onVisible 	= ko.observable("");
+br.selectedID = ko.observable("");
 
 br.browserColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 5, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
-	{field:"_id", title: "ID", width: 80},
-	{title: "Name", width: 130, template: function(d){
+	{field:"_id", title: "ID" },
+	{title: "Name", template: function(d){
 		return[
-			"<div onclick= 'db.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
+			"<div onclick= 'br.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
 		]
 	}},
-	{title: "", width: 40, attributes:{class:"align-center"}, template: function(d){
+	{title: "", width: 80, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<div onclick= 'db.DesignDataBrowser(\"" + d._id + "\")' style= 'cursor: pointer;'>Design</div>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Design the Data Browser' onclick='db.designDataBrowser(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	}}
 ]);
@@ -45,6 +49,10 @@ br.getDataBrowser = function(){
 
 br.OpenBrowserForm = function(ID){
 	br.pageVisible("editor");
+	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+	dbq.clearQuery()
+	$("#grid-databrowser-design").data('kendoGrid').dataSource.data([]);
+	db.showHideFreeQuery();
 	// app.ajaxPost("/databrowser/gobrowser", {id: ID}, function (){
 	// 	if (!app.isFine) {
 	// 		return;
@@ -55,7 +63,7 @@ br.OpenBrowserForm = function(ID){
 
 br.getAllbrowser = function(){
 	$("#selectall").change(function () {
-	    $("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
+		$("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
 	});
 }
 
@@ -97,15 +105,110 @@ br.DeleteBrowser = function(){
 			},1000);
 
 		});
- 	} 
+	} 
  
 }
 
-//SELECTING ON GRID
-br.selectBrowser = function(e){
-	app.wrapGridSelect(".grid-application", ".btn", function (d) {
-		console.log(d._id);
+br.ViewBrowserName = function(id){
+	br.selectedID(id);
+	var datacol =[];
+	br.dataBrowserDescColumns([]);
+	app.ajaxPost("/databrowser/detaildb", {id: id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		br.pageVisible("view");
+		br.onVisible("simple");
+		console.log(res.data.dataresult.MetaData);
+		$('#grid-databrowser-decription').ecDataBrowser({
+			title: "",
+			widthPerColumn: 6,
+			showFilter: "Simple",
+			dataSource: { 
+	                  url: "/databrowser/detaildb",
+	                  type: "post",
+	                  callData: {id: id},
+	                  fieldTotal: "DataCount",
+	                  fieldData: "DataValue",
+	                  serverPaging: true,
+	                  pageSize: 10,
+	                  serverSorting: true,
+	                  callOK: function(res){
+	                  	console.log(res);
+	                  }
+	            },
+			metadata: res.data.dataresult.MetaData,
+		});
+	// 	var ondata = res.data;
+	// 	var ondataval =ondata.DataValue;
+	// 	var ondatacol = ondata.dataresult.MetaData;
+	// 	for(var i=0; i< ondatacol.length; i++){
+	// 		datacol.push({field: ondatacol[i].Field , title: ondatacol[i].Label, sortable: ondatacol[i].Sortable})
+	// 	}
+	// 	//br.dataBrowserDescColumns(datacol);
+	// 	br.dataBrowserDesc(ondataval);
+	// 	br.dataBrowserDescColumns(datacol);
+		
+
+	// 	$("#grid-databrowser-decription").kendoGrid({
+ //            columns: datacol,
+ //            // dataSource: {  	
+ //            //     // data: ondataval,
+ //            //     pageSize: 5,
+ //            // },
+ //            dataSource: {
+	// 			   transport: {
+	// 				   read:function(options){
+ //                        var parm = {
+ //                        		id: id
+ //                        	};
+ //                        for(var i in options.data){
+ //                            parm[i] = options.data[i];
+ //                        }
+ //                        app.ajaxPost("/databrowser/detaildb",parm, function (res){
+	//                           	options.success(res);
+	//                           	console.log(res.data)
+	//                         });
+	//                      },
+	// 			   },
+	// 			   schema: {
+	// 				   data: "data.DataValue",
+	// 				   total: "data.DataCount",
+	// 			   },
+	// 			   pageSize: 5,
+	// 			   serverPaging: true, 
+	// 			   serverSorting: true,
+	// 			   serverFiltering: true,
+	// 		   },
+ //            pageable: true,
+ //            scrollable: true,
+	// 		sortable: true,
+ //            columns:datacol
+ //        });
 	});
+	
+}
+
+br.FilterViewDB = function(){
+	$('#filter-id').ecLookup({
+		dataSource:{
+			url: "/databrowser/detaildb",
+			call: 'POST',
+			callData: 'search', 
+			callOK: function(res){
+				console.log(res);
+			}
+		}, 
+		inputType: 'multiple', 
+		inputSearch: '_id', 
+		idField: '_id', 
+		idText: '_id', 
+	})
 }
 
 br.saveAndBack = function (){
@@ -113,8 +216,24 @@ br.saveAndBack = function (){
 	br.pageVisible("");
 }
 
+br.filterAdvance = function(){
+	//alert("masuk advance");
+	br.onVisible("advance");
+	$('#grid-databrowser-decription').ecDataBrowser("setShowFilter","advance");
+}
+
+br.filterSimple = function(){
+	//alert("masuk advance");
+	br.onVisible("simple");
+	$('#grid-databrowser-decription').ecDataBrowser("setShowFilter","simple");
+}
+br.filterDataBrowser = function(){
+	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter");
+}
 
 $(function (){
 	br.getDataBrowser();
 	br.getAllbrowser();
+	br.FilterViewDB();
+	app.registerSearchKeyup($(".searchbr"), br.getDataBrowser);
 });
