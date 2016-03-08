@@ -436,7 +436,23 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 	}
 
 	if runtime.GOOS == "windows" {
-		return helper.CreateResult(false, false, "Not yet supported for windows")
+		if payload.OP == "off" {
+
+		} else {
+			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand.exe")
+			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
+			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
+			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
+			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
+
+			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
+			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+
+			return helper.CreateResult(true, true, "")
+		}
 	} else {
 		if payload.OP == "off" {
 			byts, err := exec.Command("pgrep", "sedotand").Output()
