@@ -315,7 +315,7 @@ dg.getConnectionsData = function (){
 		dg.connectionListData(res.data);
 	});
 };
-
+var tSource;
 dg.changeConnectionSource = function (){
 	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
@@ -325,6 +325,7 @@ dg.changeConnectionSource = function (){
 			res.data = "";
 		}
 		dg.tableConnectionSource(res.data);
+		tSource = res.data;	
 	});
 }
 dg.changeConnectionDestination = function (){
@@ -336,6 +337,7 @@ dg.changeConnectionDestination = function (){
 			res.data = "";
 		}
 		dg.tableConnectionDestination(res.data);
+		dg.prepareFieldTableWizard(tSource,res.data);	
 	});
 }
 
@@ -611,9 +613,38 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
+
+dg.prepareFieldTableWizard = function (tSource,tDestination){
+	$("#table-wizard").find('thead:last').remove();
+	$("#table-wizard").find('tbody').remove();
+	console.log(tSource);
+	console.log(tDestination);
+	var $tableWizard = $("#table-wizard");
+	var header = [
+		'<thead>',
+			'<tr>',
+				'<th style="border:none">Table Source</th>',
+				'<th style="border:none">Table Destination</th>',
+			'</tr>',
+		'</thead>'
+	].join('');
+	$tableWizard.append(header);
+
+	tSource.forEach(function(table){
+	var content = [
+	'<tbody style="border:none">',
+		'<tr>',
+			'<td>'+table+'</td>',
+			'<td><select data-bind="kendoComboBox:{dataSource:'+tDestination+'}"></select></td>',
+		'</tr>',
+	'</tbody>'
+	].join('');
+	$tableWizard.append(content)});
+}
+
 dg.prepareFieldsOrigin = function (_id) {
 	var row = Lazy(dg.dataSourcesData()).find({ _id: _id });
-
+	console.log(row);return;
 	$(".table-tree-map").replaceWith('<table class="table tree table-tree-map"></table>');
 	var $tree = $(".table-tree-map");
 	var index = 1;

@@ -235,40 +235,8 @@
 							</div>
 							
 							<div class="form-group">
-								<div class="nav">
-									<button class="col-md-offset-2 btn btn-sm btn-success" data-bind="click: dg.addtable">
-										<span class="glyphicon glyphicon-plus"></span> Add More
-									</button>
-								</div>	
-							</div>
-
-							<div class="form-group">
 								<div class="col-sm-12">
-									<table class="table" id="table-wizard">
-										<thead>
-											<th style="border-bottom: none;">Table Source</th>
-											<th style="border-bottom: none;">Table Destination</th>
-										</thead>
-										<tbody data-bind ="foreach:Transformations">
-											<tr>
-												<td>
-													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one', value: TableSource }" class="full-width" name="tableSource" name="table-source">
-													</select>
-													<span class="k-invalid-msg" data-for="table-source"></span>
-												</td>
-												<td>
-													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one', value: TableDestination }" class="full-width" name="table-Destination">
-													</select>
-													<span class="k-invalid-msg" data-for="table-Destination"></span>
-												</td>
-												<td>
-													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 ), click : dg.removetable($data)">
-													<span class="glyphicon glyphicon-remove"></span>
-													</button>
-												</td>
-											</tr>	
-										</tbody>
-									</table>
+									<table class="table" id="table-wizard"></table>
 								</div>
 							</div>
 						</div>
