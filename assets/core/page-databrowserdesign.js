@@ -24,7 +24,7 @@ db.templateConfig = {
     TableNames : "",
     QueryType : "",
     QueryText : "",
-    MetaData : [],
+    MetaData : []
 }
 
 db.templateDboxData = {
@@ -50,6 +50,15 @@ db.dataType = ko.observableArray([
 	{ DataType: "float32", text: "float32" },
 	{ DataType: "float64", text: "float64" },
 	{ DataType: "date", text: "date" }
+]);
+db.aggrData = ko.observableArray([
+	"COUNT",
+	"SUM",
+	"AVG",
+	"MAX",
+	"MIN",
+	// "MEAN",
+	// "MEDIAN"
 ]);
 db.connectionID = ko.observable('');
 db.isChecked = ko.observable('')
@@ -88,7 +97,16 @@ db.databrowserColumns = ko.observableArray([
 	{ width: 100, title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" />&nbsp;&nbsp;Sortable</center>"},
 	{ width: 100, title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" />&nbsp;&nbsp;Simple Filter</center>"},
 	{ width: 100, title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" />&nbsp;&nbsp;Advance Filter</center>"},
-	{ width: 100, field: "Aggregate", title: "Aggregate"},
+	{ width: 100, field: "Aggregate", title: "Aggregate",
+		editor: function(container, options) {
+			var input = $('<input id="aggr" name="aggr" data-field="Aggregate" data-bind="value:' + options.field + '"">');
+			input.appendTo(container);
+			input.kendoAutoComplete({
+				dataSource: db.aggrData(),
+				filter: "startswith",
+				separator: ","
+			});
+		}},
 ]);
 
 
@@ -270,24 +288,20 @@ db.saveAndBack = function(section) {
      	
 	
 	var ds = grids.dataSource.data();
-	var dirty = $.grep(ds, function(item) {
-	    return item.dirty
+	param.MetaData = JSON.parse(kendo.stringify(ds)).map(function (d) {
+		if (d.Aggregate == "") {
+			return d;
+		}
+
+		var obj = {};
+		d.Aggregate.split(",").forEach(function (f) {
+			obj.push(f);
+		});
+		d.Aggregate = JSON.stringify(obj);
+
+		return d;
 	});
 	
-	for (var data in param.MetaData){
-		for (var idxDirty in dirty) {
-			if (dirty[idxDirty].ShowIndex == param.MetaData[data].ShowIndex) {
-				var splitString = dirty[idxDirty].Aggregate.split(",");
-				var obj = {};
-				for (var s in splitString) {
-					obj[splitString[s]] = ""
-				}
-				param.MetaData[data].Aggregate = JSON.stringify(obj)
-			}
-		}
-	}
-	// param.MetaData = JSON.parse(kendo.stringify(ds));
-	// console.log("dirty", param);
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
@@ -322,6 +336,18 @@ db.designDataBrowser = function(_id) {
 		
 		br.pageVisible("editor");
 		app.mode('editor')
+		for(var i in res.data.MetaData) {
+			if (res.data.MetaData[i].Aggregate != "") {
+				var aggrToString = [];
+				var jsnstring = JSON.parse(res.data.MetaData[i].Aggregate)
+				// console.log(res.data.MetaData[i].Field,res.data.MetaData[i].Aggregate)
+				// console.log(res.data.MetaData[i].Field,jsnstring)
+				$.each(jsnstring, function(key, val) {
+					aggrToString.push(key.toUpperCase())
+				});
+				res.data.MetaData[i].Aggregate = aggrToString+","
+			}
+		}
 		db.databrowserData(res.data.MetaData);
 		dbq.clearQuery()
 		db.setDataSource();
