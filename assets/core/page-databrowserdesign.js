@@ -52,12 +52,13 @@ db.dataType = ko.observableArray([
 	{ DataType: "date", text: "date" }
 ]);
 db.aggrData = ko.observableArray([
+	"COUNT",
 	"SUM",
 	"AVG",
 	"MAX",
 	"MIN",
-	"MEAN",
-	"MEDIAN"
+	// "MEAN",
+	// "MEDIAN"
 ]);
 db.connectionID = ko.observable('');
 db.isChecked = ko.observable('')
@@ -309,7 +310,7 @@ db.saveAndBack = function(section) {
 	}
 	
 	
-	// console.log("dirty", param.MetaData);
+	// console.log("dirty", param);
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
@@ -430,7 +431,7 @@ db.testQuery = function() {
 		if ($("#querytext").val() != '' && $("#querytype option:selected").text() == 'SQL') {
 			param.QueryType = db.configDataBrowser.QueryType();
 			param.QueryText = db.configDataBrowser.QueryText();
-			console.log(param)
+			// console.log(param)
 		} else if ($("#textquery").val() != '' && $("#querytype option:selected").text() == 'Dbox') {
 			param.QueryType = $("#querytype option:selected").text();
 			param.QueryText = JSON.stringify(dbq.getQuery());
