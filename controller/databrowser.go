@@ -72,10 +72,6 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	// if payload.QueryText != "" {
-	// 	payload.TableNames = ""
-	// }
 	_, _, err := d.connToDatabase(payload.ConnectionID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -264,7 +260,6 @@ func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colon
 	} else if dbrowser.QueryType == "Dbox" {
 		queryInfo := toolkit.M{}
 		toolkit.UnjsonFromString(dbrowser.QueryText, &queryInfo)
-		toolkit.Println("queryinfo", queryInfo)
 
 		if qFrom := queryInfo.Get("from", "").(string); qFrom != "" {
 			dataQuery = conn.NewQuery()

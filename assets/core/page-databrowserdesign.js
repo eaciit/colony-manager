@@ -286,7 +286,7 @@ db.saveAndBack = function(section) {
 			}
 		}
 	}
-	// param.MetaData = JSON.parse(kendo.stringify(ds));
+	param.MetaData = JSON.parse(kendo.stringify(ds));
 	// console.log("dirty", param);
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
@@ -325,11 +325,12 @@ db.designDataBrowser = function(_id) {
 		db.databrowserData(res.data.MetaData);
 		dbq.clearQuery()
 		db.setDataSource();
-		db.populateTable(res.data.ConnectionID);
+		
 		if (typeof _id === "function") {
 			_id();
 		}
 		ko.mapping.fromJS(res.data, db.configDataBrowser);
+		db.populateTable(res.data.ConnectionID);		
 
 		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
 			var querytext = JSON.parse(res.data.QueryText)
@@ -342,6 +343,11 @@ db.designDataBrowser = function(_id) {
 		db.isChecked($("#isFreetext").prop("checked"))
 		db.showHideFreeQuery();
 		db.headerCheckedAll();
+		// var ddl = $("#table").data("kendoDropDownList");
+		// var cetak = ddl.text(res.data.TableNames);
+		// console.log("cetak", cetak)
+		// console.log("res.data.TableNames", res.data.TableNames)
+
 	});
 }
 
@@ -368,10 +374,10 @@ db.populateTable = function (_id) {
 
 			db.collectionListData(datavalue);
 
-			// // remapping data
-			// a = ko.mapping.toJS(db.configDataBrowser);
-			// ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
-			// ko.mapping.fromJS(a, db.configDataBrowser);
+			/*remapping data*/
+			a = ko.mapping.toJS(db.configDataBrowser);
+			ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+			ko.mapping.fromJS(a, db.configDataBrowser);
 		}
 	});
 };
@@ -387,11 +393,13 @@ db.testQuery = function() {
 	}
 	
 	var param = ko.mapping.toJS(db.configDataBrowser);
+	var istable = false
 	db.checkBuilderNotEmpty();
 	if (!db.isChecked()) { //if false by default query with dbox
 		if ($("#table option:selected").text() != 'Select one') {
 			param.QueryType = "nonQueryText";
 			param.TableNames = $("#table").data("kendoDropDownList").value();
+			istable = true
 		}else{
 			return;
 		}
@@ -399,7 +407,6 @@ db.testQuery = function() {
 		if ($("#querytext").val() != '' && $("#querytype option:selected").text() == 'SQL') {
 			param.QueryType = db.configDataBrowser.QueryType();
 			param.QueryText = db.configDataBrowser.QueryText();
-			console.log(param)
 		} else if ($("#textquery").val() != '' && $("#querytype option:selected").text() == 'Dbox') {
 			param.QueryType = $("#querytype option:selected").text();
 			param.QueryText = JSON.stringify(dbq.getQuery());
@@ -412,8 +419,10 @@ db.testQuery = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
 		ko.mapping.fromJS(res.data, db.configDataBrowser)
+		if (istable) {
+			$("#isFreetext").prop("checked", false);
+		}
 		db.configDataBrowser.MetaData([]);
 		db.databrowserData(res.data.MetaData);
 		db.setDataSource();
