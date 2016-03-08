@@ -325,12 +325,12 @@
 										<div class="col-md-8 form-group">
 											<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour, max: 23, min:0 }" style="width: 100px"></select><code>hour</code>
+								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...', max: 23, min:0 }" style="width: 100px"></select>
 								       			</div>
 								       		</div>
 								       		<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly' || wg.configCron.mode() != '' && wg.configCron.mode() != 'custom' ">
 								       			<div class="col-md-6">
-									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, value: wg.configCron.min, max: 59, min:0 }" style="width: 90px"></select><code>min.</code>
+									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min, max: 59, min:0 }" style="width: 90px"></select>
 								       			</div>
 								       		</div>
 										</div>
@@ -338,12 +338,12 @@
 										<div class="col-md-8 form-group">
 								       		<div data-bind="visible: wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" name="day" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek}" style="width: 100px"></select><code>day</code>
+								       				<select id="dropdownHour" name="day" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek, optionLabel: 'Day...'}" style="width: 100px"></select>
 								       			</div>
 								       		</div>
 								       		<div data-bind="visible: wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, max: 31, min:1}" style="width: 70px"></select><code>date</code>
+								       				<select id="dropdownHour" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Date...', max: 31, min:1}" style="width: 90px"></select>
 								       			</div>
 								       		</div>
 										</div>
@@ -351,7 +351,7 @@
 										<div class="col-md-8 form-group">
 								       		<div data-bind="visible: wg.configCron.mode() == 'monthly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" name="month" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month}" style="width: 120px"></select><code>month</code>
+								       				<select id="dropdownHour" name="month" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month, optionLabel: 'Month...'}"></select>
 								       			</div>
 								       		</div>
 										</div>
@@ -472,7 +472,7 @@
 															</td>
 														</tr>
 													</tbody>
-												</table>te
+												</table>
 				    						</div>
 		    							</div>
 		    						</div>
@@ -538,7 +538,7 @@
 			    									<div class="tab-pane fade in" id="advanceFilterCond" role="tabpanel">
 			    										<div class="clearfix">&nbsp;</div>
 			    										<div class="col-md-12">
-			    											<textarea class="k-textbox" style="width: 100%;height: 60%" data-bind="value:  JSON.stringify(filtercond)" placeholder='Example Advance Filter : { "$and": [ { "test": { "$ne":"1" } }, { "test": { "$eq":"2" } }, { "test": { "$gte":"3" } } ] }'></textarea>
+			    											<textarea class="k-textbox" data-bind="value: wg.filtercond" style="height: 60%; width: 100%" placeholder='Example Advance Filter : { "$and": [ { "test": { "$ne":"1" } }, { "test": { "$eq":"2" } }, { "test": { "$gte":"3" } } ] }'></textarea>
 			    										</div>
 			    									</div>
 			    								</div>
