@@ -288,20 +288,21 @@ db.saveAndBack = function(section) {
      	
 	
 	var ds = grids.dataSource.data();
-	param.MetaData = JSON.parse(kendo.stringify(ds)).map(function (d) {
-		if (d.Aggregate == "") {
-			return d;
+	param.MetaData = JSON.parse(kendo.stringify(ds));
+	for (var data in param.MetaData){
+		if (param.MetaData[data].Aggregate != "") {
+			var splitString = param.MetaData[data].Aggregate.split(",");
+			var obj = {};
+			for (var s in splitString) {
+				if (splitString[s] != "") {
+					obj[splitString[s]] = ""
+				}
+			}
+			
+			param.MetaData[data].Aggregate = JSON.stringify(obj)
 		}
-
-		var obj = {};
-		d.Aggregate.split(",").forEach(function (f) {
-			obj.push(f);
-		});
-		d.Aggregate = JSON.stringify(obj);
-
-		return d;
-	});
-	
+	}
+	// console.log("dirty", param);
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
