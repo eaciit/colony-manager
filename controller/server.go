@@ -170,7 +170,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 	if data.ServerType == "hdfs" {
 		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
-		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHPass))
+		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())
