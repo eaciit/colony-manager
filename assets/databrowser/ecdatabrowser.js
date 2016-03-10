@@ -122,6 +122,10 @@ var methodsDataBrowser = {
 			return '';
 		}
 		else if (settingFilter.DataType.toLowerCase() == 'date'){
+			// $divElementFilter = $('<input type="checkbox"/>');
+			// $divElementFilter.appendTo(element);
+			// $divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
 			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoDatePicker({
@@ -129,7 +133,7 @@ var methodsDataBrowser = {
 			});
 			return '';
 		} else if (settingFilter.DataType.toLowerCase() == 'bool') {
-			$divElementFilter = $('<input type="checkbox" class="form-control" idfilter="filter-'+filterchoose+'-'+index+'" typedata="bool" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input type="checkbox" idfilter="filter-'+filterchoose+'-'+index+'" typedata="bool" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			return '';
 		}
@@ -147,9 +151,9 @@ var methodsDataBrowser = {
 			} else {
 				format = "";
 			}
-			aggr = JSON.parse("{\"avg\":\"220000.0000\",\"sum\":\"1100000\"}");
-			// if (options.metadata[key].Aggregate != '')
-			// 	aggr = JSON.parse(options.metadata[key].Aggregate);
+			// aggr = JSON.parse("{\"avg\":\"220000.0000\",\"sum\":\"1100000\"}");
+			if (options.metadata[key].Aggregate != '')
+				aggr = JSON.parse(options.metadata[key].Aggregate);
 			footerText = "";
 			$.each( aggr, function( key, value ) {
 				footerText+= key + ' : ' + value + '<br/>';
