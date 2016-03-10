@@ -494,7 +494,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
 		destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
 		destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
-		fmt.Println(destinationPath)
+		// fmt.Println(destinationPath)
 		var sourceZipPath string
 		var unzipCmd string
 		var destinationZipPath string
@@ -519,12 +519,12 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 			// 	}
 		} else if strings.Contains(server.CmdExtract, "7z") || strings.Contains(server.CmdExtract, "zip")  {
 			sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-			fmt.Println("zzziip path",sourceZipPath)
+			// fmt.Println("zzziip path",sourceZipPath)
 			destinationZipPath = fmt.Sprintf("%s.zip", destinationZipPathOutput)
 			deszip := fmt.Sprintf("%s%s%s", destinationPath, serverPathSeparator, app.ID)
 
 			unzipCmd = fmt.Sprintf("cmd /C 7z e -o%s -y %s ",deszip,destinationZipPath)
-			fmt.Println(unzipCmd)
+			// fmt.Println(unzipCmd)
 			log.AddLog(unzipCmd, "INFO")
 			err = toolkit.ZipCompress(sourcePath, sourceZipPath)
 			if err != nil {
@@ -556,7 +556,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		mkdirDestCmd := fmt.Sprintf("mkdir %s%s%s", destinationPath, serverPathSeparator, app.ID)
-		fmt.Println(mkdirDestCmd)
+		// fmt.Println(mkdirDestCmd)
 		log.AddLog(mkdirDestCmd, "INFO")
 		_, err = sshSetting.GetOutputCommandSsh(mkdirDestCmd)
 		if err != nil {
@@ -566,7 +566,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
-		fmt.Println(chmodDestCmd)
+		// fmt.Println(chmodDestCmd)
 		log.AddLog(chmodDestCmd, "INFO")
 		_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
 		if err != nil {
@@ -576,14 +576,14 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		log.AddLog(unzipCmd, "INFO")
-		fmt.Println(unzipCmd)
+		// fmt.Println(unzipCmd)
 		_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			changeDeploymentStatus(false)
 			return helper.CreateResult(false, nil, err.Error())
 		}
-		fmt.Println("zip rm ",sourceZipPath)
+		// fmt.Println("zip rm ",sourceZipPath)
 		err = os.Remove(sourceZipPath)
 		log.AddLog(fmt.Sprintf("remove %s", sourceZipPath), "INFO")
 		if err != nil {
@@ -593,7 +593,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		findCommand := fmt.Sprintf(`find %s -name "*install.bat"`, destinationZipPathOutput)
-		fmt.Println(findCommand)
+		// fmt.Println(findCommand)
 		log.AddLog(findCommand, "INFO")
 		installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
 		installerPath = strings.TrimSpace(installerPath)
@@ -611,7 +611,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		}
 
 		chmodCommand := fmt.Sprintf("chmod 755 %s%sinstall.bat", destinationZipPathOutput,serverPathSeparator)
-		fmt.Println("cchmood ",chmodCommand)
+		// fmt.Println("cchmood ",chmodCommand)
 		log.AddLog(chmodCommand, "INFO")
 		_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
 		if err != nil {
@@ -627,11 +627,11 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 			return ibp, ilf
 		}(installerPath)
-		fmt.Println(installerBasePath)
+		// fmt.Println(installerBasePath)
 		cRunCommand := make(chan string, 1)
 		go func() {
 			runCommand := fmt.Sprintf("cmd /C %s%sinstall.bat", destinationZipPathOutput,serverPathSeparator)
-			fmt.Println("ruuun ",runCommand)
+			// fmt.Println("ruuun ",runCommand)
 			log.AddLog(runCommand, "INFO")
 			res, err := sshSetting.RunCommandSsh(runCommand)
 			fmt.Println(res)
