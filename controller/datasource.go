@@ -22,6 +22,8 @@ type DataSourceController struct {
 	App
 }
 
+var querypattern = []string{"*", "!", "..", "..."}
+
 type MetaSave struct {
 	keyword string
 	data    string
@@ -138,7 +140,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		return 0, nil, nil, err
 	}
 
-	fmt.Printf("----- %#v\n", dataDS)
+	// fmt.Printf("----- %#v\n", dataDS)
 
 	dataConn := new(colonycore.Connection)
 	err = colonycore.Get(dataConn, dataDS.ConnectionID)
@@ -161,21 +163,35 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
 
 	_ = metaSave
-	// fmt.Println("Meta Save : ", metaSave)
 
 	for _, metadata := range dataDS.MetaData {
 		tField := metadata.Field
 		if payload.Has(tField) {
-			switch toolkit.TypeName(payload[tField]) {
-			case "int":
-				query = query.Where(dbox.Eq(tField, payload[tField]))
-				qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
-			case "float":
-				query = query.Where(dbox.Eq(tField, payload[tField]))
-				qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
-			default:
-				query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
-				qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+			var hasPattern bool
+			for _, val := range querypattern {
+				if strings.Contains(toolkit.ToString(payload[tField]), val) {
+					hasPattern = true
+				}
+			}
+			if hasPattern {
+				toolkit.Println("value : ", toolkit.ToString(payload[tField]))
+				toolkit.Println("tipe data : ", toolkit.TypeName(payload[tField]))
+				query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
+					toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+				qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
+					toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+			} else {
+				switch toolkit.TypeName(payload[tField]) {
+				case "int":
+					query = query.Where(dbox.Eq(tField, payload[tField]))
+					qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
+				case "float":
+					query = query.Where(dbox.Eq(tField, payload[tField]))
+					qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
+				default:
+					query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+					qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+				}
 			}
 		}
 	}
