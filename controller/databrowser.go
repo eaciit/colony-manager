@@ -385,7 +385,9 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 
 		j := 1
 		for keyField, dataField := range dataFields {
-			if strings.Contains(keyField, "id") && !strings.Contains(data.QueryText, "id") {
+			toolkit.Println("Query text : ", data.QueryText)
+			if strings.Contains(keyField, "id") && !strings.Contains(data.QueryText, "id") &&
+				!strings.Contains(data.QueryText, "*") && data.TableNames == "" {
 				continue
 			}
 			sInfo := &colonycore.StructInfo{}
