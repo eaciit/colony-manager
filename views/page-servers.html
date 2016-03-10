@@ -226,17 +226,17 @@
                                     <th>IP address</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: srv.hostAlias" > 
+                            <tbody data-bind="foreach: srv.configServer.hostAlias" > 
                                 <tr>
                                     <td>
-                                        <input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type host name here" data-bind="value: hostName" />
                                     </td>
                                     <td>
-                                        <input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type ip address here" data-bind="value: ip" /> 
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0)">
-                                            <span class="glyphicon glyphicon-remove" data-bind="click: srv.removeHostAlias($data)"></span>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: srv.removeHostAlias($data)">
+                                            <span class="glyphicon glyphicon-remove"></span>
                                         </button>
                                     </td>
                                 </tr>
