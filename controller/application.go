@@ -627,7 +627,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 
 			return ibp, ilf
 		}(installerPath)
-		// fmt.Println(installerBasePath)
+		fmt.Println(installerBasePath)
 		cRunCommand := make(chan string, 1)
 		go func() {
 			runCommand := fmt.Sprintf("cmd /C %s%sinstall.bat", destinationZipPathOutput,serverPathSeparator)
