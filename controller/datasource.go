@@ -113,10 +113,11 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	_id := toolkit.ToString(payload.Get("id", ""))
 	sort := payload.Get("sort")
 	search := payload.Get("search")
+	_ = search
 	take := toolkit.ToInt(payload.Get("take", ""), toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
-	fmt.Println("===== >> seacrch", search)
+	toolkit.Println("payload : ", payload)
 
 	TblName := toolkit.M{}
 	//sorter = ""
@@ -158,11 +159,18 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	}
 
 	TblName.Set("from", dataDS.TableNames)
+	var lookup bool
+	lookup = false
 
-	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
-	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
-
-	_ = metaSave
+	var qcount dbox.IQuery
+	var query dbox.IQuery
+	if lookup {
+		qcount, _ = d.parseQuery(connection.NewQuery(), TblName)
+		query, _ = d.parseQuery(connection.NewQuery().Order(sorter), TblName)
+	} else {
+		qcount, _ = d.parseQuery(connection.NewQuery(), TblName)
+		query, _ = d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
+	}
 
 	for _, metadata := range dataDS.MetaData {
 		tField := metadata.Field
@@ -174,8 +182,6 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 				}
 			}
 			if hasPattern {
-				toolkit.Println("value : ", toolkit.ToString(payload[tField]))
-				toolkit.Println("tipe data : ", toolkit.TypeName(payload[tField]))
 				query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
 					toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
 				qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
