@@ -965,20 +965,39 @@ wg.parseGrabConf = function () {
 				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
 				obj[col] = {};
 				var format = ko.utils.arrayFilter(columnsettings,function (item) {
-			        return item.alias == col;
-			    });
-				switch (format[0]){
-					case "integer":
-						obj[col][operation] = parseInt(val);
-						break;
-					case "float":
-						obj[col][operation] = parseFloat(val);
-						break;
-					default:
-						obj[col][operation] = val;
-						break;
+				        return item.alias == col;
+				});
+				if(operation !== '$eq'){
+					switch (format[0]){
+						case "integer":
+							obj[col][operation] = parseInt(val);
+							break;
+						case "float":
+							obj[col][operation] = parseFloat(val);
+							break;
+						default:
+							obj[col][operation] = val;
+							break;
+					}
+				}else{
+					switch (format[0]){
+						case "integer":
+							obj[col] = parseInt(val);
+							break;
+						case "float":
+							obj[col] = parseFloat(val);
+							break;
+						default:
+							obj[col] = val;
+							break;
+					}
 				}
-				condition[item.filtercond].push(obj);
+
+				if(conditionlist.length == 1){
+					condition = obj;
+				}else{
+					condition[item.filtercond].push(obj);
+				}
 
 			}
 			item.filtercond = condition;
