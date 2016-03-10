@@ -330,8 +330,6 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 				}
 				defer file.Close()
 
-				str := tempPath + FileName + strings.Replace(payload.Path+"/", "//", "/", -1) + FileName
-
 				//put new file to hdfs
 				err = h.Put(tempPath+FileName, strings.Replace(payload.Path+"/", "//", "/", -1)+FileName, "", nil)
 				if err != nil {
