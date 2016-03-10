@@ -59,6 +59,8 @@ func GetDirSnapshot(nameid string) *WebGrabberController {
 	w.nameid = nameid
 	return w
 }
+
+// function for check sedotand.exe
 func GetSedotandWindows() bool {
 	cmd := exec.Command("cmd", "/C", "tasklist", "/fo", "csv", "/nh")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
@@ -486,7 +488,14 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
 
 			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
-
+			//syscal.exec
+			/*
+				binary, lookErr := exec.LookPath("cmd")
+				if lookErr != nil {
+					panic(lookErr)
+				}
+				err := syscall.Exec(binary, []string{"cmd", "-c", sedotanPath}, os.Environ())
+			*/
 			if err != nil {
 				return helper.CreateResult(false, false, err.Error())
 			}
