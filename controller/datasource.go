@@ -119,6 +119,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	fmt.Println("===== >> seacrch", search)
 
 	TblName := toolkit.M{}
+	payload.Unset("id")
 	//sorter = ""
 	if sort != nil {
 		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
@@ -157,15 +158,51 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		return 0, nil, nil, err
 	}
 
-	TblName.Set("from", dataDS.TableNames)
+	if dataDS.QueryType == "" {
+		TblName.Set("from", dataDS.TableNames)
+		payload.Set("from", dataDS.TableNames)
+	} else if dataDS.QueryType == "Dbox" {
+		getTableName := toolkit.M{}
+		toolkit.UnjsonFromString(dataDS.QueryText, &getTableName)
+		payload.Set("from", getTableName.Get("from").(string))
+
+		if qSelect := getTableName.Get("select", "").(string); qSelect != "" {
+			payload.Set("select", getTableName.Get("select").(string))
+		}
+	} else if dataDS.QueryType == "SQL" {
+		var QueryString string
+		if dataConn.Driver == "mysql" || dataConn.Driver == "hive" {
+			QueryString = " LIMIT " + toolkit.ToString(take) + " OFFSET " + toolkit.ToString(skip)
+		} else if dataConn.Driver == "mssql" {
+			QueryString = " OFFSET " + toolkit.ToString(skip) + " ROWS FETCH NEXT " +
+				toolkit.ToString(take) + " ROWS ONLY "
+
+		} else if dataConn.Driver == "postgres" {
+			QueryString = " LIMIT " + toolkit.ToString(take) +
+				" OFFSET " + toolkit.ToString(skip)
+		}
+		stringQuery := toolkit.Sprintf("%s %s", dataDS.QueryText, QueryString)
+		payload.Set("freetext", stringQuery)
+		// toolkit.Println(stringQuery)
+	}
 
 	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
-	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
+	query, metaSave := d.parseQuery(connection.NewQuery() /*.Skip(skip).Take(take) .Order(sorter)*/, payload)
+	csr, err := query.Cursor(nil)
+	if err != nil {
+		toolkit.Println(err.Error())
+	}
+	defer csr.Close()
+
+	datas := []toolkit.M{}
+	csr.Fetch(&datas, 0, false)
+	toolkit.Println("datas ", datas)
 
 	_ = metaSave
 
 	for _, metadata := range dataDS.MetaData {
 		tField := metadata.Field
+
 		if payload.Has(tField) {
 			var hasPattern bool
 			for _, val := range querypattern {
@@ -173,6 +210,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 					hasPattern = true
 				}
 			}
+
 			if hasPattern {
 				toolkit.Println("value : ", toolkit.ToString(payload[tField]))
 				toolkit.Println("tipe data : ", toolkit.TypeName(payload[tField]))
@@ -320,10 +358,10 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 	}
 	if qSkipRaw, qSkipOK := queryInfo["skip"]; qSkipOK {
 		if qSkip, ok := qSkipRaw.(float64); ok {
-			query = query.Take(int(qSkip))
+			query = query.Skip(int(qSkip))
 		}
 		if qSkip, ok := qSkipRaw.(int); ok {
-			query = query.Take(qSkip)
+			query = query.Skip(qSkip)
 		}
 	}
 	if qOrder := queryInfo.Get("order", "").(string); qOrder != "" {
@@ -384,6 +422,12 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 
 			query = query.Where(allFilter...)
 		}
+	}
+
+	if freeText := queryInfo.Get("freetext", "").(string); freeText != "" {
+		query = query.Command("freequery", toolkit.M{}.
+			Set("syntax", freeText))
+		toolkit.Println(freeText)
 	}
 
 	return query, metaSave
