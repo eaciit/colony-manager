@@ -264,13 +264,13 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	log.AddLog("Get server with ID: "+payload.Server, "INFO")
 	server := new(colonycore.Server)
 	err = colonycore.Get(server, payload.Server)
+	// fmt.Println(payload.Server)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	serverPathSeparator := a.GetServerPathSeparator(server)
-
 	changeDeploymentStatus := func(status bool) {
 		deployedTo := []string{}
 		for _, each := range app.DeployedTo {
@@ -285,198 +285,384 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		colonycore.Save(app)
 	}
 
-	server.CmdExtract = "unzip"
-	log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
-	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
+	if(server.OS!="windows"){
+		server.CmdExtract = "unzip"
+		log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
+		sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
-	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
-		log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
-	}
+		if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
+			log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
+		}
 
-	defer sshClient.Close()
+		defer sshClient.Close()
 
-	sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
-	destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
-	destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
-	var sourceZipPath string
-	var unzipCmd string
-	var destinationZipPath string
+		sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
+		destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
+		destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
+		var sourceZipPath string
+		var unzipCmd string
+		var destinationZipPath string
 
-	if strings.Contains(server.CmdExtract, "tar") {
-		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
-		destinationZipPath = fmt.Sprintf("%s.tar", destinationZipPathOutput)
-		unzipCmd = fmt.Sprintf("tar -xvf %s -C %s", destinationZipPath, destinationZipPathOutput)
+		if strings.Contains(server.CmdExtract, "tar") {
+			sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
+			destinationZipPath = fmt.Sprintf("%s.tar", destinationZipPathOutput)
+			unzipCmd = fmt.Sprintf("tar -xvf %s -C %s", destinationZipPath, destinationZipPathOutput)
+			log.AddLog(unzipCmd, "INFO")
+			err = toolkit.TarCompress(sourcePath, sourceZipPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				changeDeploymentStatus(false)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			// } else if strings.Contains(server.CmdExtract, "zip") {
+			// 	sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+			// 	err = toolkit.GzExtract(sourcePath, sourceZipPath)
+			// 	// extractCmd = server.CmdExtract + " " + destinationPath + ".zip -d " + destinationZipPathOutput
+			// 	if err != nil {
+			// 		return helper.CreateResult(false, nil, err.Error())
+			// 	}
+		} else if strings.Contains(server.CmdExtract, "zip") {
+			sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+			destinationZipPath = fmt.Sprintf("%s.zip", destinationZipPathOutput)
+			unzipCmd = fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+			log.AddLog(unzipCmd, "INFO")
+			err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				changeDeploymentStatus(false)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		}
+
+		getPIDofPrevProccessCmd := fmt.Sprintf("lsof -i:%s -t", app.Port)
+		log.AddLog(getPIDofPrevProccessCmd, "INFO")
+		pid, err := sshSetting.GetOutputCommandSsh(getPIDofPrevProccessCmd)
+		pid = strings.TrimSpace(pid)
+		if err != nil || strings.TrimSpace(pid) == "" {
+			log.AddLog("Can't get PID of sedotand", "ERROR")
+		}
+
+		if pid != "" {
+			log.AddLog("PID of sedotand: "+pid, "SUCCESS")
+
+			killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
+			log.AddLog(killProcessCmd, "INFO")
+			_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				changeDeploymentStatus(false)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		}
+
+		rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
+		log.AddLog(rmCmdZip, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(rmCmdZip)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
+		log.AddLog(fmt.Sprintf("scp from %s to %s", sourceZipPath, destinationPath), "INFO")
+
+		rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+		log.AddLog(rmCmdZipOutput, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(rmCmdZipOutput)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		mkdirDestCmd := fmt.Sprintf("mkdir %s%s%s", destinationPath, serverPathSeparator, app.ID)
+		log.AddLog(mkdirDestCmd, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(mkdirDestCmd)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
+		log.AddLog(chmodDestCmd, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
 		log.AddLog(unzipCmd, "INFO")
-		err = toolkit.TarCompress(sourcePath, sourceZipPath)
+		_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			changeDeploymentStatus(false)
 			return helper.CreateResult(false, nil, err.Error())
 		}
-		// } else if strings.Contains(server.CmdExtract, "zip") {
-		// 	sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-		// 	err = toolkit.GzExtract(sourcePath, sourceZipPath)
-		// 	// extractCmd = server.CmdExtract + " " + destinationPath + ".zip -d " + destinationZipPathOutput
-		// 	if err != nil {
-		// 		return helper.CreateResult(false, nil, err.Error())
-		// 	}
-	} else if strings.Contains(server.CmdExtract, "zip") {
-		sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
-		destinationZipPath = fmt.Sprintf("%s.zip", destinationZipPathOutput)
-		unzipCmd = fmt.Sprintf("unzip %s -d %s", destinationZipPath, destinationZipPathOutput)
+
+		err = os.Remove(sourceZipPath)
+		log.AddLog(fmt.Sprintf("remove %s", sourceZipPath), "INFO")
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		findCommand := fmt.Sprintf(`find %s -name "*install.sh"`, destinationZipPathOutput)
+		log.AddLog(findCommand, "INFO")
+		installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
+		installerPath = strings.TrimSpace(installerPath)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		if installerPath == "" {
+			errString := "installer not found"
+			log.AddLog(errString, "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, errString)
+		}
+
+		chmodCommand := fmt.Sprintf("chmod 755 %s", installerPath)
+		log.AddLog(chmodCommand, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		installerBasePath, installerFile := func(path string) (string, string) {
+			comps := strings.Split(path, serverPathSeparator)
+			ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
+			ilf := comps[len(comps)-1]
+
+			return ibp, ilf
+		}(installerPath)
+
+		cRunCommand := make(chan string, 1)
+		go func() {
+			runCommand := fmt.Sprintf("cd %s && ./%s &", installerBasePath, installerFile)
+			log.AddLog(runCommand, "INFO")
+			_, err = sshSetting.RunCommandSsh(runCommand)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				cRunCommand <- err.Error()
+			} else {
+				cRunCommand <- ""
+			}
+		}()
+
+		errorMessage := ""
+		select {
+		case receiveRunCommandOutput := <-cRunCommand:
+			errorMessage = receiveRunCommandOutput
+		case <-time.After(time.Second * 3):
+			errorMessage = ""
+		}
+
+		if errorMessage != "" {
+			log.AddLog(errorMessage, "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, errorMessage)
+		}
+
+		if app.DeployedTo == nil {
+			app.DeployedTo = []string{}
+		}
+
+		changeDeploymentStatus(true)
+	}else{
+		//server.CmdExtract = "unzip"
+		log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
+		sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
+
+		if output, err := sshSetting.RunCommandSsh("cmd /C "+server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
+			log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
+		}
+
+		defer sshClient.Close()
+		serverPathSeparator="\\\\"
+		sourcePath := filepath.Join(EC_APP_PATH, "src", app.ID)
+		destinationPath := strings.Join([]string{server.AppPath, "src"}, serverPathSeparator)
+		destinationZipPathOutput := strings.Join([]string{destinationPath, app.ID}, serverPathSeparator)
+		fmt.Println(destinationPath)
+		var sourceZipPath string
+		var unzipCmd string
+		var destinationZipPath string
+
+		if strings.Contains(server.CmdExtract, "tar") {
+			sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.tar", app.ID))
+			destinationZipPath = fmt.Sprintf("%s.tar", destinationZipPathOutput)
+			unzipCmd = fmt.Sprintf("tar -xvf %s -C %s", destinationZipPath, destinationZipPathOutput)
+			log.AddLog(unzipCmd, "INFO")
+			err = toolkit.TarCompress(sourcePath, sourceZipPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				changeDeploymentStatus(false)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			// } else if strings.Contains(server.CmdExtract, "zip") {
+			// 	sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+			// 	err = toolkit.GzExtract(sourcePath, sourceZipPath)
+			// 	// extractCmd = server.CmdExtract + " " + destinationPath + ".zip -d " + destinationZipPathOutput
+			// 	if err != nil {
+			// 		return helper.CreateResult(false, nil, err.Error())
+			// 	}
+		} else if strings.Contains(server.CmdExtract, "7z") || strings.Contains(server.CmdExtract, "zip")  {
+			sourceZipPath = filepath.Join(EC_APP_PATH, "src", fmt.Sprintf("%s.zip", app.ID))
+			fmt.Println("zzziip path",sourceZipPath)
+			destinationZipPath = fmt.Sprintf("%s.zip", destinationZipPathOutput)
+			deszip := fmt.Sprintf("%s%s%s", destinationPath, serverPathSeparator, app.ID)
+
+			unzipCmd = fmt.Sprintf("cmd /C 7z e -o%s -y %s ",deszip,destinationZipPath)
+			fmt.Println(unzipCmd)
+			log.AddLog(unzipCmd, "INFO")
+			err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				changeDeploymentStatus(false)
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		}
+
+		rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
+		log.AddLog(rmCmdZip, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(rmCmdZip)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
+		log.AddLog(fmt.Sprintf("scp from %s to %s", sourceZipPath, destinationPath), "INFO")
+
+		rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
+		log.AddLog(rmCmdZipOutput, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(rmCmdZipOutput)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		mkdirDestCmd := fmt.Sprintf("mkdir %s%s%s", destinationPath, serverPathSeparator, app.ID)
+		fmt.Println(mkdirDestCmd)
+		log.AddLog(mkdirDestCmd, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(mkdirDestCmd)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
+		fmt.Println(chmodDestCmd)
+		log.AddLog(chmodDestCmd, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
 		log.AddLog(unzipCmd, "INFO")
-		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
+		fmt.Println(unzipCmd)
+		_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			changeDeploymentStatus(false)
 			return helper.CreateResult(false, nil, err.Error())
 		}
-	}
-
-	getPIDofPrevProccessCmd := fmt.Sprintf("lsof -i:%s -t", app.Port)
-	log.AddLog(getPIDofPrevProccessCmd, "INFO")
-	pid, err := sshSetting.GetOutputCommandSsh(getPIDofPrevProccessCmd)
-	pid = strings.TrimSpace(pid)
-	if err != nil || strings.TrimSpace(pid) == "" {
-		log.AddLog("Can't get PID of sedotand", "ERROR")
-	}
-
-	if pid != "" {
-		log.AddLog("PID of sedotand: "+pid, "SUCCESS")
-
-		killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
-		log.AddLog(killProcessCmd, "INFO")
-		_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
+		fmt.Println("zip rm ",sourceZipPath)
+		err = os.Remove(sourceZipPath)
+		log.AddLog(fmt.Sprintf("remove %s", sourceZipPath), "INFO")
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			changeDeploymentStatus(false)
 			return helper.CreateResult(false, nil, err.Error())
 		}
-	}
 
-	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
-	log.AddLog(rmCmdZip, "INFO")
-	_, err = sshSetting.GetOutputCommandSsh(rmCmdZip)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	err = sshSetting.SshCopyByPath(sourceZipPath, destinationPath)
-	log.AddLog(fmt.Sprintf("scp from %s to %s", sourceZipPath, destinationPath), "INFO")
-
-	rmCmdZipOutput := fmt.Sprintf("rm -rf %s", destinationZipPathOutput)
-	log.AddLog(rmCmdZipOutput, "INFO")
-	_, err = sshSetting.GetOutputCommandSsh(rmCmdZipOutput)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	mkdirDestCmd := fmt.Sprintf("mkdir %s%s%s", destinationPath, serverPathSeparator, app.ID)
-	log.AddLog(mkdirDestCmd, "INFO")
-	_, err = sshSetting.GetOutputCommandSsh(mkdirDestCmd)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
-	log.AddLog(chmodDestCmd, "INFO")
-	_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	log.AddLog(unzipCmd, "INFO")
-	_, err = sshSetting.GetOutputCommandSsh(unzipCmd)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	err = os.Remove(sourceZipPath)
-	log.AddLog(fmt.Sprintf("remove %s", sourceZipPath), "INFO")
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	findCommand := fmt.Sprintf(`find %s -name "*install.sh"`, destinationZipPathOutput)
-	log.AddLog(findCommand, "INFO")
-	installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
-	installerPath = strings.TrimSpace(installerPath)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	if installerPath == "" {
-		errString := "installer not found"
-		log.AddLog(errString, "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, errString)
-	}
-
-	chmodCommand := fmt.Sprintf("chmod 755 %s", installerPath)
-	log.AddLog(chmodCommand, "INFO")
-	_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	installerBasePath, installerFile := func(path string) (string, string) {
-		comps := strings.Split(path, serverPathSeparator)
-		ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
-		ilf := comps[len(comps)-1]
-
-		return ibp, ilf
-	}(installerPath)
-
-	cRunCommand := make(chan string, 1)
-	go func() {
-		runCommand := fmt.Sprintf("cd %s && ./%s &", installerBasePath, installerFile)
-		log.AddLog(runCommand, "INFO")
-		_, err = sshSetting.RunCommandSsh(runCommand)
+		findCommand := fmt.Sprintf(`find %s -name "*install.bat"`, destinationZipPathOutput)
+		fmt.Println(findCommand)
+		log.AddLog(findCommand, "INFO")
+		installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
+		installerPath = strings.TrimSpace(installerPath)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
-			cRunCommand <- err.Error()
-		} else {
-			cRunCommand <- ""
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
 		}
-	}()
 
-	errorMessage := ""
-	select {
-	case receiveRunCommandOutput := <-cRunCommand:
-		errorMessage = receiveRunCommandOutput
-	case <-time.After(time.Second * 3):
-		errorMessage = ""
+		if installerPath == "" {
+			errString := "installer not found"
+			log.AddLog(errString, "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, errString)
+		}
+
+		chmodCommand := fmt.Sprintf("chmod 755 %s%sinstall.bat", destinationZipPathOutput,serverPathSeparator)
+		fmt.Println("cchmood ",chmodCommand)
+		log.AddLog(chmodCommand, "INFO")
+		_, err = sshSetting.GetOutputCommandSsh(chmodCommand)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		installerBasePath, _ := func(path string) (string, string) {
+			comps := strings.Split(path, serverPathSeparator)
+			ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
+			ilf := comps[len(comps)-1]
+
+			return ibp, ilf
+		}(installerPath)
+		fmt.Println(installerBasePath)
+		cRunCommand := make(chan string, 1)
+		go func() {
+			runCommand := fmt.Sprintf("cmd /C %s%sinstall.bat", destinationZipPathOutput,serverPathSeparator)
+			fmt.Println("ruuun ",runCommand)
+			log.AddLog(runCommand, "INFO")
+			res, err := sshSetting.RunCommandSsh(runCommand)
+			fmt.Println(res)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				cRunCommand <- err.Error()
+			} else {
+				cRunCommand <- ""
+			}
+		}()
+
+		errorMessage := ""
+		select {
+		case receiveRunCommandOutput := <-cRunCommand:
+			errorMessage = receiveRunCommandOutput
+		case <-time.After(time.Second * 3):
+			errorMessage = ""
+		}
+
+		if errorMessage != "" {
+			log.AddLog(errorMessage, "ERROR")
+			changeDeploymentStatus(false)
+			return helper.CreateResult(false, nil, errorMessage)
+		}
+
+		if app.DeployedTo == nil {
+			app.DeployedTo = []string{}
+		}
+
+		changeDeploymentStatus(true)
 	}
-
-	if errorMessage != "" {
-		log.AddLog(errorMessage, "ERROR")
-		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, errorMessage)
-	}
-
-	if app.DeployedTo == nil {
-		app.DeployedTo = []string{}
-	}
-
-	changeDeploymentStatus(true)
 	return helper.CreateResult(true, nil, "")
 }
 
