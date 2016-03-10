@@ -340,7 +340,7 @@ $.ecDataBrowserSetting = function(element,options){
 		}
 	}
 	this.GetDataFilter = function(){
-		var resFilter = {}, dataTemp = [], $elem = '', valtype = '';
+		var resFilter = {}, dataTemp = [], $elem = '', valtype = '', lookupdata = [];
 		if (this.mapdatabrowser.showFilter.toLowerCase() == "simple"){
 			dataTemp = $(element).data('ecDataBrowser').dataSimple;
 		} else {
@@ -349,7 +349,7 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			if ($elem.val() != ''){
+			if ($elem.val() != '' || $elem.attr('haslookup') == "true"){
 				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
 					// valtype = parseInt($elem.val());
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'int');
@@ -361,7 +361,15 @@ $.ecDataBrowserSetting = function(element,options){
 				} else if ($elem.attr("typedata") == "date"){
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'date');
 				} else {
-					valtype = $elem.val();
+					if ($elem.attr('haslookup') == "false")
+						valtype = $elem.val();
+					else {
+						lookupdata = [];
+						for(var a in $elem.ecLookupDD('get')){
+							lookupdata.push($elem.ecLookupDD('get')[a][$elem.attr('fielddata')]);
+						}
+						valtype = lookupdata;
+					}
 				}
 				resFilter[field] = valtype;
 			}
