@@ -73,32 +73,206 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// if payload.QueryText != "" {
-	// 	payload.TableNames = ""
-	// }
-	_, _, err := d.connToDatabase(payload.ConnectionID)
+	ctx, _, err := d.connToDatabase(payload.ConnectionID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// var dataQuery dbox.IQuery
-	for _, v := range payload.MetaData {
-		if v.Aggregate != "" {
-			result := toolkit.M{}
-			toolkit.UnjsonFromString(v.Aggregate, &result)
-			if sum := result.Get("sum").(string); sum == "" {
-				toolkit.Println("masuk")
-			}
-		}
+	payload, err = d.hasAggr(ctx, payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
-	// query := d.parseQuery(conn, *payload, datacon)
-	// toolkit.Println(toolkit.JsonString(query))
-
+	// toolkit.Println(toolkit.JsonString(payload))
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, payload, "")
+}
+
+func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.DataBrowser) (*colonycore.DataBrowser, error) {
+	var fieldArr, aggrArr []string
+	var indexAggr []map[int]string
+	var query dbox.IQuery
+	fieldAggr := toolkit.M{}
+
+	for i, v := range data.MetaData {
+		if v.Aggregate != "" {
+			result := toolkit.M{}
+			toolkit.UnjsonFromString(v.Aggregate, &result)
+			cursor := []toolkit.M{}
+
+			if data.QueryType == "" {
+				aggregate, _ := d.dboxAggr(data.TableNames, v.Field, ctx, query, result, fieldAggr, cursor)
+				v.Aggregate = toolkit.JsonString(aggregate)
+			} else if data.QueryType == "SQL" {
+				names := map[int]string{}
+				fieldArr = append(fieldArr, v.Field)
+
+				if _, sumOK := result["SUM"]; sumOK {
+					aggrArr = append(aggrArr, "SUM("+v.Field+")")
+					if len(result) > 1 {
+						indexAggr = append(indexAggr, map[int]string{i: "sum"})
+					} else {
+						names[i] = "sum"
+					}
+				}
+				if _, avgOK := result["AVG"]; avgOK {
+					aggrArr = append(aggrArr, "AVG("+v.Field+")")
+					if len(result) > 1 {
+						indexAggr = append(indexAggr, map[int]string{i: "avg"})
+					} else {
+						names[i] = "avg"
+					}
+				}
+				if _, maxOK := result["MAX"]; maxOK {
+					aggrArr = append(aggrArr, "MAX("+v.Field+")")
+					if len(result) > 1 {
+						indexAggr = append(indexAggr, map[int]string{i: "max"})
+					} else {
+						names[i] = "max"
+					}
+				}
+				if _, minOK := result["MIN"]; minOK {
+					aggrArr = append(aggrArr, "MIN("+v.Field+")")
+					if len(result) > 1 {
+						indexAggr = append(indexAggr, map[int]string{i: "min"})
+					} else {
+						names[i] = "min"
+					}
+				}
+				if _, minOK := result["COUNT"]; minOK {
+					aggrArr = append(aggrArr, "COUNT("+v.Field+")")
+					if len(result) > 1 {
+						indexAggr = append(indexAggr, map[int]string{i: "count"})
+					} else {
+						names[i] = "count"
+					}
+				}
+
+				if len(result) > 1 {
+					fieldAggr.Set(v.Field, indexAggr)
+				} else {
+					fieldAggr.Set(v.Field, names)
+				}
+			} else if data.QueryType == "Dbox" {
+				getQuery := toolkit.M{}
+				toolkit.UnjsonFromString(data.QueryText, &getQuery)
+
+				aggregate, _ := d.dboxAggr(getQuery.Get("from").(string), v.Field, ctx, query, result, fieldAggr, cursor)
+				v.Aggregate = toolkit.JsonString(aggregate)
+			}
+		}
+	}
+
+	if data.QueryType == "SQL" {
+		fieldString := strings.Join(fieldArr, ", ")
+		aggrString := strings.Join(aggrArr, ", ")
+
+		queryText := strings.Replace(data.QueryText, fieldString, aggrString, -1)
+		query = ctx.NewQuery().Command("freequery", toolkit.M{}.
+			Set("syntax", queryText))
+
+		csr, e := query.Cursor(nil)
+		if e != nil {
+			return nil, e
+		}
+		defer csr.Close()
+
+		cursor := []toolkit.M{}
+		e = csr.Fetch(&cursor, 0, false)
+		if e != nil {
+			return nil, e
+		}
+
+		for f, m := range fieldAggr {
+			aggrData := toolkit.M{}
+			for _, aggs := range cursor {
+				for k, agg := range aggs {
+					if toolkit.SliceLen(m) > 0 {
+						for _, vals := range m.([]map[int]string) {
+							for key, val := range vals {
+								if strings.Contains(k, f) && strings.Contains(k, data.MetaData[key].Field) && strings.Contains(k, val) {
+									aggrData.Set(val, agg)
+									data.MetaData[key].Aggregate = toolkit.JsonString(aggrData)
+								}
+							}
+						}
+					} else {
+						for key, val := range m.(map[int]string) {
+							if strings.Contains(k, f) && strings.Contains(k, data.MetaData[key].Field) && strings.Contains(k, val) {
+								aggrData.Set(val, agg)
+								data.MetaData[key].Aggregate = toolkit.JsonString(aggrData)
+								// toolkit.Printf("k:%v f:%v key:%v val:%v agg:%v\n", k, f, key, val, data.MetaData[key].Aggregate)
+							}
+						}
+					}
+				}
+			}
+
+		}
+	}
+
+	return data, nil
+}
+
+func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox.IConnection, query dbox.IQuery, result, fieldAggr toolkit.M, cursor []toolkit.M) (toolkit.M, error) {
+	aggregate := toolkit.M{}
+	// cursor := []toolkit.M{}
+	query = ctx.NewQuery().From(tblename)
+	if result != nil {
+		for k, _ := range result {
+			if k == "SUM" {
+				query = query.Aggr(dbox.AggrSum, field, "SUM")
+			}
+			if k == "AVG" {
+				query = query.Aggr(dbox.AggrAvr, field, "AVG")
+			}
+			if k == "MAX" {
+				query = query.Aggr(dbox.AggrMax, field, "MAX")
+			}
+			if k == "MIN" {
+				query = query.Aggr(dbox.AggrMin, field, "MIN")
+			}
+
+			csr, e := query.Cursor(nil)
+			if e != nil {
+				return nil, e
+			}
+			defer csr.Close()
+
+			hasCount := []toolkit.M{}
+
+			if k == "COUNT" {
+				csr, e := query.Cursor(nil)
+				if e != nil {
+					return nil, e
+				}
+				defer csr.Close()
+				count := csr.Count()
+				hasCount = append(hasCount, aggregate.Set("count", count))
+				aggregate.Set("count", count)
+			} else {
+				e = csr.Fetch(&cursor, 0, false)
+				if e != nil {
+					return nil, e
+				}
+			}
+
+			if _, countOK := aggregate["count"]; countOK {
+				cursor = append(cursor, hasCount...)
+				// toolkit.Printf("countOK:%v k:%v fieldArr:%v cursor:%v\n", countOK, k, field, aggregate)
+			}
+
+			for _, agg := range cursor {
+				aggregate = agg
+				fieldAggr.Set(field, aggregate)
+				// toolkit.Printf("k:%v fieldArr:%v cursor:%v\n", k, v.Field, fieldAggr)
+			}
+
+		}
+	}
+	return aggregate, nil
 }
 
 func (d *DataBrowserController) DeleteBrowser(r *knot.WebContext) interface{} {
@@ -133,6 +307,22 @@ func (d *DataBrowserController) DeleteBrowser(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, nil, "")
+}
+
+func (d *DataBrowserController) CheckConnection(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.DataBrowser)
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	_, conn, err := d.connToDatabase(payload.ConnectionID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, conn.Driver, "")
 }
 
 func (d *DataBrowserController) GetDesignView(r *knot.WebContext) interface{} {
