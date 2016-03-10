@@ -17,6 +17,7 @@ import (
 	"strconv"
 	// "log"
 	"bytes"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -168,6 +169,12 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 					xNode.IsDir = false
 				} else {
 					xNode.IsDir = true
+
+					if path == "/" {
+						xNode.IsEditable = false
+					} else {
+						xNode.IsEditable = true
+					}
 				}
 
 				result = append(result, xNode)
@@ -316,22 +323,21 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 				h := setHDFSConnection(server.Host, server.SSHUser)
 
 				//create file on local
-				tempPath := strings.Replace(os.Getenv(server.AppPath)+"/", "//", "/", -1)
+				tempPath := strings.Replace(GetHomeDir()+"/", "//", "/", -1)
 
 				if tempPath == "" {
 					return helper.CreateResult(false, nil, "No Temporary Directory")
 				}
-				FileName := payload.Path
+				FileName := strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1]
 
 				file, err := os.Create(tempPath + FileName)
-
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 				defer file.Close()
 
 				//put new file to hdfs
-				err = h.Put(tempPath+FileName, strings.Replace(payload.Path+"/", "//", "/", -1)+FileName, "", nil)
+				err = h.Put(tempPath+FileName, strings.Replace(payload.Path+"/", "//", "/", -1), "", nil)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -722,4 +728,15 @@ func setHDFSConnection(Server, User string) *WebHdfs {
 	h.Config.TimeOut = 2 * time.Millisecond
 	h.Config.PoolSize = 100
 	return h
+}
+
+func GetHomeDir() string {
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
 }

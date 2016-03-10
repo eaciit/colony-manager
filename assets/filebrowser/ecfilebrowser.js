@@ -532,10 +532,10 @@ var methodsFB = {
 
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
 			var dtitm = methodsFB.GetSelectedData(elem);
-			if(!dtitm.iseditable){
-            swal("Warning!", "Action not permitted !", "warning");
-				return;
-			}
+			// if(!dtitm.iseditable){
+   // 			 swal("Warning!", "Action not permitted !", "warning");
+			// 	return;
+			// }
 		}
 
 		content.path = SelectedPath;
