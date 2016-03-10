@@ -115,18 +115,31 @@ var methodsDataBrowser = {
 	},
 	createElementFilter: function(settingFilter, filterchoose, index, element, id){
 		var $divElementFilter;
+		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64' || settingFilter.DataType.toLowerCase() == 'date'){
+			$divElementFilter = $('<input type="checkbox" class="ecdatabrowser-ckcrange"/>');
+			$divElementFilter.bind('click').click(function(){
+				if ($(this).prop("checked")){
+					$(this).parent().find('.ecdatabrowser-spacerange').show();
+					$(this).parent().find('.ecdatabrowser-filterto').css('display','inline-table');
+				}else{
+					$(this).parent().find('.ecdatabrowser-spacerange').hide();
+					$(this).parent().find('.ecdatabrowser-filterto').hide();
+				}
+			});
+			$divElementFilter.appendTo(element);
+		}
 		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input class="ecdatabrowser-filterfrom" idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			$divElementFilter = $('<span class="ecdatabrowser-spacerange"> - </span><input class="ecdatabrowser-filterto" idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
 			return '';
 		}
 		else if (settingFilter.DataType.toLowerCase() == 'date'){
-			// $divElementFilter = $('<input type="checkbox"/>');
-			// $divElementFilter.appendTo(element);
-			// $divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input class="ecdatabrowser-filterfrom" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<span class="ecdatabrowser-spacerange"> - </span><input class="ecdatabrowser-filterto" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoDatePicker({
 				format: settingFilter.Format,
