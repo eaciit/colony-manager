@@ -242,9 +242,13 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 			for _, each := range cmds {
 				log.AddLog(each, "INFO")
+				_, err := sshSetting.GetOutputCommandSsh(each)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return helper.CreateResult(false, nil, err.Error())	
+				}
 			}
-			_, err := sshSetting.RunCommandSsh(cmds...)
-
+			
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
