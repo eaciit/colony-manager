@@ -543,14 +543,14 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
     
     if runtime.GOOS == "windows" {
         err = exec.Command("cmd", "-c", "rmdir", "/s", "/q", destinationExtract).Run()
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }
     } else {
         err = exec.Command(os.Getenv("BASH"), "-c", "rm", "-rf", destinationExtract).Run()
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }
     }
 
 	if strings.Contains(fileName, ".tar.gz") {

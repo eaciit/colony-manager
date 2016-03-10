@@ -329,9 +329,10 @@ apl.backToFront = function () {
 
 apl.treeView = function (id) {
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+        if (!res.success) {
+            return;
+        }
+        
 		$("#treeview-left").replaceWith("<div id='treeview-left'></div>");
 		apl.appRecordsDir(res.data);
 		var treeview = $("#treeview-left").kendoTreeView({
@@ -654,7 +655,6 @@ $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
-	apl.treeView("") ;
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
