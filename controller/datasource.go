@@ -22,7 +22,7 @@ type DataSourceController struct {
 	App
 }
 
-var querypattern = []string{"*", "!", "..", "..."}
+var querypattern = []string{"*", "!", ".."}
 
 type MetaSave struct {
 	keyword string
@@ -109,17 +109,19 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 }
 
 func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []toolkit.M, *colonycore.DataBrowser, error) {
-
+	var hasLookup bool
+	if payload.Has("haslookup") {
+		hasLookup = payload.Get("haslookup").(bool)
+	}
 	_id := toolkit.ToString(payload.Get("id", ""))
 	sort := payload.Get("sort")
 	search := payload.Get("search")
+	_ = search
 	take := toolkit.ToInt(payload.Get("take", ""), toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
-	fmt.Println("===== >> seacrch", search)
-
 	TblName := toolkit.M{}
-	//sorter = ""
+
 	if sort != nil {
 		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
 		fmt.Printf("====== sort %#v\n", tmsort["dir"])
@@ -140,8 +142,6 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		return 0, nil, nil, err
 	}
 
-	// fmt.Printf("----- %#v\n", dataDS)
-
 	dataConn := new(colonycore.Connection)
 	err = colonycore.Get(dataConn, dataDS.ConnectionID)
 	if err != nil {
@@ -160,40 +160,49 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	TblName.Set("from", dataDS.TableNames)
 
 	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
-	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
+	query, _ := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
 
-	_ = metaSave
-
+	var selectfield string
 	for _, metadata := range dataDS.MetaData {
 		tField := metadata.Field
 		if payload.Has(tField) {
-			var hasPattern bool
-			for _, val := range querypattern {
-				if strings.Contains(toolkit.ToString(payload[tField]), val) {
-					hasPattern = true
-				}
-			}
-			if hasPattern {
-				toolkit.Println("value : ", toolkit.ToString(payload[tField]))
-				toolkit.Println("tipe data : ", toolkit.TypeName(payload[tField]))
-				query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
-					toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
-				qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
-					toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+			selectfield = toolkit.ToString(tField)
+			if toolkit.IsSlice(payload[tField]) {
+				query = query.Where(dbox.In(tField, payload[tField].([]interface{})...))
+				qcount = qcount.Where(dbox.In(tField, payload[tField].([]interface{})...))
 			} else {
-				switch toolkit.TypeName(payload[tField]) {
-				case "int":
-					query = query.Where(dbox.Eq(tField, payload[tField]))
-					qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
-				case "float":
-					query = query.Where(dbox.Eq(tField, payload[tField]))
-					qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
-				default:
-					query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
-					qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+				var hasPattern bool
+				for _, val := range querypattern {
+					if strings.Contains(toolkit.ToString(payload[tField]), val) {
+						hasPattern = true
+					}
+				}
+				if hasPattern {
+					query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
+						toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+					qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
+						toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+				} else {
+					switch toolkit.TypeName(payload[tField]) {
+					case "int":
+						query = query.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
+						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
+					case "float32":
+						query = query.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
+						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
+					case "float64":
+						query = query.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
+						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
+					default:
+						query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+						qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+					}
 				}
 			}
 		}
+	}
+	if hasLookup && selectfield != "" {
+		query = query.Select(selectfield)
 	}
 
 	ccount, err := qcount.Cursor(nil)
