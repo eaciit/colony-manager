@@ -152,22 +152,32 @@ var methodsDataBrowser = {
 		}
 		else {
 			if (settingFilter.Lookup == false){
-				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'"/>');
+				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'" haslookup="false"/>');
 				$divElementFilter.appendTo(element);
 			} else {
-				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'"/>');
+				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'" haslookup="true"/>');
 				$divElementFilter.appendTo(element);
+				var callData = {};
+				callData['id'] = id.data('ecDataBrowser').mapdatabrowser.dataSource.callData.id;
+				callData['take'] = 10;
+				callData['skip'] = 0;
+				callData['page'] = 1;
+				callData['pageSize'] = 10;
+				callData['haslookup'] = true;
 				$('input[idfilter=filter-'+filterchoose+'-'+index+']').ecLookupDD({
 					dataSource:{
-						url: '',
-						call: 'GET',
-						callData: 'search', 
+						url: id.data('ecDataBrowser').mapdatabrowser.dataSource.url,
+						call: 'post',
+						callData: callData,
+						resultData: function(a){
+							return a.data.DataValue;
+						}
 					}, 
 					inputType: 'multiple', 
-					inputSearch: '_id', 
-					idField: '_id', 
-					idText: '_id', 
-					displayFields: '_id', 
+					inputSearch: settingFilter.Field, 
+					idField: settingFilter.Field, 
+					idText: settingFilter.Field, 
+					displayFields: settingFilter.Field, 
 				});
 			}
 			return '';
