@@ -18,7 +18,7 @@ srv.templateConfigServer = {
 	cmdnewfile :"",
 	cmdcopy:"",
 	cmdmkdir:"",
-    hostAlias: {}
+    hostAlias: []
 };
 srv.templatetypeServer = ko.observableArray([
 	{ value: "node", text: "Node Server" },
@@ -135,7 +135,6 @@ srv.createNewServer = function () {
 	$("#privatekey").replaceWith($("#privatekey").clone());
 	app.mode("editor");
 	srv.ServerMode('');
-    srv.hostAlias([]);
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
     srv.addHostAlias();
@@ -244,8 +243,8 @@ srv.doSaveServer = function (c) {
 
 		$.when.apply(undefined, ajaxes).then(callback, callback);
 	} else {
-        if (srv.configServer.serverType() == "hdfs") {        
-            data.hostAlias = srv.parseHostAliasToObject(srv.hostAlias());
+        if (srv.configServer.serverType() != "hdfs") {        
+            data.hostAlias = [];
         }
         
 		app.ajaxPost("/server/saveservers", data, function (res) {
@@ -292,7 +291,6 @@ srv.selectGridServer = function (e) {
 srv.editServer = function (_id) {
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());
-    srv.hostAlias([]);
 
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	app.ajaxPost("/server/selectservers", { _id: _id }, function(res) {
@@ -303,13 +301,9 @@ srv.editServer = function (_id) {
 		app.mode('editor');
 		srv.ServerMode('edit');
         if (res.data.hostAlias == null) {
-            res.data.hostAlias = {};
+            res.data.hostAlias = [];
         }
 		ko.mapping.fromJS(res.data, srv.configServer);
-        srv.parseHostAliasToArray(res.data.hostAlias);
-        if (srv.hostAlias().length == 0) {
-            srv.addHostAlias();
-        } 
 	});
 }
 srv.doTestConnection = function (_id) {
@@ -536,42 +530,18 @@ srv.ipToRegisterAsString = ko.computed(function () {
 	return srv.ipToRegister().join("\n");
 });
 
-srv.hostAlias = ko.observableArray([]);
 srv.templateHostAlias = {
-    key: "",
-    value: ""
+    ip: "",
+    hostName: ""
 };
 srv.addHostAlias = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, srv.templateHostAlias));
-	srv.hostAlias.push(item); 
+	srv.configServer.hostAlias.push(item); 
 };
 srv.removeHostAlias = function (each) {
 	return function () {
-		srv.hostAlias.remove(each);
+		srv.configServer.hostAlias.remove(each);
 	};
-};
-srv.parseHostAliasToObject = function (raw) {
-    var o = {};
-    raw.forEach(function (d) {
-        var k = ko.mapping.toJS(d);
-        if (k.key == "" || k.value == "") {
-            return;
-        }
-        o[k.key] = k.value;
-    });
-    return o;
-};
-srv.parseHostAliasToArray = function (aliases) {
-    srv.hostAlias([]);
-    for (var p in aliases) {
-        if (aliases.hasOwnProperty(p)) {
-            var o = ko.mapping.fromJS({
-                key: p,
-                value: aliases[p]
-            });
-            srv.hostAlias.push(o);
-        }
-    }
 };
 
 srv.finishButton = function () {
