@@ -65,7 +65,6 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil {
-
 		var result []colonycore.FileInfo
 
 		if server.ServerType == SERVER_NODE {
@@ -150,6 +149,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 			if payload.Path == "" {
 				payload.Path = "/"
 			}
+
 			res, err := h.List(payload.Path)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
@@ -167,10 +167,11 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 				if files.Type == "FILE" {
 					xNode.IsDir = false
+					xNode.IsEditable = true
 				} else {
 					xNode.IsDir = true
 
-					if path == "/" {
+					if payload.Path == "/" {
 						xNode.IsEditable = false
 					} else {
 						xNode.IsEditable = true
@@ -467,7 +468,9 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 			} else if server.ServerType == SERVER_HDFS {
 				h := setHDFSConnection(server.Host, server.SSHUser)
 
-				err := h.SetPermission(payload.Path, payload.Permission)
+				permission, err := helper.ConstructPermission(payload.Permission)
+
+				err = h.SetPermission(payload.Path, permission)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -555,7 +558,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 				SourcePath := payload.Path
 				DestPath := filepath.Join(server.DataPath, "filebrowser", "temp")
 
-				if !strings.Contains(strings.Split(SourcePath, "/")[len(SourcePath)-1], ".") {
+				if !strings.Contains(strings.Split(SourcePath, "/")[len(strings.Split(SourcePath, "/"))-1], ".") {
 					isDirectory = true
 				}
 
@@ -612,7 +615,7 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 				//get hdfs file to server.apppath
 				h := setHDFSConnection(server.Host, server.SSHUser)
 
-				err := h.GetToLocal(payload.Path, server.AppPath, "")
+				err := h.GetToLocal(payload.Path, GetHomeDir()+strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1], "")
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -721,7 +724,7 @@ func sshConnect(payload *colonycore.Server) (sshclient.SshSetting, error) {
 }
 
 func setHDFSConnection(Server, User string) *WebHdfs {
-	h, err := NewWebHdfs(NewHdfsConfig("http://192.168.0.223:50070", "hdfs"))
+	h, err := NewWebHdfs(NewHdfsConfig(Server, User))
 	if err != nil {
 		fmt.Println(err.Error())
 	}
