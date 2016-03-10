@@ -642,6 +642,7 @@ var methodsFB = {
             app.isLoading(false);
             $(elem).find(".modal").modal("hide");
             methodsFB.RefreshTreeView(elem,param);
+	        swal("Saved!", "Your request has been processed !", "success");
         }
         
 
