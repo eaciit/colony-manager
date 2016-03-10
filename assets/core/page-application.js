@@ -651,10 +651,20 @@ apl.selectServer = function(elem, e){
 	}
 }
 
+apl.prepareTreeView = function () {
+	$("#treeview-left").kendoTreeView({
+		animation: false,
+		template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
+		select: apl.selectDirApp,
+		dataSource: new kendo.data.DataSource({ data: [] }),
+    }).data("kendoTreeView");
+}
+
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
+	apl.prepareTreeView();
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
