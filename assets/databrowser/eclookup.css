@@ -1,0 +1,184 @@
+div.eclookup-container {
+  padding: 0px;
+  background-color: #fff;
+  border: 1px solid #e6e6e6;
+  text-align: right; }
+
+ul.eclookup-list {
+  overflow: hidden;
+  height: auto !important;
+  height: 1%;
+  width: 90%;
+  cursor: text;
+  font-size: 12px;
+  font-family: Verdana;
+  padding: 0px 5px 5px 0px;
+  z-index: 999;
+  margin: 0;
+  list-style-type: none;
+  float: left;
+  clear: left; }
+
+div.eclookup-btndd {
+  width: 10%;
+  float: left;
+  cursor: pointer;
+  padding-top: 8px;
+  padding-right: 8px; }
+
+li.eclookup-item {
+  float: left;
+  height: auto !important;
+  background-color: #3A8BDF;
+  color: #fff;
+  padding: 2px 10px;
+  cursor: pointer;
+  margin-left: 5px;
+  margin-top: 5px;
+  border-radius: 1.071em; }
+
+li.eclookup-item.max {
+  width: 98%; }
+
+li.eclookup-item:hover {
+  background-color: #63A2E3; }
+
+li.eclookup-item > p {
+  margin-bottom: 3px;
+  float: left; }
+
+li.eclookup-item > span.eclookup-remove {
+  margin-left: 10px;
+  float: left; }
+
+li.eclookup-item.max > span.eclookup-remove {
+  float: right; }
+
+li.eclookup-txt {
+  background-color: transparent;
+  color: #000;
+  float: left;
+  margin-left: 5px;
+  margin-top: 5px;
+  padding: 2px 5px; }
+
+li.eclookup-txt > input {
+  outline: none;
+  border: none;
+  width: 100%; }
+
+div.eclookup-list-selected {
+  -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.05); }
+
+div.eclookup-dropdown {
+  position: absolute;
+  display: none;
+  z-index: 10003;
+  border: 1px solid #CFCFCF;
+  width: 94%; }
+
+ul.eclookup-listsearch {
+  list-style-type: none;
+  margin: 0;
+  padding: 0px;
+  font-size: 15px; }
+
+li.eclookup-itemsearch {
+  cursor: pointer;
+  margin: 0;
+  padding: 3px 3px 3px 10px;
+  border-bottom: 1px solid #CFCFCF;
+  background-color: #fff; }
+  li.eclookup-itemsearch:hover {
+    background-color: #CFCFCF; }
+
+div.eclookup-detail {
+  width: 100%;
+  padding: 8px;
+  display: none;
+  border: 1px solid #e6e6e6;
+  margin-top: 10px;
+  margin-bottom: 10px; }
+
+div.eclookup-detail-search > span {
+  font-size: 12px;
+  font-weight: bold; }
+
+div.eclookup-detail-search > input {
+  border: 1px solid #DBDADA;
+  width: 65%;
+  margin-right: 5px;
+  padding: 5px; }
+
+div.eclookup-detail-data {
+  margin-top: 10px;
+  width: 100%; }
+
+table.eclookup-table {
+  width: 100%;
+  border-bottom: 1px solid #DBDADA;
+  border-left: 1px solid #DBDADA;
+  border-right: 1px solid #DBDADA; }
+
+table.eclookup-table th {
+  border: 1px solid #DBDADA;
+  text-align: center;
+  padding: 2px; }
+
+table.eclookup-table td {
+  padding: 2px;
+  text-align: center; }
+
+table.eclookup-table tbody > tr {
+  cursor: pointer; }
+  table.eclookup-table tbody > tr:hover {
+    background-color: #CFCFCF; }
+
+div.eclookup-btnadvance {
+  padding-top: 5px;
+  padding-left: 10px; }
+
+div.eclookup-search-advance {
+  padding-top: 5px;
+  display: none; }
+
+div.eclookup-filtercond > span {
+  padding: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  float: left; }
+
+div.eclookup-filtercond > select {
+  width: 100px;
+  float: left;
+  margin-left: 5px;
+  margin-right: 5px; }
+
+div.eclookup-filtercond > .refresh-btn {
+  margin-left: 5px;
+  margin-right: 5px; }
+
+ul.eclookup-filter-advance {
+  list-style-type: none;
+  padding: 0px; }
+
+ul.eclookup-filter-advance li {
+  padding: 5px;
+  clear: left; }
+
+ul.eclookup-filter-advance li > select {
+  width: 80px;
+  margin-left: 5px;
+  float: left; }
+
+ul.eclookup-filter-advance li > input {
+  width: 100px;
+  float: left;
+  margin-left: 5px; }
+
+ul.eclookup-filter-advance li > button {
+  float: left;
+  margin-left: 5px; }
+
+/*# sourceMappingURL=eclookup.css.map */
