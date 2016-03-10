@@ -235,8 +235,8 @@
                                         <input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0)">
-                                            <span class="glyphicon glyphicon-remove" data-bind="click: srv.removeHostAlias($data)"></span>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: srv.removeHostAlias($data)">
+                                            <span class="glyphicon glyphicon-remove"></span>
                                         </button>
                                     </td>
                                 </tr>
