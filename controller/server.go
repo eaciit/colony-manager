@@ -231,10 +231,10 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				_, err := sshSetting.GetOutputCommandSsh(each)
 				if err != nil {
 					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())	
+					return helper.CreateResult(false, nil, err.Error())
 				}
 			}
-			
+
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
@@ -280,7 +280,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	} else {
 		// windows
 	}
-		
+
 	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
 	err = colonycore.Save(data)
 	if err != nil {
