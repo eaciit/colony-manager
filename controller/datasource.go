@@ -188,7 +188,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		// toolkit.Println(stringQuery)
 	}
 
-	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
+	qcount, _ := d.parseQuery(connection.NewQuery(), payload)
 	query, _ := d.parseQuery(connection.NewQuery() /*.Skip(skip).Take(take) .Order(sorter)*/, payload)
 
 	var selectfield string
@@ -199,7 +199,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 			if toolkit.IsSlice(payload[tField]) {
 				query = query.Where(dbox.In(tField, payload[tField].([]interface{})...))
 				qcount = qcount.Where(dbox.In(tField, payload[tField].([]interface{})...))
-			} else {
+			} else if !toolkit.IsNilOrEmpty(payload[tField]) {
 				var hasPattern bool
 				for _, val := range querypattern {
 					if strings.Contains(toolkit.ToString(payload[tField]), val) {
@@ -208,9 +208,9 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 				}
 				if hasPattern {
 					query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
-						toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+						toolkit.ToString(metadata.DataType), ""))
 					qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
-						toolkit.ToString(toolkit.TypeName(payload[tField])), ""))
+						toolkit.ToString(metadata.DataType), ""))
 				} else {
 					switch toolkit.TypeName(payload[tField]) {
 					case "int":
@@ -234,8 +234,10 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	if hasLookup && selectfield != "" {
 		if toolkit.HasMember(ds_flatfile, dataConn.Driver) {
 			query = query.Select(selectfield)
+			qcount = qcount.Select(selectfield)
 		} else {
 			query = query.Select(selectfield).Group(selectfield)
+			qcount = qcount.Select(selectfield).Group(selectfield)
 		}
 
 	}
