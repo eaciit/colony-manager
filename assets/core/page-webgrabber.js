@@ -321,7 +321,9 @@ wg.toggleDaemon = function (to) {
 				return;
 			}
 
-			wg.checkDaemonStatus();
+			setTimeout(function(){
+				wg.checkDaemonStatus()
+			},300)
 		});
 	};
 };
