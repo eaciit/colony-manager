@@ -2,10 +2,24 @@
 
 This is what we do!
 
-## Issues until 02 Mar 2015
+## Issues until 10 Mar 2015
 
 | No  | Done? | Module | Issue |
 | --: | :---: | :----- | :---- | 
+| 64 | | Data Browser | lookup filter |
+| 63 | | Application | test deploy ke windows |
+| 62 | | Server | create server windows |
+| 61 | | Application | deploy app dari windows ke linux belum stabil |
+| 60 | | Server | create server dari windows ke linux belum stabil |
+| 59 | | Web Grabber | gunakan syscal untuk run daemon |
+| 58 | | Web Grabber | kill proccess daemon |
+| 57 | | Web Grabber | run daemon belum jalan di windows |
+| 56 | | Data Serializer | Add Wizard - munculkan table yg sama (jika ada) pada destination |
+| 55 | | Data Serializer | Add Wizard - munculkan semua table source |
+| 54 | | Data Browser | filter belum jalan |
+| 53 | | Data Browser | aggregate |
+| 52 | | Data Browser | range filter untuk tipe number dan date |
+| 51 | | Connection | Tambah connector baru hbcc |
 | 50 | ✔ | Connection | prepare defaults settings for each driver (cannot be deleted) |
 | 49 | ✔ | Connection | prepare at least 5 sample connection |
 | 48 | ✔ | Data Source | add timeout when run the query |

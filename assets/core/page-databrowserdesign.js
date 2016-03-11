@@ -10,6 +10,7 @@ db.templateConfigMetaData = {
     Align : "",
     ShowIndex : 0,
     HiddenField: false,
+    Lookup: false,
     Sortable : false,
     SimpleFilter : false,
     AdvanceFilter : false,
@@ -95,6 +96,7 @@ db.databrowserColumns = ko.observableArray([
     },
 	{ width: 120, title: "Position", template: "<a class='btn btn-xs btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-xs btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;'>#= ShowIndex #</span>"},
 	{ width: 100, title: "Hidden Field", template: "<center><input type='checkbox' #=HiddenField ? \"checked='checked'\" : ''# class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallhiddenfield' onclick=\"db.checkAll(this, 'HiddenField')\" />&nbsp;&nbsp;Hidden Field</center>"},
+	{ width: 100, title: "Lookup", template: "<center><input type='checkbox' #=Lookup ? \"checked='checked'\" : ''# class='lookup' data-field='Lookup' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalllookup' onclick=\"db.checkAll(this, 'Lookup')\" />&nbsp;&nbsp;Lookup</center>"},
 	{ width: 100, title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" />&nbsp;&nbsp;Sortable</center>"},
 	{ width: 100, title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" />&nbsp;&nbsp;Simple Filter</center>"},
 	{ width: 100, title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" />&nbsp;&nbsp;Advance Filter</center>"},
@@ -194,6 +196,7 @@ db.addProperties = function () {
     	property.Format = val.Format
     	property.Align = val.Align
     	property.HiddenField = val.HiddenField
+    	property.Lookup = val.Lookup
     	property.ShowIndex = val.ShowIndex
     	property.Sortable = val.Sortable
     	property.SimpleFilter = val.SimpleFilter
@@ -526,6 +529,12 @@ db.headerCheckedAll = function() {
 		$("#selectallhiddenfield").prop("checked", false);
 	}
 
+	if ($(".lookup:checked").length == $(".lookup").length) {
+		$("#selectalllookup").prop("checked", true);
+	} else {
+		$("#selectalllookup").prop("checked", false);
+	}
+
 	if ($(".sortable:checked").length == $(".sortable").length) {
 		$("#selectallsortable").prop("checked", true);
 	} else {
@@ -574,7 +583,8 @@ db.setDataSource = function () {
     					type: 'number', 
     					editable: false
 					},
-					HiddenField: { type: 'boolean' }, 
+					HiddenField: { type: 'boolean' },
+					Lookup: { type: 'boolean' },
 					Sortable: { type: 'boolean' }, 
 					SimpleFilter: { type: 'boolean' }, 
 					AdvanceFilter: { type: 'boolean' }, 

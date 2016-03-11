@@ -24,6 +24,7 @@ wg.collectionInput = ko.observable();
 wg.showWebGrabber = ko.observable(true);
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
+wg.filtercond = ko.observable('');
 wg.modeSetup = ko.observable();
 wg.timePreset = ko.observable();
 wg.selectedSeconds = ko.observable(0);
@@ -445,6 +446,7 @@ wg.createNewScrapper = function () {
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
 	wg.modeSetup('');
+	wg.filtercond('');
 	//wg.timePreset('');
 };
 wg.backToFront = function () {
@@ -454,6 +456,7 @@ wg.backToFront = function () {
 	app.mode("");
 	wg.selectedID('');
 	wg.getScrapperData();
+	wg.filtercond('');
 	wg.modeSelector("");
 	wg.showWebGrabber(false);
 	wg.scrapperMode('');
@@ -874,10 +877,13 @@ wg.saveSettingSelector = function() {
 		}
 	}
 
-	var selector = ko.mapping.toJS(wg.configSelector);
-	wg.selectorRowSetting.replace(wg.selectorRowSetting()[wg.tempIndexColumn()], selector);
-
-	wg.modeSelector("");
+	if(wg.filtercond() !== "" && wg.isJson(wg.filtercond()) == false){
+		swal({ title: "Invalid Filter condition", type: "error" });
+	}else{
+		var selector = ko.mapping.toJS(wg.configSelector);
+		wg.selectorRowSetting.replace(wg.selectorRowSetting()[wg.tempIndexColumn()], selector);
+		wg.modeSelector("");
+	}
 }
 wg.addColumnSetting = function() {
 	var selector = $.extend(true, {}, ko.mapping.toJS(wg.configSelector));
@@ -959,20 +965,39 @@ wg.parseGrabConf = function () {
 				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
 				obj[col] = {};
 				var format = ko.utils.arrayFilter(columnsettings,function (item) {
-			        return item.alias == col;
-			    });
-				switch (format[0]){
-					case "integer":
-						obj[col][operation] = parseInt(val);
-						break;
-					case "float":
-						obj[col][operation] = parseFloat(val);
-						break;
-					default:
-						obj[col][operation] = val;
-						break;
+				        return item.alias == col;
+				});
+				if(operation !== '$eq'){
+					switch (format[0]){
+						case "integer":
+							obj[col][operation] = parseInt(val);
+							break;
+						case "float":
+							obj[col][operation] = parseFloat(val);
+							break;
+						default:
+							obj[col][operation] = val;
+							break;
+					}
+				}else{
+					switch (format[0]){
+						case "integer":
+							obj[col] = parseInt(val);
+							break;
+						case "float":
+							obj[col] = parseFloat(val);
+							break;
+						default:
+							obj[col] = val;
+							break;
+					}
 				}
-				condition[item.filtercond].push(obj);
+
+				if(conditionlist.length == 1){
+					condition = obj;
+				}else{
+					condition[item.filtercond].push(obj);
+				}
 
 			}
 			item.filtercond = condition;
@@ -981,6 +1006,9 @@ wg.parseGrabConf = function () {
 			item.filtercond = {};
 		}
 
+		if (wg.filtercond() != ""){
+			item.filtercond = JSON.parse(wg.filtercond());
+		}
 		delete item["conditionlist"];
 		delete item["__ko_mapping__"];
 		return JSON.parse(ko.mapping.toJSON(item));
@@ -1062,7 +1090,8 @@ wg.saveSelectorConf = function(){
 		wg.selectorRowSetting([]);
 		wg.getScrapperData();
 		wg.modeSelector("");
-		wg.modeSetup("")
+		wg.modeSetup("");
+		wg.filtercond("");
 	});
 }
 wg.viewHistoryRecord = function (id) {
@@ -1260,6 +1289,17 @@ wg.showSetupForm = function(mode){
 
 }
 
+wg.isJson = function(str) {
+    try {
+        var obj = JSON.parse(str);
+         //console.log("Valid JSON",obj)
+    } catch (e) {
+     var obj = "Error: Parse error"
+     //console.log(obj)
+        return false;
+    }
+    return true;
+}
 $(function () {
 	wg.getConnection();
 	wg.getScrapperData();

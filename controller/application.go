@@ -9,7 +9,9 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
+    "os/exec"
 	"github.com/eaciit/toolkit"
+    "runtime"
 	"io"
 	"io/ioutil"
 	"os"
@@ -289,7 +291,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
-	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
+	if output, err := sshSetting.GetOutputCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
 		log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
@@ -535,9 +537,22 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
+    
 	fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
 	destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
+    
+    if runtime.GOOS == "windows" {
+        err = exec.Command("cmd", "-c", "rmdir", "/s", "/q", destinationExtract).Run()
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }
+    } else {
+        err = exec.Command(os.Getenv("BASH"), "-c", "rm", "-rf", destinationExtract).Run()
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }
+    }
+
 	if strings.Contains(fileName, ".tar.gz") {
 		err = toolkit.TarGzExtract(fileExtract, destinationExtract)
 		if err != nil {

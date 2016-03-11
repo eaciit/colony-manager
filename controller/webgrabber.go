@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/eaciit/cast"
@@ -17,7 +18,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	// "syscall"
+	"syscall"
 	"time"
 )
 
@@ -57,6 +58,21 @@ func GetDirSnapshot(nameid string) *WebGrabberController {
 	w.filepathName = path
 	w.nameid = nameid
 	return w
+}
+
+// function for check sedotand.exe
+func GetSedotandWindows() bool {
+	cmd := exec.Command("cmd", "/C", "tasklist", "/fo", "csv", "/nh")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return strings.Contains(out.String(), "sedotand.exe")
 }
 
 func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
@@ -415,13 +431,24 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	if runtime.GOOS == "windows" {
 
-	byts, _ := exec.Command("pgrep", "sedotand").Output()
-	if string(byts) == "" {
-		return helper.CreateResult(true, false, "")
+		sedotandExist := GetSedotandWindows()
+
+		if sedotandExist == false {
+			return helper.CreateResult(true, false, "")
+		}
+
+		return helper.CreateResult(true, true, "")
+
+	} else {
+		byts, _ := exec.Command("pgrep", "sedotand").Output()
+		if string(byts) == "" {
+			return helper.CreateResult(true, false, "")
+		}
+		return helper.CreateResult(true, true, "")
 	}
 
-	return helper.CreateResult(true, true, "")
 }
 
 func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
@@ -436,7 +463,44 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 	}
 
 	if runtime.GOOS == "windows" {
-		return helper.CreateResult(false, false, "Not yet supported for windows")
+
+		if payload.OP == "off" {
+			// cek tasklist -> sedotand.exe
+			sedotandExist := GetSedotandWindows()
+
+			if sedotandExist == false {
+				return helper.CreateResult(true, false, "")
+			}
+
+			err := exec.Command("taskkill", "/IM", "sedotand.exe", "/F").Start()
+
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+			return helper.CreateResult(true, true, "")
+		} else {
+			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand.exe")
+			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
+			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
+			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
+			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
+
+			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
+
+			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
+			//syscal.exec
+			/*
+				binary, lookErr := exec.LookPath("cmd")
+				if lookErr != nil {
+					panic(lookErr)
+				}
+				err := syscall.Exec(binary, []string{"cmd", "-c", sedotanPath}, os.Environ())
+			*/
+			if err != nil {
+				return helper.CreateResult(false, false, err.Error())
+			}
+			return helper.CreateResult(true, true, "")
+		}
 	} else {
 		if payload.OP == "off" {
 			byts, err := exec.Command("pgrep", "sedotand").Output()
@@ -602,6 +666,54 @@ func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) inte
 	}
 
 	return helper.CreateResult(true, nil, "")
+}
+
+func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	//~ payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
+	payload := map[string]interface{}{}
+
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	text := payload["inputText"].(string)
+	req := payload["inputRequest"].(string)
+	tipe := payload["inputType"].(string)
+
+	textLow := strings.ToLower(text)
+
+	// == bug, cant find if autocomplite, just full text can be get result
+	var query *dbox.Filter
+	if text != "" {
+		valueInt, errv := strconv.Atoi(text)
+		if errv == nil {
+			// == try useing Eq for support integer
+			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
+		} else {
+			// == try useing Contains for support autocomplite
+			query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("Calltype", text), dbox.Contains("Calltype", textLow), dbox.Contains("SourceType", text), dbox.Contains("SourceType", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
+		}
+	}
+
+	if req != "" {
+		query = dbox.And(query, dbox.Eq("Calltype", req))
+	}
+
+	if tipe != "" {
+		query = dbox.And(query, dbox.Eq("SourceType", tipe))
+	}
+
+	data := []colonycore.WebGrabber{}
+	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, payload, "")
 }
 
 func (d *WebGrabberController) GetConnections(r *knot.WebContext) interface{} {
