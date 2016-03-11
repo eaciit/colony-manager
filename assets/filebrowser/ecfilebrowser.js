@@ -507,7 +507,7 @@ var methodsFB = {
 			if(content.action=="Edit" || content.action=="Cancel"){
 				var divtree = $($(elem).find(".fb-pre")[0]);
                 divtree.removeAttr("style");
-                divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
+            	divtree.removeClass("k-state-disabled");
 				$(elem).data("ecFileBrowser").isHold = false;
 			}else{
            		 swal("Warning!", "Please finish editing file !", "warning");
@@ -554,7 +554,7 @@ var methodsFB = {
 					$($(elem).find(".fb-editor")).data("kendoEditor").focus();
                 	app.isLoading(false);
                 	divtree.css("pointer-events", "none");
-                	divtree.attr("class", divtree.attr("class")+" k-state-disabled");
+                	divtree.addClass("k-state-disabled");
                 	return;
 			}
 		}else if(content.action=="Rename"){
@@ -697,7 +697,8 @@ var methodsFB = {
                 	methodsFB.HandleError(res);
                 	var divtree = $($(elem).find(".fb-pre")[0]);
                 	divtree.removeAttr("style");
-                	divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
+                	divtree.removeClass("k-state-disabled");
+            		app.isLoading(false);
 
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
@@ -707,7 +708,7 @@ var methodsFB = {
 						$(elem).data("ecFileBrowser").isHold = true;
                 		app.isLoading(false);
                 		divtree.css("pointer-events", "none");
-                		divtree.attr("class", divtree.attr("class")+" k-state-disabled");
+                		divtree.addClass("k-state-disabled");
                 	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem,param);
                 		if(param.action=="NewFile"){
@@ -720,14 +721,15 @@ var methodsFB = {
                 	}
 
                 	$(elem).find(".modal").modal("hide");
-	                	if(!$(elem).data("ecFileBrowser").isHold){
-	                		swal("Saved!", "Your request has been processed !", "success");
-	                		app.isLoading(false);
-	                	}
-	                },
-	                error: function (a, b, c) {
-	                	app.isLoading(false);
-						$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
+                	if(!$(elem).data("ecFileBrowser").isHold){
+                		swal("Saved!", "Your request has been processed !", "success");
+                		app.isLoading(false);
+                	}
+                },
+                error: function (a, b, c) {
+                	app.isLoading(false);
+					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
+                	divtree.removeClass("k-state-disabled");
 				},
 	        });
 		}

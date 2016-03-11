@@ -361,7 +361,7 @@ $.ecDataBrowserSetting = function(element,options){
 				} else if ($elem.attr("typedata") == "date"){
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'date');
 				} else {
-					if ($elem.attr('haslookup') == "false")
+					if ($elem.attr('haslookup') == "false" ||  $elem.ecLookupDD('get').length <= 0)
 						valtype = $elem.val();
 					else {
 						lookupdata = [];
