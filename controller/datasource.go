@@ -22,15 +22,16 @@ type DataSourceController struct {
 	App
 }
 
-var querypattern = []string{"*", "!", ".."}
-
 type MetaSave struct {
 	keyword string
 	data    string
 }
 
 var (
-	sorter string
+	sorter       string
+	querypattern = []string{"*", "!", ".."}
+	ds_rdbms     = []string{"mysql", "mssql", "oracle", "postgres"}
+	ds_flatfile  = []string{"csv", "csvs", "json", "jsons", "xlsx"}
 )
 
 func CreateDataSourceController(s *knot.Server) *DataSourceController {
@@ -110,6 +111,7 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 
 func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []toolkit.M, *colonycore.DataBrowser, error) {
 	var hasLookup bool
+	toolkit.Println("payload : ", payload)
 	if payload.Has("haslookup") {
 		hasLookup = payload.Get("haslookup").(bool)
 	}
@@ -228,8 +230,14 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 			}
 		}
 	}
+
 	if hasLookup && selectfield != "" {
-		query = query.Select(selectfield)
+		if toolkit.HasMember(ds_flatfile, dataConn.Driver) {
+			query = query.Select(selectfield)
+		} else {
+			query = query.Select(selectfield).Group(selectfield)
+		}
+
 	}
 
 	ccount, err := qcount.Cursor(nil)
@@ -249,6 +257,16 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return 0, nil, nil, err
+	}
+
+	if hasLookup && selectfield != "" && !toolkit.HasMember(ds_rdbms, dataConn.Driver) &&
+		!toolkit.HasMember(ds_flatfile, dataConn.Driver) {
+		dataMongo := []toolkit.M{}
+		for _, val := range data {
+			mVal, _ := toolkit.ToM(val.Get("_id"))
+			dataMongo = append(dataMongo, mVal)
+		}
+		data = dataMongo
 	}
 
 	return dcount, data, dataDS, nil
