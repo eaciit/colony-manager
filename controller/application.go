@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
+	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -1014,4 +1015,41 @@ func (a *ApplicationController) RenameFileSelected(r *knot.WebContext) interface
 	}
 
 	return helper.CreateResult(true, err, "")
+}
+
+func (a *ApplicationController) SaveAccess(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	conn, err := a.ConnectToDataSource()
+
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	err = acl.SetDb(conn)
+
+	initUser := new(acl.User)
+
+	initUser.LoginID = "alip"
+	initUser.FullName = "alip sidik"
+	initUser.Email = "aa.sidik@eaciit.com"
+	initUser.Password = "12345"
+
+	err = acl.Save(initUser)
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+	return helper.CreateResult(true, conn, "aa")
+}
+
+func (a *ApplicationController) ConnectToDataSource() (dbox.IConnection, error) {
+	dataConn := new(colonycore.Connection)
+	fmt.Println(dataConn)
+
+	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
+	fmt.Println(connection)
+	if err != nil {
+		fmt.Println("error connection ", err)
+		return nil, err
+	}
+	return connection, nil
 }
