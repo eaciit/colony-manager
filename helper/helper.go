@@ -9,6 +9,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
@@ -345,4 +346,34 @@ func ReplaceHostAlias(path string, server colonycore.Server) string {
 		}
 	}
 	return path
+}
+
+func RunCommandWithTimeout(sshSetting *sshclient.SshSetting, cmd string, timeout int) error {
+	cRunCommand := make(chan string, 1)
+
+	go func() {
+		s := *sshSetting
+		res, err := s.RunCommandSsh(cmd)
+		fmt.Println("cmd    ->", cmd, "output ->", res)
+
+		if err != nil {
+			cRunCommand <- err.Error()
+		} else {
+			cRunCommand <- ""
+		}
+	}()
+
+	errorMessage := ""
+	select {
+	case receiveRunCommandOutput := <-cRunCommand:
+		errorMessage = receiveRunCommandOutput
+	case <-time.After(time.Second * time.Duration(timeout)):
+		errorMessage = ""
+	}
+
+	if strings.TrimSpace(errorMessage) != "" {
+		return errors.New(errorMessage)
+	}
+
+	return nil
 }
