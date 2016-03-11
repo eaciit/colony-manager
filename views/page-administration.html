@@ -1,0 +1,56 @@
+<!-- core -->
+<link rel="stylesheet" href="/res/js/codemirror/codemirror.css">
+<script src="/res/js/codemirror/codemirror.js"></script>
+<script src="/res/js/codemirror/xml.js"></script>
+<script src="/res/js/codemirror/active-line.js"></script>
+
+<script src="/res/core/page-administration.js"></script>
+<script src="/res/core/page-server.js"></script>
+
+<style type="text/css">
+	.modal-deploy .modal-footer {
+		position: relative;
+	}
+	.modal-deploy .modal-footer .loader-container {
+		position: absolute !important;
+	}
+	.modal-deploy .modal-footer .loader-container .loader {
+	    margin-top: 0px !important;
+	}
+	.link-deploy,
+	.link-deploy:hover {
+		text-decoration: none;
+		color: white;
+		cursor: pointer;
+	}
+	.link-deploy:hover {
+		color: black;
+	}
+</style>
+
+<!-- sidebar -->
+<div class="col-xs-6 col-sm-2" id="sidebar">
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#" data-bind="css: { 'active': (adm.section() == 'access') }, click: adm.changeActiveSection('access')">Access<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (adm.section() == 'grup') }, click: adm.changeActiveSection('grup')">Group<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (adm.section() == 'user') }, click: adm.changeActiveSection('user')">User<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-10" id="content">
+	<div class="col-md-12" data-bind="with: admlication, visible: (adm.section() == 'access')">
+		<h1>Access</h1>
+
+		
+	</div>
+	<div class="col-md-12" data-bind="visible: (adm.section() == 'group'), with: servers">
+		 
+	</div>
+</div>
+
+<div class="modal fade modal-new-file" tabindex="-1" role="dialog">	 
+</div>
+
