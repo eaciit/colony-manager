@@ -73,12 +73,12 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	ctx, _, err := d.connToDatabase(payload.ConnectionID)
+	ctx, conn, err := d.connToDatabase(payload.ConnectionID)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	payload, err = d.hasAggr(ctx, payload)
+	payload, err = d.hasAggr(ctx, payload, conn)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -90,7 +90,7 @@ func (d *DataBrowserController) SaveBrowser(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
-func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.DataBrowser) (*colonycore.DataBrowser, error) {
+func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.DataBrowser, conn *colonycore.Connection) (*colonycore.DataBrowser, error) {
 	var fieldArr, aggrArr []string
 	var indexAggr []map[int]string
 	var query dbox.IQuery
@@ -103,7 +103,10 @@ func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.D
 			cursor := []toolkit.M{}
 
 			if data.QueryType == "" {
-				aggregate, _ := d.dboxAggr(data.TableNames, v.Field, ctx, query, result, fieldAggr, cursor)
+				aggregate, e := d.dboxAggr(data.TableNames, v.Field, ctx, query, result, fieldAggr, cursor, conn)
+				if e != nil {
+					return nil, e
+				}
 				v.Aggregate = toolkit.JsonString(aggregate)
 			} else if data.QueryType == "SQL" {
 				names := map[int]string{}
@@ -159,7 +162,10 @@ func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.D
 				getQuery := toolkit.M{}
 				toolkit.UnjsonFromString(data.QueryText, &getQuery)
 
-				aggregate, _ := d.dboxAggr(getQuery.Get("from").(string), v.Field, ctx, query, result, fieldAggr, cursor)
+				aggregate, e := d.dboxAggr(getQuery.Get("from").(string), v.Field, ctx, query, result, fieldAggr, cursor, conn)
+				if e != nil {
+					return nil, e
+				}
 				v.Aggregate = toolkit.JsonString(aggregate)
 			}
 		}
@@ -216,9 +222,12 @@ func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.D
 	return data, nil
 }
 
-func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox.IConnection, query dbox.IQuery, result, fieldAggr toolkit.M, cursor []toolkit.M) (toolkit.M, error) {
+func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox.IConnection, query dbox.IQuery, result, fieldAggr toolkit.M, cursor []toolkit.M, conn *colonycore.Connection) (toolkit.M, error) {
 	aggregate := toolkit.M{}
-	// cursor := []toolkit.M{}
+
+	if conn.Driver == "mongo" {
+		field = "$" + field
+	}
 	query = ctx.NewQuery().From(tblename)
 	if result != nil {
 		for k, _ := range result {
@@ -234,6 +243,11 @@ func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox
 			if k == "MIN" {
 				query = query.Aggr(dbox.AggrMin, field, "MIN")
 			}
+			if conn.Driver == "mongo" {
+				if k != "COUNT" {
+					query = query.Group()
+				}
+			}
 
 			csr, e := query.Cursor(nil)
 			if e != nil {
@@ -242,7 +256,6 @@ func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox
 			defer csr.Close()
 
 			hasCount := []toolkit.M{}
-
 			if k == "COUNT" {
 				csr, e := query.Cursor(nil)
 				if e != nil {
@@ -261,15 +274,22 @@ func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox
 
 			if _, countOK := aggregate["count"]; countOK {
 				cursor = append(cursor, hasCount...)
-				// toolkit.Printf("countOK:%v k:%v fieldArr:%v cursor:%v\n", countOK, k, field, aggregate)
 			}
 
 			for _, agg := range cursor {
 				aggregate = agg
-				fieldAggr.Set(field, aggregate)
-				// toolkit.Printf("k:%v fieldArr:%v cursor:%v\n", k, v.Field, fieldAggr)
-			}
+				if conn.Driver == "mongo" {
+					for f, _ := range aggregate {
+						if f == "_id" {
+							aggregate.Unset(f)
+						}
+						// toolkit.Printf("agg:%v\n", aggregate)
+					}
+				}
 
+				fieldAggr.Set(field, aggregate)
+				// toolkit.Printf("k:%v fieldArr:%v cursor:%v\n", k, field, fieldAggr)
+			}
 		}
 	}
 	return aggregate, nil
@@ -385,7 +405,9 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 
 		j := 1
 		for keyField, dataField := range dataFields {
-			if strings.Contains(keyField, "id") && !strings.Contains(data.QueryText, "id") {
+			toolkit.Println("Query text : ", data.QueryText)
+			if strings.Contains(keyField, "id") && !strings.Contains(data.QueryText, "id") &&
+				!strings.Contains(data.QueryText, "*") && data.TableNames == "" {
 				continue
 			}
 			sInfo := &colonycore.StructInfo{}

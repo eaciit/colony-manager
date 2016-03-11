@@ -18,7 +18,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
+	// "syscall"
 	"time"
 )
 
@@ -63,7 +63,7 @@ func GetDirSnapshot(nameid string) *WebGrabberController {
 // function for check sedotand.exe
 func GetSedotandWindows() bool {
 	cmd := exec.Command("cmd", "/C", "tasklist", "/fo", "csv", "/nh")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -666,6 +666,54 @@ func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) inte
 	}
 
 	return helper.CreateResult(true, nil, "")
+}
+
+func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	//~ payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
+	payload := map[string]interface{}{}
+
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	text := payload["inputText"].(string)
+	req := payload["inputRequest"].(string)
+	tipe := payload["inputType"].(string)
+
+	textLow := strings.ToLower(text)
+
+	// == bug, cant find if autocomplite, just full text can be get result
+	var query *dbox.Filter
+	if text != "" {
+		valueInt, errv := strconv.Atoi(text)
+		if errv == nil {
+			// == try useing Eq for support integer
+			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
+		} else {
+			// == try useing Contains for support autocomplite
+			query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("Calltype", text), dbox.Contains("Calltype", textLow), dbox.Contains("SourceType", text), dbox.Contains("SourceType", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
+		}
+	}
+
+	if req != "" {
+		query = dbox.And(query, dbox.Eq("Calltype", req))
+	}
+
+	if tipe != "" {
+		query = dbox.And(query, dbox.Eq("SourceType", tipe))
+	}
+
+	data := []colonycore.WebGrabber{}
+	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
+	cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, payload, "")
 }
 
 func (d *WebGrabberController) GetConnections(r *knot.WebContext) interface{} {

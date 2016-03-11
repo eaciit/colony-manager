@@ -36,7 +36,6 @@ dg.templatewizard = {
 };
 
 dg.templateWizardTable = {
-	id : "",
 	TableSource :"",
 	TableDestination: "",
 };
@@ -45,7 +44,7 @@ dg.templateInsertMode = [
 	{ value: "fresh", title: "Fresh insert" }, 
 ];
 
-dg.config = ko.mapping.fromJS(dg.templatewizard);
+dg.configWizard = ko.mapping.fromJS(dg.templatewizard);
 dg.connectionListData = ko.observableArray([]);
 dg.tableConnectionSource = ko.observableArray([]);
 dg.tableConnectionDestination = ko.observableArray([]);
@@ -175,8 +174,7 @@ dg.getScrapperData = function (){
 	});
 };
 
-
-dg.addtable = function (){
+/*dg.addtable = function (){
 	var table = $.extend(true, {}, dg.templateWizardTable);
 	table.id = "s"+ moment.now();
 	dg.config.Transformations.push(ko.mapping.fromJS(table));
@@ -187,7 +185,12 @@ dg.removetable = function (each){
 		console.log(each);
 		dg.config.Transformations.remove(each);
 	}
-}
+}*/
+
+dg.dataTable = function (){
+	var table = $.extend(true, {}, dg.templateWizardTable);
+	dg.configWizard.Transformations.push(ko.mapping.fromJS(table));
+};
 
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
@@ -211,10 +214,9 @@ dg.createNewScrapper = function () {
 dg.addWizard = function (){
 	app.mode('addWizard');
 	dg.scrapperMode('');
-	ko.mapping.fromJS(dg.templatewizard, dg.config);
-	dg.addtable();
-	dg.tableConnectionSource([]);
-	dg.tableConnectionDestination([]);
+	ko.mapping.fromJS(dg.templatewizard, dg.configWizard);
+	dg.dataTable();
+	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');
 };
 
 dg.doSaveDataGrabber = function (c) {
@@ -241,6 +243,7 @@ dg.saveDataGrabber = function () {
 dg.backToFront = function () {
 	app.mode("");
 	dg.tempCheckIdDataGrabber([]);
+
 };
 dg.getDataSourceData = function () {
 	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
@@ -255,7 +258,7 @@ dg.getDataSourceData = function () {
 };
 
 dg.doSaveDataGrabberWizard = function (c) {
-	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
+	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.configWizard),function(res){
 		if (!app.isFine(res)){
 			return;
 		}
@@ -315,7 +318,7 @@ dg.getConnectionsData = function (){
 		dg.connectionListData(res.data);
 	});
 };
-
+var tbSource;
 dg.changeConnectionSource = function (){
 	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
@@ -325,8 +328,14 @@ dg.changeConnectionSource = function (){
 			res.data = "";
 		}
 		dg.tableConnectionSource(res.data);
+		dg.prepareFieldTableWizard(res.data);	
+		tbSource = res.data;		
 	});
+	
+	var clone = $.extend(true, {}, dg.tabelSource);
+	dg.configWizard.Transformations.push(ko.mapping.fromJS(clone));
 }
+
 dg.changeConnectionDestination = function (){
 	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
@@ -336,7 +345,34 @@ dg.changeConnectionDestination = function (){
 			res.data = "";
 		}
 		dg.tableConnectionDestination(res.data);
+		dg.synctable(res.data);
+		$(".table-wizard").find("select.field-destination").each(function(i,each){
+			var $comboBox = $(each).data("kendoComboBox");
+			$comboBox.value('');
+			if (res.data.indexOf(tbSource[i]) > -1 ){
+				$comboBox.value(tbSource[i]);
+				$comboBox.setDataSource(new kendo.data.DataSource({
+				data:res.data
+				}));	
+			}else {
+				$comboBox.value('');
+				$comboBox.setDataSource(new kendo.data.DataSource({
+				data:res.data
+				}));
+			}
+		});
 	});
+	var clone = $.extend(true, {}, dg.templateWizardTable.TableDestination);
+	dg.configWizard.Transformations.push(ko.mapping.fromJS(clone));
+}
+
+dg.synctable = function(data){
+	$(".table-wizard").find("select.field-destination").each(function(i,each){
+		var $comboBox = $(each).data("kendoComboBox");
+		if ($comboBox.value() == ''){
+			$comboBox.value(tbSource[i]);
+		}
+	});	
 }
 
 dg.selectGridDataGrabber = function (e) {
@@ -611,9 +647,36 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
+dg.prepareFieldTableWizard = function (tbSource){
+	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');;
+	var $tableWizard = $(".table-wizard");
+	var header = [
+		'<thead>',
+			'<tr>',
+				'<th style="border-bottom:none" class="full-width">Table Source</th>',
+				'<th style="border-bottom:none" class="full-width">Table Destination</th>',
+			'</tr>',
+		'</thead>'
+	].join('');
+	$tableWizard.append(header);
+	tbSource.forEach(function(table){
+	var content = [
+		'<tr>',
+			'<td>'+table+'</td>',
+			'<td><select class="field-destination" style="width: 200px"></select></td>',
+		'</tr>'
+	].join('');
+	$tableWizard.append(content)});
+	var $row = $tableWizard.find("tr");
+	$row.find("select.field-destination").kendoComboBox({
+		suggest:true,
+		placeholder:'Select One',
+		dataValueField:'TableDestination',
+	});
+}
+
 dg.prepareFieldsOrigin = function (_id) {
 	var row = Lazy(dg.dataSourcesData()).find({ _id: _id });
-
 	$(".table-tree-map").replaceWith('<table class="table tree table-tree-map"></table>');
 	var $tree = $(".table-tree-map");
 	var index = 1;

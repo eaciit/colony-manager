@@ -207,8 +207,44 @@
 		    	</div>
     		</div>
     		<div class="col-md-12 row" data-bind="visible: srv.isServerTypeNode">
-    			<p class="pcustom">Command</p>
+    			<p class="pcustom">References</p>
     		</div>
+
+            <div class="col-md-12" data-bind="visible: !srv.isServerTypeNode()">
+                <div class="form-group">
+                    <label class="col-sm-2 filter-label">References</label>
+                    <div class="col-sm-8">
+                        <div class="nav">
+                            <button  class="btn btn-success btn-sm" data-bind="click: srv.addHostAlias">
+                                <span class="glyphicon glyphicon-plus"></span> Add
+                            </button>
+                        </div>
+                        <table class="table" id="datasource-settings">
+                            <thead>
+                                <tr>
+                                    <th>Host name</th>
+                                    <th>IP address</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: srv.configServer.hostAlias" > 
+                                <tr>
+                                    <td>
+                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type host name here" data-bind="value: hostName" />
+                                    </td>
+                                    <td>
+                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type ip address here" data-bind="value: ip" /> 
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: srv.removeHostAlias($data)">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
 	    	<div class="col-md-12" data-bind="visible: srv.isServerTypeNode">
 	    		<div class="form-group">
