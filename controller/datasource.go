@@ -644,7 +644,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 
 	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
 
-	if fakeDataConn.FileLocation != "" {
+	if fakeDataConn.FileLocation != "" && strings.Contains(host, "http") {
 		os.Remove(fakeDataConn.FileLocation)
 	}
 
