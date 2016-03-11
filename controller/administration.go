@@ -18,7 +18,6 @@ import (
 	// "time"
 )
 
-
 type AdministrationController struct {
 	App
 }
