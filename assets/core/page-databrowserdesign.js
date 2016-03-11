@@ -48,6 +48,7 @@ db.dataType = ko.observableArray([
 	{ DataType: "bson.ObjectId", text: "bson.ObjectId" },
 	{ DataType: "string", text: "string" },
 	{ DataType: "int", text: "int" },
+	{ DataType: "bool", text: "bool" },
 	{ DataType: "float32", text: "float32" },
 	{ DataType: "float64", text: "float64" },
 	{ DataType: "date", text: "date" }
