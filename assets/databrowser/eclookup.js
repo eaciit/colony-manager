@@ -79,6 +79,7 @@ var Setting_DataSource_Lookup = {
 	dataTemp: [],
 	dataSelect: []
 };
+
 // ecLookupDD
 
 $.fn.ecLookupDD = function (method) {
@@ -108,6 +109,9 @@ var methodsLookupDD = {
 
 		$ulLookup = $('<ul class="eclookup-list"></ul>');
 		$ulLookup.appendTo($divSearch);
+		$ulLookup.bind('click').click(function(event){
+			var txt = $(this).find('li.eclookup-txt>input').focus();
+		});
 
 		$divClear = $('<div style="clear: both;"></div>');
 		$divClear.appendTo($divSearch);
@@ -120,8 +124,13 @@ var methodsLookupDD = {
 		$textSearch.bind('keyup keydown').keyup(function(event){
 			var search = $(this).val();
 			switch(event.keyCode) {
+				// case KEY.UP:
+				// case KEY.DOWN:
+                   
+                // break;
 				case KEY.BACKSPACE:
 					$o.data('ecLookupDD').searchResult(search);
+
 					break;
 				default:
 					if (search.length >= options.minChar){
@@ -135,7 +144,8 @@ var methodsLookupDD = {
 		$divDropdown.appendTo($container);
 
 		$ulDropdown = $('<ul class="eclookup-listsearch"></ul>');
-		$ulDropdown.appendTo($divDropdown);
+		$ulDropdown.appendTo($divDropdown);	
+
 	},
 	get: function() {
 		// var idLookup = $(this).attr('id');
@@ -211,7 +221,8 @@ $.ecDataSourceDDLookup = function(element,options){
 	this.resultSearchData = function(data,query){
 		var $ulDropdown = $(elementLookup).parent().find('ul.eclookup-listsearch');
 		$(elementLookup).parent().find('div.eclookup-dropdown').show();
-		$ulDropdown.html('');
+		$ulDropdown.html('');		
+
 		if (data.length > 0 && query !== ''){
 			for (var key in data){
 				var changeElemSearch = $(elementLookup).data('ecLookupDDSettings').displayTemplate();
