@@ -15,6 +15,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"errors"
 	"strings"
 	"time"
 )
@@ -305,4 +306,32 @@ func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string)
 	io.Copy(f, file)
 
 	return nil, handler.Filename
+}
+
+func ConstructPermission(strPermission string) (result string, err error) {
+	permission_map := map[string]string{
+		"rwx": "7",
+		"rw-": "6",
+		"r-x": "5",
+		"r--": "4",
+		"-wx": "3",
+		"-w-": "2",
+		"--x": "1",
+		"---": "0",
+	}
+
+	if len(strPermission) == 9 {
+		owner := permission_map[strPermission[:3]]
+		group := permission_map[strPermission[3:6]]
+		other := permission_map[strPermission[6:]]
+
+		result := owner + group + other
+		return result, nil
+	} else {
+
+		err := errors.New("The permission is not valid")
+		return "", err
+	}
+
+	return
 }

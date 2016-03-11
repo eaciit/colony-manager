@@ -9,7 +9,9 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
+    "os/exec"
 	"github.com/eaciit/toolkit"
+    "runtime"
 	"io"
 	"io/ioutil"
 	"os"
@@ -721,9 +723,22 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
+    
 	fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
 	destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
+    
+    if runtime.GOOS == "windows" {
+        err = exec.Command("cmd", "-c", "rmdir", "/s", "/q", destinationExtract).Run()
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }
+    } else {
+        err = exec.Command(os.Getenv("BASH"), "-c", "rm", "-rf", destinationExtract).Run()
+		// if err != nil {
+		// 	return helper.CreateResult(false, nil, err.Error())
+		// }
+    }
+
 	if strings.Contains(fileName, ".tar.gz") {
 		err = toolkit.TarGzExtract(fileExtract, destinationExtract)
 		if err != nil {

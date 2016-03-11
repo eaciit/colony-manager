@@ -10,6 +10,7 @@ db.templateConfigMetaData = {
     Align : "",
     ShowIndex : 0,
     HiddenField: false,
+    Lookup: false,
     Sortable : false,
     SimpleFilter : false,
     AdvanceFilter : false,
@@ -24,7 +25,7 @@ db.templateConfig = {
     TableNames : "",
     QueryType : "",
     QueryText : "",
-    MetaData : [],
+    MetaData : []
 }
 
 db.templateDboxData = {
@@ -50,6 +51,15 @@ db.dataType = ko.observableArray([
 	{ DataType: "float32", text: "float32" },
 	{ DataType: "float64", text: "float64" },
 	{ DataType: "date", text: "date" }
+]);
+db.aggrData = ko.observableArray([
+	"COUNT",
+	"SUM",
+	"AVG",
+	"MAX",
+	"MIN",
+	// "MEAN",
+	// "MEDIAN"
 ]);
 db.connectionID = ko.observable('');
 db.isChecked = ko.observable('')
@@ -85,10 +95,20 @@ db.databrowserColumns = ko.observableArray([
     },
 	{ width: 120, title: "Position", template: "<a class='btn btn-xs btn-default k-grid-Up' onclick='db.moveUp(this)'><span class='glyphicon glyphicon-menu-up'></span></a> <a class='btn btn-xs btn-default k-grid-Down' onclick='db.moveDown(this)'><span class='glyphicon glyphicon-menu-down'></span></a><span style='margin-left: 5px;'>#= ShowIndex #</span>"},
 	{ width: 100, title: "Hidden Field", template: "<center><input type='checkbox' #=HiddenField ? \"checked='checked'\" : ''# class='hiddenfield' data-field='HiddenField' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallhiddenfield' onclick=\"db.checkAll(this, 'HiddenField')\" />&nbsp;&nbsp;Hidden Field</center>"},
+	{ width: 100, title: "Lookup", template: "<center><input type='checkbox' #=Lookup ? \"checked='checked'\" : ''# class='lookup' data-field='Lookup' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalllookup' onclick=\"db.checkAll(this, 'Lookup')\" />&nbsp;&nbsp;Lookup</center>"},
 	{ width: 100, title: "Sortable", template: "<center><input type='checkbox' #= Sortable ? \"checked='checked'\" : '' # class='sortable' data-field='Sortable' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsortable' onclick=\"db.checkAll(this, 'Sortable')\" />&nbsp;&nbsp;Sortable</center>"},
 	{ width: 100, title: "Simple Filter", template: "<center><input type='checkbox' #= SimpleFilter ? \"checked='checked'\" : '' # class='simplefilter' data-field='SimpleFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectallsimplefilter' onclick=\"db.checkAll(this, 'SimpleFilter')\" />&nbsp;&nbsp;Simple Filter</center>"},
 	{ width: 100, title: "Advance Filter", template: "<center><input type='checkbox' #= AdvanceFilter ? \"checked='checked'\" : '' # class='advancefilter' data-field='AdvanceFilter' onchange='db.changeCheckboxOnGrid(this)' /></center>", headerTemplate: "<center><input type='checkbox' id='selectalladvancefilter' onclick=\"db.checkAll(this, 'AdvanceFilter')\" />&nbsp;&nbsp;Advance Filter</center>"},
-	{ width: 100, field: "Aggregate", title: "Aggregate"},
+	{ width: 100, field: "Aggregate", title: "Aggregate",
+		editor: function(container, options) {
+			var input = $('<input id="aggr" name="aggr" data-field="Aggregate" data-bind="value:' + options.field + '"">');
+			input.appendTo(container);
+			input.kendoAutoComplete({
+				dataSource: db.aggrData(),
+				filter: "startswith",
+				separator: ","
+			});
+		}},
 ]);
 
 
@@ -175,6 +195,7 @@ db.addProperties = function () {
     	property.Format = val.Format
     	property.Align = val.Align
     	property.HiddenField = val.HiddenField
+    	property.Lookup = val.Lookup
     	property.ShowIndex = val.ShowIndex
     	property.Sortable = val.Sortable
     	property.SimpleFilter = val.SimpleFilter
@@ -270,24 +291,21 @@ db.saveAndBack = function(section) {
      	
 	
 	var ds = grids.dataSource.data();
-	var dirty = $.grep(ds, function(item) {
-	    return item.dirty
-	});
-	
+	param.MetaData = JSON.parse(kendo.stringify(ds));
 	for (var data in param.MetaData){
-		for (var idxDirty in dirty) {
-			if (dirty[idxDirty].ShowIndex == param.MetaData[data].ShowIndex) {
-				var splitString = dirty[idxDirty].Aggregate.split(",");
-				var obj = {};
-				for (var s in splitString) {
+		if (param.MetaData[data].Aggregate != "") {
+			var splitString = param.MetaData[data].Aggregate.split(",");
+			var obj = {};
+			for (var s in splitString) {
+				if (splitString[s] != "") {
 					obj[splitString[s]] = ""
 				}
-				param.MetaData[data].Aggregate = JSON.stringify(obj)
 			}
+			
+			param.MetaData[data].Aggregate = JSON.stringify(obj)
 		}
 	}
-	// param.MetaData = JSON.parse(kendo.stringify(ds));
-	// console.log("dirty", param);
+    
 	app.ajaxPost("/databrowser/savebrowser", param, function(res){
 		if(!app.isFine(res)){
 			return;
@@ -322,14 +340,27 @@ db.designDataBrowser = function(_id) {
 		
 		br.pageVisible("editor");
 		app.mode('editor')
+		for(var i in res.data.MetaData) {
+			if (res.data.MetaData[i].Aggregate != "") {
+				var aggrToString = [];
+				var jsnstring = JSON.parse(res.data.MetaData[i].Aggregate)
+				// console.log(res.data.MetaData[i].Field,res.data.MetaData[i].Aggregate)
+				// console.log(res.data.MetaData[i].Field,jsnstring)
+				$.each(jsnstring, function(key, val) {
+					aggrToString.push(key.toUpperCase())
+				});
+				res.data.MetaData[i].Aggregate = aggrToString+","
+			}
+		}
 		db.databrowserData(res.data.MetaData);
 		dbq.clearQuery()
 		db.setDataSource();
-		db.populateTable(res.data.ConnectionID);
+		
 		if (typeof _id === "function") {
 			_id();
 		}
 		ko.mapping.fromJS(res.data, db.configDataBrowser);
+		db.populateTable(res.data.ConnectionID);		
 
 		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
 			var querytext = JSON.parse(res.data.QueryText)
@@ -342,6 +373,11 @@ db.designDataBrowser = function(_id) {
 		db.isChecked($("#isFreetext").prop("checked"))
 		db.showHideFreeQuery();
 		db.headerCheckedAll();
+		// var ddl = $("#table").data("kendoDropDownList");
+		// var cetak = ddl.text(res.data.TableNames);
+		// console.log("cetak", cetak)
+		// console.log("res.data.TableNames", res.data.TableNames)
+
 	});
 }
 
@@ -368,10 +404,10 @@ db.populateTable = function (_id) {
 
 			db.collectionListData(datavalue);
 
-			// // remapping data
-			// a = ko.mapping.toJS(db.configDataBrowser);
-			// ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
-			// ko.mapping.fromJS(a, db.configDataBrowser);
+			/*remapping data*/
+			a = ko.mapping.toJS(db.configDataBrowser);
+			ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
+			ko.mapping.fromJS(a, db.configDataBrowser);
 		}
 	});
 };
@@ -387,11 +423,13 @@ db.testQuery = function() {
 	}
 	
 	var param = ko.mapping.toJS(db.configDataBrowser);
+	var istable = false
 	db.checkBuilderNotEmpty();
 	if (!db.isChecked()) { //if false by default query with dbox
 		if ($("#table option:selected").text() != 'Select one') {
 			param.QueryType = "nonQueryText";
 			param.TableNames = $("#table").data("kendoDropDownList").value();
+			istable = true
 		}else{
 			return;
 		}
@@ -399,7 +437,6 @@ db.testQuery = function() {
 		if ($("#querytext").val() != '' && $("#querytype option:selected").text() == 'SQL') {
 			param.QueryType = db.configDataBrowser.QueryType();
 			param.QueryText = db.configDataBrowser.QueryText();
-			console.log(param)
 		} else if ($("#textquery").val() != '' && $("#querytype option:selected").text() == 'Dbox') {
 			param.QueryType = $("#querytype option:selected").text();
 			param.QueryText = JSON.stringify(dbq.getQuery());
@@ -412,8 +449,10 @@ db.testQuery = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
 		ko.mapping.fromJS(res.data, db.configDataBrowser)
+		if (istable) {
+			$("#isFreetext").prop("checked", false);
+		}
 		db.configDataBrowser.MetaData([]);
 		db.databrowserData(res.data.MetaData);
 		db.setDataSource();
@@ -489,6 +528,12 @@ db.headerCheckedAll = function() {
 		$("#selectallhiddenfield").prop("checked", false);
 	}
 
+	if ($(".lookup:checked").length == $(".lookup").length) {
+		$("#selectalllookup").prop("checked", true);
+	} else {
+		$("#selectalllookup").prop("checked", false);
+	}
+
 	if ($(".sortable:checked").length == $(".sortable").length) {
 		$("#selectallsortable").prop("checked", true);
 	} else {
@@ -537,7 +582,8 @@ db.setDataSource = function () {
     					type: 'number', 
     					editable: false
 					},
-					HiddenField: { type: 'boolean' }, 
+					HiddenField: { type: 'boolean' },
+					Lookup: { type: 'boolean' },
 					Sortable: { type: 'boolean' }, 
 					SimpleFilter: { type: 'boolean' }, 
 					AdvanceFilter: { type: 'boolean' }, 
