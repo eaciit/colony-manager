@@ -433,7 +433,6 @@ func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	if runtime.GOOS == "windows" {
-		time.Sleep(100 * time.Millisecond)
 		sedotandExist := GetSedotandWindows()
 		if sedotandExist == false {
 			return helper.CreateResult(true, false, "")
