@@ -218,6 +218,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "daemon")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "src")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "web", "share")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "application", "log")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "daemon")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "log")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "output")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datasource", "upload")),
@@ -262,6 +264,15 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			daemonSourcePath := filepath.Join(EC_DATA_PATH, "daemon", "daemonsnapshot.csv")
+			daemonDestinationPath := filepath.Join(data.DataPath, "daemon")
+			log.AddLog(fmt.Sprintf("scp %s to %s", daemonSourcePath, daemonDestinationPath), "INFO")
+			err := sshSetting.SshCopyByPath(daemonSourcePath, daemonDestinationPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
 			}
 
 			runCmd := fmt.Sprintf("cd %s && ./sedotand &", cliDestinationPath)
