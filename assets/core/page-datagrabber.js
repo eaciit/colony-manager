@@ -214,7 +214,7 @@ dg.createNewScrapper = function () {
 dg.addWizard = function (){
 	app.mode('addWizard');
 	dg.scrapperMode('');
-	ko.mapping.fromJS(dg.templatewizard, dg.config);
+	ko.mapping.fromJS(dg.templatewizard, dg.configWizard);
 	dg.dataTable();
 	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');
 };
@@ -258,7 +258,7 @@ dg.getDataSourceData = function () {
 };
 
 dg.doSaveDataGrabberWizard = function (c) {
-	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
+	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.configWizard),function(res){
 		if (!app.isFine(res)){
 			return;
 		}
