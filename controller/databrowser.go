@@ -17,6 +17,7 @@ import (
 	// "os"
 	// "path/filepath"
 	// "strconv"
+	"regexp"
 	"strings"
 )
 
@@ -172,10 +173,24 @@ func (d *DataBrowserController) hasAggr(ctx dbox.IConnection, data *colonycore.D
 	}
 
 	if data.QueryType == "SQL" {
-		fieldString := strings.Join(fieldArr, ", ")
+		// fieldString := strings.Join(fieldArr, ", ")
 		aggrString := strings.Join(aggrArr, ", ")
+		var queryText string
+		r := regexp.MustCompile(`(([Ff][Rr][Oo][Mm])) (?P<from>([a-zA-Z][_a-zA-Z]+[_a-zA-Z0-1].*))`)
+		temparray := r.FindStringSubmatch(data.QueryText)
+		sqlpart := toolkit.M{}
 
-		queryText := strings.Replace(data.QueryText, fieldString, aggrString, -1)
+		for i, val := range r.SubexpNames() {
+			if val != "" {
+				sqlpart.Set(val, temparray[i])
+			}
+		}
+
+		if fromOK := sqlpart.Get("from", "").(string); fromOK != "" {
+			queryText = toolkit.Sprintf("select %s FROM %s", aggrString, sqlpart.Get("from", "").(string))
+			// toolkit.Printf("queryString:%v\n", queryString)
+		}
+
 		query = ctx.NewQuery().Command("freequery", toolkit.M{}.
 			Set("syntax", queryText))
 
@@ -283,7 +298,6 @@ func (d *DataBrowserController) dboxAggr(tblename string, field string, ctx dbox
 						if f == "_id" {
 							aggregate.Unset(f)
 						}
-						// toolkit.Printf("agg:%v\n", aggregate)
 					}
 				}
 
@@ -405,7 +419,6 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 
 		j := 1
 		for keyField, dataField := range dataFields {
-			toolkit.Println("Query text : ", data.QueryText)
 			if strings.Contains(keyField, "id") && !strings.Contains(data.QueryText, "id") &&
 				!strings.Contains(data.QueryText, "*") && data.TableNames == "" {
 				continue
@@ -415,7 +428,6 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 			sInfo.Label = keyField
 
 			rf := "string"
-
 			if dataField != nil {
 				rf = toolkit.TypeName(dataField)
 
@@ -423,12 +435,7 @@ func (d *DataBrowserController) TestQuery(r *knot.WebContext) interface{} {
 					rf = "date"
 				}
 			}
-			// toolkit.Println(dataField, ">", rf)
-			// if rf == "bson.ObjectId" {
-			// 	dt = dataField.(bson.ObjectId).Hex()
-			// }
 			sInfo.DataType = rf
-
 			sInfo.Format = ""
 			sInfo.Align = "Left"
 			sInfo.ShowIndex = toolkit.ToInt(j, toolkit.RoundingAuto)
