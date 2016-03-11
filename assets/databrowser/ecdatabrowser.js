@@ -349,7 +349,7 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			if ($elem.val() != '' || $elem.attr('haslookup') == "true"){
+			if (($elem.val() != '' || $elem.attr('haslookup') == "true") && $elem.ecLookupDD('get').length > 0){
 				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
 					// valtype = parseInt($elem.val());
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'int');
