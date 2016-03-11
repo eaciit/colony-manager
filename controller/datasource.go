@@ -121,8 +121,6 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
 	TblName := toolkit.M{}
-
-	TblName := toolkit.M{}
 	payload.Unset("id")
 	//sorter = ""
 	if sort != nil {
