@@ -18,7 +18,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
+	// "syscall"
 	"time"
 )
 
@@ -63,7 +63,7 @@ func GetDirSnapshot(nameid string) *WebGrabberController {
 // function for check sedotand.exe
 func GetSedotandWindows() bool {
 	cmd := exec.Command("cmd", "/C", "tasklist", "/fo", "csv", "/nh")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
