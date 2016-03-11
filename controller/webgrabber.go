@@ -431,10 +431,10 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+
 	if runtime.GOOS == "windows" {
-
+		time.Sleep(100 * time.Millisecond)
 		sedotandExist := GetSedotandWindows()
-
 		if sedotandExist == false {
 			return helper.CreateResult(true, false, "")
 		}
@@ -469,7 +469,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			sedotandExist := GetSedotandWindows()
 
 			if sedotandExist == false {
-				return helper.CreateResult(true, false, "")
+				return helper.CreateResult(false, false, "")
 			}
 
 			err := exec.Command("taskkill", "/IM", "sedotand.exe", "/F").Start()
@@ -477,7 +477,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			if err != nil {
 				return helper.CreateResult(false, false, err.Error())
 			}
-			return helper.CreateResult(true, true, "")
+			return helper.CreateResult(true, false, "")
 		} else {
 			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand.exe")
 			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
@@ -569,6 +569,7 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	module := GetDirSnapshot("daemonsnapshot")
+
 	SnapShot, err := module.OpenSnapShot(payload.Nameid)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
