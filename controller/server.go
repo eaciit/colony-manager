@@ -154,20 +154,6 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		oldData = &oldDataAll[0]
 	}
 
-	log.AddLog(fmt.Sprintf("Delete data ID: %s", data.ID), "INFO")
-	err = colonycore.Delete(data)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
-	err = colonycore.Save(data)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
 	if data.ServerType == "hdfs" {
 		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
 		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
@@ -242,9 +228,13 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 			for _, each := range cmds {
 				log.AddLog(each, "INFO")
+				_, err := sshSetting.GetOutputCommandSsh(each)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return helper.CreateResult(false, nil, err.Error())	
+				}
 			}
-			_, err := sshSetting.RunCommandSsh(cmds...)
-
+			
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
@@ -289,6 +279,13 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	} else {
 		// windows
+	}
+		
+	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
+	err = colonycore.Save(data)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, nil, "")

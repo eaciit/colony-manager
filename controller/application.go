@@ -291,7 +291,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
 	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
 
-	if output, err := sshSetting.RunCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
+	if output, err := sshSetting.GetOutputCommandSsh(server.CmdExtract); err != nil || strings.Contains(output, "not installed") {
 		log.AddLog(fmt.Sprintf("`%s` not installed. %s", server.CmdExtract, err.Error()), "ERROR")
 		changeDeploymentStatus(false)
 		return helper.CreateResult(false, nil, "Need to install "+server.CmdExtract+" on the server!")
