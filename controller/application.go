@@ -353,7 +353,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		chmodDestCmd := fmt.Sprintf("chmod -R 777 %s%s%s", destinationPath, serverPathSeparator, app.ID)
+		chmodDestCmd := fmt.Sprintf("chmod -R 755 %s%s%s", destinationPath, serverPathSeparator, app.ID)
 		log.AddLog(chmodDestCmd, "INFO")
 		_, err = sshSetting.GetOutputCommandSsh(chmodDestCmd)
 		if err != nil {

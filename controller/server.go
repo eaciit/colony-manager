@@ -12,6 +12,7 @@ import (
 	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"golang.org/x/crypto/ssh"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -235,9 +236,38 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				}
 			}
 
+			cliSourcePath := filepath.Join(EC_APP_PATH, "cli")
+			cliDestinationPath := filepath.Join(data.AppPath, "cli")
+			err = filepath.Walk(cliSourcePath, func(path string, _ os.FileInfo, _ error) error {
+				log.AddLog(fmt.Sprintf("scp %s to %s", path, cliDestinationPath), "INFO")
+				err := sshSetting.SshCopyByPath(path, cliDestinationPath)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
+
+				comps := strings.Split(cliDestinationPath, `/`)
+				targetPath := filepath.Join(cliDestinationPath, comps[len(comps)-1])
+
+				cmdChmod := fmt.Sprintf("chmod 755 %s", targetPath)
+				log.AddLog(cmdChmod, "INFO")
+				_, err = sshSetting.GetOutputCommandSsh(cmdChmod)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
+
+				return nil
+			})
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			runCmd := fmt.Sprintf("cd %s && ./sedotand &", cliDestinationPath)
+			err = helper.RunCommandWithTimeout(&sshSetting, runCmd, 3)
+			if err != nil {
+				return err
 			}
 
 			checkPathCmd := fmt.Sprintf("ls %s", data.AppPath)
