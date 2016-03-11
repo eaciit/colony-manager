@@ -1,7 +1,7 @@
-app.section('access');
+app.section('group');
 
-viewModel.administration = {}; var adm = viewModel.administration;
-adm.templateAccess = {
+viewModel.group = {}; var grp = viewModel.group;
+grp.templateGroup = {
 	_id: "",
 	Title: "",
 	Group1: "",
@@ -14,8 +14,25 @@ adm.templateAccess = {
 	SpecialAccecss3:"",
 	SpecialAccecss4:"",
 };
-adm.access = ko.mapping.fromJS(adm.templateAccess);
+grp.config = ko.mapping.fromJS(grp.templateGroup);
+grp.Groupmode = ko.observable('');
+grp.getGroup = function(c) {
 
+};
+
+grp.createNewGroup = function () {
+	app.mode("editor");
+};
+
+
+grp.backToFront = function () {
+	app.mode('');
+	grp.getGroup();
+	app.section('group');
+};
+
+grp.OnRemove = function (_id) {
+};
 $(function () {
 	// adm.getAdministraions();
 	// adm.getUploadFile();

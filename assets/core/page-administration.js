@@ -1,6 +1,6 @@
 app.section('access');
 
-viewModel.administration = {}; var adm = viewModel.administration;
+viewModel.access = {}; var adm = viewModel.access;
 adm.templateAccess = {
 	_id: "",
 	Title: "",
@@ -14,9 +14,27 @@ adm.templateAccess = {
 	SpecialAccecss3:"",
 	SpecialAccecss4:"",
 };
-adm.access = ko.mapping.fromJS(adm.templateAccess);
+adm.config = ko.mapping.fromJS(adm.templateAccess);
+adm.access = ko.observable('');
+adm.getAccess = function(c) {
+
+};
+
+adm.createNewAccess = function () {
+	app.mode("editor");
+};
+
+
+adm.OnRemove = function (_id) {
+};
+
+adm.backToFront = function () {
+	app.mode('');
+	adm.getAccess();
+};
 
 $(function () {
+	app.section("access");
 	// adm.getAdministraions();
 	// adm.getUploadFile();
 	// adm.codemirror();

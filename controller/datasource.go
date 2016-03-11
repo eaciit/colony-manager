@@ -631,6 +631,7 @@ func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Co
 	if err != nil {
 		return false, nil, err
 	}
+
 	defer conn.Close()
 
 	var query = conn.NewQuery().Take(1)

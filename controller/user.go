@@ -18,13 +18,12 @@ import (
 	// "time"
 )
 
-
-type AdministrationController struct {
+type UserController struct {
 	App
 }
 
-func CreateAdminisrationController(s *knot.Server) *AdministrationController {
-	var controller = new(AdministrationController)
+func CreateUserController(s *knot.Server) *UserController {
+	var controller = new(UserController)
 	controller.Server = s
 	return controller
 }
