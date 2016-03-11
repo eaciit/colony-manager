@@ -2,7 +2,9 @@ package helper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
@@ -15,7 +17,6 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"errors"
 	"strings"
 	"time"
 )
@@ -334,4 +335,14 @@ func ConstructPermission(strPermission string) (result string, err error) {
 	}
 
 	return
+}
+
+func ReplaceHostAlias(path string, server colonycore.Server) string {
+	for _, alias := range server.HostAlias {
+		if strings.Contains(path, alias.HostName) {
+			path = strings.Replace(path, alias.HostName, alias.IP, -1)
+			break
+		}
+	}
+	return path
 }
