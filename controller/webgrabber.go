@@ -509,11 +509,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			}
 
 			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
-				/*pid := toolkit.ToInt(pidOfSedotanD, toolkit.RoundingAuto)
-				err := syscall.Kill(pid, 15)
+				err := exec.Command("kill", "-9", pidOfSedotanD).Run()
 				if err != nil {
 					return helper.CreateResult(false, false, err.Error())
-				}*/
+				}
 
 				return helper.CreateResult(true, true, "")
 			}
