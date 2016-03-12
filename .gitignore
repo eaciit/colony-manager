@@ -29,3 +29,6 @@ _testmain.go
 
 .sass-cache/
 .DS_Store
+.vscode/*
+debug
+colony-manager*

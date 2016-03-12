@@ -2,11 +2,14 @@ package helper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
@@ -305,4 +308,72 @@ func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string)
 	io.Copy(f, file)
 
 	return nil, handler.Filename
+}
+
+func ConstructPermission(strPermission string) (result string, err error) {
+	permission_map := map[string]string{
+		"rwx": "7",
+		"rw-": "6",
+		"r-x": "5",
+		"r--": "4",
+		"-wx": "3",
+		"-w-": "2",
+		"--x": "1",
+		"---": "0",
+	}
+
+	if len(strPermission) == 9 {
+		owner := permission_map[strPermission[:3]]
+		group := permission_map[strPermission[3:6]]
+		other := permission_map[strPermission[6:]]
+
+		result := owner + group + other
+		return result, nil
+	} else {
+
+		err := errors.New("The permission is not valid")
+		return "", err
+	}
+
+	return
+}
+
+func ReplaceHostAlias(path string, server colonycore.Server) string {
+	for _, alias := range server.HostAlias {
+		if strings.Contains(path, alias.HostName) {
+			path = strings.Replace(path, alias.HostName, alias.IP, -1)
+			break
+		}
+	}
+	return path
+}
+
+func RunCommandWithTimeout(sshSetting *sshclient.SshSetting, cmd string, timeout int) error {
+	cRunCommand := make(chan string, 1)
+
+	go func() {
+		s := *sshSetting
+		res, err := s.RunCommandSsh(cmd)
+		fmt.Println("cmd    ->", cmd, "output ->", res)
+
+		if err != nil {
+			cRunCommand <- err.Error()
+		} else {
+			cRunCommand <- ""
+		}
+	}()
+
+	errorMessage := ""
+	select {
+	case receiveRunCommandOutput := <-cRunCommand:
+		errorMessage = receiveRunCommandOutput
+	case <-time.After(time.Second * time.Duration(timeout)):
+		errorMessage = ""
+	}
+
+	if strings.TrimSpace(errorMessage) != "" {
+		return errors.New(errorMessage)
+	}
+
+	return nil
 }

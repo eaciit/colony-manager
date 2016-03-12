@@ -36,7 +36,6 @@ dg.templatewizard = {
 };
 
 dg.templateWizardTable = {
-	id : "",
 	TableSource :"",
 	TableDestination: "",
 };
@@ -45,11 +44,13 @@ dg.templateInsertMode = [
 	{ value: "fresh", title: "Fresh insert" }, 
 ];
 
-dg.config = ko.mapping.fromJS(dg.templatewizard);
+dg.configWizard = ko.mapping.fromJS(dg.templatewizard);
 dg.connectionListData = ko.observableArray([]);
 dg.tableConnectionSource = ko.observableArray([]);
 dg.tableConnectionDestination = ko.observableArray([]);
 dg.hasilsave = ko.observableArray([]);
+dg.visibleSync1 = ko.observable('');
+dg.visibleSync2 = ko.observable('');
 
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
@@ -174,19 +175,22 @@ dg.getScrapperData = function (){
 		dg.checkTransformationStatus();
 	});
 };
+dg.dataTable = function (){
+	$(".table-wizard tbody tr").each(function (i, e) {
+		var item = $.extend(true, {}, dg.templateWizardTable);
+		var datatbSource = $(e).find("td:eq(0)").text();
+		var datatbDestination = $(e).find("td:eq(1) .k-combobox select").data("kendoComboBox");
+		item.TableSource = datatbSource;
+		item.TableDestination = datatbDestination.value();
+		dg.configWizard.Transformations.push(ko.mapping.fromJS(item));
+	});	
+};
 
-
-dg.addtable = function (){
-	var table = $.extend(true, {}, dg.templateWizardTable);
-	table.id = "s"+ moment.now();
-	dg.config.Transformations.push(ko.mapping.fromJS(table));
-}
-
-dg.removetable = function (each){
-	return function (){
-		console.log(each);
-		dg.config.Transformations.remove(each);
-	}
+dg.removeDataTable = function (){	
+	$(".table-wizard tbody tr").each(function (i, e) {	
+		var item = dg.configWizard.Transformations()[i];
+		dg.configWizard.Transformations.remove(item);
+	});	
 }
 
 dg.addMap = function () {
@@ -211,10 +215,10 @@ dg.createNewScrapper = function () {
 dg.addWizard = function (){
 	app.mode('addWizard');
 	dg.scrapperMode('');
-	ko.mapping.fromJS(dg.templatewizard, dg.config);
-	dg.addtable();
-	dg.tableConnectionSource([]);
-	dg.tableConnectionDestination([]);
+	ko.mapping.fromJS(dg.templatewizard, dg.configWizard);
+	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');
+	dg.visibleSync1('');
+	dg.visibleSync2('');
 };
 
 dg.doSaveDataGrabber = function (c) {
@@ -241,6 +245,8 @@ dg.saveDataGrabber = function () {
 dg.backToFront = function () {
 	app.mode("");
 	dg.tempCheckIdDataGrabber([]);
+	dg.visibleSync1('');
+	dg.visibleSync2('');
 };
 dg.getDataSourceData = function () {
 	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
@@ -254,8 +260,8 @@ dg.getDataSourceData = function () {
 	});
 };
 
-dg.doSaveDataGrabber = function (c) {
-	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.config),function(res){
+dg.doSaveDataGrabberWizard = function (c) {
+	app.ajaxPost("/datagrabber/savedatagrabberwizard",ko.mapping.fromJS(dg.configWizard),function(res){
 		if (!app.isFine(res)){
 			return;
 		}
@@ -271,7 +277,9 @@ dg.SaveDataGrabberWizard = function (){
 		return;
 	}
 	setTimeout (function(){
-		dg.doSaveDataGrabber(function (res) {
+		dg.removeDataTable();
+		dg.dataTable();
+		dg.doSaveDataGrabberWizard(function (res) {
 			if (!app.isFine(res)){
 				return;
 			}
@@ -315,7 +323,7 @@ dg.getConnectionsData = function (){
 		dg.connectionListData(res.data);
 	});
 };
-
+var tbSource;
 dg.changeConnectionSource = function (){
 	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
@@ -325,8 +333,13 @@ dg.changeConnectionSource = function (){
 			res.data = "";
 		}
 		dg.tableConnectionSource(res.data);
+		dg.prepareFieldTableWizard(res.data);	
+		tbSource = res.data;		
 	});
+	// dg.dataTable();
+	dg.visibleSync1('show');
 }
+
 dg.changeConnectionDestination = function (){
 	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
@@ -336,7 +349,33 @@ dg.changeConnectionDestination = function (){
 			res.data = "";
 		}
 		dg.tableConnectionDestination(res.data);
+		dg.synctable(res.data);
+		$(".table-wizard").find("select.field-destination").each(function(i,each){
+			var $comboBox = $(each).data("kendoComboBox");
+			$comboBox.value('');
+			if (res.data.indexOf(tbSource[i]) > -1 ){
+				$comboBox.value(tbSource[i]);
+				$comboBox.setDataSource(new kendo.data.DataSource({
+				data:res.data
+				}));	
+			}else {
+				$comboBox.value('');
+				$comboBox.setDataSource(new kendo.data.DataSource({
+				data:res.data
+				}));
+			}
+		});
 	});
+	dg.visibleSync2('show');
+}
+
+dg.synctable = function(data){
+	$(".table-wizard").find("select.field-destination").each(function(i,each){
+		var $comboBox = $(each).data("kendoComboBox");
+		if ($comboBox.value() == ''){
+			$comboBox.value(tbSource[i]);
+		}
+	});	
 }
 
 dg.selectGridDataGrabber = function (e) {
@@ -611,9 +650,36 @@ dg.viewData = function (date) {
 		console.log(res.data);
 	});
 };
+dg.prepareFieldTableWizard = function (tbSource){
+	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');;
+	var $tableWizard = $(".table-wizard");
+	var header = [
+		'<thead>',
+			'<tr>',
+				'<th style="border-bottom:none" class="full-width">Table Source</th>',
+				'<th style="border-bottom:none" class="full-width">Table Destination</th>',
+			'</tr>',
+		'</thead>'
+	].join('');
+	$tableWizard.append(header);
+	tbSource.forEach(function(table){
+	var content = [
+		'<tr>',
+			'<td>'+table+'</td>',
+			'<td><select class="field-destination" style="width: 200px"></select></td>',
+		'</tr>'
+	].join('');
+	$tableWizard.append(content)});
+	var $row = $tableWizard.find("tr");
+	$row.find("select.field-destination").kendoComboBox({
+		suggest:true,
+		placeholder:'Select One',
+		dataValueField:'TableDestination',
+	});
+}
+
 dg.prepareFieldsOrigin = function (_id) {
 	var row = Lazy(dg.dataSourcesData()).find({ _id: _id });
-
 	$(".table-tree-map").replaceWith('<table class="table tree table-tree-map"></table>');
 	var $tree = $(".table-tree-map");
 	var index = 1;

@@ -28,7 +28,10 @@ type MetaSave struct {
 }
 
 var (
-	sorter string
+	sorter       string
+	querypattern = []string{"*", "!", ".."}
+	ds_rdbms     = []string{"mysql", "mssql", "oracle", "postgres"}
+	ds_flatfile  = []string{"csv", "csvs", "json", "jsons", "xlsx"}
 )
 
 func CreateDataSourceController(s *knot.Server) *DataSourceController {
@@ -107,16 +110,20 @@ func (d *DataSourceController) ConnectToDataSource(_id string) (*colonycore.Data
 }
 
 func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []toolkit.M, *colonycore.DataBrowser, error) {
-
+	var hasLookup bool
+	toolkit.Println("payload : ", payload)
+	if payload.Has("haslookup") {
+		hasLookup = payload.Get("haslookup").(bool)
+	}
 	_id := toolkit.ToString(payload.Get("id", ""))
 	sort := payload.Get("sort")
 	search := payload.Get("search")
+	_ = search
 	take := toolkit.ToInt(payload.Get("take", ""), toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
-	fmt.Println("===== >> seacrch", search)
-
 	TblName := toolkit.M{}
+	payload.Unset("id")
 	//sorter = ""
 	if sort != nil {
 		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
@@ -138,8 +145,6 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		return 0, nil, nil, err
 	}
 
-	fmt.Printf("----- %#v\n", dataDS)
-
 	dataConn := new(colonycore.Connection)
 	err = colonycore.Get(dataConn, dataDS.ConnectionID)
 	if err != nil {
@@ -155,29 +160,86 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		return 0, nil, nil, err
 	}
 
-	TblName.Set("from", dataDS.TableNames)
+	if dataDS.QueryType == "" {
+		TblName.Set("from", dataDS.TableNames)
+		payload.Set("from", dataDS.TableNames)
+	} else if dataDS.QueryType == "Dbox" {
+		getTableName := toolkit.M{}
+		toolkit.UnjsonFromString(dataDS.QueryText, &getTableName)
+		payload.Set("from", getTableName.Get("from").(string))
 
-	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
-	query, metaSave := d.parseQuery(connection.NewQuery().Skip(skip).Take(take).Order(sorter), TblName)
+		if qSelect := getTableName.Get("select", "").(string); qSelect != "" {
+			payload.Set("select", getTableName.Get("select").(string))
+		}
+	} else if dataDS.QueryType == "SQL" {
+		var QueryString string
+		if dataConn.Driver == "mysql" || dataConn.Driver == "hive" {
+			QueryString = " LIMIT " + toolkit.ToString(take) + " OFFSET " + toolkit.ToString(skip)
+		} else if dataConn.Driver == "mssql" {
+			QueryString = " OFFSET " + toolkit.ToString(skip) + " ROWS FETCH NEXT " +
+				toolkit.ToString(take) + " ROWS ONLY "
 
-	_ = metaSave
-	// fmt.Println("Meta Save : ", metaSave)
+		} else if dataConn.Driver == "postgres" {
+			QueryString = " LIMIT " + toolkit.ToString(take) +
+				" OFFSET " + toolkit.ToString(skip)
+		}
+		stringQuery := toolkit.Sprintf("%s %s", dataDS.QueryText, QueryString)
+		payload.Set("freetext", stringQuery)
+		// toolkit.Println(stringQuery)
+	}
 
+	qcount, _ := d.parseQuery(connection.NewQuery(), payload)
+	query, _ := d.parseQuery(connection.NewQuery() /*.Skip(skip).Take(take) .Order(sorter)*/, payload)
+
+	var selectfield string
 	for _, metadata := range dataDS.MetaData {
 		tField := metadata.Field
 		if payload.Has(tField) {
-			switch toolkit.TypeName(payload[tField]) {
-			case "int":
-				query = query.Where(dbox.Eq(tField, payload[tField]))
-				qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
-			case "float":
-				query = query.Where(dbox.Eq(tField, payload[tField]))
-				qcount = qcount.Where(dbox.Eq(tField, payload[tField]))
-			default:
-				query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
-				qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+			selectfield = toolkit.ToString(tField)
+			if toolkit.IsSlice(payload[tField]) {
+				query = query.Where(dbox.In(tField, payload[tField].([]interface{})...))
+				qcount = qcount.Where(dbox.In(tField, payload[tField].([]interface{})...))
+			} else if !toolkit.IsNilOrEmpty(payload[tField]) {
+				var hasPattern bool
+				for _, val := range querypattern {
+					if strings.Contains(toolkit.ToString(payload[tField]), val) {
+						hasPattern = true
+					}
+				}
+				if hasPattern {
+					query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
+						toolkit.ToString(metadata.DataType), ""))
+					qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
+						toolkit.ToString(metadata.DataType), ""))
+				} else {
+					switch toolkit.TypeName(payload[tField]) {
+					case "int":
+						query = query.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
+						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
+					case "float32":
+						query = query.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
+						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
+					case "float64":
+						query = query.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
+						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
+					default:
+						query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+						qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+					}
+				}
 			}
 		}
+	}
+
+	if hasLookup && selectfield != "" {
+		if toolkit.HasMember(ds_flatfile, dataConn.Driver) {
+			query = query.Select(selectfield)
+			qcount = qcount.Select(selectfield)
+		} else {
+			query = query.Select(selectfield).Group(selectfield)
+			qcount = qcount.Select(selectfield).Group(selectfield)
+		}
+
 	}
 
 	ccount, err := qcount.Cursor(nil)
@@ -197,6 +259,16 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return 0, nil, nil, err
+	}
+
+	if hasLookup && selectfield != "" && !toolkit.HasMember(ds_rdbms, dataConn.Driver) &&
+		!toolkit.HasMember(ds_flatfile, dataConn.Driver) {
+		dataMongo := []toolkit.M{}
+		for _, val := range data {
+			mVal, _ := toolkit.ToM(val.Get("_id"))
+			dataMongo = append(dataMongo, mVal)
+		}
+		data = dataMongo
 	}
 
 	return dcount, data, dataDS, nil
@@ -304,10 +376,10 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 	}
 	if qSkipRaw, qSkipOK := queryInfo["skip"]; qSkipOK {
 		if qSkip, ok := qSkipRaw.(float64); ok {
-			query = query.Take(int(qSkip))
+			query = query.Skip(int(qSkip))
 		}
 		if qSkip, ok := qSkipRaw.(int); ok {
-			query = query.Take(qSkip)
+			query = query.Skip(qSkip)
 		}
 	}
 	if qOrder := queryInfo.Get("order", "").(string); qOrder != "" {
@@ -368,6 +440,12 @@ func (d *DataSourceController) parseQuery(query dbox.IQuery, queryInfo toolkit.M
 
 			query = query.Where(allFilter...)
 		}
+	}
+
+	if freeText := queryInfo.Get("freetext", "").(string); freeText != "" {
+		query = query.Command("freequery", toolkit.M{}.
+			Set("syntax", freeText))
+		toolkit.Println(freeText)
 	}
 
 	return query, metaSave
@@ -586,7 +664,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 
 	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
 
-	if fakeDataConn.FileLocation != "" {
+	if fakeDataConn.FileLocation != "" && strings.Contains(host, "http") {
 		os.Remove(fakeDataConn.FileLocation)
 	}
 
@@ -630,6 +708,10 @@ func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Co
 	} else {
 		dataAll := []toolkit.M{}
 		err = cursor.Fetch(&dataAll, 1, false)
+		if err != nil {
+			return false, []*colonycore.FieldInfo{}, errors.New("No data found")
+		}
+
 		if len(dataAll) > 0 {
 			data = dataAll[0]
 		}
@@ -641,7 +723,7 @@ func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Co
 		return false, nil, err
 	}
 
-	return false, metadata, nil
+	return true, metadata, nil
 }
 
 func (d *DataSourceController) FetchDataSourceMetaData(r *knot.WebContext) interface{} {

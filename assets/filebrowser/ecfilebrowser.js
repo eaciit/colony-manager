@@ -109,7 +109,7 @@ var methodsFB = {
 				app.isLoading(true);
 		});
 
-		strtree = "<div></div>"
+		strtree = "<div class='fb-tree'></div>"
 		$strtree = $(strtree);
 		$strtree.appendTo($strpre);
 		var ds = options.dataSource;
@@ -132,7 +132,7 @@ var methodsFB = {
 	                	$strtree.find("span").each(function(){
 							if($(this).html()!=""){
 								if($($(this).find("span")).length==0){
-									var type = methodsFB.DetectType(this,$(this).html());
+									var type = methodsFB.DetectType(this,$(this).html(),elem);
 									var sp = "<span class='k-sprite "+type+"'></span>";
 									$sp = $(sp);
 									$sp.prependTo($(this));
@@ -351,7 +351,7 @@ var methodsFB = {
 		$btn.unbind("click");
 		$body.html("");
 		var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
-		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 
 		if(content.action=="NewFile"){
 			if (type!="folder"){
@@ -507,7 +507,7 @@ var methodsFB = {
 			if(content.action=="Edit" || content.action=="Cancel"){
 				var divtree = $($(elem).find(".fb-pre")[0]);
                 divtree.removeAttr("style");
-                divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
+            	divtree.removeClass("k-state-disabled");
 				$(elem).data("ecFileBrowser").isHold = false;
 			}else{
            		 swal("Warning!", "Please finish editing file !", "warning");
@@ -527,15 +527,15 @@ var methodsFB = {
 		if(content.action!="Search"){
 			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
 			permiss = $($($(elem).find(".k-state-selected")).find("a")).attr("permission");
-			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name);
+			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 		}
 
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
 			var dtitm = methodsFB.GetSelectedData(elem);
-			if(!dtitm.iseditable){
-            swal("Warning!", "Action not permitted !", "warning");
-				return;
-			}
+			// if(!dtitm.iseditable){
+   // 			 swal("Warning!", "Action not permitted !", "warning");
+			// 	return;
+			// }
 		}
 
 		content.path = SelectedPath;
@@ -554,7 +554,7 @@ var methodsFB = {
 					$($(elem).find(".fb-editor")).data("kendoEditor").focus();
                 	app.isLoading(false);
                 	divtree.css("pointer-events", "none");
-                	divtree.attr("class", divtree.attr("class")+" k-state-disabled");
+                	divtree.addClass("k-state-disabled");
                 	return;
 			}
 		}else if(content.action=="Rename"){
@@ -642,13 +642,13 @@ var methodsFB = {
             app.isLoading(false);
             $(elem).find(".modal").modal("hide");
             methodsFB.RefreshTreeView(elem,param);
+	        swal("Saved!", "Your request has been processed !", "success");
         }
         
 
         return false;
 	},
 	HandleError: function (res) {
-		console.log(res);
 		if (!res.success) {
     		if (typeof sweetAlert !== "undefined") {
 				sweetAlert("Oops...", res.message, "error");
@@ -669,7 +669,7 @@ var methodsFB = {
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
-
+		app.isLoading(true);
 		if (param.action == "Download") {
 			var arr = [];
 			for (var k in param) {
@@ -679,6 +679,7 @@ var methodsFB = {
 			}
 			var url = [url.split('#')[0], arr.join("&")].join("?");
 			document.location.href = url;
+			setTimeout(function(){ app.isLoading(false); },5000);
 		} else if (param.action == "Upload") {
 			param.url = url;
 			methodsFB.UploadAjax(elem,param);
@@ -686,7 +687,6 @@ var methodsFB = {
 		if (ds.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		app.isLoading(true);
 		 $.ajax({
                 url: url,
                 type: call,
@@ -697,7 +697,8 @@ var methodsFB = {
                 	methodsFB.HandleError(res);
                 	var divtree = $($(elem).find(".fb-pre")[0]);
                 	divtree.removeAttr("style");
-                	divtree.attr("class", divtree.attr("class").replace(" k-state-disabled",""));
+                	divtree.removeClass("k-state-disabled");
+            		app.isLoading(false);
 
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
@@ -707,7 +708,7 @@ var methodsFB = {
 						$(elem).data("ecFileBrowser").isHold = true;
                 		app.isLoading(false);
                 		divtree.css("pointer-events", "none");
-                		divtree.attr("class", divtree.attr("class")+" k-state-disabled");
+                		divtree.addClass("k-state-disabled");
                 	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem,param);
                 		if(param.action=="NewFile"){
@@ -720,14 +721,15 @@ var methodsFB = {
                 	}
 
                 	$(elem).find(".modal").modal("hide");
-	                	if(!$(elem).data("ecFileBrowser").isHold){
-	                		swal("Saved!", "Your request has been processed !", "success");
-	                		app.isLoading(false);
-	                	}
-	                },
-	                error: function (a, b, c) {
-	                	app.isLoading(false);
-						$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
+                	if(!$(elem).data("ecFileBrowser").isHold){
+                		swal("Saved!", "Your request has been processed !", "success");
+                		app.isLoading(false);
+                	}
+                },
+                error: function (a, b, c) {
+                	app.isLoading(false);
+					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
+                	divtree.removeClass("k-state-disabled");
 				},
 	        });
 		}
@@ -785,11 +787,14 @@ var methodsFB = {
 			},
         });
 	},
-	DetectType:function(elem,name){
+	DetectType:function(elem,name,elemmain){
 		name = name.toLowerCase();
 		var childcount = $(elem).prev("span").length
+		var tree = $($(elemmain).find(".k-treeview")).getKendoTreeView();
+		$li = $(elem).closest("li");
+		var isdir = tree.dataItem($li).isdir;
 
-		if (childcount > 0){
+		if (childcount > 0||isdir){
 			return "folder"
 		}else if (name.indexOf(".pdf")>-1){
 			return "pdf"

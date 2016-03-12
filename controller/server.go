@@ -12,6 +12,7 @@ import (
 	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"golang.org/x/crypto/ssh"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -154,23 +155,9 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		oldData = &oldDataAll[0]
 	}
 
-	log.AddLog(fmt.Sprintf("Delete data ID: %s", data.ID), "INFO")
-	err = colonycore.Delete(data)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
-	err = colonycore.Save(data)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	if data.ServerType == "hadoop" {
+	if data.ServerType == "hdfs" {
 		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
-		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHPass))
+		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())
@@ -231,6 +218,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "daemon")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "src")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "web", "share")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "application", "log")),
+				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "daemon")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "log")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "output")),
 				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datasource", "upload")),
@@ -242,12 +231,54 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 			for _, each := range cmds {
 				log.AddLog(each, "INFO")
+				_, err := sshSetting.GetOutputCommandSsh(each)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return helper.CreateResult(false, nil, err.Error())
+				}
 			}
-			_, err := sshSetting.RunCommandSsh(cmds...)
 
+			cliSourcePath := filepath.Join(EC_APP_PATH, "cli")
+			cliDestinationPath := filepath.Join(data.AppPath, "cli")
+			err = filepath.Walk(cliSourcePath, func(path string, _ os.FileInfo, _ error) error {
+				log.AddLog(fmt.Sprintf("scp %s to %s", path, cliDestinationPath), "INFO")
+				err := sshSetting.SshCopyByPath(path, cliDestinationPath)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
+
+				comps := strings.Split(cliDestinationPath, `/`)
+				targetPath := filepath.Join(cliDestinationPath, comps[len(comps)-1])
+
+				cmdChmod := fmt.Sprintf("chmod 755 %s", targetPath)
+				log.AddLog(cmdChmod, "INFO")
+				_, err = sshSetting.GetOutputCommandSsh(cmdChmod)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
+
+				return nil
+			})
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			daemonSourcePath := filepath.Join(EC_DATA_PATH, "daemon", "daemonsnapshot.csv")
+			daemonDestinationPath := filepath.Join(data.DataPath, "daemon")
+			log.AddLog(fmt.Sprintf("scp %s to %s", daemonSourcePath, daemonDestinationPath), "INFO")
+			err := sshSetting.SshCopyByPath(daemonSourcePath, daemonDestinationPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
+			}
+
+			runCmd := fmt.Sprintf("cd %s && ./sedotand &", cliDestinationPath)
+			err = helper.RunCommandWithTimeout(&sshSetting, runCmd, 3)
+			if err != nil {
+				return err
 			}
 
 			checkPathCmd := fmt.Sprintf("ls %s", data.AppPath)
@@ -289,6 +320,13 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	} else {
 		// windows
+	}
+
+	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
+	err = colonycore.Save(data)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	return helper.CreateResult(true, nil, "")
@@ -368,7 +406,7 @@ func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if payload.ServerType == "hadoop" {
+	if payload.ServerType == "hdfs" {
 		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(payload.Host, payload.SSHPass))
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())

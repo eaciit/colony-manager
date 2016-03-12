@@ -1,0 +1,184 @@
+<!-- core -->
+<link rel="stylesheet" href="/res/js/codemirror/codemirror.css">
+<script src="/res/js/codemirror/codemirror.js"></script>
+<script src="/res/js/codemirror/xml.js"></script>
+<script src="/res/js/codemirror/active-line.js"></script>
+
+<script src="/res/core/page-administration.js"></script>
+<script src="/res/core/page-user.js"></script>
+<script src="/res/core/page-group.js"></script>
+
+<style type="text/css">
+	.modal-deploy .modal-footer {
+		position: relative;
+	}
+	.modal-deploy .modal-footer .loader-container {
+		position: absolute !important;
+	}
+	.modal-deploy .modal-footer .loader-container .loader {
+	    margin-top: 0px !important;
+	}
+	.link-deploy,
+	.link-deploy:hover {
+		text-decoration: none;
+		color: white;
+		cursor: pointer;
+	}
+	.link-deploy:hover {
+		color: black;
+	}
+</style>
+
+<!-- sidebar -->
+<div class="col-xs-6 col-sm-2" id="sidebar">
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'access') }, click: app.changeActiveSection('access')">Access<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'grup') }, click: app.changeActiveSection('group')">Group<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'user') }, click: app.changeActiveSection('user')">User<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-10" id="content">
+	<div class="col-md-12" data-bind="with: access, visible: (app.section() == 'access')">
+		<h1>Access</h1>	
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+			<div class="nav1">
+				<button class="btn btn-sm btn-primary" data-bind="click: adm.getApplications">
+			    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+			    </button>
+				 <button class="btn btn-sm btn-success" data-bind="click: adm.createNewAccess">
+			    		<span class="glyphicon glyphicon-plus"></span> Add
+			    </button>
+		    	<button class="btn btn-sm btn-danger" data-bind="click: adm.OnRemove"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+		    </div>
+		</nav>	
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: adm.backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+	    	<button class="btn btn-sm btn-primary"  >
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-danger" >
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
+		<nav class="navbar" data-bind="visible: (app.mode() == 'edit')">
+			<button class="btn btn-sm btn-warning navbar-btn" >
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+	    	<button class="btn btn-sm btn-primary"  >
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-danger" >
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+    <div class="panel-heading">
+        <h1 class="panel-title">Access</h1>
+    </div>
+    <div class="panel-body">
+    	<!-- <div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div> -->
+    </div>
+    <p class="bg-danger bgcustom">Please click row to edit!</p>
+</div>
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 1000px;">
+	<div class="panel-heading">
+         <h1 class="panel-title"><span data-bind="text: (adm.access() == '') ? 'Create New' : 'Edit'"></span>
+        </h1>
+    </div>
+    <div class="panel-body">
+    	<form class="form-horizontal form-server" id="form-add-Acc" novalidate>
+    		<div class="col-md-6">
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">ID</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" >
+						<span class="k-invalid-msg" data-for="ID"></span>		    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Title</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" >
+						<span class="k-invalid-msg" data-for="Title"></span>	    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Group 1</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 1" type="text" class="form-control input-sm" name="Group1" placeholder="Type the Group 1 Here" >
+						<span class="k-invalid-msg" data-for="Group1"></span>	    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Group 2</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 1" type="text" class="form-control input-sm" name="Group2" placeholder="Type the Group 2 Here" >
+						<span class="k-invalid-msg" data-for="Group2"></span>	    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Group 3</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 3" type="text" class="form-control input-sm" name="Group3" placeholder="Type the Group 1 Here" >
+						<span class="k-invalid-msg" data-for="Group3"></span>	    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">Enable</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Enable" type="text" class="form-control input-sm" name="Enable" placeholder="Type the Enable Here" >
+						<span class="k-invalid-msg" data-for="Enable"></span>	    			
+		    		</div>
+	    		</div>	    		
+    		</div>
+    		<div class="col-md-6">
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">SpecialAccess1</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 1" type="text" class="form-control input-sm" name="SpecialAccess 1" placeholder="Type the SpecialAccess 1 Here" >
+						<span class="k-invalid-msg" data-for="SpecialAccess1"></span>		    	
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">SpecialAccess2</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 2" type="text" class="form-control input-sm" name="SpecialAccess2" placeholder="Type the SpecialAccess 2 Here" >
+						<span class="k-invalid-msg" data-for="SpecialAccess2"></span>	    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">SpecialAccess3</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 3" type="text" class="form-control input-sm" name="SpecialAccess3" placeholder="Type the SpecialAccess 3 Here" >
+						<span class="k-invalid-msg" data-for="SpecialAccess3"></span>	    			
+		    		</div>
+	    		</div>
+	    		<div class="form-group">
+		    		<label class="col-md-3 filter-label">SpecialAccess4</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 4" type="text" class="form-control input-sm" name="SpecialAccess4" placeholder="Type the SpecialAccess 4 Here" >
+						<span class="k-invalid-msg" data-for="SpecialAccess4"></span>	    			
+		    		</div>
+	    		</div>	    		   		
+    		</div>
+     	</form>
+    </div>
+</div>
+	</div>
+	<div class="col-md-12" data-bind="visible: (app.section() == 'group'),with:group">
+		{{template "page-group.html"}}
+	</div>
+	<div class="col-md-12" data-bind="visible: (app.section() == 'user'),with:user">
+		{{template "page-user.html"}}
+	</div>
+</div>
+
+<div class="modal fade modal-new-file" tabindex="-1" role="dialog">	 
+</div>
+

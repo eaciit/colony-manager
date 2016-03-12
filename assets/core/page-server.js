@@ -14,10 +14,11 @@ srv.templateConfigServer = {
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",	
-	cmdextract:"",
-	cmdnewfile :"",
-	cmdcopy:"",
-	cmdmkdir:"",
+	cmdextract: "unzip %1 -d %2",
+	cmdmkdir: "mkdir",
+	cmdcopy: "",
+	cmdnewfile : "",
+    hostAlias: []
 };
 srv.templatetypeServer = ko.observableArray([
 	{ value: "node", text: "Node Server" },
@@ -122,7 +123,7 @@ srv.getServers = function(c) {
 		    $(this).removeClass("k-state-hover");
 		});
 
-		if (c != undefined) {
+		if (typeof c == "function") {
 			c(res);
 		}
 	});
@@ -136,6 +137,7 @@ srv.createNewServer = function () {
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
+    srv.addHostAlias();
 };
 srv.validateHost = function () {
 	if (srv.configServer.serverType() == "node") {
@@ -159,7 +161,7 @@ srv.doSaveServer = function (c) {
 				excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
 			}
 		} else {
-			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required"]);
+			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required", "extract is required", "make-directory is required"]);
 		}
 
 		if (srv.configServer.sshtype() == "File") {
@@ -241,6 +243,10 @@ srv.doSaveServer = function (c) {
 
 		$.when.apply(undefined, ajaxes).then(callback, callback);
 	} else {
+        if (srv.configServer.serverType() != "hdfs") {        
+            data.hostAlias = [];
+        }
+        
 		app.ajaxPost("/server/saveservers", data, function (res) {
 			if (!app.isFine(res)) {
 				return;
@@ -294,6 +300,9 @@ srv.editServer = function (_id) {
 		
 		app.mode('editor');
 		srv.ServerMode('edit');
+        if (res.data.hostAlias == null) {
+            res.data.hostAlias = [];
+        }
 		ko.mapping.fromJS(res.data, srv.configServer);
 	});
 }
@@ -520,6 +529,20 @@ srv.ipToRegister = ko.observableArray([]);
 srv.ipToRegisterAsString = ko.computed(function () {
 	return srv.ipToRegister().join("\n");
 });
+
+srv.templateHostAlias = {
+    ip: "",
+    hostName: ""
+};
+srv.addHostAlias = function () {
+	var item = ko.mapping.fromJS($.extend(true, {}, srv.templateHostAlias));
+	srv.configServer.hostAlias.push(item); 
+};
+srv.removeHostAlias = function (each) {
+	return function () {
+		srv.configServer.hostAlias.remove(each);
+	};
+};
 
 srv.finishButton = function () {
 	srv.ipToRegister([]);

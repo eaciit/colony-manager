@@ -329,9 +329,10 @@ apl.backToFront = function () {
 
 apl.treeView = function (id) {
 	app.ajaxPost("/application/readdirectory", {ID:id}, function(res) {
-		if (!app.isFine(res)) {
-			return;
-		}
+        if (!res.success) {
+            return;
+        }
+        
 		$("#treeview-left").replaceWith("<div id='treeview-left'></div>");
 		apl.appRecordsDir(res.data);
 		var treeview = $("#treeview-left").kendoTreeView({
@@ -650,11 +651,20 @@ apl.selectServer = function(elem, e){
 	}
 }
 
+apl.prepareTreeView = function () {
+	$("#treeview-left").kendoTreeView({
+		animation: false,
+		template: "<span class='#= item.iconclass #'></span>&nbsp;&nbsp;<span>#= item.text #</span>",
+		select: apl.selectDirApp,
+		dataSource: new kendo.data.DataSource({ data: [] }),
+    }).data("kendoTreeView");
+}
+
 $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
-	apl.treeView("") ;
+	apl.prepareTreeView();
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
