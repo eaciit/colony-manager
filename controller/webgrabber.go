@@ -265,15 +265,16 @@ func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search))
 
-	if requesttype != "" {
-		query = dbox.And(query, dbox.Eq("grabconf.calltype", requesttype))
-	}
-
-	if sourcetype != "" {
+	if sourcetype == "" {
+		//default sourcetype == "SourceType_HttpHtml"
+		query = dbox.And(query, dbox.Eq("sourcetype", "SourceType_HttpHtml"))
+	} else {
 		query = dbox.And(query, dbox.Eq("sourcetype", sourcetype))
 	}
 
-	query = dbox.And(query, dbox.Eq("sourcetype", "SourceType_HttpHtml"))
+	if requesttype != "" {
+		query = dbox.And(query, dbox.Eq("grabconf.calltype", requesttype))
+	}
 
 	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
 	if err != nil {
@@ -431,10 +432,9 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+
 	if runtime.GOOS == "windows" {
-
 		sedotandExist := GetSedotandWindows()
-
 		if sedotandExist == false {
 			return helper.CreateResult(true, false, "")
 		}
@@ -469,7 +469,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			sedotandExist := GetSedotandWindows()
 
 			if sedotandExist == false {
-				return helper.CreateResult(true, false, "")
+				return helper.CreateResult(false, false, "")
 			}
 
 			err := exec.Command("taskkill", "/IM", "sedotand.exe", "/F").Start()
@@ -477,7 +477,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			if err != nil {
 				return helper.CreateResult(false, false, err.Error())
 			}
-			return helper.CreateResult(true, true, "")
+			return helper.CreateResult(true, false, "")
 		} else {
 			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand.exe")
 			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
@@ -509,11 +509,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			}
 
 			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
-				/*pid := toolkit.ToInt(pidOfSedotanD, toolkit.RoundingAuto)
-				err := syscall.Kill(pid, 15)
+				err := exec.Command("kill", "-9", pidOfSedotanD).Run()
 				if err != nil {
 					return helper.CreateResult(false, false, err.Error())
-				}*/
+				}
 
 				return helper.CreateResult(true, true, "")
 			}
@@ -569,6 +568,7 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	module := GetDirSnapshot("daemonsnapshot")
+
 	SnapShot, err := module.OpenSnapShot(payload.Nameid)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())

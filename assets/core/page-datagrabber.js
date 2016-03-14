@@ -49,6 +49,8 @@ dg.connectionListData = ko.observableArray([]);
 dg.tableConnectionSource = ko.observableArray([]);
 dg.tableConnectionDestination = ko.observableArray([]);
 dg.hasilsave = ko.observableArray([]);
+dg.visibleSync1 = ko.observable('');
+dg.visibleSync2 = ko.observable('');
 
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
@@ -173,24 +175,23 @@ dg.getScrapperData = function (){
 		dg.checkTransformationStatus();
 	});
 };
-
-/*dg.addtable = function (){
-	var table = $.extend(true, {}, dg.templateWizardTable);
-	table.id = "s"+ moment.now();
-	dg.config.Transformations.push(ko.mapping.fromJS(table));
-}
-
-dg.removetable = function (each){
-	return function (){
-		console.log(each);
-		dg.config.Transformations.remove(each);
-	}
-}*/
-
 dg.dataTable = function (){
-	var table = $.extend(true, {}, dg.templateWizardTable);
-	dg.configWizard.Transformations.push(ko.mapping.fromJS(table));
+	$(".table-wizard tbody tr").each(function (i, e) {
+		var item = $.extend(true, {}, dg.templateWizardTable);
+		var datatbSource = $(e).find("td:eq(0)").text();
+		var datatbDestination = $(e).find("td:eq(1) .k-combobox select").data("kendoComboBox");
+		item.TableSource = datatbSource;
+		item.TableDestination = datatbDestination.value();
+		dg.configWizard.Transformations.push(ko.mapping.fromJS(item));
+	});	
 };
+
+dg.removeDataTable = function (){	
+	$(".table-wizard tbody tr").each(function (i, e) {	
+		var item = dg.configWizard.Transformations()[i];
+		dg.configWizard.Transformations.remove(item);
+	});	
+}
 
 dg.addMap = function () {
 	var o = ko.mapping.fromJS($.extend(true, {}, dg.templateMap));
@@ -215,8 +216,9 @@ dg.addWizard = function (){
 	app.mode('addWizard');
 	dg.scrapperMode('');
 	ko.mapping.fromJS(dg.templatewizard, dg.configWizard);
-	dg.dataTable();
 	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');
+	dg.visibleSync1('');
+	dg.visibleSync2('');
 };
 
 dg.doSaveDataGrabber = function (c) {
@@ -243,7 +245,8 @@ dg.saveDataGrabber = function () {
 dg.backToFront = function () {
 	app.mode("");
 	dg.tempCheckIdDataGrabber([]);
-
+	dg.visibleSync1('');
+	dg.visibleSync2('');
 };
 dg.getDataSourceData = function () {
 	app.ajaxPost("/datasource/getdatasources", {search: dg.searchfield}, function (res) {
@@ -274,6 +277,8 @@ dg.SaveDataGrabberWizard = function (){
 		return;
 	}
 	setTimeout (function(){
+		dg.removeDataTable();
+		dg.dataTable();
 		dg.doSaveDataGrabberWizard(function (res) {
 			if (!app.isFine(res)){
 				return;
@@ -331,9 +336,8 @@ dg.changeConnectionSource = function (){
 		dg.prepareFieldTableWizard(res.data);	
 		tbSource = res.data;		
 	});
-	
-	var clone = $.extend(true, {}, dg.tabelSource);
-	dg.configWizard.Transformations.push(ko.mapping.fromJS(clone));
+	// dg.dataTable();
+	dg.visibleSync1('show');
 }
 
 dg.changeConnectionDestination = function (){
@@ -362,8 +366,7 @@ dg.changeConnectionDestination = function (){
 			}
 		});
 	});
-	var clone = $.extend(true, {}, dg.templateWizardTable.TableDestination);
-	dg.configWizard.Transformations.push(ko.mapping.fromJS(clone));
+	dg.visibleSync2('show');
 }
 
 dg.synctable = function(data){
