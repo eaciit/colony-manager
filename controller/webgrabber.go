@@ -265,15 +265,16 @@ func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search))
 
-	if requesttype != "" {
-		query = dbox.And(query, dbox.Eq("grabconf.calltype", requesttype))
-	}
-
-	if sourcetype != "" {
+	if sourcetype == "" {
+		//default sourcetype == "SourceType_HttpHtml"
+		query = dbox.And(query, dbox.Eq("sourcetype", "SourceType_HttpHtml"))
+	} else {
 		query = dbox.And(query, dbox.Eq("sourcetype", sourcetype))
 	}
 
-	query = dbox.And(query, dbox.Eq("sourcetype", "SourceType_HttpHtml"))
+	if requesttype != "" {
+		query = dbox.And(query, dbox.Eq("grabconf.calltype", requesttype))
+	}
 
 	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
 	if err != nil {
@@ -508,11 +509,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			}
 
 			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
-				/*pid := toolkit.ToInt(pidOfSedotanD, toolkit.RoundingAuto)
-				err := syscall.Kill(pid, 15)
+				err := exec.Command("kill", "-9", pidOfSedotanD).Run()
 				if err != nil {
 					return helper.CreateResult(false, false, err.Error())
-				}*/
+				}
 
 				return helper.CreateResult(true, true, "")
 			}

@@ -1,7 +1,7 @@
-app.section('access');
+app.section('user');
 
-viewModel.administration = {}; var adm = viewModel.administration;
-adm.templateAccess = {
+viewModel.user = {}; var usr = viewModel.user;
+usr.templateUser = {
 	_id: "",
 	Title: "",
 	Group1: "",
@@ -14,7 +14,27 @@ adm.templateAccess = {
 	SpecialAccecss3:"",
 	SpecialAccecss4:"",
 };
-adm.access = ko.mapping.fromJS(adm.templateAccess);
+usr.config = ko.mapping.fromJS(adm.templateUser);
+
+usr.Usermode = ko.observable('');
+usr.getUser = function(c) {
+
+};
+
+usr.createNewUser = function () {
+	app.mode("editor");
+};
+
+
+usr.OnRemove = function (_id) {
+};
+
+usr.backToFront = function () {
+	app.mode('');
+	usr.getUser();
+	app.section('user');
+};
+
 
 $(function () {
 	// adm.getAdministraions();
