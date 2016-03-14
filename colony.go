@@ -36,6 +36,9 @@ func main() {
 	server.Register(controller.CreateWebGrabberController(server), "")
 	server.Register(controller.CreateApplicationController(server), "")
 	server.Register(controller.CreateServerController(server), "")
+	server.Register(controller.CreateUserController(server), "")
+	server.Register(controller.CreateGroupController(server), "")
+	server.Register(controller.CreateAdminisrationController(server), "")
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		http.Redirect(r.Writer, r.Request, "/web/index", 301)
 		return true
