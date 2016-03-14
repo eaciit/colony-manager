@@ -113,7 +113,7 @@ br.ViewBrowserName = function(id){
 	br.selectedID(id);
 	var datacol =[];
 	br.dataBrowserDescColumns([]);
-	app.ajaxPost("/databrowser/detaildb", {id: id}, function(res){
+	app.ajaxPost("/databrowser/detaildb", {browserid: id}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -132,7 +132,7 @@ br.ViewBrowserName = function(id){
 			dataSource: { 
 	                  url: "/databrowser/detaildb",
 	                  type: "post",
-	                  callData: {id: id},
+	                  callData: {browserid: id},
 	                  fieldTotal: "DataCount",
 	                  fieldData: "DataValue",
 	                  serverPaging: true,
