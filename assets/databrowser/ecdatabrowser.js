@@ -371,7 +371,11 @@ $.ecDataBrowserSetting = function(element,options){
 						valtype = lookupdata;
 					}
 				}
-				resFilter[field] = valtype;
+				if (field == "id"){
+					field = "browserid";
+				}
+				if (valtype != '' || valtype.length > 0)
+					resFilter[field] = valtype;
 			}
 		}
 		return resFilter;
