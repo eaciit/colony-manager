@@ -124,19 +124,28 @@ var methodsLookupDD = {
 		$textSearch.bind('keyup keydown').keyup(function(event){
 			var search = $(this).val();
 			switch(event.keyCode) {
-				// case KEY.UP:
-				// case KEY.DOWN:
-                   
-                // break;
+				case KEY.UP:
+					console.log('up');
+                break;
+				case KEY.DOWN:
+                	console.log('down');
+                break;
 				case KEY.BACKSPACE:
-					$o.data('ecLookupDD').searchResult(search);
-
+					if (search.length > 0){
+				    	$o.data('ecLookupDD').searchResult(search);
+					}
 					break;
 				default:
 					if (search.length >= options.minChar){
 						$o.data('ecLookupDD').searchResult(search);
 					}
 			}
+		}).keydown(function(event){
+			var search = $(this).val();			
+			if (search.length == 0){
+				$le = $(".eclookup-item").length - 1;
+				$(".eclookup-item").eq($le).remove();
+		    }					
 		});
 		$textSearch.appendTo($liLookupTxt);
 
