@@ -225,28 +225,29 @@ db.changeCheckboxOnGrid = function (o) {
 
 db.back = function(section){
 	if (section == "back") {
-			swal({
-				title: "Do you want to exit?",
-				text: "",
-				type: "warning",
-				showCancelButton: true,
-				confirmButtonColor: "#DD6B55",
-				confirmButtonText: "Exit & Save",
-				cancelButtonText: "Exit",
-				closeOnConfirm: true,
-				closeOnCancel: true
-			},
-				function(isConfirm){
-					if (isConfirm) {
-						db.saveAndBack('goback');
-					}else{
-						db.backToFront();
-					}
-				}
-			);			
-		} else {
-			br.ViewBrowserName(param._id)
-		}
+		db.backToFront();
+		// swal({
+		// 	title: "Do you want to exit?",
+		// 	text: "",
+		// 	type: "warning",
+		// 	showCancelButton: true,
+		// 	confirmButtonColor: "#DD6B55",
+		// 	confirmButtonText: "Exit & Save",
+		// 	cancelButtonText: "Exit",
+		// 	closeOnConfirm: true,
+		// 	closeOnCancel: true
+		// },
+		// 	function(isConfirm){
+		// 		if (isConfirm) {
+		// 			db.saveAndBack('goback');
+		// 		}else{
+		// 			db.backToFront();
+		// 		}
+		// 	}
+		// );			
+	} else {
+		br.ViewBrowserName(param._id)
+	}
 }
 
 db.saveAndBack = function(section) {
@@ -320,7 +321,9 @@ db.saveAndBack = function(section) {
 	});
 }
 
+db.isSaved = ko.observable(false);
 db.designDataBrowser = function(_id) {
+	db.isSaved(false);
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
 	db.databrowserData([]);
