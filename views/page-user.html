@@ -36,8 +36,8 @@
     <div class="panel-heading">
         <h1 class="panel-title">User</h1>
     </div>
-    <div class="panel-body">
-    	<!-- <div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div> -->
+     <div class="panel-body">
+    	<div class="grid grid-users" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: usr.UsersData, selectable: 'multiple, row', change: usr.selectGridUsers, columns: usr.UsersColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-users')}"></div>
     </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
@@ -46,7 +46,7 @@
 	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: usr.backToFront">
 		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	</button>
-    <button class="btn btn-sm btn-primary navbar-btn" >
+    <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: usr.saveuser">
 		<span class="glyphicon glyphicon-save"></span> Save
 	</button>
 	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup" >
@@ -61,65 +61,56 @@
     </div>
     <div class="panel-body">
     	<form class="form-horizontal form-server" id="form-add-Server" novalidate>
-	    	<div class="col-md-6">
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">ID</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" >
-						<span class="k-invalid-msg" data-for="ID"></span>		    			
-		    		</div>
-	    		</div>
+	    	<div class="col-md-6"> 
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Login ID</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" >
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.templateUser.LoginID" >
 						<span class="k-invalid-msg" data-for="LoginID"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">FullName</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for FullName" type="text" class="form-control input-sm" name="FullName" placeholder="Type the FullName Here" >
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for FullName" type="text" class="form-control input-sm" name="FullName" placeholder="Type the FullName Here" data-bind="value: usr.templateUser.FullName">
 						<span class="k-invalid-msg" data-for="FullName"></span>	    			
 		    		</div>
 	    		</div>
-	    		<div class="form-group">
+	    		 <div class="form-group">
+		    		<label class="col-md-3 filter-label">Enable</label>
+		    		<div class="col-md-7">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Enable" type="text" class="form-control input-sm" name="Enable" placeholder="Type the Enable Here" data-bind="value: usr.templateUser.Enable" >
+						<span class="k-invalid-msg" data-for="Enable"></span>	    			
+		    		</div>
+	    		</div>		
+    		</div>
+    			<div class="col-md-6">	 
+    			<div class="form-group">
 		    		<label class="col-md-3 filter-label">Email</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Email" type="text" class="form-control input-sm" name="Email" placeholder="Type the Email Here" >
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Email" type="text" class="form-control input-sm" name="Email" placeholder="Type the Email Here" data-bind="value: usr.templateUser.Email" >
 						<span class="k-invalid-msg" data-for="Email"></span>	    			
 		    		</div>
-	    		</div>
+	    		</div>   	
+
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Password</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="text" class="form-control input-sm" name="Password" placeholder="Type the Password Here" >
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.templateUser.Password" >
 						<span class="k-invalid-msg" data-for="Password"></span>		    			
 		    		</div>
-	    		</div>   		
-    		</div>
-    			<div class="col-md-6">	    		
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Enable</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Enable" type="text" class="form-control input-sm" name="Enable" placeholder="Type the Enable Here" >
-						<span class="k-invalid-msg" data-for="Enable"></span>	    			
-		    		</div>
-	    		</div>
+	    		</div>   
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Groups</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Groups" type="text" class="form-control input-sm" name="Groups" placeholder="Type the Groups Here" >
-						<span class="k-invalid-msg" data-for="Groups"></span>	    			
+		    		<div class="col-md-7">  
+		    			<input id='Groups' required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Groups" type="text" class="form-control input-sm" name="Groups" placeholder="Type the Groups Here" data-bind="value: usr.templateUser.Groups">  
+						<span class="k-invalid-msg" data-for="Groups"></span>  
 		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Grants</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Grants" type="text" class="form-control input-sm" name="Grants" placeholder="Type the Grants Here" >
-						<span class="k-invalid-msg" data-for="Grants"></span>	    			
-		    		</div>
-	    		</div>   		
+	    		</div> 
+    		</div>
+    		<div class="col-md-12">
+    			<p class="pcustom">Privilege</p>
+    			<div id="gridaccess"></div>
     		</div>
     	</form>
     </div>
