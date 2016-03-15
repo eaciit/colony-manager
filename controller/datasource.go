@@ -115,7 +115,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	if payload.Has("haslookup") {
 		hasLookup = payload.Get("haslookup").(bool)
 	}
-	_id := toolkit.ToString(payload.Get("id", ""))
+	_id := toolkit.ToString(payload.Get("browserid", ""))
 	sort := payload.Get("sort")
 	search := payload.Get("search")
 	_ = search
@@ -123,7 +123,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	skip := toolkit.ToInt(payload.Get("skip", ""), toolkit.RoundingAuto)
 
 	TblName := toolkit.M{}
-	payload.Unset("id")
+	payload.Unset("browserid")
 	//sorter = ""
 	if sort != nil {
 		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
@@ -246,6 +246,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 	if err != nil {
 		return 0, nil, nil, err
 	}
+	defer ccount.Close()
 
 	dcount := ccount.Count()
 
@@ -269,6 +270,18 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 			dataMongo = append(dataMongo, mVal)
 		}
 		data = dataMongo
+	} else if hasLookup && selectfield != "" && toolkit.HasMember(ds_flatfile, dataConn.Driver) {
+		/*distinct value for flat file*/
+		dataFlat := []toolkit.M{}
+		var existingVal = []string{""}
+		for _, val := range data {
+			valString := toolkit.ToString(val.Get(selectfield))
+			if !toolkit.HasMember(existingVal, valString) {
+				dataFlat = append(dataFlat, val)
+				existingVal = append(existingVal, valString)
+			}
+		}
+		data = dataFlat
 	}
 
 	return dcount, data, dataDS, nil
