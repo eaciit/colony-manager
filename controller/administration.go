@@ -4,13 +4,13 @@ import (
 	// "archive/zip"
 	// "encoding/json"
 	// "fmt"
+	// "github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/acl"
-	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
-	_ "github.com/eaciit/dbox/dbc/jsons"
+	// _ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	"github.com/eaciit/toolkit"
 	// "io"
 	// "io/ioutil"
 	// "os"
@@ -29,32 +29,72 @@ func CreateAdminisrationController(s *knot.Server) *AdministrationController {
 	return controller
 }
 
-func (a *AdministrationController) ConnectToDataSource() (dbox.IConnection, error) {
+func (a *AdministrationController) GetAccess(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	tAccess := new(acl.Access)
 
-	dataConn := new(colonycore.Connection)
-	connection, err := helper.ConnectUsingDataConn(dataConn).Connect()
-	if err != nil {
-		return nil, err
+	arrm := make([]toolkit.M, 0, 0)
+	c, err := acl.Find(tAccess, nil, toolkit.M{}.Set("take", 0))
+	if err == nil {
+		err = c.Fetch(&arrm, 0, false)
 	}
-	return connection, nil
+
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, arrm, "")
+	}
+
 }
 
 func (a *AdministrationController) SaveAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	conn, err := a.ConnectToDataSource()
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-	err = acl.SetDb(conn)
-
-	initUser := new(acl.User)
-
-	initUser.LoginID = "alip"
-	initUser.FullName = "alip sidik"
-	initUser.Email = "aa.sidik@eaciit.com"
-	initUser.Password = "12345"
-
-	err = acl.Save(initUser)
+	initAccess := new(acl.Access)
+	initAccess.ID = payload["_id"].(string)
+	initAccess.Title = payload["Title"].(string)
+	initAccess.Group1 = payload["Group1"].(string)
+	initAccess.Group2 = payload["Group2"].(string)
+	initAccess.Group3 = payload["Group3"].(string)
+	initAccess.Enable = payload["Enable"].(bool)
+	initAccess.SpecialAccess1 = payload["SpecialAccess1"].(string)
+	initAccess.SpecialAccess2 = payload["SpecialAccess2"].(string)
+	initAccess.SpecialAccess3 = payload["SpecialAccess3"].(string)
+	initAccess.SpecialAccess4 = payload["SpecialAccess4"].(string)
+	err = acl.Save(initAccess)
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, initAccess, "sukses")
+}
+
+func (a *AdministrationController) prepareconnection() (conn dbox.IConnection, err error) {
+	conn, err = dbox.NewConnection("mongo",
+		&dbox.ConnectionInfo{"localhost:27017", "valegrab", "", "", toolkit.M{}.Set("timeout", 3)})
+	if err != nil {
+		return
+	}
+	err = conn.Connect()
+	return
+}
+
+func (a *AdministrationController) InitialSetDatabase() error {
+	conn, err := a.prepareconnection()
+
+	if err != nil {
+		return err
+	}
+
+	err = acl.SetDb(conn)
+	if err != nil {
+		return err
+	}
+	return nil
 }
