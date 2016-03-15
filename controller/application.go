@@ -493,27 +493,6 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, message)
 	}
 
-	getPIDofPrevProccessCmd := fmt.Sprintf("lsof -i:%s -t", app.Port)
-	log.AddLog(getPIDofPrevProccessCmd, "INFO")
-	pid, err := sshSetting.GetOutputCommandSsh(getPIDofPrevProccessCmd)
-	pid = strings.TrimSpace(pid)
-	if err != nil || strings.TrimSpace(pid) == "" {
-		log.AddLog("Can't get PID of sedotand", "ERROR")
-	}
-
-	if pid != "" {
-		log.AddLog("PID of sedotand: "+pid, "SUCCESS")
-
-		killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
-		log.AddLog(killProcessCmd, "INFO")
-		_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
-		if err != nil {
-			log.AddLog(err.Error(), "ERROR")
-			changeDeploymentStatus(false)
-			return helper.CreateResult(false, nil, err.Error())
-		}
-	}
-
 	rmCmdZip := fmt.Sprintf("rm -rf %s", destinationZipPath)
 	log.AddLog(rmCmdZip, "INFO")
 	_, err = sshSetting.GetOutputCommandSsh(rmCmdZip)
@@ -703,7 +682,7 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		// 	return helper.CreateResult(false, nil, err.Error())
 		// }
 	} else {
-		err = exec.Command(os.Getenv("BASH"), "-c", "rm", "-rf", destinationExtract).Run()
+		err = exec.Command("rm", "-rf", destinationExtract).Run()
 		// if err != nil {
 		// 	return helper.CreateResult(false, nil, err.Error())
 		// }

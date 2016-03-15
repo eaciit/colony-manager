@@ -158,7 +158,7 @@ var methodsDataBrowser = {
 				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'" haslookup="true"/>');
 				$divElementFilter.appendTo(element);
 				var callData = {};
-				callData['id'] = id.data('ecDataBrowser').mapdatabrowser.dataSource.callData.id;
+				callData['browserid'] = id.data('ecDataBrowser').mapdatabrowser.dataSource.callData.browserid;
 				callData['take'] = 10;
 				callData['skip'] = 0;
 				callData['page'] = 1;
@@ -371,7 +371,8 @@ $.ecDataBrowserSetting = function(element,options){
 						valtype = lookupdata;
 					}
 				}
-				resFilter[field] = valtype;
+				if (valtype != '' || valtype.length > 0)
+					resFilter[field] = valtype;
 			}
 		}
 		return resFilter;

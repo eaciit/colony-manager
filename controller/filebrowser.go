@@ -262,8 +262,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 				}
 
 				h := setHDFSConnection(server.Host, server.SSHUser)
-
-				err = h.Put(SourcePath, strings.Replace(DestPath+"/", "//", "/", -1), "", nil, &server)
+				err = h.Put(SourcePath, DestPath, "", map[string]string{"overwrite": "true"}, &server)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -280,6 +279,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	server, payload, err := getServer(r, "PAYLOAD")
+	fmt.Println("aaaaa")
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -532,10 +532,10 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				DestPath := payload.Path
+				DestPath := strings.Replace(payload.Path+"/", "//", "/", -1) + payload.FileName
 				SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName
 
-				read, err := ioutil.ReadAll(payload.File)
+				/*read, err := ioutil.ReadAll(payload.File)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -544,10 +544,10 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
-
+				*/
 				h := setHDFSConnection(server.Host, server.SSHUser)
 
-				err = h.Put(SourcePath, strings.Replace(DestPath+"/", "//", "/", -1), "", nil, &server)
+				err := h.Put(SourcePath, DestPath, "", nil, &server)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
