@@ -20,6 +20,7 @@ import (
 	"strings"
 	// "syscall"
 	"time"
+	// "encoding/json"
 )
 
 var (
@@ -560,6 +561,9 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	SnapShot := ""
+	arrcmd := make([]string, 0, 0)
+	result := toolkit.M{}
 	payload := struct {
 		Nameid string
 	}{}
@@ -567,14 +571,27 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	module := GetDirSnapshot("daemonsnapshot")
+	// module := GetDirSnapshot("daemonsnapshot")
 
-	SnapShot, err := module.OpenSnapShot(payload.Nameid)
+	// SnapShot, err := module.OpenSnapShot(payload.Nameid)
+
+	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\main.exe`)
+	arrcmd = append(arrcmd, `-readtype=snapshot`)
+	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\daemon\daemonsnapshot.csv`)
+	arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
+
+	if runtime.GOOS == "windows" {
+		SnapShot, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2], arrcmd[3])
+		err = toolkit.UnjsonFromString(SnapShot, &result)
+	} else {
+		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, SnapShot, "")
+	return helper.CreateResult(true, result["DATA"], "")
 }
 
 func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
