@@ -208,21 +208,16 @@ db.addProperties = function () {
 
 db.changeCheckboxOnGrid = function (o) {
 	var $grid = $(".grid-databrowser-design").data("kendoGrid");
-	var value = $(o).is(":checked");
-	var $tr = $(o).closest("tr");
-	var uid = $tr.attr("data-uid");
 	var field = $(o).attr("data-field");
+	var uid = $(o).closest("tr").attr("data-uid");
+	var value = $(o).is(":checked");
+
+	var rowData = $grid.dataSource.getByUid(uid);
+	rowData.set(field, value);
 
 	var data = $grid.dataSource.data();
-	var rowData = $grid.dataSource.getByUid(uid);
-	var rowDataIndex = data.indexOf(rowData);
-
-	rowData[field] = value;
-	data[rowDataIndex] = rowData;
-
 	var plainData = JSON.parse(kendo.stringify(data));
 	db.databrowserData(plainData);
-	db.setDataSource();
 	db.headerCheckedAll();
 
 	return true;
