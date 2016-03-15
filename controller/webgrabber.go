@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/eaciit/cast"
@@ -19,6 +20,7 @@ import (
 	"strings"
 	// "syscall"
 	"time"
+	// "encoding/json"
 )
 
 var (
@@ -57,6 +59,21 @@ func GetDirSnapshot(nameid string) *WebGrabberController {
 	w.filepathName = path
 	w.nameid = nameid
 	return w
+}
+
+// function for check sedotand.exe
+func GetSedotandWindows() bool {
+	cmd := exec.Command("cmd", "/C", "tasklist", "/fo", "csv", "/nh")
+	// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return strings.Contains(out.String(), "sedotand.exe")
 }
 
 func CreateWebGrabberController(s *knot.Server) *WebGrabberController {
@@ -249,15 +266,16 @@ func (w *WebGrabberController) GetScrapperData(r *knot.WebContext) interface{} {
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search))
 
-	if requesttype != "" {
-		query = dbox.And(query, dbox.Eq("grabconf.calltype", requesttype))
-	}
-
-	if sourcetype != "" {
+	if sourcetype == "" {
+		//default sourcetype == "SourceType_HttpHtml"
+		query = dbox.And(query, dbox.Eq("sourcetype", "SourceType_HttpHtml"))
+	} else {
 		query = dbox.And(query, dbox.Eq("sourcetype", sourcetype))
 	}
 
-	query = dbox.And(query, dbox.Eq("sourcetype", "SourceType_HttpHtml"))
+	if requesttype != "" {
+		query = dbox.And(query, dbox.Eq("grabconf.calltype", requesttype))
+	}
 
 	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
 	if err != nil {
@@ -416,12 +434,48 @@ func (w *WebGrabberController) Stat(r *knot.WebContext) interface{} {
 func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	byts, _ := exec.Command("pgrep", "sedotand").Output()
-	if string(byts) == "" {
-		return helper.CreateResult(true, false, "")
+	if runtime.GOOS == "windows" {
+		sedotandExist := GetSedotandWindows()
+		if sedotandExist == false {
+			return helper.CreateResult(true, false, "")
+		}
+
+		return helper.CreateResult(true, true, "")
+
+	} else {
+		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+		cursor, err := colonycore.Find(new(colonycore.Server), filters)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		all := []colonycore.Server{}
+		err = cursor.Fetch(&all, 0, true)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		if len(all) == 0 {
+			return helper.CreateResult(false, false, "No server registered")
+		}
+
+		serverC := &ServerController{}
+		var howManyOn = 0
+		for _, server := range all {
+			isOn, _ := serverC.ToggleSedotanService("stat", server.ID)
+			fmt.Println("===", isOn)
+			if isOn {
+				howManyOn = howManyOn + 1
+			}
+		}
+
+		if howManyOn > 0 {
+			return helper.CreateResult(true, true, "")
+		}
+
+		return helper.CreateResult(false, false, "")
 	}
 
-	return helper.CreateResult(true, true, "")
 }
 
 func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
@@ -436,37 +490,91 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 	}
 
 	if runtime.GOOS == "windows" {
-		return helper.CreateResult(false, false, "Not yet supported for windows")
-	} else {
+
 		if payload.OP == "off" {
-			byts, err := exec.Command("pgrep", "sedotand").Output()
+			// cek tasklist -> sedotand.exe
+			sedotandExist := GetSedotandWindows()
+
+			if sedotandExist == false {
+				return helper.CreateResult(false, false, "")
+			}
+
+			err := exec.Command("taskkill", "/IM", "sedotand.exe", "/F").Start()
+
 			if err != nil {
 				return helper.CreateResult(false, false, err.Error())
 			}
-
-			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
-				/*pid := toolkit.ToInt(pidOfSedotanD, toolkit.RoundingAuto)
-				err := syscall.Kill(pid, 15)
-				if err != nil {
-					return helper.CreateResult(false, false, err.Error())
-				}*/
-
-				return helper.CreateResult(true, true, "")
-			}
+			return helper.CreateResult(true, false, "")
 		} else {
-			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand")
+			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand.exe")
 			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
 			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
 			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
 			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
 
 			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
+
 			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
+			//syscal.exec
+			/*
+				binary, lookErr := exec.LookPath("cmd")
+				if lookErr != nil {
+					panic(lookErr)
+				}
+				err := syscall.Exec(binary, []string{"cmd", "-c", sedotanPath}, os.Environ())
+			*/
 			if err != nil {
 				return helper.CreateResult(false, false, err.Error())
 			}
-
 			return helper.CreateResult(true, true, "")
+		}
+	} else {
+		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+		cursor, err := colonycore.Find(new(colonycore.Server), filters)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		all := []colonycore.Server{}
+		err = cursor.Fetch(&all, 0, true)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		if len(all) == 0 {
+			return helper.CreateResult(false, false, "No server registered")
+		}
+
+		serverC := &ServerController{}
+
+		if payload.OP == "off" {
+			var howManyErrors = 0
+			for _, server := range all {
+				_, err = serverC.ToggleSedotanService("stop", server.ID)
+				if err != nil {
+					howManyErrors = howManyErrors + 1
+				}
+			}
+
+			if howManyErrors == 0 {
+				return helper.CreateResult(true, nil, "")
+			}
+
+			return helper.CreateResult(false, nil, "Sedotan won't start on some servers")
+		} else {
+			var howManyErrors = 0
+			for _, server := range all {
+				_, err = serverC.ToggleSedotanService("start stop", server.ID)
+				if err != nil {
+					howManyErrors = howManyErrors + 1
+				}
+			}
+
+			if howManyErrors == 0 {
+				return helper.CreateResult(true, nil, "")
+			}
+
+			return helper.CreateResult(false, nil, "Sedotan won't start on some servers")
 		}
 	}
 
@@ -497,6 +605,9 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 
 func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	SnapShot := ""
+	arrcmd := make([]string, 0, 0)
+	result := toolkit.M{}
 	payload := struct {
 		Nameid string
 	}{}
@@ -504,13 +615,27 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	module := GetDirSnapshot("daemonsnapshot")
-	SnapShot, err := module.OpenSnapShot(payload.Nameid)
+	// module := GetDirSnapshot("daemonsnapshot")
+
+	// SnapShot, err := module.OpenSnapShot(payload.Nameid)
+
+	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\main.exe`)
+	arrcmd = append(arrcmd, `-readtype=snapshot`)
+	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\daemon\daemonsnapshot.csv`)
+	arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
+
+	if runtime.GOOS == "windows" {
+		SnapShot, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2], arrcmd[3])
+		err = toolkit.UnjsonFromString(SnapShot, &result)
+	} else {
+		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, SnapShot, "")
+	return helper.CreateResult(true, result["DATA"], "")
 }
 
 func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {

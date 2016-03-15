@@ -206,13 +206,13 @@
 				</h1>
 			</div>
 			<div class="panel-body" >
-				<form class="form-horizontal" id="form-add-wizard" data-bind ="with:config" novalidate>
+				<form class="form-horizontal" id="form-add-wizard" data-bind ="with:configWizard" novalidate>
 					<div class="col-md-12 no-padding no-margin">
 						<div class="col-md-12">
 							<div class="form-group">
 								<label class="col-md-4 filter-label">Connection Source</label>
 								<div class=" col-md-5">
-									<select required data-required-msg="Connection Source cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionSource, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeConnectionSource}" class="full-width" name="connection-source">
+									<select required data-required-msg="Connection Source cannot be empty" class="full-width" data-bind = "kendoDropDownList: { data: dg.connectionListData, value: ConnectionSource, dataValueField: '_id', dataTextField: '_id', optionLabel: 'Select one', change: dg.changeConnectionSource}" name="connection-source">
 									</select>
 									<span class="k-invalid-msg" data-for="connection-source"></span>
 								</div>	
@@ -233,42 +233,15 @@
 									<input class="form-control input-sm prefix" type="text" placeholder="Prefix" data-bind="value : prefix" name="prefix"></input>
 								</div>	
 							</div>
-							
-							<div class="form-group">
-								<div class="nav">
-									<button class="col-md-offset-2 btn btn-sm btn-success" data-bind="click: dg.addtable">
-										<span class="glyphicon glyphicon-plus"></span> Add More
-									</button>
-								</div>	
+							<div class="nav col-md-offset-2">
+								<button class="btn btn-sm btn-success navbar-btn" data-bind="click:dg.synctable, visible:(dg.visibleSync1() != '' && dg.visibleSync2() != '')">
+	    							<span class="glyphicon glyphicon-refresh"></span> Sync
+	    						</button>
 							</div>
 
 							<div class="form-group">
-								<div class="col-sm-12">
-									<table class="table" id="table-wizard">
-										<thead>
-											<th style="border-bottom: none;">Table Source</th>
-											<th style="border-bottom: none;">Table Destination</th>
-										</thead>
-										<tbody data-bind ="foreach:Transformations">
-											<tr>
-												<td>
-													<select required data-required-msg="table Source cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionSource,optionLabel : 'Select one', value: TableSource }" class="full-width" name="tableSource" name="table-source">
-													</select>
-													<span class="k-invalid-msg" data-for="table-source"></span>
-												</td>
-												<td>
-													<select required data-required-msg="table Destination cannot be empty" data-bind="kendoDropDownList : {data: dg.tableConnectionDestination, optionLabel : 'Select one', value: TableDestination }" class="full-width" name="table-Destination">
-													</select>
-													<span class="k-invalid-msg" data-for="table-Destination"></span>
-												</td>
-												<td>
-													<button class="btn btn-sm btn-danger" data-bind="visible : ($index() > 0 ), click : dg.removetable($data)">
-													<span class="glyphicon glyphicon-remove"></span>
-													</button>
-												</td>
-											</tr>	
-										</tbody>
-									</table>
+								<div class="col-sm-10">
+									<table class="table table-wizard"></table>
 								</div>
 							</div>
 						</div>

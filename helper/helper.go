@@ -2,11 +2,14 @@ package helper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/json"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"io"
 	"io/ioutil"
@@ -15,7 +18,6 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"errors"
 	"strings"
 	"time"
 )
@@ -334,4 +336,44 @@ func ConstructPermission(strPermission string) (result string, err error) {
 	}
 
 	return
+}
+
+func ReplaceHostAlias(path string, server colonycore.Server) string {
+	for _, alias := range server.HostAlias {
+		if strings.Contains(path, alias.HostName) {
+			path = strings.Replace(path, alias.HostName, alias.IP, -1)
+			break
+		}
+	}
+	return path
+}
+
+func RunCommandWithTimeout(sshSetting *sshclient.SshSetting, cmd string, timeout int) error {
+	cRunCommand := make(chan string, 1)
+
+	go func() {
+		s := *sshSetting
+		res, err := s.RunCommandSsh(cmd)
+		fmt.Println("cmd    ->", cmd, "output ->", res)
+
+		if err != nil {
+			cRunCommand <- err.Error()
+		} else {
+			cRunCommand <- ""
+		}
+	}()
+
+	errorMessage := ""
+	select {
+	case receiveRunCommandOutput := <-cRunCommand:
+		errorMessage = receiveRunCommandOutput
+	case <-time.After(time.Second * time.Duration(timeout)):
+		errorMessage = ""
+	}
+
+	if strings.TrimSpace(errorMessage) != "" {
+		return errors.New(errorMessage)
+	}
+
+	return nil
 }

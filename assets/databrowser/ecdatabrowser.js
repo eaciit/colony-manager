@@ -83,7 +83,7 @@ var methodsDataBrowser = {
 				$divFilter.appendTo($divFilterSimple);
 				$labelFilter = $("<label class='col-md-"+options.widthKeyFilter+" ecdatabrowser-filter'>"+settingFilter.Label+"</label>");
 				$labelFilter.appendTo($divFilter);
-				$divContentFilter = $('<div class="col-md-'+widthfilter+'"></div>');
+				$divContentFilter = $('<div class="col-md-'+widthfilter+' filter-form"></div>');
 				$divContentFilter.appendTo($divFilter);
 				methodsDataBrowser.createElementFilter(settingFilter, 'simple', key, $divContentFilter, $o);
 				dataSimple.push('filter-simple-'+key);
@@ -93,7 +93,7 @@ var methodsDataBrowser = {
 				$divFilter.appendTo($divFilterAdvance);
 				$labelFilter = $("<label class='col-md-"+options.widthKeyFilter+" ecdatabrowser-filter'>"+settingFilter.Label+"</label>");
 				$labelFilter.appendTo($divFilter);
-				$divContentFilter = $('<div class="col-md-'+widthfilter+'"></div>');
+				$divContentFilter = $('<div class="col-md-'+widthfilter+' filter-form"></div>');
 				$divContentFilter.appendTo($divFilter);
 				methodsDataBrowser.createElementFilter(settingFilter, 'advance', key, $divContentFilter, $o);
 				dataAdvance.push('filter-advance-'+key);
@@ -115,27 +115,71 @@ var methodsDataBrowser = {
 	},
 	createElementFilter: function(settingFilter, filterchoose, index, element, id){
 		var $divElementFilter;
+		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64' || settingFilter.DataType.toLowerCase() == 'date'){
+			$divElementFilter = $('<input type="checkbox" class="ecdatabrowser-ckcrange"/>');
+			$divElementFilter.bind('click').click(function(){
+				if ($(this).prop("checked")){
+					$(this).parent().find('.ecdatabrowser-spacerange').show();
+					$(this).parent().find('.ecdatabrowser-filterto').css('display','inline-table');
+				}else{
+					$(this).parent().find('.ecdatabrowser-spacerange').hide();
+					$(this).parent().find('.ecdatabrowser-filterto').hide();
+				}
+			});
+			$divElementFilter.appendTo(element);
+		}
 		if (settingFilter.DataType.toLowerCase() == 'integer' || settingFilter.DataType.toLowerCase() == "float32" || settingFilter.DataType.toLowerCase() == 'int' || settingFilter.DataType.toLowerCase() == 'float64'){
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input class="ecdatabrowser-filterfrom" idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			$divElementFilter = $('<span class="ecdatabrowser-spacerange"> - </span><input class="ecdatabrowser-filterto" idfilter="filter-'+filterchoose+'-'+index+'" typedata="'+settingFilter.DataType.toLowerCase()+'" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoNumericTextBox();
 			return '';
 		}
 		else if (settingFilter.DataType.toLowerCase() == 'date'){
-			$divElementFilter = $('<input idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input class="ecdatabrowser-filterfrom" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter.appendTo(element);
+			$divElementFilter = $('<span class="ecdatabrowser-spacerange"> - </span><input class="ecdatabrowser-filterto" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoDatePicker({
 				format: settingFilter.Format,
 			});
 			return '';
 		} else if (settingFilter.DataType.toLowerCase() == 'bool') {
-			$divElementFilter = $('<input type="checkbox" class="form-control" idfilter="filter-'+filterchoose+'-'+index+'" typedata="bool" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input type="checkbox" idfilter="filter-'+filterchoose+'-'+index+'" typedata="bool" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			return '';
 		}
 		else {
-			$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'"/>');
-			$divElementFilter.appendTo(element);
+			if (settingFilter.Lookup == false){
+				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'" haslookup="false"/>');
+				$divElementFilter.appendTo(element);
+			} else {
+				$divElementFilter = $('<input type="text" class="form-control input-sm" idfilter="filter-'+filterchoose+'-'+index+'" typedata="string" fielddata="'+ settingFilter.Field +'" haslookup="true"/>');
+				$divElementFilter.appendTo(element);
+				var callData = {};
+				callData['browserid'] = id.data('ecDataBrowser').mapdatabrowser.dataSource.callData.browserid;
+				callData['take'] = 10;
+				callData['skip'] = 0;
+				callData['page'] = 1;
+				callData['pageSize'] = 10;
+				callData['haslookup'] = true;
+				$('input[idfilter=filter-'+filterchoose+'-'+index+']').ecLookupDD({
+					dataSource:{
+						url: id.data('ecDataBrowser').mapdatabrowser.dataSource.url,
+						call: 'post',
+						callData: callData,
+						resultData: function(a){
+							return a.data.DataValue;
+						}
+					}, 
+					inputType: 'multiple', 
+					inputSearch: settingFilter.Field, 
+					idField: settingFilter.Field, 
+					idText: settingFilter.Field, 
+					displayFields: settingFilter.Field, 
+				});
+			}
 			return '';
 		}
 	},
@@ -147,9 +191,9 @@ var methodsDataBrowser = {
 			} else {
 				format = "";
 			}
-			aggr = JSON.parse("{\"avg\":\"220000.0000\",\"sum\":\"1100000\"}");
-			// if (options.metadata[key].Aggregate != '')
-			// 	aggr = JSON.parse(options.metadata[key].Aggregate);
+			// aggr = JSON.parse("{\"avg\":\"220000.0000\",\"sum\":\"1100000\"}");
+			if (options.metadata[key].Aggregate != '')
+				aggr = JSON.parse(options.metadata[key].Aggregate);
 			footerText = "";
 			$.each( aggr, function( key, value ) {
 				footerText+= key + ' : ' + value + '<br/>';
@@ -280,8 +324,23 @@ $.ecDataBrowserSetting = function(element,options){
 			this.mapdatabrowser.showFilter = "Advance";
 		}
 	};
+	this.CheckRangeData = function(findElem, typeData){
+		$elemfrom = $(element).find(findElem+'.ecdatabrowser-filterfrom');
+		$elemto = $(element).find(findElem+'.ecdatabrowser-filterto');
+		if ($elemfrom.closest('.filter-form').find('.ecdatabrowser-ckcrange').prop("checked")){
+			return $elemfrom.val() + '..' + $elemto.val();
+		} else {
+			var res = $elemfrom.val();
+			if (typeData == 'float')
+				return parseFloat(res);
+			else if (typeData == 'int')
+				return parseInt(res);
+			else
+				return res;
+		}
+	}
 	this.GetDataFilter = function(){
-		var resFilter = {}, dataTemp = [], $elem = '', valtype = '';
+		var resFilter = {}, dataTemp = [], $elem = '', valtype = '', lookupdata = [];
 		if (this.mapdatabrowser.showFilter.toLowerCase() == "simple"){
 			dataTemp = $(element).data('ecDataBrowser').dataSimple;
 		} else {
@@ -290,17 +349,30 @@ $.ecDataBrowserSetting = function(element,options){
 		for (var i in dataTemp){
 			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
-			if ($elem.val() != ''){
+			if ($elem.val() != '' || $elem.attr('haslookup') == "true"){
 				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
-					valtype = parseInt($elem.val());
+					// valtype = parseInt($elem.val());
+					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'int');
 				} else if ($elem.attr("typedata") == "float32" || $elem.attr("typedata") == "float64"){
-					valtype = parseFloat($elem.val());
+					// valtype = parseFloat($elem.val());
+					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'float');
 				} else if ($elem.attr("typedata") == "bool"){
 					valtype = $(element).find('input[idfilter='+dataTemp[i]+']')[0].checked;
-				}else {
-					valtype = $elem.val();
+				} else if ($elem.attr("typedata") == "date"){
+					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'date');
+				} else {
+					if ($elem.attr('haslookup') == "false" ||  $elem.ecLookupDD('get').length <= 0)
+						valtype = $elem.val();
+					else {
+						lookupdata = [];
+						for(var a in $elem.ecLookupDD('get')){
+							lookupdata.push($elem.ecLookupDD('get')[a][$elem.attr('fielddata')]);
+						}
+						valtype = lookupdata;
+					}
 				}
-				resFilter[field] = valtype;
+				if (valtype != '' || valtype.length > 0)
+					resFilter[field] = valtype;
 			}
 		}
 		return resFilter;
@@ -310,3 +382,5 @@ $.ecDataBrowserSetting = function(element,options){
 		$(element).find('div[idfilter=gridFilterBrowser]').data('kendoGrid').refresh();
 	}
 }
+
+// ecLookupDropdown

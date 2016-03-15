@@ -56,7 +56,7 @@
 			    		<div class="form-group">
 				    		<label class="col-md-3 databrowser-label">Connection</label>
 				    		<div class="col-md-7">
-				    			<select required id="connectionlist" data-required-msg="Connection cannot be empty" name="connectionlist" data-placeholder="Select Connection" class="col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: function(e) {db.populateTable(this.dataItem(e.item)._id)}, filter: 'contains', suggest: true, minLength: 2}">
+				    			<select required id="connectionlist" data-required-msg="Connection cannot be empty" name="connectionlist" data-placeholder="Select Connection" class="col-100" data-bind="kendoComboBox: {data: viewModel.datasource.connectionListData, dataTextField: '_id', dataValueField: '_id', placeholder: 'Type something here', value: ConnectionID, change: function(e) {db.populateTable(this.dataItem(e.item)._id, true)}, filter: 'contains', suggest: true, minLength: 2}">
 						        </select>
 						        <span class="k-invalid-msg" data-for="connectionlist"></span>
 				    		</div>

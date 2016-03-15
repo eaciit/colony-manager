@@ -14,10 +14,10 @@ srv.templateConfigServer = {
 	sshfile: "",
 	sshuser: "",
 	sshpass:  "",	
-	cmdextract:"",
-	cmdnewfile :"",
-	cmdcopy:"",
-	cmdmkdir:"",
+	cmdextract: "unzip %1 -d %2",
+	cmdmkdir: "mkdir",
+	cmdcopy: "",
+	cmdnewfile : "",
     hostAlias: []
 };
 srv.templatetypeServer = ko.observableArray([
@@ -161,7 +161,7 @@ srv.doSaveServer = function (c) {
 				excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
 			}
 		} else {
-			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required"]);
+			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required", "extract is required", "make-directory is required"]);
 		}
 
 		if (srv.configServer.sshtype() == "File") {

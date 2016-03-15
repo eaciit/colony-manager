@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
@@ -154,20 +155,6 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		oldData = &oldDataAll[0]
 	}
 
-	log.AddLog(fmt.Sprintf("Delete data ID: %s", data.ID), "INFO")
-	err = colonycore.Delete(data)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
-	err = colonycore.Save(data)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
 	if data.ServerType == "hdfs" {
 		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
 		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
@@ -220,34 +207,110 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			log.AddLog(cmdRmAppPath, "INFO")
 			sshSetting.GetOutputCommandSsh(cmdRmAppPath)
 
+			cmdMkdirAppPath := fmt.Sprintf(`mkdir -p "%s"`, data.AppPath)
+			log.AddLog(cmdMkdirAppPath, "INFO")
+			_, err := sshSetting.GetOutputCommandSsh(cmdMkdirAppPath)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
 			cmdRmDataPath := fmt.Sprintf("rm -rf %s", data.DataPath)
 			log.AddLog(cmdRmDataPath, "INFO")
 			sshSetting.GetOutputCommandSsh(cmdRmDataPath)
 
-			cmds := []string{
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "bin")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "cli")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "config")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "daemon")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "src")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.AppPath, "web", "share")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "log")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datagrabber", "output")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "datasource", "upload")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "server", "privatekeys")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "history")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "historyrec")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "log")),
-				fmt.Sprintf(`mkdir -p "%s"`, filepath.Join(data.DataPath, "webgrabber", "output")),
-			}
-			for _, each := range cmds {
-				log.AddLog(each, "INFO")
-			}
-			_, err := sshSetting.RunCommandSsh(cmds...)
-
+			cmdMkdirDataPath := fmt.Sprintf(`mkdir -p "%s"`, data.DataPath)
+			log.AddLog(cmdMkdirDataPath, "INFO")
+			_, err = sshSetting.GetOutputCommandSsh(cmdMkdirDataPath)
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			appDistSrc := filepath.Join(EC_DATA_PATH, "dist", "app-root.zip")
+			err = sshSetting.SshCopyByPath(appDistSrc, data.AppPath)
+			log.AddLog(fmt.Sprintf("scp from %s to %s", appDistSrc, data.AppPath), "INFO")
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			appDistSrcDest := filepath.Join(data.AppPath, "app-root.zip")
+			unzipAppCmd := fmt.Sprintf("unzip %s -d %s", appDistSrcDest, data.AppPath)
+			log.AddLog(unzipAppCmd, "INFO")
+			_, err = sshSetting.GetOutputCommandSsh(unzipAppCmd)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
+			}
+
+			rmTempAppPath := fmt.Sprintf("rm -rf %s", appDistSrcDest)
+			_, err = sshSetting.GetOutputCommandSsh(rmTempAppPath)
+			log.AddLog(rmTempAppPath, "INFO")
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
+			}
+
+			dataDistSrc := filepath.Join(EC_DATA_PATH, "dist", "data-root.zip")
+			err = sshSetting.SshCopyByPath(dataDistSrc, data.DataPath)
+			log.AddLog(fmt.Sprintf("scp from %s to %s", dataDistSrc, data.DataPath), "INFO")
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return helper.CreateResult(false, nil, err.Error())
+			}
+
+			dataDistSrcDest := filepath.Join(data.DataPath, "data-root.zip")
+			unzipDataCmd := fmt.Sprintf("unzip %s -d %s", dataDistSrcDest, data.DataPath)
+			log.AddLog(unzipDataCmd, "INFO")
+			_, err = sshSetting.GetOutputCommandSsh(unzipDataCmd)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
+			}
+
+			rmTempDataPath := fmt.Sprintf("rm -rf %s", dataDistSrcDest)
+			_, err = sshSetting.GetOutputCommandSsh(rmTempDataPath)
+			log.AddLog(rmTempDataPath, "INFO")
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
+			}
+
+			osArchCmd := "uname -m"
+			log.AddLog(osArchCmd, "INFO")
+			osArchRes, err := sshSetting.GetOutputCommandSsh(osArchCmd)
+			osArchRes = strings.TrimSpace(osArchRes)
+			if err != nil {
+				log.AddLog(err.Error(), "ERROR")
+				return err
+			}
+			for _, each := range []string{"sedotand", "sedotans", "sedotanw"} {
+				src := filepath.Join(EC_APP_PATH, "cli", "dist", fmt.Sprintf("linux_%s", osArchRes), each)
+				dst := filepath.Join(data.AppPath, "cli", each)
+
+				rmSedotanCmd := fmt.Sprintf("rm -rf %s", dst)
+				log.AddLog(rmSedotanCmd, "INFO")
+				_, err := sshSetting.GetOutputCommandSsh(rmSedotanCmd)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
+
+				log.AddLog(fmt.Sprintf("scp %s to %s", src, dst), "INFO")
+				err = sshSetting.SshCopyByPath(src, dst)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
+
+				chmodCliCmd := fmt.Sprintf("chmod 755 %s", dst)
+				log.AddLog(chmodCliCmd, "INFO")
+				_, err = sshSetting.GetOutputCommandSsh(chmodCliCmd)
+				if err != nil {
+					log.AddLog(err.Error(), "ERROR")
+					return err
+				}
 			}
 
 			checkPathCmd := fmt.Sprintf("ls %s", data.AppPath)
@@ -291,7 +354,86 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		// windows
 	}
 
+	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
+	err = colonycore.Save(data)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	log.AddLog("Restart sedotand", "INFO")
+	_, err = s.ToggleSedotanService("start stop", data.ID)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+	}
+
 	return helper.CreateResult(true, nil, "")
+}
+
+func (s *ServerController) ToggleSedotanService(op string, id string) (bool, error) {
+	data := new(colonycore.Server)
+	cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", id))
+	if err != nil {
+		return false, err
+	}
+	dataAll := []colonycore.Server{}
+	err = cursor.Fetch(&dataAll, 0, false)
+	if err != nil {
+		return false, err
+	}
+	defer cursor.Close()
+
+	if len(dataAll) == 0 {
+		return false, errors.New("Server not found")
+	}
+
+	data = &dataAll[0]
+
+	sshSetting, client, err := s.SSHConnect(data)
+	if err != nil {
+		return false, err
+	}
+	defer client.Close()
+
+	pgrepSedotanCmd, err := sshSetting.GetOutputCommandSsh("pgrep sedotand")
+	if err != nil {
+		// do something
+	}
+	isOn := false
+	pid := strings.TrimSpace(pgrepSedotanCmd)
+	if pid != "" {
+		isOn = true
+	}
+
+	if strings.Contains(op, "stat") {
+		return isOn, nil
+	}
+
+	if strings.Contains(op, "stop") {
+		if pid != "" {
+			killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
+			_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
+			if err != nil {
+				// do something
+			}
+
+			if !strings.Contains(op, "start") && err != nil {
+				return isOn, err
+			}
+		}
+	}
+
+	if strings.Contains(op, "start") {
+		sedotanConfigArg := fmt.Sprintf(`-config="%s"`, filepath.Join(data.DataPath, "config", "webgrabbers.json"))
+		sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, filepath.Join(data.DataPath, "daemon"))
+		runSedotanCmd := fmt.Sprintf("cd %s && ./sedotand %s %s", filepath.Join(data.AppPath, "cli"), sedotanConfigArg, sedotanLogArg)
+		err = helper.RunCommandWithTimeout(&sshSetting, runSedotanCmd, 5)
+		if err != nil {
+			return isOn, err
+		}
+	}
+
+	return isOn, nil
 }
 
 func (s *ServerController) SelectServers(r *knot.WebContext) interface{} {

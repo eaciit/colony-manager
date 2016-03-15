@@ -113,7 +113,7 @@ br.ViewBrowserName = function(id){
 	br.selectedID(id);
 	var datacol =[];
 	br.dataBrowserDescColumns([]);
-	app.ajaxPost("/databrowser/detaildb", {id: id}, function(res){
+	app.ajaxPost("/databrowser/detaildb", {browserid: id}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -132,7 +132,7 @@ br.ViewBrowserName = function(id){
 			dataSource: { 
 	                  url: "/databrowser/detaildb",
 	                  type: "post",
-	                  callData: {id: id},
+	                  callData: {browserid: id},
 	                  fieldTotal: "DataCount",
 	                  fieldData: "DataValue",
 	                  serverPaging: true,
@@ -153,62 +153,8 @@ br.ViewBrowserName = function(id){
 	// 	//br.dataBrowserDescColumns(datacol);
 	// 	br.dataBrowserDesc(ondataval);
 	// 	br.dataBrowserDescColumns(datacol);
-		
-
-	// 	$("#grid-databrowser-decription").kendoGrid({
- //            columns: datacol,
- //            // dataSource: {  	
- //            //     // data: ondataval,
- //            //     pageSize: 5,
- //            // },
- //            dataSource: {
-	// 			   transport: {
-	// 				   read:function(options){
- //                        var parm = {
- //                        		id: id
- //                        	};
- //                        for(var i in options.data){
- //                            parm[i] = options.data[i];
- //                        }
- //                        app.ajaxPost("/databrowser/detaildb",parm, function (res){
-	//                           	options.success(res);
-	//                           	console.log(res.data)
-	//                         });
-	//                      },
-	// 			   },
-	// 			   schema: {
-	// 				   data: "data.DataValue",
-	// 				   total: "data.DataCount",
-	// 			   },
-	// 			   pageSize: 5,
-	// 			   serverPaging: true, 
-	// 			   serverSorting: true,
-	// 			   serverFiltering: true,
-	// 		   },
- //            pageable: true,
- //            scrollable: true,
-	// 		sortable: true,
- //            columns:datacol
- //        });
 	});
 	
-}
-
-br.FilterViewDB = function(){
-	$('#filter-id').ecLookup({
-		dataSource:{
-			url: "/databrowser/detaildb",
-			call: 'POST',
-			callData: 'search', 
-			callOK: function(res){
-				console.log(res);
-			}
-		}, 
-		inputType: 'multiple', 
-		inputSearch: '_id', 
-		idField: '_id', 
-		idText: '_id', 
-	})
 }
 
 br.saveAndBack = function (){
@@ -234,6 +180,5 @@ br.filterDataBrowser = function(){
 $(function (){
 	br.getDataBrowser();
 	br.getAllbrowser();
-	br.FilterViewDB();
 	app.registerSearchKeyup($(".searchbr"), br.getDataBrowser);
 });
