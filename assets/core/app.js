@@ -39,6 +39,11 @@ app.wrapGridSelect = function (selector, excludeClassSelector, callback) {
     } else if ($target.closest(excludeClassSelector).size() > 0) {
         $grid.clearSelection();
         return false;
+    } else if ($target.is("td") && $target.closest("[data-uid]").size() > 0 && $target.find("[type=checkbox]").size() > 0) {
+        $grid.clearSelection();
+        var $checkbox = $target.find("[type=checkbox]");
+        $checkbox.prop("checked", !$checkbox.is(":checked"));
+        return false;
     }
 
     var selectedItem = $grid.dataItem($grid.select());
