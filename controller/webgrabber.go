@@ -443,11 +443,37 @@ func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, true, "")
 
 	} else {
-		byts, _ := exec.Command("pgrep", "sedotand").Output()
-		if string(byts) == "" {
-			return helper.CreateResult(true, false, "")
+		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+		cursor, err := colonycore.Find(new(colonycore.Server), filters)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
 		}
-		return helper.CreateResult(true, true, "")
+
+		all := []colonycore.Server{}
+		err = cursor.Fetch(&all, 0, true)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		if len(all) == 0 {
+			return helper.CreateResult(false, false, "No server registered")
+		}
+
+		serverC := &ServerController{}
+		var howManyOn = 0
+		for _, server := range all {
+			isOn, _ := serverC.ToggleSedotanService("stat", server.ID)
+			fmt.Println("===", isOn)
+			if isOn {
+				howManyOn = howManyOn + 1
+			}
+		}
+
+		if howManyOn > 0 {
+			return helper.CreateResult(true, true, "")
+		}
+
+		return helper.CreateResult(false, false, "")
 	}
 
 }
@@ -503,34 +529,52 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			return helper.CreateResult(true, true, "")
 		}
 	} else {
+		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+		cursor, err := colonycore.Find(new(colonycore.Server), filters)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		all := []colonycore.Server{}
+		err = cursor.Fetch(&all, 0, true)
+		if err != nil {
+			return helper.CreateResult(false, false, err.Error())
+		}
+
+		if len(all) == 0 {
+			return helper.CreateResult(false, false, "No server registered")
+		}
+
+		serverC := &ServerController{}
+
 		if payload.OP == "off" {
-			byts, err := exec.Command("pgrep", "sedotand").Output()
-			if err != nil {
-				return helper.CreateResult(false, false, err.Error())
-			}
-
-			if pidOfSedotanD := strings.TrimSpace(string(byts)); pidOfSedotanD != "" {
-				err := exec.Command("kill", "-9", pidOfSedotanD).Run()
+			var howManyErrors = 0
+			for _, server := range all {
+				_, err = serverC.ToggleSedotanService("stop", server.ID)
 				if err != nil {
-					return helper.CreateResult(false, false, err.Error())
+					howManyErrors = howManyErrors + 1
 				}
-
-				return helper.CreateResult(true, true, "")
 			}
+
+			if howManyErrors == 0 {
+				return helper.CreateResult(true, nil, "")
+			}
+
+			return helper.CreateResult(false, nil, "Sedotan won't start on some servers")
 		} else {
-			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand")
-			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
-			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
-			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
-			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
-
-			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
-			err := exec.Command(sedotanPath, sedotanConfigArg, sedotanLogArg, "&").Start()
-			if err != nil {
-				return helper.CreateResult(false, false, err.Error())
+			var howManyErrors = 0
+			for _, server := range all {
+				_, err = serverC.ToggleSedotanService("start stop", server.ID)
+				if err != nil {
+					howManyErrors = howManyErrors + 1
+				}
 			}
 
-			return helper.CreateResult(true, true, "")
+			if howManyErrors == 0 {
+				return helper.CreateResult(true, nil, "")
+			}
+
+			return helper.CreateResult(false, nil, "Sedotan won't start on some servers")
 		}
 	}
 
