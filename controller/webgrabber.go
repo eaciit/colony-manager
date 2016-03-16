@@ -21,6 +21,7 @@ import (
 	// "syscall"
 	"time"
 	// "encoding/json"
+	// "reflect"
 )
 
 var (
@@ -86,6 +87,7 @@ func (w *WebGrabberController) OpenHistory() ([]interface{}, error) {
 	var history = []interface{}{} //toolkit.M{}
 	var config = map[string]interface{}{"useheader": true, "delimiter": ",", "dateformat": "MM-dd-YYYY"}
 	ci := &dbox.ConnectionInfo{w.filepathName, "", "", "", config}
+
 	c, err := dbox.NewConnection("csv", ci)
 	if err != nil {
 		return history, err
@@ -337,6 +339,10 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, payload, "")
 }
 
@@ -385,6 +391,10 @@ func (w *WebGrabberController) StartService(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, payload.Running, "")
 }
 
@@ -408,6 +418,10 @@ func (w *WebGrabberController) StopService(r *knot.WebContext) interface{} {
 	}
 
 	if err := colonycore.Save(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if err := w.SyncConfig(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -463,7 +477,6 @@ func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 		var howManyOn = 0
 		for _, server := range all {
 			isOn, _ := serverC.ToggleSedotanService("stat", server.ID)
-			fmt.Println("===", isOn)
 			if isOn {
 				howManyOn = howManyOn + 1
 			}
@@ -529,6 +542,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			return helper.CreateResult(true, true, "")
 		}
 	} else {
+		if err := w.SyncConfig(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
 		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
 		cursor, err := colonycore.Find(new(colonycore.Server), filters)
 		if err != nil {
@@ -584,6 +601,8 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	var history = toolkit.M{}
+	arrcmd := make([]string, 0, 0)
 	payload := new(colonycore.WebGrabber)
 	err := r.GetPayload(payload)
 	if err != nil {
@@ -594,13 +613,26 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	module := NewHistory(payload.HistConf.FileName)
-	history, err := module.OpenHistory()
+	// module := NewHistory(payload.HistConf.FileName)
+	// history, err := module.OpenHistory()
+
+	dateNow := cast.Date2String(time.Now(), "YYYYMMdd") //time.Now()
+	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
+	arrcmd = append(arrcmd, `-readtype=history`)
+	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\webgrabber\history\`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
+
+	if runtime.GOOS == "windows" {
+		historystring, _ := toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2])
+		err = toolkit.UnjsonFromString(historystring, &history)
+	} else {
+		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	}
+
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, history, "")
+	return helper.CreateResult(true, history["DATA"], "")
 }
 
 func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
@@ -619,7 +651,7 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 
 	// SnapShot, err := module.OpenSnapShot(payload.Nameid)
 
-	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\main.exe`)
+	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
 	arrcmd = append(arrcmd, `-readtype=snapshot`)
 	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\daemon\daemonsnapshot.csv`)
 	arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
@@ -641,6 +673,9 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	rechistory := ""
+	arrcmd := make([]string, 0, 0)
+	result := toolkit.M{}
 	payload := struct {
 		RecFile string `json:"recfile"`
 	}{}
@@ -649,22 +684,34 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var data []toolkit.M
+	// var data []toolkit.M
 
-	config := toolkit.M{"useheader": true, "delimiter": ","}
-	query := helper.Query("csv", payload.RecFile, "", "", "", config)
-	data, err = query.SelectAll("")
+	// config := toolkit.M{"useheader": true, "delimiter": ","}
+	// query := helper.Query("csv", payload.RecFile, "", "", "", config)
+
+	// data, err = query.SelectAll("")
+
+	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
+	arrcmd = append(arrcmd, `-readtype=rechistory`)
+	arrcmd = append(arrcmd, `-recfile=`+payload.RecFile)
+
+	if runtime.GOOS == "windows" {
+		rechistory, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2])
+		err = toolkit.UnjsonFromString(rechistory, &result)
+	} else {
+		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	}
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, data, "")
+	return helper.CreateResult(true, result["DATA"], "")
 }
 
 func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-
+	
 	payload := struct {
 		ID   string `json:"_id"`
 		Date string `json:"date"`
@@ -687,6 +734,23 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 
 	history := NewHistory(payload.ID)
 	logs := history.GetLogHistory([]interface{}{o}, payload.Date)
+	// arrcmd := make([]string, 0, 0)
+	// SnapShot := ""
+	// logs := toolkit.M{}
+	// arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
+	// arrcmd = append(arrcmd, `-readtype=logfile`)
+	// arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+	// arrcmd = append(arrcmd, `-nameid=`+payload.ID)
+	// arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString(o))
+
+	// if runtime.GOOS == "windows" {
+	// 	SnapShot, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2], arrcmd[3], arrcmd[4])
+	// 	fmt.Println(SnapShot)
+	// 	err = toolkit.UnjsonFromString(SnapShot, &logs)
+	// } else {
+	// 	// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	// }
+	// // fmt.Println(logs)
 	return helper.CreateResult(true, logs, "")
 }
 
@@ -701,6 +765,10 @@ func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
 
 	err = colonycore.Delete(payload)
 	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if err := w.SyncConfig(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -726,71 +794,52 @@ func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) inte
 		}
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, nil, "")
 }
 
-func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	//~ payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
-	payload := map[string]interface{}{}
+func (d *WebGrabberController) SyncConfig() error {
+	all := []colonycore.Server{}
+	serverC := &ServerController{}
+	configName := fmt.Sprintf("%s.json", new(colonycore.WebGrabber).TableName())
+	src := f.Join(EC_APP_PATH, "config", configName)
 
-	err := r.GetPayload(&payload)
+	filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+	cursor, err := colonycore.Find(new(colonycore.Server), filters)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return err
 	}
 
-	text := payload["inputText"].(string)
-	req := payload["inputRequest"].(string)
-	tipe := payload["inputType"].(string)
+	err = cursor.Fetch(&all, 0, true)
+	if err != nil {
+		return err
+	}
 
-	textLow := strings.ToLower(text)
+	errs := []error{}
 
-	// == bug, cant find if autocomplite, just full text can be get result
-	var query *dbox.Filter
-	if text != "" {
-		valueInt, errv := strconv.Atoi(text)
-		if errv == nil {
-			// == try useing Eq for support integer
-			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
-		} else {
-			// == try useing Contains for support autocomplite
-			query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("Calltype", text), dbox.Contains("Calltype", textLow), dbox.Contains("SourceType", text), dbox.Contains("SourceType", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
+	for _, each := range all {
+		setting, _, err := serverC.SSHConnect(&each)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		dst := f.Join(each.AppPath, "config", configName)
+		err = setting.SshCopyByPath(src, dst)
+		if err != nil {
+			errs = append(errs, err)
+			continue
 		}
 	}
 
-	if req != "" {
-		query = dbox.And(query, dbox.Eq("Calltype", req))
+	if len(errs) == len(all) && len(errs) > 0 {
+		return errs[0]
 	}
 
-	if tipe != "" {
-		query = dbox.And(query, dbox.Eq("SourceType", tipe))
-	}
+	fmt.Println(configName, "synced w/ errors", errs)
 
-	data := []colonycore.WebGrabber{}
-	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
-	cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	return helper.CreateResult(true, payload, "")
-}
-
-func (d *WebGrabberController) GetConnections(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	data := []colonycore.Connection{}
-	cursor, err := colonycore.Find(new(colonycore.Connection), nil)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	return helper.CreateResult(true, data, "")
+	return nil
 }

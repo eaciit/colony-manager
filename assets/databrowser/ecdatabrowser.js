@@ -192,6 +192,7 @@ var methodsDataBrowser = {
 				format = "";
 			}
 			// aggr = JSON.parse("{\"avg\":\"220000.0000\",\"sum\":\"1100000\"}");
+			aggr= {};
 			if (options.metadata[key].Aggregate != '')
 				aggr = JSON.parse(options.metadata[key].Aggregate);
 			footerText = "";

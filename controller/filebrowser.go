@@ -595,7 +595,17 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
-				return helper.CreateResult(true, "", "")
+
+				result, err := ioutil.ReadFile(strings.Replace(GetHomeDir()+"/", "//", "/", -1) + strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1])
+
+				r.Writer.Header().Set("Content-Disposition", "attachment; filename='"+strings.Replace(GetHomeDir()+"/", "//", "/", -1)+strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1]+"'")
+				r.Writer.Header().Set("Content-Type", r.Writer.Header().Get("Content-Type"))
+				r.Writer.Header().Set("Content-Length", strconv.Itoa(len(result)))
+
+				io.Copy(r.Writer, bytes.NewReader(result))
+
+				//return helper.CreateResult(true, "", "")
+				return ""
 			}
 		}
 	}

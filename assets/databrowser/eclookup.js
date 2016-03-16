@@ -123,20 +123,50 @@ var methodsLookupDD = {
 		$textSearch.attr({'placeholder': options.placeholder});
 		$textSearch.bind('keyup keydown').keyup(function(event){
 			var search = $(this).val();
+			var $co = $container.find(".eclookup-dropdown ul.eclookup-listsearch");
+			console.log($co.find('li.hlight'));
 			switch(event.keyCode) {
-				// case KEY.UP:
-				// case KEY.DOWN:
-                   
-                // break;
+				case KEY.UP:
+					if ($co.find('li.hlight').length == 0) {
+			            $co.find('li.eclookup-itemsearch').eq(-1).addClass('hlight');
+			        }else{
+						var indexCO = $co.find("li.hlight").index() - 1;
+						$co.find('li.eclookup-itemsearch').removeClass('hlight');
+						$co.find('li.eclookup-itemsearch').eq(indexCO).addClass('hlight');
+			        }
+                break;
+				case KEY.DOWN:
+					if ($co.find('li.hlight').length == 0) {
+			            $co.find('li.eclookup-itemsearch').eq(0).addClass('hlight');
+			        }else{
+						var indexCO = $co.find("li.hlight").index() + 1;
+						$co.find('li.eclookup-itemsearch').removeClass('hlight');
+						$co.find('li.eclookup-itemsearch').eq(indexCO).addClass('hlight');
+			        }
+                break;
+                case KEY.ENTER:
+					$co.find('li.hlight').bind('click').click();
+                break;
 				case KEY.BACKSPACE:
-					$o.data('ecLookupDD').searchResult(search);
-
+					if (search.length > 0){
+				    	$o.data('ecLookupDD').searchResult(search);
+					}
 					break;
 				default:
 					if (search.length >= options.minChar){
 						$o.data('ecLookupDD').searchResult(search);
 					}
 			}
+		}).keydown(function(event){
+			var search = $(this).val();
+			switch(event.keyCode) {		
+				case KEY.BACKSPACE:
+					if (search.length == 0){
+						$le = $(".eclookup-item").length - 1;
+						$(".eclookup-item").eq($le).remove();
+				    }
+		    	break;
+		    }
 		});
 		$textSearch.appendTo($liLookupTxt);
 
