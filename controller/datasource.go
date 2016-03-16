@@ -66,7 +66,16 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 			continue
 		}
 
-		settings[each["key"].(string)] = each["value"].(string)
+		value := each["value"].(string)
+		if temp := strings.TrimSpace(strings.ToLower(each["value"].(string))); temp == "false" || temp == "true" {
+			settings[each["key"].(string)], _ = strconv.ParseBool(temp)
+		} else {
+			if number, err := strconv.Atoi(temp); err == nil {
+				settings[each["key"].(string)] = number
+			} else {
+				settings[each["key"].(string)] = value
+			}
+		}
 	}
 
 	return settings
