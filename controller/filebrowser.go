@@ -535,7 +535,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 				DestPath := strings.Replace(payload.Path+"/", "//", "/", -1) + payload.FileName
 				SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName
 
-				/*read, err := ioutil.ReadAll(payload.File)
+				read, err := ioutil.ReadAll(payload.File)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -544,10 +544,10 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
-				*/
+
 				h := setHDFSConnection(server.Host, server.SSHUser)
 
-				err := h.Put(SourcePath, DestPath, "", nil, &server)
+				err = h.Put(SourcePath, DestPath, "", nil, &server)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}

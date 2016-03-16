@@ -164,6 +164,7 @@ var methodsLookupDD = {
 					if (search.length == 0){
 						$le = $(".eclookup-item").length - 1;
 						$(".eclookup-item").eq($le).remove();
+						$o.data('ecLookupDD').ParamDataSource.dataSelect.splice(-1,1);
 				    }
 		    	break;
 		    }
