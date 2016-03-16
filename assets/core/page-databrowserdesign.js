@@ -208,21 +208,16 @@ db.addProperties = function () {
 
 db.changeCheckboxOnGrid = function (o) {
 	var $grid = $(".grid-databrowser-design").data("kendoGrid");
-	var value = $(o).is(":checked");
-	var $tr = $(o).closest("tr");
-	var uid = $tr.attr("data-uid");
 	var field = $(o).attr("data-field");
+	var uid = $(o).closest("tr").attr("data-uid");
+	var value = $(o).is(":checked");
+
+	var rowData = $grid.dataSource.getByUid(uid);
+	rowData.set(field, value);
 
 	var data = $grid.dataSource.data();
-	var rowData = $grid.dataSource.getByUid(uid);
-	var rowDataIndex = data.indexOf(rowData);
-
-	rowData[field] = value;
-	data[rowDataIndex] = rowData;
-
 	var plainData = JSON.parse(kendo.stringify(data));
 	db.databrowserData(plainData);
-	db.setDataSource();
 	db.headerCheckedAll();
 
 	return true;
@@ -230,28 +225,29 @@ db.changeCheckboxOnGrid = function (o) {
 
 db.back = function(section){
 	if (section == "back") {
-			swal({
-				title: "Do you want to exit?",
-				text: "",
-				type: "warning",
-				showCancelButton: true,
-				confirmButtonColor: "#DD6B55",
-				confirmButtonText: "Exit & Save",
-				cancelButtonText: "Exit",
-				closeOnConfirm: true,
-				closeOnCancel: true
-			},
-				function(isConfirm){
-					if (isConfirm) {
-						db.saveAndBack('goback');
-					}else{
-						db.backToFront();
-					}
-				}
-			);			
-		} else {
-			br.ViewBrowserName(param._id)
-		}
+		db.backToFront();
+		// swal({
+		// 	title: "Do you want to exit?",
+		// 	text: "",
+		// 	type: "warning",
+		// 	showCancelButton: true,
+		// 	confirmButtonColor: "#DD6B55",
+		// 	confirmButtonText: "Exit & Save",
+		// 	cancelButtonText: "Exit",
+		// 	closeOnConfirm: true,
+		// 	closeOnCancel: true
+		// },
+		// 	function(isConfirm){
+		// 		if (isConfirm) {
+		// 			db.saveAndBack('goback');
+		// 		}else{
+		// 			db.backToFront();
+		// 		}
+		// 	}
+		// );			
+	} else {
+		br.ViewBrowserName(param._id)
+	}
 }
 
 db.saveAndBack = function(section) {
@@ -325,7 +321,9 @@ db.saveAndBack = function(section) {
 	});
 }
 
+db.isSaved = ko.observable(false);
 db.designDataBrowser = function(_id) {
+	db.isSaved(false);
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
 	db.databrowserData([]);

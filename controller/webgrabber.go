@@ -339,6 +339,10 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, payload, "")
 }
 
@@ -387,6 +391,10 @@ func (w *WebGrabberController) StartService(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, payload.Running, "")
 }
 
@@ -410,6 +418,10 @@ func (w *WebGrabberController) StopService(r *knot.WebContext) interface{} {
 	}
 
 	if err := colonycore.Save(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if err := w.SyncConfig(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -465,7 +477,6 @@ func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 		var howManyOn = 0
 		for _, server := range all {
 			isOn, _ := serverC.ToggleSedotanService("stat", server.ID)
-			fmt.Println("===", isOn)
 			if isOn {
 				howManyOn = howManyOn + 1
 			}
@@ -531,6 +542,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			return helper.CreateResult(true, true, "")
 		}
 	} else {
+		if err := w.SyncConfig(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
 		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
 		cursor, err := colonycore.Find(new(colonycore.Server), filters)
 		if err != nil {
@@ -753,6 +768,10 @@ func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, nil, "")
 }
 
@@ -775,71 +794,52 @@ func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) inte
 		}
 	}
 
+	if err := w.SyncConfig(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	return helper.CreateResult(true, nil, "")
 }
 
-func (d *WebGrabberController) FindWebGrabber(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	//~ payload := map[string]string{"inputText": "GRAB_TEST", "inputRequest": "", "inputType": ""}
-	payload := map[string]interface{}{}
+func (d *WebGrabberController) SyncConfig() error {
+	all := []colonycore.Server{}
+	serverC := &ServerController{}
+	configName := fmt.Sprintf("%s.json", new(colonycore.WebGrabber).TableName())
+	src := f.Join(EC_APP_PATH, "config", configName)
 
-	err := r.GetPayload(&payload)
+	filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+	cursor, err := colonycore.Find(new(colonycore.Server), filters)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		return err
 	}
 
-	text := payload["inputText"].(string)
-	req := payload["inputRequest"].(string)
-	tipe := payload["inputType"].(string)
+	err = cursor.Fetch(&all, 0, true)
+	if err != nil {
+		return err
+	}
 
-	textLow := strings.ToLower(text)
+	errs := []error{}
 
-	// == bug, cant find if autocomplite, just full text can be get result
-	var query *dbox.Filter
-	if text != "" {
-		valueInt, errv := strconv.Atoi(text)
-		if errv == nil {
-			// == try useing Eq for support integer
-			query = dbox.Or(dbox.Eq("GrabInterval", valueInt), dbox.Eq("TimeoutInterval", valueInt))
-		} else {
-			// == try useing Contains for support autocomplite
-			query = dbox.Or(dbox.Contains("_id", text), dbox.Contains("_id", textLow), dbox.Contains("Calltype", text), dbox.Contains("Calltype", textLow), dbox.Contains("SourceType", text), dbox.Contains("SourceType", textLow), dbox.Contains("IntervalType", text), dbox.Contains("IntervalType", textLow))
+	for _, each := range all {
+		setting, _, err := serverC.SSHConnect(&each)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		dst := f.Join(each.AppPath, "config", configName)
+		err = setting.SshCopyByPath(src, dst)
+		if err != nil {
+			errs = append(errs, err)
+			continue
 		}
 	}
 
-	if req != "" {
-		query = dbox.And(query, dbox.Eq("Calltype", req))
+	if len(errs) == len(all) && len(errs) > 0 {
+		return errs[0]
 	}
 
-	if tipe != "" {
-		query = dbox.And(query, dbox.Eq("SourceType", tipe))
-	}
+	fmt.Println(configName, "synced w/ errors", errs)
 
-	data := []colonycore.WebGrabber{}
-	cursor, err := colonycore.Find(new(colonycore.WebGrabber), query)
-	cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	return helper.CreateResult(true, payload, "")
-}
-
-func (d *WebGrabberController) GetConnections(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	data := []colonycore.Connection{}
-	cursor, err := colonycore.Find(new(colonycore.Connection), nil)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	return helper.CreateResult(true, data, "")
+	return nil
 }
