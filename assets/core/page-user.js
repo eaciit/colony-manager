@@ -1,31 +1,50 @@
 app.section('user');
 
 viewModel.user = {}; var usr = viewModel.user;
+
 usr.templateUser = {
-	_id     :"",
-	LoginID  :"",
-	FullName :"",
-	Email    :"",
-	Password :"",
-	Enable   :false,
-	Groups   :ko.observableArray([]),
-	Grants   :"",
+    _id     :"",
+    LoginID  :"",
+    FullName :"",
+    Email    :"",
+    Password :"",
+    Enable   :false,
+    Groups   :ko.observableArray([]),
+    Grants   :[],
 };
+
 usr.templateFilter ={
+    _id:"",
     LoginID: "", 
     FullName:"",
     Email    :"",
     Groups   :ko.observableArray([]),
 };
+
+usr.templateAccessGrant = function(){
+    var self = {
+        AccessID       :ko.observable(""), 
+        AccessCreate   :ko.observable(false),
+        AccessRead     :ko.observable(false),
+        AccessUpdate   :ko.observable(false),
+        AccessDelete   :ko.observable(false),
+        AccessSpecial1 :ko.observable(false),
+        AccessSpecial2 :ko.observable(false),
+        AccessSpecial3 :ko.observable(false),
+        AccessSpecial4 :ko.observable(false),
+    }
+    return self;
+}; 
+usr.Access= ko.observableArray([]);
+usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
 usr.UsersColumns = ko.observableArray([
-    { template: "<input type='checkbox' class='ckcGrid' />", width: 50  },
+    { template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />", width: 50  }, 
     { field: "loginid", title: "Login Id" },
     { field: "fullname", title: "Fullame" },
     { field: "email", title: "Email" },
     { field: "password", title: "Password"},
     { field: "enable", title: "Enable" },
-    { field: "groups", title: "Groups" },
-    { field: "grants", title: "Grants"}
+    { field: "groups", title: "Groups" }
 ]);
 usr.filter = ko.mapping.fromJS(usr.templateFilter);
 usr.isNew=ko.observable(false);
@@ -43,6 +62,8 @@ usr.selectGridUsers = function (e) {
 
 usr.getUsers = function(c) {
     usr.UsersData([]);
+    var data = [];
+    var gr="";
     var param = ko.mapping.toJS(usr.filter);
     app.ajaxPost("/user/getuser", param, function (res) {
         if (!app.isFine(res)) {
@@ -51,6 +72,7 @@ usr.getUsers = function(c) {
         if (res.data==null){
             res.data="";
         }
+      
         usr.UsersData(res.data);
         var grid = $(".grid-users").data("kendoGrid"); 
         $(grid.tbody).on("mouseleave", "tr", function (e) {
@@ -62,38 +84,79 @@ usr.getUsers = function(c) {
         }
     });
 };
- 
-usr.config = ko.mapping.fromJS(usr.templateUser); 
-usr.listGroup 	= ko.observableArray([]);
-usr.saveuser = function () {
-	usr.templateUser.Groups($('#Groups').data('kendoMultiSelect').value());
-	payload = ko.mapping.fromJS(usr.templateUser);
-	
-	var dataInv = $('#gridaccess').data('kendoGrid').dataSource;
-    var arrayID = new Array();
-    $(".ckcGrid").each(function (i) {
-        if (this.checked) {
-            dataInv.fetch(function () {
-            var view = dataInv.view();
-            arrayID.push(view[i].ID);
-            });
+usr.editUser = function(c) {
+    var payload = ko.mapping.toJS(usr.filter._id(c));
+    app.ajaxPost("/user/finduser", payload, function (res) {
+        if (!app.isFine(res)) {
+            return;
         }
-    }); 
-
-	app.ajaxPost("/user/saveuser", payload, function(res) {
-	if (!app.isFine(res)) {
-		return;
-	}
-	});
+        if (res.data==null){
+            res.data="";
+        } 
+        usr.config.LoginID(res.data.LoginID);  
+        usr.config.FullName(res.data.FullName);  
+        usr.config.Password(res.data.Password);  
+        usr.config.Enable(res.data.Enable); 
+        usr.config.Groups(res.data.Groups);  
+    });
 };
+usr.config = ko.mapping.fromJS(usr.templateUser); 
+usr.listGroup   = ko.observableArray([]);
+usr.saveuser = function () {
+    usr.config.Groups($('#Groups').data('kendoMultiSelect').value());
+    payload = ko.mapping.fromJS(usr.config);
+    console.log(payload);
+    // var dataInv = $('#gridaccess').data('kendoGrid').dataSource;
+    // var arrayID = new Array();
+    // $(".ckcGrid").each(function (i) {
+    //     if (this.checked) {
+    //         dataInv.fetch(function () {
+    //         var view = dataInv.view();
+    //         arrayID.push(view[i].ID);
+    //         });
+    //     }
+    // }); 
 
-usr.Usermode = ko.observable('');
-usr.getUser = function(c) {
-
+    app.ajaxPost("/user/saveuser", payload, function(res) {
+    if (!app.isFine(res)) {
+        return;
+    }
+    swal({title: "User successfully created", type: "success",closeOnConfirm: true});
+    usr.backToFront();
+    });
 };
+usr.deleteuser = function () { 
+    var checkboxes = document.getElementsByName('checkboxuser');
+    var selected = [];
+    for (var i=0; i<checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            selected.push(checkboxes[i].value);
+        }
+    } 
+    for (var i = 0; i < selected.length; i++) {
+        payload = ko.mapping.fromJS(usr.filter._id(selected[i]));
+        app.ajaxPost("/user/deleteuser", payload, function(res) { 
+        if (!app.isFine(res)) {
+            return;
+        }   
+        });
+    };
+    swal({title: "User successfully deleted", type: "success",closeOnConfirm: true});
+    usr.backToFront();
+};
+usr.Usermode = ko.observable(''); 
 
 usr.createNewUser = function () {
-	app.mode("editor");
+    usr.Access.removeAll();
+    usr.config.Grants.removeAll();
+    usr.config.LoginID("");  
+    usr.config.FullName("");  
+    usr.config.Password("");  
+    usr.config.Enable(""); 
+    usr.config.Groups(""); 
+    usr.getAccess();
+    app.mode("editor");
+    usr.getGroup();
 };
 
 
@@ -101,128 +164,183 @@ usr.OnRemove = function (_id) {
 };
 
 usr.backToFront = function () {
-	app.mode('');
-	usr.getUsers();
-	app.section('user');
+    usr.Access.removeAll();
+    app.mode('');
+    usr.getUsers();
+    app.section('user');
 };
 usr.getmultiplegroup = function () {
-    $("#Groups").kendoMultiSelect({
-      dataTextField: "text",
-      dataValueField: "value",
-      dataSource: [
-        { text: "Item1", value: "Item1" },
-        { text: "Item2", value: "2" },
-        { text: "Item3", value: "3" },
-        { text: "Item4", value: "4" }
-      ]
+    var param = ko.mapping.toJS(usr.filter);
+    var data = [];
+    app.ajaxPost("/group/getgroup", param, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        if (res.data==null){
+            res.data="";
+        }
+        for (var i in res.data) {
+            data.push({
+                text : res.data[i]._id,
+                value: res.data[i].title
+            }); 
+        };
+        console.log(data);
+        $("#Groups").kendoMultiSelect({
+          dataTextField: "text",
+          dataValueField: "value",
+          dataSource: data
+        });
     });
   };
 $(function () {
-	usr.getmultiplegroup();
-    usr.getUsers();
-	// adm.getAdministraions();
-	// adm.getUploadFile();
-	// adm.codemirror();
-	// adm.treeView("") ;
-	// app.prepareTooltipster($(".tooltipster"));
-	// app.registerSearchKeyup($(".search"), adm.getAdministraions);
+    usr.getmultiplegroup();
+    usr.getUsers(); 
 });
-
-//========
- $(document).ready(function(){
-        $("#gridaccess").kendoGrid({
+ 
+usr.createGridPrivilege = function (ds) {
+         var grid  = $("#gridaccess").kendoGrid({
             columns: [ 
-   			  { template: "<input type='checkbox' class='ckcGrid' />", width: 10  },
-	          { field: "LastName", title: "LastName", width: 110 },
-	          { title: "Create",template: '<input type="checkbox" #= FirstName ? \'checked="checked"\' : "" # class="chkbx" />', width: 30 },
-	          { title: "Read",template: '<input type="checkbox" #= LastName ? \'checked="checked"\' : "" # class="chkbx2" />', width: 30 },
-	       	  { title: "Update",template: '<input type="checkbox" #= FirstName ? \'checked="checked"\' : "" # class="chkbx" />', width: 30 },
-	          { title: "Delete",template: '<input type="checkbox" #= FirstName ? \'checked="checked"\' : "" # class="chkbx" />', width: 30 },
-	          { title: "SA 1",template: '<input type="checkbox" #= FirstName ? \'checked="checked"\' : "" # class="chkbx" />', width: 30 },
-	          { title: "SA 2",template: '<input type="checkbox" #= LastName ? \'checked="checked"\' : "" # class="chkbx2" />', width: 30 },
-	       	  { title: "SA 3",template: '<input type="checkbox" #= FirstName ? \'checked="checked"\' : "" # class="chkbx" />', width: 30 },
-	          { title: "SA 4",template: '<input type="checkbox" #= FirstName ? \'checked="checked"\' : "" # class="chkbx" />', width: 30 }
-	        
-	        ],
+              { template: "<input type='checkbox' class='ckcGrid' value='#: _id #' onclick=\"addAccess('#: _id #',this)\" data-bind=\"click:usr.selectRow\"/>", width: 10  },
+              { field: "title", title: "Access", width: 110 },
+              { title: "Create",template: "<input type='checkbox' class=\"chkbx-#=uid#\" onclick=\"addPrivilage('#: _id #','AccessCreate',this)\" />", width: 30 },
+              { title: "Read",template: "<input type='checkbox' class=\"chkbx-#=uid#\" onclick=\"addPrivilage('#: _id #','AccessRead',this)\" />", width: 30 },
+              { title: "Update",template: "<input type='checkbox' class=\"chkbx-#=uid#\" onclick=\"addPrivilage('#: _id #','AccessUpdate',this)\"  />", width: 30 },
+              { title: "Delete",template: "<input type='checkbox' class=\"chkbx-#=uid#\" onclick=\"addPrivilage('#: _id #','AccessDelete',this)\" />", width: 30 },
+              { title: "SA 1",template: "<input type='checkbox' class=\"chkbx-#=uid#\"  title=\"#: specialaccess1 #\" onclick=\"addPrivilage('#: _id #','#: specialaccess1 #',this)\" />", width: 20 },
+              { title: "SA 2",template: "<input type='checkbox' class=\"chkbx-#=uid#\" title=\"#: specialaccess2 #\" onclick=\"addPrivilage('#: _id #','#: specialaccess2 #',this)\" />", width: 20 },
+              { title: "SA 3",template: "<input type='checkbox' class=\"chkbx-#=uid#\" title=\"#: specialaccess3 #\" onclick=\"addPrivilage('#: _id #','#: specialaccess3 #',this)\" />", width: 20 },
+              { title: "SA 4",template: "<input type='checkbox' class=\"chkbx-#=uid#\" title=\"#: specialaccess4 #\" onclick=\"addPrivilage('#: _id #','#: specialaccess4 #',this)\"/>", width: 20 }           
+            ],
             dataSource: {
-                data: [{
-                    FirstName: "Joe",
-                    LastName: "Smith"
-                },
-                {
-                    FirstName: "Jane",
-                    LastName: "Smith"
-                }]
+                data: ds 
             }
-        });
+        }).data("kendoGrid");
+
+    //bind click event to the checkbox
+    // grid.table.on("click", ".ckcGrid" , usr.selectRow);
+    // usr.disableAllChkbx();
+};
+
+function addPrivilage(id,p,o){
+    var value = $(o).is(":checked");
+    
+};
+
+function addAccess(id,o){
+    var value = $(o).is(":checked");
+    if(o==true){
+        usr.AccessGrant.AccessID("aa")
+        usr.config.Grants.push(usr.AccessGrant);
+    }
+    console.log(usr.AccessGrant.AccessID());
+};
+
+usr.getAccess = function() { 
+    var param = ko.mapping.toJS(usr.filter);
+    var data = [];
+    app.ajaxPost("/administration/getaccess", param, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        if (res.data==null){
+            res.data="";
+        }
+        for (var i in res.data) {
+            usr.Access.push(res.data[i]._id);
+            data.push({
+                text : res.data[i]._id,
+                value: res.data[i].title
+            }); 
+        };
+        usr.createGridPrivilege(res.data); 
+        usr.dropdownAccess(res.data)
     });
+};
 
- // var crudServiceBaseUrl = "http://demos.kendoui.com/service",
- //          dataSource = new kendo.data.DataSource({
- //            transport: {
- //              read:  {
- //                url: crudServiceBaseUrl + "/Products",
- //                dataType: "jsonp"
- //              },
- //              update: {
- //                url: crudServiceBaseUrl + "/Products/Update",
- //                dataType: "jsonp"
- //              },
- //              destroy: {
- //                url: crudServiceBaseUrl + "/Products/Destroy",
- //                dataType: "jsonp"
- //              },
- //              create: {
- //                url: crudServiceBaseUrl + "/Products/Create",
- //                dataType: "jsonp"
- //              },
- //              parameterMap: function(options, operation) {
- //                if (operation !== "read" && options.models) {
- //                  return {models: kendo.stringify(options.models)};
- //                }
- //              }
- //            },
- //            batch: true,
- //            pageSize: 20,
- //            schema: {
- //              model: {
- //                id: "ProductID",
- //                fields: {
- //                  ProductID: { editable: false, nullable: true },
- //                  ProductName: { validation: { required: true } },
- //                  UnitPrice: { type: "number", validation: { required: true, min: 1} },
- //                  Discontinued: { type: "boolean" },
- //                  ss: { type: "boolean" },
- //                  UnitsInStock: { type: "number", validation: { min: 0, required: true } }
- //                }
- //              }
- //            }
- //          });
+usr.getGroup = function() { 
+    var param = ko.mapping.toJS(usr.filter);
+    app.ajaxPost("/group/getgroup", param, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        if (res.data==null){
+            res.data="";
+        }
+        // usr.getmultiplegroup(res.data)
+        console.log(res.data);
+    });
+};
+usr.selectRow = function() {
+    alert("aa");
+    var checked = this.checked,
+    row = $(this).closest("tr"),
+    grid = $("#gridaccess").data("kendoGrid"),
+    dataItem = grid.dataItem(row);
 
- //      $("#grid").kendoGrid({
- //        dataSource: dataSource,
- //        pageable: true,
- //        height: 430,
- //        toolbar: ["create", "save", "cancel"],
-        // columns: [
-        //   "ProductName",
-        //   { field: "UnitPrice", title: "Unit Price", format: "{0:c}", width: 110 },
-        //   { field: "UnitsInStock", title: "Units In Stock", width: 110 },
-        //   { template: '<input type="checkbox" #= Discontinued ? \'checked="checked"\' : "" # class="chkbx" />', width: 110 },
-        //   { template: '<input type="checkbox" #= ss ? \'checked="checked"\' : "" # class="chkbx2" />', width: 110 },
-        //   { command: "destroy", title: "&nbsp;", width: 100 }],
- //        editable: true
- //      });
+    if (checked) {
+        $(".chkbx-"+dataItem.uid).attr("disabled", true);
+    }else{
+        $(".chkbx-"+dataItem.uid).removeAttr("disabled");
+    }
+}
+usr.addFromPrivilage = function () {
+    var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
+    console.log(item);
+    usr.config.Grants.push(new usr.templateAccessGrant()); 
+};
 
-      $("#grid .k-grid-content").on("change", "input.chkbx", function(e) {
-        var grid = $("#grid").data("kendoGrid"),
-            dataItem = grid.dataItem($(e.target).closest("tr"));
-
-        dataItem.set("FirstName", this.checked); 
-      });
+usr.removeAccess = function (each) {
+    return function () {
+        console.log(each);
+        usr.config.Grants.remove(each);
+    };
+};
+usr.dropdownAccess = function(ds){
+    var data = [];
+    for (var i in ds) {
+        
+        data.push({
+            text : ds[i]._id,
+            value: ds[i].title
+        }); 
+    };
       
-        $("#grid .k-grid-content").on("change", "input.chkbx2", function(e) {
-        var grid = $("#grid").data("kendoGrid"),
-            dataItem = grid.dataItem($(e.target).closest("tr"));
+    $("#dropdownAccess").kendoDropDownList({
+    filter: "startswith",
+    dataSource: data,
+    dataTextField: "text",
+    dataValueField: "value"
+  }); 
+};
+$("#grid .k-grid-content").on("change", "input.chkbx", function(e) {
+    var grid = $("#grid").data("kendoGrid"),
+        dataItem = grid.dataItem($(e.target).closest("tr"));
+        dataItem.set("FirstName", this.checked); 
+    });
+      
+$("#grid .k-grid-content").on("change", "input.chkbx2", function(e) {
+    var grid = $("#grid").data("kendoGrid"),
+        dataItem = grid.dataItem($(e.target).closest("tr"));
         dataItem.set("LastName", this.checked); 
-      });
+ });
+
+usr.selectRow = function() {
+    var checked = this.checked,
+    row = $(this).closest("tr"),
+    grid = $("#gridaccess").data("kendoGrid"),
+    dataItem = grid.dataItem(row);
+
+    if (checked) {
+        $(".chkbx-"+dataItem.uid).removeAttr("disabled");
+    }else{
+        $(".chkbx-"+dataItem.uid).attr("disabled", true);
+    }
+}
+
+usr.disableAllChkbx = function() {
+    var grid = $("#gridaccess").data("kendoGrid");
+    $.each(grid.dataSource.data(), function(key, value) {
+        $(".chkbx-"+value.uid).attr("disabled", true);
+    });
+}
