@@ -47,6 +47,39 @@ func (a *GroupController) GetGroup(r *knot.WebContext) interface{} {
 	}
 
 }
+func (a *GroupController) FindGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	tGroup := new(acl.Group)
+	err = acl.FindByID(tGroup, payload["_id"].(string))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, tGroup, "")
+	}
+
+}
+func (a *GroupController) DeleteGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	tGroup := new(acl.Group)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	err = acl.FindByID(tGroup, payload["_id"].(string))
+
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	err = acl.Delete(tGroup)
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "success")
+}
 
 func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson

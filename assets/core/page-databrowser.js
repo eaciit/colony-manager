@@ -144,7 +144,7 @@ br.ViewBrowserName = function(id){
 	                  pageSize: 10,
 	                  serverSorting: true,
 	                  callOK: function(res){
-	                  	console.log(res);
+	                  	// console.log(res);
 	                  }
 	            },
 			metadata: res.data.dataresult.MetaData,

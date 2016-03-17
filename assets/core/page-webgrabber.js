@@ -77,7 +77,7 @@ wg.templateConfigScrapper = {
             {
                 "url": "http://www.google.com",
                 "calltype": "GET",
-                "authtype" : "AuthType_Basic",
+                "authtype" : "",
                 "loginurl" : "", 
                 "logouturl" : "", 
                 "username" : "",
@@ -129,7 +129,8 @@ wg.taskMode = ko.observableArray([
 	{value: "daily", title: "Daily"},
 	{value: "weekly", title: "Weekly" },
 	{value: "monthly", title: "Monthly" },
-	//{value: "custom", title: "Custom" },
+	{value: "yearly", title: "Yearly"},
+	{value: "custom", title: "Custom" },
 ]);
 wg.templateCron = {
 	second : "*",
@@ -145,6 +146,10 @@ wg.templateConfigSelector = {
 	nameid: "",
 	rowselector: "",
 	filtercond: "",
+	limitrow: {
+		"take" : 0,
+		"skip" : 0,
+	},
 	conditionlist: [],
 	destoutputtype: "database",
 	desttype: "mongo",
@@ -291,6 +296,7 @@ wg.templateConfigConnection = {
 };
 
 wg.dataAuthType = ko.observableArray([
+	//{value : "_blank" , title : "Default"},
 	{value : "AuthType_Basic" , title : "Basic"},
 	{value : "AuthType_Cookie", title: "Cookie"},
 	{value : "AuthType_Session" , title : "Session"},
@@ -561,7 +567,28 @@ wg.parsePayload = function () {
 };
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
-		return;
+		if(wg.configScrapper.grabconf.authtype() == ''){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty","Username cannot be empty","Password cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}
+		else{
+			return;
+		}
 	}
 	var param = {
 		URL: wg.configScrapper.grabconf.url(),
@@ -813,13 +840,6 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 
-wg.authtypeValidation = function(authtype){
-	if(authtype != 'AuthType_Basic'){
-		$('.authconf').prop('required',true);
-	}else{
-		$('.authconf').prop('required',false);
-	}
-}
 wg.showSelectorSetting = function(index,nameSelector){
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
@@ -1031,6 +1051,7 @@ wg.parseGrabConf = function () {
 
 		config.intervalconf.cronconf = cronconf;
 		config.intervalconf.expiredtime = "";
+		config.intervalconf.starttime = "";
 		config.intervalconf.intervaltype = "";
 		config.intervalconf.grabinterval = 0;
 		config.intervalconf.timeoutinterval = 0;
@@ -1067,11 +1088,33 @@ wg.parseGrabConf = function () {
 
 	config.grabconf.formvalues = grabConfData;
 	config.grabconf.temp.parameters = tempParameters;
+
 	return config;
 };
 wg.saveSelectorConf = function(){
 	if (!app.isFormValid(".form-scrapper-top")) {
-		return;
+		if(wg.configScrapper.grabconf.authtype() == ''){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty","Username cannot be empty","Password cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}
+		else{
+			return;
+		}
 	}
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
@@ -1206,7 +1249,7 @@ function filterWebGrabber(event) {
 
 wg.getConnection = function () {
 	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/webgrabber/getconnections", param, function (res) {
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
