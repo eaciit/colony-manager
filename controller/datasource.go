@@ -197,7 +197,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		// toolkit.Println(stringQuery)
 	}
 
-	qcount, _ := d.parseQuery(connection.NewQuery(), payload)
+	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
 	query, _ := d.parseQuery(connection.NewQuery() /*.Skip(skip).Take(take) .Order(sorter)*/, payload)
 
 	var selectfield string
@@ -221,7 +221,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 					qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
 						toolkit.ToString(metadata.DataType), ""))
 				} else {
-					switch toolkit.TypeName(payload[tField]) {
+					switch toolkit.ToString(metadata.DataType) {
 					case "int":
 						query = query.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
 						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
@@ -267,6 +267,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 
 	data := []toolkit.M{}
 	cursor.Fetch(&data, 0, false)
+
 	if err != nil {
 		return 0, nil, nil, err
 	}
