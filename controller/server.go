@@ -183,7 +183,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	defer client.Close()
 
 	if data.OS == "linux" {
-		setEnvPath := func() interface{} {
+		setEnvPath := func() error {
 			cmd1 := `sed -i '/export EC_APP_PATH/d' ~/.bashrc`
 			log.AddLog(cmd1, "INFO")
 			sshSetting.GetOutputCommandSsh(cmd1)
@@ -199,6 +199,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			cmd4 := "echo 'export EC_DATA_PATH=" + data.DataPath + "' >> ~/.bashrc"
 			log.AddLog(cmd4, "INFO")
 			sshSetting.GetOutputCommandSsh(cmd4)
+
 			return nil
 		}
 
@@ -241,7 +242,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			_, err = sshSetting.GetOutputCommandSsh(unzipAppCmd)
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
-				return err
+				return helper.CreateResult(false, nil, err.Error())
 			}
 
 			rmTempAppPath := fmt.Sprintf("rm -rf %s", appDistSrcDest)
@@ -249,7 +250,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			log.AddLog(rmTempAppPath, "INFO")
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
-				return err
+				return helper.CreateResult(false, nil, err.Error())
 			}
 
 			dataDistSrc := filepath.Join(EC_DATA_PATH, "dist", "data-root.zip")
@@ -266,7 +267,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			_, err = sshSetting.GetOutputCommandSsh(unzipDataCmd)
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
-				return err
+				return helper.CreateResult(false, nil, err.Error())
 			}
 
 			rmTempDataPath := fmt.Sprintf("rm -rf %s", dataDistSrcDest)
@@ -274,7 +275,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			log.AddLog(rmTempDataPath, "INFO")
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
-				return err
+				return helper.CreateResult(false, nil, err.Error())
 			}
 
 			osArchCmd := "uname -m"
@@ -283,8 +284,9 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			osArchRes = strings.TrimSpace(osArchRes)
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
-				return err
+				return helper.CreateResult(false, nil, err.Error())
 			}
+
 			for _, each := range []string{"sedotand", "sedotans", "sedotanw"} {
 				src := filepath.Join(EC_APP_PATH, "cli", "dist", fmt.Sprintf("linux_%s", osArchRes), each)
 				dst := filepath.Join(data.AppPath, "cli", each)
@@ -294,14 +296,14 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				_, err := sshSetting.GetOutputCommandSsh(rmSedotanCmd)
 				if err != nil {
 					log.AddLog(err.Error(), "ERROR")
-					return err
+					return helper.CreateResult(false, nil, err.Error())
 				}
 
 				log.AddLog(fmt.Sprintf("scp %s to %s", src, dst), "INFO")
 				err = sshSetting.SshCopyByPath(src, dst)
 				if err != nil {
 					log.AddLog(err.Error(), "ERROR")
-					return err
+					return helper.CreateResult(false, nil, err.Error())
 				}
 
 				chmodCliCmd := fmt.Sprintf("chmod 755 %s", dst)
@@ -309,7 +311,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				_, err = sshSetting.GetOutputCommandSsh(chmodCliCmd)
 				if err != nil {
 					log.AddLog(err.Error(), "ERROR")
-					return err
+					return helper.CreateResult(false, nil, err.Error())
 				}
 			}
 
@@ -322,8 +324,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				return helper.CreateResult(false, nil, errString)
 			}
 
-			if res := setEnvPath(); res != nil {
-				return res
+			if err := setEnvPath(); err != nil {
+				return helper.CreateResult(false, nil, err.Error())
 			}
 		} else if oldData.AppPath != data.AppPath {
 			moveDir := fmt.Sprintf(`mv %s %s`, oldData.AppPath, data.AppPath)
@@ -334,8 +336,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 
-			if res := setEnvPath(); res != nil {
-				return res
+			if err := setEnvPath(); err != nil {
+				return helper.CreateResult(false, nil, err.Error())
 			}
 		} else if oldData.DataPath != data.DataPath {
 			moveDir := fmt.Sprintf(`mv %s %s`, oldData.DataPath, data.DataPath)
@@ -346,8 +348,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 
-			if res := setEnvPath(); res != nil {
-				return res
+			if err := setEnvPath(); err != nil {
+				return helper.CreateResult(false, nil, err.Error())
 			}
 		}
 	} else {
