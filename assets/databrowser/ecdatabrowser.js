@@ -271,8 +271,10 @@ var methodsDataBrowser = {
 							$.each( options.dataSource.callData, function( key, value ) {
 								callData[key] = value;
 							});
+							if (yo.data["sort"] == "")
+  								yo.data["sort"] = undefined;
       						for(var i in yo.data){
-	                            callData[i] = yo.data[i];
+		                        callData[i] = yo.data[i];
 	                        }
 				            app.ajaxPost($parentElem.data('ecDataBrowser').mapdatabrowser.dataSource.url,callData, function (res){
 				            	yo.success(res.data);
@@ -362,14 +364,19 @@ $.ecDataBrowserSetting = function(element,options){
 				} else if ($elem.attr("typedata") == "date"){
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'date');
 				} else {
-					if ($elem.attr('haslookup') == "false" ||  $elem.ecLookupDD('get').length <= 0)
+					if ($elem.attr('haslookup') == "false")
 						valtype = $elem.val();
 					else {
 						lookupdata = [];
 						for(var a in $elem.ecLookupDD('get')){
 							lookupdata.push($elem.ecLookupDD('get')[a][$elem.attr('fielddata')]);
 						}
-						valtype = lookupdata;
+						if (lookupdata.length > 0)
+							valtype = lookupdata;
+						else if (lookupdata.length == 0 && $elem.ecLookupDD('gettext') != '')
+							valtype = $elem.ecLookupDD('gettext');
+						else
+							valtype = '';
 					}
 				}
 				if (valtype != '' || valtype.length > 0)
