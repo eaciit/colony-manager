@@ -567,7 +567,16 @@ wg.parsePayload = function () {
 };
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
-		if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
+		if(wg.configScrapper.grabconf.authtype() == ''){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty","Username cannot be empty","Password cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
 			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
 			errors = Lazy(errors).filter(function (d) {
 				return ["Login Url cannot be empty","Logout Url cannot be empty"].indexOf(d) == -1;
@@ -576,7 +585,8 @@ wg.getURL = function () {
 			if (errors.length > 0) {
 				return;
 			}
-		}else{
+		}
+		else{
 			return;
 		}
 	}
@@ -830,13 +840,6 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 
-wg.authtypeValidation = function(authtype){
-	if(authtype != 'AuthType_Basic'){
-		$('.authconf').prop('required',true);
-	}else{
-		$('.authconf').prop('required',false);
-	}
-}
 wg.showSelectorSetting = function(index,nameSelector){
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
@@ -1090,7 +1093,28 @@ wg.parseGrabConf = function () {
 };
 wg.saveSelectorConf = function(){
 	if (!app.isFormValid(".form-scrapper-top")) {
-		return;
+		if(wg.configScrapper.grabconf.authtype() == ''){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty","Username cannot be empty","Password cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}
+		else{
+			return;
+		}
 	}
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
@@ -1225,7 +1249,7 @@ function filterWebGrabber(event) {
 
 wg.getConnection = function () {
 	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/webgrabber/getconnections", param, function (res) {
+	app.ajaxPost("/datasource/getconnections", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
