@@ -20,6 +20,7 @@ import (
 	"strings"
 	// "syscall"
 	"time"
+	"path/filepath"
 	// "encoding/json"
 	// "reflect"
 )
@@ -601,9 +602,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	var history = toolkit.M{}
+	var result = toolkit.M{}
 	arrcmd := make([]string, 0, 0)
 	payload := new(colonycore.WebGrabber)
+	dateNow := cast.Date2String(time.Now(), "YYYYMMdd") //time.Now()
 	err := r.GetPayload(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -615,29 +617,36 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 
 	// module := NewHistory(payload.HistConf.FileName)
 	// history, err := module.OpenHistory()
+	apppath := ""
+	if runtime.GOOS == "windows" {
+		arrcmd = append(arrcmd, "cmd")
+		arrcmd = append(arrcmd, "/C")
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	} else {
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	}
 
-	dateNow := cast.Date2String(time.Now(), "YYYYMMdd") //time.Now()
-	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
+	arrcmd = append(arrcmd, apppath)
 	arrcmd = append(arrcmd, `-readtype=history`)
 	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\webgrabber\history\`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
 
-	if runtime.GOOS == "windows" {
-		historystring, _ := toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2])
-		err = toolkit.UnjsonFromString(historystring, &history)
-	} else {
-		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
-	}
-
+	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	byteoutput, err := cmd.CombinedOutput()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, history["DATA"], "")
+	err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, result["DATA"], "")
 }
 
 func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	SnapShot := ""
+
 	arrcmd := make([]string, 0, 0)
 	result := toolkit.M{}
 	payload := struct {
@@ -651,18 +660,27 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 
 	// SnapShot, err := module.OpenSnapShot(payload.Nameid)
 
-	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
+	apppath := ""
+	if runtime.GOOS == "windows" {
+		arrcmd = append(arrcmd, "cmd")
+		arrcmd = append(arrcmd, "/C")
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	} else {
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	}
+
+	arrcmd = append(arrcmd, apppath)
 	arrcmd = append(arrcmd, `-readtype=snapshot`)
 	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\daemon\daemonsnapshot.csv`)
 	arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
 
-	if runtime.GOOS == "windows" {
-		SnapShot, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2], arrcmd[3])
-		err = toolkit.UnjsonFromString(SnapShot, &result)
-	} else {
-		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	byteoutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	err = toolkit.UnjsonFromString(string(byteoutput), &result)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -673,7 +691,6 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	rechistory := ""
 	arrcmd := make([]string, 0, 0)
 	result := toolkit.M{}
 	payload := struct {
@@ -690,18 +707,26 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	// query := helper.Query("csv", payload.RecFile, "", "", "", config)
 
 	// data, err = query.SelectAll("")
+	apppath := ""
+	if runtime.GOOS == "windows" {
+		arrcmd = append(arrcmd, "cmd")
+		arrcmd = append(arrcmd, "/C")
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	} else {
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	}
 
-	arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
+	arrcmd = append(arrcmd, apppath)
 	arrcmd = append(arrcmd, `-readtype=rechistory`)
 	arrcmd = append(arrcmd, `-recfile=`+payload.RecFile)
 
-	if runtime.GOOS == "windows" {
-		rechistory, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2])
-		err = toolkit.UnjsonFromString(rechistory, &result)
-	} else {
-		// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
+	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	byteoutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	err = toolkit.UnjsonFromString(string(byteoutput), &result)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -712,6 +737,8 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	
+	arrcmd := make([]string, 0, 0)
+	result := toolkit.M{}
 	payload := struct {
 		ID   string `json:"_id"`
 		Date string `json:"date"`
@@ -732,26 +759,35 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	history := NewHistory(payload.ID)
-	logs := history.GetLogHistory([]interface{}{o}, payload.Date)
-	// arrcmd := make([]string, 0, 0)
-	// SnapShot := ""
-	// logs := toolkit.M{}
-	// arrcmd = append(arrcmd, EC_APP_PATH+`\bin\sedotanread.exe`)
-	// arrcmd = append(arrcmd, `-readtype=logfile`)
-	// arrcmd = append(arrcmd, `-datetime=`+payload.Date)
-	// arrcmd = append(arrcmd, `-nameid=`+payload.ID)
-	// arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString(o))
+	// history := NewHistory(payload.ID)
+	// logs := history.GetLogHistory([]interface{}{o}, payload.Date)
+	apppath := ""
+	if runtime.GOOS == "windows" {
+		arrcmd = append(arrcmd, "cmd")
+		arrcmd = append(arrcmd, "/C")
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	} else {
+		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	}
 
-	// if runtime.GOOS == "windows" {
-	// 	SnapShot, err = toolkit.RunCommand(arrcmd[0], arrcmd[1], arrcmd[2], arrcmd[3], arrcmd[4])
-	// 	fmt.Println(SnapShot)
-	// 	err = toolkit.UnjsonFromString(SnapShot, &logs)
-	// } else {
-	// 	// cmd = exec.Command("sudo", "../daemon/sedotandaemon", `-config="`+tbasepath+`\config-daemon.json"`, `-logpath="`+tbasepath+`\log"`)
-	// }
-	// // fmt.Println(logs)
-	return helper.CreateResult(true, logs, "")
+	arrcmd = append(arrcmd, apppath)
+	arrcmd = append(arrcmd, `-readtype=logfile`)
+	arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+	arrcmd = append(arrcmd, `-nameid=`+payload.ID)
+	arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
+
+	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	byteoutput, err := cmd.CombinedOutput()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, result["DATA"], "")
 }
 
 func (w *WebGrabberController) RemoveGrabber(r *knot.WebContext) interface{} {
