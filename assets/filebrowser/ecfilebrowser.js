@@ -818,9 +818,9 @@ var methodsFB = {
 		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
 		var selectedparent = methodsFB.GetParent(elem,content);
 		if(selectedparent.length==0){
-			setTimeout(function(){
+			// setTimeout(function(){
 				app.isLoading(true);
-			},500);
+			// },500);
 			tree.dataSource.read();
 			return;
 		}
