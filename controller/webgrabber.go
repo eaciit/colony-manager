@@ -336,6 +336,20 @@ func (w *WebGrabberController) SaveScrapperData(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if payload.GrabConf["username"] == "" {
+		delete(payload.GrabConf, "username")
+	}
+
+	if payload.GrabConf["password"] == "" {
+		delete(payload.GrabConf, "password")
+	}
+
+	castStartTime, _ := time.Parse(time.RFC3339, payload.IntervalConf.StartTime)
+	castExpTime, _ := time.Parse(time.RFC3339, payload.IntervalConf.ExpiredTime)
+
+	payload.IntervalConf.StartTime = cast.Date2String(castStartTime, "YYYY-MM-dd HH:mm:ss")
+	payload.IntervalConf.ExpiredTime = cast.Date2String(castExpTime, "YYYY-MM-dd HH:mm:ss")
+
 	if err := colonycore.Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
