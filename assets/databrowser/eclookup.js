@@ -124,7 +124,6 @@ var methodsLookupDD = {
 		$textSearch.bind('keyup keydown').keyup(function(event){
 			var search = $(this).val();
 			var $co = $container.find(".eclookup-dropdown ul.eclookup-listsearch");
-			console.log($co.find('li.hlight'));
 			switch(event.keyCode) {
 				case KEY.UP:
 					if ($co.find('li.hlight').length == 0) {
@@ -202,12 +201,10 @@ $.ecDataSourceDDLookup = function(element,options){
 		$.each(this.ParamDataSource.callData, function( key, value ) {
 			dataPost[key] = value;
 		});
-		console.log($(elementLookup).data('ecLookupDDSettings'));
 		dataPost[$(elementLookup).data('ecLookupDDSettings').inputSearch] = query;
 		if (this.ParamDataSource.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		console.log(dataPost);
 		$.ajax({
 			url: this.ParamDataSource.url,
 			type: this.ParamDataSource.call,
