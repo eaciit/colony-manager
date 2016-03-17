@@ -188,8 +188,8 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 }
 
 func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
-	if dataConn.Driver == "json" || dataConn.Driver == "csv" {
-		return Query(dataConn.Driver, dataConn.FileLocation)
+	if toolkit.HasMember([]string{"csv", "json"}, dataConn.Driver) && strings.HasPrefix(dataConn.Host, "http") {
+		return Query(dataConn.Driver, dataConn.FileLocation, "", "", "", dataConn.Settings)
 	}
 
 	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password, dataConn.Settings)
