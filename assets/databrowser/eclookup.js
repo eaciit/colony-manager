@@ -164,6 +164,7 @@ var methodsLookupDD = {
 					if (search.length == 0){
 						$le = $(".eclookup-item").length - 1;
 						$(".eclookup-item").eq($le).remove();
+						$o.data('ecLookupDD').ParamDataSource.dataSelect.splice(-1,1);
 				    }
 		    	break;
 		    }
@@ -182,6 +183,9 @@ var methodsLookupDD = {
 		var dataGet = $(this).data('ecLookupDD').ParamDataSource.dataSelect;
 		return dataGet;
 	},
+	gettext: function(){
+		return $(this).parent().find('.eclookup-container li.eclookup-txt>input[type=text]').val();
+	}
 }
 $.ecDataSourceDDLookup = function(element,options){
 	var elementLookup = element, chooseData = 'data';

@@ -46,13 +46,18 @@
 		<h1>Access</h1>	
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
 			<div class="nav1">
+				<div class="col-md-4"> 
 				<button class="btn btn-sm btn-primary" data-bind="click: adm.getApplications">
 			    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 			    </button>
 				 <button class="btn btn-sm btn-success" data-bind="click: adm.createNewAccess">
 			    		<span class="glyphicon glyphicon-plus"></span> Add
 			    </button>
-		    	<button class="btn btn-sm btn-danger" data-bind="click: adm.OnRemove"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+		    	<button class="btn btn-sm btn-danger" data-bind="click: adm.deleteaccess"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+		    	</div>
+		    	<div class="col-md-3"> 
+		    	<input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" />			
+				</div>
 		    </div>
 		</nav>	
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -62,30 +67,14 @@
 	    	<button class="btn btn-sm btn-primary" data-bind="click: adm.saveaccess" >
 	    		<span class="glyphicon glyphicon-save" ></span> Save
 	    	</button>
-	    	<button class="btn btn-sm btn-danger" >
+	    	<button class="btn btn-sm btn-danger" data-bind="click: adm.deleteaccess">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav> 
-		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
-	<div class="col-md-4">
-		<div class="form-group">
-			<label class="col-md-4 filter-label no-left-padding">
-				Search
-			</label>
-			<div class="col-md-8">
-				<input class="form-control full-width input-sm searchsrv" name="search" placeholder="Type keyword here" />
-			</div>
-			<div class="clearfix"></div>
-		</div>
-	</div>
-</nav>
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-    <div class="panel-heading">
-        <h1 class="panel-title">Access</h1>
-    </div>
-    <div class="panel-body">
+		 
+		<div class="panel" data-bind="visible: (app.mode() == '')"> 
     	<div class="grid grid-access" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: adm.AccessData, selectable: 'multiple, row', change: adm.selectGridAccess, columns: adm.AccessColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-access')}"></div>
-    </div>
+    <!-- </div> -->
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 1000px;">
@@ -98,43 +87,44 @@
     		<div class="col-md-6"> 
     			<div class="form-group">
 		    		<label class="col-md-3 filter-label">ID</label>
+
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value:adm.templateAccess._id">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value:adm.config._id">
 						<span class="k-invalid-msg" data-for="ID"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Title</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" data-bind="value:adm.templateAccess.Title">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" data-bind="value:adm.config.Title ">
 						<span class="k-invalid-msg" data-for="Title"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Group 1</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 1" type="text" class="form-control input-sm" name="Group1" placeholder="Type the Group 1 Here" data-bind="value:adm.templateAccess.Group1" >
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 1" type="text" class="form-control input-sm" name="Group1" placeholder="Type the Group 1 Here" data-bind="value:adm.config.Group1" >
 						<span class="k-invalid-msg" data-for="Group1"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Group 2</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 1" type="text" class="form-control input-sm" name="Group2" placeholder="Type the Group 2 Here" data-bind="value:adm.templateAccess.Group2">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 1" type="text" class="form-control input-sm" name="Group2" placeholder="Type the Group 2 Here" data-bind="value:adm.config.Group2">
 						<span class="k-invalid-msg" data-for="Group2"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Group 3</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 3" type="text" class="form-control input-sm" name="Group3" placeholder="Type the Group 1 Here" data-bind="value:adm.templateAccess.Group3" >
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Group 3" type="text" class="form-control input-sm" name="Group3" placeholder="Type the Group 1 Here" data-bind="value:adm.config.Group3" >
 						<span class="k-invalid-msg" data-for="Group3"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">Enable</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Enable" type="text" class="form-control input-sm" name="Enable" placeholder="Type the Enable Here" data-bind="value:adm.templateAccess.Enable">
+		    			<input type="checkbox" name="Enable" data-bind="checked:adm.config.Enable"> 
 						<span class="k-invalid-msg" data-for="Enable"></span>	    			
 		    		</div>
 	    		</div>	    		
@@ -143,28 +133,28 @@
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">SpecialAccess1</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 1" type="text" class="form-control input-sm" name="SpecialAccess 1" placeholder="Type the SpecialAccess 1 Here" data-bind="value:adm.templateAccess.SpecialAccess1">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 1" type="text" class="form-control input-sm" name="SpecialAccess 1" placeholder="Type the SpecialAccess 1 Here" data-bind="value:adm.config.SpecialAccess1">
 						<span class="k-invalid-msg" data-for="SpecialAccess1"></span>		    	
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">SpecialAccess2</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 2" type="text" class="form-control input-sm" name="SpecialAccess2" placeholder="Type the SpecialAccess 2 Here" data-bind="value:adm.templateAccess.SpecialAccess2">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 2" type="text" class="form-control input-sm" name="SpecialAccess2" placeholder="Type the SpecialAccess 2 Here" data-bind="value:adm.config.SpecialAccess2">
 						<span class="k-invalid-msg" data-for="SpecialAccess2"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">SpecialAccess3</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 3" type="text" class="form-control input-sm" name="SpecialAccess3" placeholder="Type the SpecialAccess 3 Here" data-bind="value:adm.templateAccess.SpecialAccess3">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 3" type="text" class="form-control input-sm" name="SpecialAccess3" placeholder="Type the SpecialAccess 3 Here" data-bind="value:adm.config.SpecialAccess3">
 						<span class="k-invalid-msg" data-for="SpecialAccess3"></span>	    			
 		    		</div>
 	    		</div>
 	    		<div class="form-group">
 		    		<label class="col-md-3 filter-label">SpecialAccess4</label>
 		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 4" type="text" class="form-control input-sm" name="SpecialAccess4" placeholder="Type the SpecialAccess 4 Here" data-bind="value:adm.templateAccess.SpecialAccess4">
+		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for SpecialAccess 4" type="text" class="form-control input-sm" name="SpecialAccess4" placeholder="Type the SpecialAccess 4 Here" data-bind="value:adm.config.SpecialAccess4">
 						<span class="k-invalid-msg" data-for="SpecialAccess4"></span>	    			
 		    		</div>
 	    		</div>	    		   		

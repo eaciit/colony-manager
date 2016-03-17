@@ -47,6 +47,39 @@ func (a *AdministrationController) GetAccess(r *knot.WebContext) interface{} {
 	}
 
 }
+func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	tAccess := new(acl.Access)
+	err = acl.FindByID(tAccess, payload["_id"].(string))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, tAccess, "")
+	}
+
+}
+func (a *AdministrationController) DeleteAccess(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	tAccess := new(acl.Access)
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	err = acl.FindByID(tAccess, payload["_id"].(string))
+
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	err = acl.Delete(tAccess)
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "success")
+}
 
 func (a *AdministrationController) SaveAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
