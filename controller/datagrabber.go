@@ -805,7 +805,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			queryWrapper.Delete(tableName, dbox.Or())
 		}
 		if eachTransformedData.Has("_id") {
-			err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
+			err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetInt("_id")))
 		}
 
 		// queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)

@@ -361,26 +361,47 @@ wg.editScrapper = function (_id) {
 			wg.modeSetup('interval');
 		}
 
+		var parseValue = function (row) {
+			var totalEls = 0;
+			for (var k in row) if (row.hasOwnProperty(k)) {
+				var column = k;
+				var operator = "$eq";
+				var value = "";
+
+				if (row[k] instanceof Object) {
+					for (var l in row[k]) if (row[k].hasOwnProperty(l)) {
+						operator = l;
+						value = row[k][l];
+					}
+				} else {
+					value = row[k];
+				}
+
+				return {
+					column: column,
+					operator: operator,
+					value: value
+				};
+			}
+		}
+
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
 			item.conditionlist = [];
-			for (var k in item.filtercond) {
-				if (item.filtercond.hasOwnProperty(k)) {
+
+			for (var k in item.filtercond) if (item.filtercond.hasOwnProperty(k)) {
+				var isComparisonExists = Lazy(wg.templateFilterCond()).find({ Id: k });
+
+				if (typeof isComparisonExists === "undefined") {
+					wg.configSelector.filtercond("$and");
+
+					var parsedValue = parseValue(item.filtercond[k])
+					item.conditionlist.push(parsedValue);
+				} else {
 					wg.configSelector.filtercond(k);
 					item.filtercond[k].forEach(function (d) {
-						for (var column in d) {
-							if (d.hasOwnProperty(column)) {
-								for (var valueKey in d[column]) {
-									if (d[column].hasOwnProperty(valueKey)) {
-										item.conditionlist.push(ko.mapping.fromJS({
-											column: column,
-											operator: valueKey,
-											value: d[column][valueKey]
-										}));
-									}
-								}
-							}
-						}
+						var parsedValue = parseValue(d);
+						item.conditionlist.push(parsedValue);
 					});
 				}
 			}
@@ -514,6 +535,10 @@ wg.runBotStats = function () {
 					}
 
 					app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res) {
+						if (!res.success) {
+							return;
+						}
+
 						if (res.data.length > 0 && row != undefined){
 							var k = res.data[0];
 					        var summary = [
@@ -979,60 +1004,38 @@ wg.parseGrabConf = function () {
 			c.selector = wg.replaceEqWithNthChild(c.selector);
 			return c;
 		});
-		
-		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
-		condition[item.filtercond] = [];
-		if (item.filtercond.length > 0){
-			for (var key in conditionlist){
-				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
-				obj[col] = {};
-				var format = ko.utils.arrayFilter(columnsettings,function (item) {
-				        return item.alias == col;
-				});
-				if(operation !== '$eq'){
-					switch (format[0]){
-						case "integer":
-							obj[col][operation] = parseInt(val);
-							break;
-						case "float":
-							obj[col][operation] = parseFloat(val);
-							break;
-						default:
-							obj[col][operation] = val;
-							break;
-					}
-				}else{
-					switch (format[0]){
-						case "integer":
-							obj[col] = parseInt(val);
-							break;
-						case "float":
-							obj[col] = parseFloat(val);
-							break;
-						default:
-							obj[col] = val;
-							break;
-					}
-				}
 
-				if(conditionlist.length == 1){
-					condition = obj;
-				}else{
-					condition[item.filtercond].push(obj);
-				}
-
-			}
-			item.filtercond = condition;
-		}
-		if (item.filtercond == "") {
+		if (item.filtercond == null || item.filtercond == "") {
 			item.filtercond = {};
-		}
+		} else {
+			var conditions = item.conditionlist.map(function (cl) {
+				var obj = {};
+				obj[cl.column] = {};
 
-		if (wg.filtercond() != ""){
-			item.filtercond = JSON.parse(wg.filtercond());
+				var format = ko.utils.arrayFilter(item.columnsettings, function (each) {
+			        return each.alias == cl.column;
+				});
+
+				if (format.length > 0) {
+					switch (format[0]) {
+						case "integer": obj[cl.column][cl.operator] = parseInt(cl.value, 10); break;
+						case "float":   obj[cl.column][cl.operator] = parseFloat(cl.value); break;
+						default:        obj[cl.column][cl.operator] = cl.value; break;
+					}
+				}
+
+				return obj;
+			});
+
+			var filtercond = {};
+			filtercond[item.filtercond] = conditions;
+			item.filtercond = filtercond;
+			console.log("filtercond", filtercond);
 		}
+		
 		delete item["conditionlist"];
 		delete item["__ko_mapping__"];
+
 		return JSON.parse(ko.mapping.toJSON(item));
 	});
 
@@ -1248,8 +1251,7 @@ function filterWebGrabber(event) {
 }
 
 wg.getConnection = function () {
-	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/datasource/getconnections", param, function (res) {
+	app.ajaxPost("/datasource/getconnections", { search: "", driver: "" }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
