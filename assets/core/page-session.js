@@ -10,7 +10,7 @@ ses.SessionColumns = ko.observableArray([
 	{ field: "expired", title: "Expired" },
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='ses.selectGridSession(\"" + d._id + "\")' title='destroy session'><span class='fa fa-info-circle'></span></button>"
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='ses.selectGridSession(\"" + d._id + "\")' title='destroy session'><span class='fa fa fa-times'></span></button>"
 		].join(" ");
 	} }
 ]); 

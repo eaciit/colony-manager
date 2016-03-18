@@ -230,7 +230,8 @@ usr.getmultiplegroup = function () {
         $("#Groups").kendoMultiSelect({
           dataTextField: "text",
           dataValueField: "value",
-          dataSource: data
+          dataSource: data,
+          select: usr.displayAccess
         });
     });
   };
@@ -331,7 +332,15 @@ usr.addFromPrivilage = function () {
     console.log(item);
     usr.config.Grants.push(new usr.templateAccessGrant()); 
 };
+usr.displayAccess = function(e){ 
+    var dataItem = this.dataSource.view()[e.item.index()];
+    
+    // for (var i = 0; i < groups.length; i++) {
+    //    var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant)); 
+    //    usr.config.Grants.push(new usr.templateAccessGrant()); 
+    // };
 
+};
 usr.removeAccess = function (each) {
     return function () {
         console.log(each);
