@@ -18,10 +18,9 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	// "syscall"
 	"path/filepath"
 	"time"
-	// "encoding/json"
+	. "github.com/eaciit/sshclient"
 	// "reflect"
 )
 
@@ -639,26 +638,82 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 
 	// module := NewHistory(payload.HistConf.FileName)
 	// history, err := module.OpenHistory()
-	apppath := ""
-	if runtime.GOOS == "windows" {
-		arrcmd = append(arrcmd, "cmd")
-		arrcmd = append(arrcmd, "/C")
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
-	} else {
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
-	}
 
-	arrcmd = append(arrcmd, apppath)
-	arrcmd = append(arrcmd, `-readtype=history`)
-	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\webgrabber\history\`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
+	var SshClient SshSetting
 
-	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
-	byteoutput, err := cmd.CombinedOutput()
+	SshClient.SSHHost = "192.168.56.101:22"
+	SshClient.SSHAuthType = 0
+	SshClient.SSHUser = "eaciit1"
+	SshClient.SSHPassword = "12345"
+
+	output, err := SshClient.GetOutputCommandSsh(`uname`)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		fmt.Println(err)
 	}
 
-	err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	apppath := ""
+	ecapppath := ""
+	ecdatapath := ""
+	if strings.Contains(strings.ToLower(output), "linux") == true || strings.Contains(strings.ToLower(output), "darwin") == true {
+		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
+		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
+		apppath = ecapppath+`/bin/sedotanread`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=history`)
+		arrcmd = append(arrcmd, `-pathfile=`+ecdatapath+`/webgrabber/history/`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
+	}else{
+		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
+		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
+		apppath = ecapppath+`\bin\sedotanread.exe`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=history`)
+		arrcmd = append(arrcmd, `-pathfile=`+ecapppath+`\webgrabber\history\`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
+	}
+
+	// apppath := ""
+	// if runtime.GOOS == "windows" {
+	// 	arrcmd = append(arrcmd, "cmd")
+	// 	arrcmd = append(arrcmd, "/C")
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	// } else {
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	// }
+
+	// cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	// byteoutput, err := cmd.CombinedOutput()
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	// err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	// fmt.Println(strings.Join(append(arrcmd[:1],arrcmd[1:]...)," "))
+
+	output, err = SshClient.GetOutputCommandSsh(strings.Join(append(arrcmd[:1],arrcmd[1:]...)," "))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = toolkit.UnjsonFromString(output, &result)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -682,27 +737,89 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 
 	// SnapShot, err := module.OpenSnapShot(payload.Nameid)
 
-	apppath := ""
-	if runtime.GOOS == "windows" {
-		arrcmd = append(arrcmd, "cmd")
-		arrcmd = append(arrcmd, "/C")
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
-	} else {
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
-	}
+	// ===================LOCALHOST TEST=================================
+	// apppath := ""
+	// if runtime.GOOS == "windows" {
+	// 	arrcmd = append(arrcmd, "cmd")
+	// 	arrcmd = append(arrcmd, "/C")
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	// } else {
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	// }
 
-	arrcmd = append(arrcmd, apppath)
-	arrcmd = append(arrcmd, `-readtype=snapshot`)
-	arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\daemon\daemonsnapshot.csv`)
-	arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
+	// arrcmd = append(arrcmd, apppath)
+	// arrcmd = append(arrcmd, `-readtype=snapshot`)
+	// arrcmd = append(arrcmd, `-pathfile=`+EC_DATA_PATH+`\daemon\daemonsnapshot.csv`)
+	// arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
 
-	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
-	byteoutput, err := cmd.CombinedOutput()
+	// cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	// byteoutput, err := cmd.CombinedOutput()
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	// err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	// ===================END LOCALHOST TEST===============================
+
+	var SshClient SshSetting
+
+	SshClient.SSHHost = "192.168.56.101:22"
+	SshClient.SSHAuthType = 0
+	SshClient.SSHUser = "eaciit1"
+	SshClient.SSHPassword = "12345"
+
+	output, err := SshClient.GetOutputCommandSsh(`uname`)
 	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+		fmt.Println(err)
 	}
 
-	err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	apppath := ""
+	ecapppath := ""
+	ecdatapath := ""
+	if strings.Contains(strings.ToLower(output), "linux") == true || strings.Contains(strings.ToLower(output), "darwin") == true {
+		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
+		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
+		apppath = ecapppath+`/bin/sedotanread`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=snapshot`)
+		arrcmd = append(arrcmd, `-pathfile=`+ecdatapath+`/daemon/daemonsnapshot.csv`)
+		arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
+	}else{
+		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
+		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
+		apppath = ecapppath+`\bin\sedotanread.exe`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=snapshot`)
+		arrcmd = append(arrcmd, `-pathfile=`+ecapppath+`\daemon\daemonsnapshot.csv`)
+		arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
+	}
+
+	output, err = SshClient.GetOutputCommandSsh(strings.Join(append(arrcmd[:1],arrcmd[1:]...)," "))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = toolkit.UnjsonFromString(output, &result)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -729,6 +846,7 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	// query := helper.Query("csv", payload.RecFile, "", "", "", config)
 
 	// data, err = query.SelectAll("")
+
 	apppath := ""
 	if runtime.GOOS == "windows" {
 		arrcmd = append(arrcmd, "cmd")
@@ -740,7 +858,7 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 
 	arrcmd = append(arrcmd, apppath)
 	arrcmd = append(arrcmd, `-readtype=rechistory`)
-	arrcmd = append(arrcmd, `-recfile=`+payload.RecFile)
+	arrcmd = append(arrcmd, `-pathfile=`+payload.RecFile)
 
 	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
 	byteoutput, err := cmd.CombinedOutput()
