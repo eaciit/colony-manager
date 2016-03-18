@@ -499,8 +499,8 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if toolkit.HasMember([]string{"csv", "json", "csvs", "jsons"}, o.Driver) {
-		if strings.Contains(o.FileLocation, "http") {
+	if toolkit.HasMember([]string{"csv", "json"}, o.Driver) {
+		if strings.HasPrefix(o.Host, "http") {
 			fileType := helper.GetFileExtension(o.Host)
 			o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 
@@ -656,7 +656,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	}
 
 	if driver == "json" || driver == "csv" {
-		if strings.Contains(host, "http") {
+		if strings.HasPrefix(host, "http") {
 			fileTempID := helper.RandomIDWithPrefix("f")
 			fileType := helper.GetFileExtension(host)
 			fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
@@ -687,7 +687,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 
 	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
 
-	if fakeDataConn.FileLocation != "" && strings.Contains(host, "http") {
+	if fakeDataConn.FileLocation != "" && strings.HasPrefix(host, "http") {
 		os.Remove(fakeDataConn.FileLocation)
 	}
 
