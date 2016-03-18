@@ -25,7 +25,7 @@
 	</div>
 	</div>
 </nav>
-  <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+  <nav class="navbar" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')">
     <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: grp.backToFront">
 		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	</button>
@@ -43,7 +43,7 @@
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div> 
 
-<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
+<div class="panel" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')" style="width: 800px;">
 	<div class="panel-heading">
         <h1 class="panel-title"><span data-bind="text: (grp.Groupmode() == '') ? 'Create New' : 'Edit'"></span>
         </h1>
@@ -108,7 +108,8 @@
                             <tbody align="center" data-bind="foreach: usr.config.Grants">
                                 <tr>
                                     <td>
-                                         <select class="form-control input-sm" data-bind="value:usr.config.Grants()[$index()].AccessID ,options: usr.Access"></select>
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access  "></select>
                                     </td> 
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
@@ -123,7 +124,7 @@
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1"/>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 , attr: { title: usr.config.Grants()[$index()].AccessID }" />
                                     </td>
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2"/>

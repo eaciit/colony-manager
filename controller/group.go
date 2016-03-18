@@ -3,7 +3,7 @@ package controller
 import (
 	// "archive/zip"
 	"encoding/json"
-	// "fmt"
+	"fmt"
 	// "github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-manager/helper"
@@ -61,6 +61,26 @@ func (a *GroupController) FindGroup(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, tGroup, "")
 	}
 
+}
+func (a *GroupController) GetAccessGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	tGroup := new(acl.Group)
+	err = acl.FindByID(tGroup, payload["idGroup"].(string))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+	var AccessGrants = []interface{}{}
+	for _, v := range tGroup.Grants {
+		var access = toolkit.M{}
+		access.Set("AccessID", v.AccessID)
+		access.Set("AccessValue", acl.Splitinttogrant(int(v.AccessValue)))
+		AccessGrants = append(AccessGrants, access)
+	}
+	fmt.Println(AccessGrants)
+	return helper.CreateResult(true, AccessGrants, "")
 }
 func (a *GroupController) DeleteGroup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson

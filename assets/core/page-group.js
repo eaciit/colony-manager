@@ -32,6 +32,8 @@ grp.editGroup=ko.observable("");
 grp.showGroup=ko.observable(false);
 grp.GroupsData=ko.observableArray([]);
 grp.selectGridGroups = function (e) {
+	usr.Access.removeAll();
+	usr.getAccess(); 
 	grp.isNew(false);
 	app.wrapGridSelect(".grid-groups", ".btn", function (d) {
 		grp.editGroup(d._id);
@@ -143,6 +145,7 @@ grp.createNewGroup = function () {
 	app.mode("editor");
 };
 grp.editGroup = function(c) {
+	usr.config.Grants.removeAll();
 	var payload = ko.mapping.toJS(grp.filter._id(c));
 	app.ajaxPost("/group/findgroup", payload, function (res) {
 		if (!app.isFine(res)) {
@@ -156,9 +159,67 @@ grp.editGroup = function(c) {
 		grp.config.Enable(res.data.Enable);  
 		grp.config.Grants(res.data.Grants); 
 		grp.config.Owner(res.data.Owner);  
+		grp.displayAccess(res.data._id);
 	});
 };
 
+grp.displayAccess = function(e){   
+    app.ajaxPost("/group/getaccessgroup", {idGroup:e}, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        if (res.data==null){
+            res.data="";
+        }
+        console.log(res.data);
+        for (var i = 0; i < res.data.length; i++) {
+           var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant)); 
+           usr.config.Grants.push(new usr.templateAccessGrant2()); 
+           console.log(res.data[i].AccessID);
+           usr.config.Grants()[i].AccessID(res.data[i].AccessID);
+           if(res.data[i].AccessValue.indexOf(1)==-1){
+              usr.config.Grants()[i].AccessCreate(false)
+           }else{
+              usr.config.Grants()[i].AccessCreate(true)
+           }
+           if(res.data[i].AccessValue.indexOf(2)==-1){
+              usr.config.Grants()[i].AccessRead(false)
+           }else{
+              usr.config.Grants()[i].AccessRead(true)
+           }
+           if(res.data[i].AccessValue.indexOf(4)==-1){
+              usr.config.Grants()[i].AccessUpdate(false)
+           }else{
+              usr.config.Grants()[i].AccessUpdate(true)
+           }
+           if(res.data[i].AccessValue.indexOf(8)==-1){
+              usr.config.Grants()[i].AccessDelete(false)
+           }else{
+              usr.config.Grants()[i].AccessDelete(true)
+           }
+           if(res.data[i].AccessValue.indexOf(16)==-1){
+              usr.config.Grants()[i].AccessSpecial1(false)
+           }else{
+              usr.config.Grants()[i].AccessSpecial1(true)
+           }
+           if(res.data[i].AccessValue.indexOf(32)==-1){
+              usr.config.Grants()[i].AccessSpecial2(false)
+           }else{
+              usr.config.Grants()[i].AccessSpecial2(true)
+           }
+           if(res.data[i].AccessValue.indexOf(64)==-1){
+              usr.config.Grants()[i].AccessSpecial3(false)
+           }else{
+              usr.config.Grants()[i].AccessSpecial3(true)
+           }
+           if(res.data[i].AccessValue.indexOf(128)==-1){
+              usr.config.Grants()[i].AccessSpecial4(false)
+           }else{
+              usr.config.Grants()[i].AccessSpecial4(true)
+           }
+        };
+    });
+};
 
 grp.backToFront = function () {
 	app.mode('');

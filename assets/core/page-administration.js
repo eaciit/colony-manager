@@ -17,7 +17,7 @@ adm.templateFilter ={
 	_id:"",
 	Title: "",  
 };
- 
+adm.SumAccess=ko.observable(0);
 adm.AccessColumns = ko.observableArray([
 	{ template: "<input type='checkbox' name='checkboxaccess' class='ckcGrid' value='#: _id #' />", width: 50  },
 	{ field: "_id", title: "ID" },
@@ -54,7 +54,8 @@ adm.getAccess = function(c) {
 		}
 		if (res.data==null){
 			res.data="";
-		}
+		} 
+		adm.SumAccess(res.data.length);		 
 		adm.AccessData(res.data);
 		var grid = $(".grid-access").data("kendoGrid"); 
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
