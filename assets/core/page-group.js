@@ -70,10 +70,8 @@ grp.Groupmode = ko.observable('');
 //     grp.config.Grants.push(new usr.templateAccessGrant()); 
 // };
 
-grp.savegroup = function () {
-	// grp.config.Grants.push(usr.config.Grants)
-	var data =ko.mapping.toJS(usr.config.Grants);
-	// console.log(data);	
+grp.savegroup = function () { 
+	var data =ko.mapping.toJS(usr.config.Grants); 
 	var AccessGrants= [];
 	for (var i = 0; i < data.length; i++) {
 		grp.Access.AccessID(data[i].AccessID)

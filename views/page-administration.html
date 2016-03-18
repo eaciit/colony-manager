@@ -7,7 +7,7 @@
 <script src="/res/core/page-administration.js"></script>
 <script src="/res/core/page-user.js"></script>
 <script src="/res/core/page-group.js"></script>
-
+<script src="/res/core/page-session.js"></script>
 <style type="text/css">
 	.modal-deploy .modal-footer {
 		position: relative;
@@ -36,6 +36,7 @@
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'access') }, click: app.changeActiveSection('access')">Access<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'grup') }, click: app.changeActiveSection('group')">Group<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'user') }, click: app.changeActiveSection('user')">User<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'session') }, click: app.changeActiveSection('session')">Session<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -168,6 +169,9 @@
 	</div>
 	<div class="col-md-12" data-bind="visible: (app.section() == 'user'),with:user">
 		{{template "page-user.html"}}
+	</div>
+	<div class="col-md-12" data-bind="visible: (app.section() == 'session'),with:session">
+		{{template "page-session.html"}}
 	</div>
 </div>
 

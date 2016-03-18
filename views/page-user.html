@@ -24,12 +24,9 @@
 </nav>
  
 <div class="panel" data-bind="visible: (app.mode() == '')">
-    <div class="panel-heading">
-        <h1 class="panel-title">User</h1>
-    </div>
-    <div class="panel-body">
+    
         <div class="grid grid-users" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: usr.UsersData, selectable: 'multiple, row', change: usr.selectGridUsers, columns: usr.UsersColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-users')}"></div>
-    </div>
+    
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
 
@@ -147,7 +144,7 @@
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1"/>
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1"/>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2"/>
                                     </td>
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3"/>

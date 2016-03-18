@@ -64,7 +64,7 @@ usr.getUsers = function(c) {
     usr.UsersData([]);
     var data = [];
     var gr="";
-    var param = ko.mapping.toJS(usr.filter);
+    var param = ko.mapping.toJS(usr.filter); 
     app.ajaxPost("/user/getuser", param, function (res) {
         if (!app.isFine(res)) {
             return;
@@ -72,8 +72,27 @@ usr.getUsers = function(c) {
         if (res.data==null){
             res.data="";
         }
-      
-        usr.UsersData(res.data);
+
+        for (var i in res.data) { 
+               for (var j in res.data[i].groups) { 
+                     if(res.data[i].groups.length==1){
+                        gr=res.data[i].groups[j] 
+                     }else{
+                        gr=gr+","+res.data[i].groups[j] 
+                     }
+               };
+               data.push({
+                   _id : res.data[i]._id,
+                   loginid:res.data[i].loginid,
+                   fullname:res.data[i].fullname,
+                   email:res.data[i].email,
+                   password:res.data[i].password,
+                   enable:res.data[i].enable,
+                   groups:gr
+               })
+           };   
+        console.log(data);
+        usr.UsersData(data);
         var grid = $(".grid-users").data("kendoGrid"); 
         $(grid.tbody).on("mouseleave", "tr", function (e) {
             $(this).removeClass("k-state-hover");
@@ -104,20 +123,42 @@ usr.config = ko.mapping.fromJS(usr.templateUser);
 usr.listGroup   = ko.observableArray([]);
 usr.saveuser = function () {
     usr.config.Groups($('#Groups').data('kendoMultiSelect').value());
-    payload = ko.mapping.fromJS(usr.config);
-    console.log(payload);
-    // var dataInv = $('#gridaccess').data('kendoGrid').dataSource;
-    // var arrayID = new Array();
-    // $(".ckcGrid").each(function (i) {
-    //     if (this.checked) {
-    //         dataInv.fetch(function () {
-    //         var view = dataInv.view();
-    //         arrayID.push(view[i].ID);
-    //         });
-    //     }
-    // }); 
-
-    app.ajaxPost("/user/saveuser", payload, function(res) {
+    user = ko.mapping.fromJS(usr.config);
+     //======
+    var data =ko.mapping.toJS(usr.config.Grants); 
+    var AccessGrants= [];
+    for (var i = 0; i < data.length; i++) {
+        grp.Access.AccessID(data[i].AccessID)
+        if (data[i].AccessCreate==true) {
+            grp.Access.AccessValue.push("AccessCreate");
+        };
+        if (data[i].AccessRead==true) {
+            grp.Access.AccessValue.push("AccessRead");
+        };
+        if (data[i].AccessUpdate==true) {
+            grp.Access.AccessValue.push("AccessUpdate");
+        };
+        if (data[i].AccessDelete==true) {
+            grp.Access.AccessValue.push("AccessDelete");
+        };
+        if (data[i].AccessSpecial1==true) {
+            grp.Access.AccessValue.push("AccessSpecial1");
+        };
+        if (data[i].AccessSpecial2==true) {
+            grp.Access.AccessValue.push("AccessSpecial2");
+        };
+        if (data[i].AccessSpecial3==true) {
+            grp.Access.AccessValue.push("AccessSpecial3");
+        };
+        if (data[i].AccessSpecial4==true) {
+            grp.Access.AccessValue.push("AccessSpecial4");
+        }; 
+        AccessGrants.push(ko.mapping.toJSON(grp.Access))
+        grp.Access.AccessValue.removeAll()
+    };
+    console.log(AccessGrants); 
+    //======
+    app.ajaxPost("/user/saveuser",{user : user,grants : AccessGrants} , function(res) {
     if (!app.isFine(res)) {
         return;
     }
@@ -185,11 +226,12 @@ usr.getmultiplegroup = function () {
                 value: res.data[i].title
             }); 
         };
-        console.log(data);
+        // console.log(data);
         $("#Groups").kendoMultiSelect({
           dataTextField: "text",
           dataValueField: "value",
-          dataSource: data
+          dataSource: data,
+          select: usr.displayAccess
         });
     });
   };
@@ -290,7 +332,15 @@ usr.addFromPrivilage = function () {
     console.log(item);
     usr.config.Grants.push(new usr.templateAccessGrant()); 
 };
+usr.displayAccess = function(e){ 
+    var dataItem = this.dataSource.view()[e.item.index()];
+    
+    // for (var i = 0; i < groups.length; i++) {
+    //    var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant)); 
+    //    usr.config.Grants.push(new usr.templateAccessGrant()); 
+    // };
 
+};
 usr.removeAccess = function (each) {
     return function () {
         console.log(each);
