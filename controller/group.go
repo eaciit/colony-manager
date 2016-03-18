@@ -2,7 +2,7 @@ package controller
 
 import (
 	// "archive/zip"
-	// "encoding/json"
+	"encoding/json"
 	// "fmt"
 	// "github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/acl"
@@ -17,6 +17,7 @@ import (
 	// "path/filepath"
 	// "strings"
 	// "time"
+	// "reflect"
 )
 
 type GroupController struct {
@@ -89,18 +90,51 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	g := payload["group"].(map[string]interface{})
 
 	initGroup := new(acl.Group)
-	initGroup.ID = payload["_id"].(string)
-	initGroup.Title = payload["Title"].(string)
-	initGroup.Owner = payload["Owner"].(string)
-	initGroup.Enable = payload["Enable"].(bool)
-
+	initGroup.ID = g["_id"].(string)
+	initGroup.Title = g["Title"].(string)
+	initGroup.Owner = g["Owner"].(string)
+	initGroup.Enable = g["Enable"].(bool)
 	err = acl.Save(initGroup)
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
-	return helper.CreateResult(true, initGroup, "sukses")
+	var grant map[string]interface{}
+	for _, p := range payload["grants"].([]interface{}) {
+		dat := []byte(p.(string))
+		if err = json.Unmarshal(dat, &grant); err != nil {
+			return helper.CreateResult(true, nil, err.Error())
+		}
+		AccessID := grant["AccessID"].(string)
+		Accessvalue := grant["AccessValue"]
+		for _, v := range Accessvalue.([]interface{}) {
+			switch v {
+			case "AccessCreate":
+				initGroup.Grant(AccessID, acl.AccessCreate)
+			case "AccessRead":
+				initGroup.Grant(AccessID, acl.AccessRead)
+			case "AccessUpdate":
+				initGroup.Grant(AccessID, acl.AccessUpdate)
+			case "AccessDelete":
+				initGroup.Grant(AccessID, acl.AccessDelete)
+			case "AccessSpecial1":
+				initGroup.Grant(AccessID, acl.AccessSpecial1)
+			case "AccessSpecial2":
+				initGroup.Grant(AccessID, acl.AccessSpecial2)
+			case "AccessSpecial3":
+				initGroup.Grant(AccessID, acl.AccessSpecial3)
+			case "AccessSpecial4":
+				initGroup.Grant(AccessID, acl.AccessSpecial4)
+			}
+		}
+	}
+	err = acl.Save(initGroup)
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+	return helper.CreateResult(true, nil, "sukses")
 }
 
 func (a *GroupController) prepareconnection() (conn dbox.IConnection, err error) {
