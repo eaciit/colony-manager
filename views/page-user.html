@@ -132,7 +132,7 @@
                                          <select class="form-control input-sm" data-bind="value:usr.config.Grants()[$index()].AccessID ,options: usr.Access"></select>
                                     </td> 
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: AccessCreate" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
                                     </td>
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessRead" />

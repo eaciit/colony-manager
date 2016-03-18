@@ -285,6 +285,7 @@ usr.selectRow = function() {
     }
 }
 usr.addFromPrivilage = function () {
+    console.log(usr.templateAccessGrant);
     var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
     console.log(item);
     usr.config.Grants.push(new usr.templateAccessGrant()); 

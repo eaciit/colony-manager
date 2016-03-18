@@ -25,7 +25,18 @@
 	</div>
 	</div>
 </nav>
-  
+  <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+    <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: grp.backToFront">
+		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	</button>
+    <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: grp.savegroup">
+		<span class="glyphicon glyphicon-save"></span> Save
+	</button>
+    <button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup">
+		<span class="glyphicon glyphicon-remove"></span> Delete
+	</button>
+</nav>
+
 <div class="panel" data-bind="visible: (app.mode() == '')"> 
     	<div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div>
     <!-- </div> -->
@@ -98,9 +109,9 @@
                                 <tr>
                                     <td>
                                          <select class="form-control input-sm" data-bind="value:usr.config.Grants()[$index()].AccessID ,options: usr.Access"></select>
-                                    </td>
+                                    </td> 
                                     <td>
-                                        <input type="radio" data-bind=" uniqueName: true, checked: usr.config.Grants()[$index()].AccessCreate" />  
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
                                     </td>
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessRead" />
