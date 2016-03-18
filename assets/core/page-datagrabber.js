@@ -297,11 +297,13 @@ dg.SaveAndProccessDataGrabberWizard = function () {
 		return;
 	}
 	setTimeout (function(){
-		dg.doSaveDataGrabber(function (res) {
+		dg.removeDataTable();
+		dg.dataTable();
+		dg.doSaveDataGrabberWizard(function (res) {
 			if (!app.isFine(res)){
 				return;
 			}
-
+			
 			res.data.forEach(function (d) {
 				dg.doRunTransformation(d._id);
 			});
