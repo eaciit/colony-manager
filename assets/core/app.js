@@ -51,7 +51,7 @@ app.wrapGridSelect = function (selector, excludeClassSelector, callback) {
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function (callback) {
-        app.isLoading(false);
+        app.miniloader(false);
         callback();
     };
 
@@ -103,10 +103,10 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
 
     if (config.hasOwnProperty("withLoader")) {
         if (config.withLoader) {
-            app.isLoading(true);
+            app.miniloader(true);
         }
     } else {
-        app.isLoading(true);
+        app.miniloader(true);
     }
 
     return $.ajax(config);
@@ -133,7 +133,7 @@ app.resetValidation = function (selectorID) {
 
     $form.hideMessages();
 };
-app.isLoading = ko.observable(false);
+app.miniloader = ko.observable(false);
 app.fixKendoMultiSelect = function () {
     $("*.k-multiselect").change(function (e) {
         var existingValue = $(this).attr("existingValue");

@@ -95,7 +95,10 @@ body {
 		    	<h1 class="panel-title">All Connections</h1>
 		    </div>
 		    <div class="panel-body">
-		    	<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniLoader">
+		    		<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
+		    	</div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -254,8 +257,11 @@ body {
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Data Sources</h1>
 		    </div>
-		    <div class="panel-body">
-		    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
+		    <div class="panel-body position-custom">
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniLoader">
+			    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
+		    	</div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>

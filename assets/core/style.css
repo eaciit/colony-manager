@@ -396,6 +396,9 @@ table.table tr:hover td {
   line-height: 25px;
   text-align: left; }
 
+.position-custom {
+  position: relative; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
@@ -572,13 +575,19 @@ body {
   body #content-preview {
     border: 1px solid whitesmoke;
     min-height: 500px; }
+  body .loader-custom {
+    position: absolute !important;
+    background-color: transparent !important; }
+    body .loader-custom .loader {
+      margin-left: 0 !important;
+      margin-top: 0 !important; }
   body .loader-container {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.6); 
+    background-color: rgba(255, 255, 255, 0.6);
     z-index: 99999; }
     body .loader-container .loader {
       position: absolute;

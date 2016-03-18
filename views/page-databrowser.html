@@ -46,8 +46,11 @@
 				<div class="panel-heading">
 					<h1 class="panel-title">All Data Browser</h1>
 				</div>
-				<div class="panel-body">
-					<div class="grid grid-databrowser" data-bind="kendoGrid: { dataSource:{ pageSize: 15 }, data: br.dataBrowser, columns: br.browserColumns, change: br.selectBrowser, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser') }"></div>
+				<div class="panel-body position-custom">
+					{{template "_miniloader.html"}}
+					<div data-bind="visible: !app.miniLoader">
+						<div class="grid grid-databrowser" data-bind="kendoGrid: { dataSource:{ pageSize: 15 }, data: br.dataBrowser, columns: br.browserColumns, change: br.selectBrowser, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser') }"></div>
+					</div>
 				</div>
 				<p class="bg-danger bgcustom">Please click row to edit!</p>
 			</div> 

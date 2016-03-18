@@ -413,6 +413,9 @@ table.table
 	line-height: 25px
 	text-align: left
 
+.position-custom
+	position: relative
+
 /** structured stylesheet */
 
 body
@@ -665,6 +668,13 @@ body
 		border: 1px solid whitesmoke
 		min-height: 500px
 
+	.loader-custom
+		position: absolute !important
+		background-color: transparent !important
+		.loader
+			margin-left: 0 !important
+			margin-top: 0 !important
+
 	.loader-container
 		position: fixed
 		top: 0
@@ -672,7 +682,7 @@ body
 		right: 0
 		bottom: 0
 		background-color: rgba(255, 255, 255, 0.6)
-		z-index: 99999	
+		z-index: 99999
 
 		.loader
 			position: absolute

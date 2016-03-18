@@ -334,6 +334,7 @@ wg.toggleDaemon = function (to) {
 	};
 };
 wg.editScrapper = function (_id) {
+	app.miniloader(true);
 	wg.scrapperMode('edit');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 

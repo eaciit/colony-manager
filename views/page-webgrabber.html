@@ -67,8 +67,11 @@
 		        <h1 class="panel-title">All Web Grabbers</h1>
 		    </div>
 
-		    <div class="panel-body">
-		    	<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
+		    <div class="panel-body  position-custom">
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniLoader">
+		    		<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
+		    	</div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
