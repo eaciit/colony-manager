@@ -514,16 +514,18 @@ wg.runBotStats = function () {
 					}
 
 					app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res) {
-						if (res.data.length > 0 && row != undefined){
-							var k = res.data[0];
-					        var summary = [
-					        	"Start",  k.starttime,
-					        	"<br> Grab",  k.grabcount,
-					        	"times <br> Data retreive",  k.rowgrabbed,
-					        	"rows <br> Error",  k.errorfound,
-					        	"times"
-					        ].join(" ");
-							row.set("note", summary);
+						if(res.data !== null){
+							if (res.data.length > 0 && row != undefined){
+								var k = res.data[0];
+						        var summary = [
+						        	"Start",  k.starttime,
+						        	"<br> Grab",  k.grabcount,
+						        	"times <br> Data retreive",  k.rowgrabbed,
+						        	"rows <br> Error",  k.errorfound,
+						        	"times"
+						        ].join(" ");
+								row.set("note", summary);
+							}
 						}
 					});
 
@@ -987,43 +989,25 @@ wg.parseGrabConf = function () {
 				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
 				obj[col] = {};
 				var format = ko.utils.arrayFilter(columnsettings,function (item) {
-				        return item.alias == col;
-				});
-				if(operation !== '$eq'){
-					switch (format[0]){
-						case "integer":
-							obj[col][operation] = parseInt(val);
-							break;
-						case "float":
-							obj[col][operation] = parseFloat(val);
-							break;
-						default:
-							obj[col][operation] = val;
-							break;
-					}
-				}else{
-					switch (format[0]){
-						case "integer":
-							obj[col] = parseInt(val);
-							break;
-						case "float":
-							obj[col] = parseFloat(val);
-							break;
-						default:
-							obj[col] = val;
-							break;
-					}
+			        return item.alias == col;
+			    });
+				switch (format[0]){
+					case "integer":
+						obj[col][operation] = parseInt(val);
+						break;
+					case "float":
+						obj[col][operation] = parseFloat(val);
+						break;
+					default:
+						obj[col][operation] = val;
+						break;
 				}
-
-				if(conditionlist.length == 1){
-					condition = obj;
-				}else{
-					condition[item.filtercond].push(obj);
-				}
+				condition[item.filtercond].push(obj);
 
 			}
 			item.filtercond = condition;
 		}
+		
 		if (item.filtercond == "") {
 			item.filtercond = {};
 		}
@@ -1249,7 +1233,7 @@ function filterWebGrabber(event) {
 
 wg.getConnection = function () {
 	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/datasource/getconnections", param, function (res) {
+	app.ajaxPost("/datasource/getconnections", {param, search: "", driver: ""}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
