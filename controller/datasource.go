@@ -796,6 +796,10 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 		meta.Type = "string"
 
 		if val != nil {
+			if toolkit.TypeName(val) == "map[string]interface {}" {
+				val, _ = toolkit.ToM(val)
+			}
+
 			switch toolkit.TypeName(val) {
 			case "toolkit.M":
 				meta.Type = "object"
@@ -805,7 +809,12 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 				meta.Type = "array"
 
 				valArray := val.([]interface{})
+
 				if len(valArray) > 0 {
+					if toolkit.TypeName(valArray[0]) == "map[string]interface {}" {
+						valArray[0], _ = toolkit.ToM(valArray[0])
+					}
+
 					if toolkit.TypeName(valArray[0]) == "toolkit.M" {
 						meta.Type = "array-objects"
 						meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))
