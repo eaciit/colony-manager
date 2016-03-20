@@ -11,16 +11,16 @@ import (
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/csv"
 	"github.com/eaciit/knot/knot.v1"
+	. "github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"os"
 	"os/exec"
+	"path/filepath"
 	f "path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
-	"path/filepath"
 	"time"
-	. "github.com/eaciit/sshclient"
 	// "reflect"
 )
 
@@ -551,7 +551,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			sedotanPath := f.Join(EC_APP_PATH, "cli", "sedotand.exe")
 			sedotanConfigPath := f.Join(EC_APP_PATH, "config", "webgrabbers.json")
 			sedotanConfigArg := fmt.Sprintf(`-config="%s"`, sedotanConfigPath)
-			sedotanLogPath := f.Join(EC_DATA_PATH, "daemon")
+			sedotanLogPath := f.Join(EC_APP_PATH, "daemon")
 			sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, sedotanLogPath)
 
 			fmt.Println("===> ", sedotanPath, sedotanConfigArg, sedotanLogArg, "&")
@@ -646,51 +646,23 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 	// module := NewHistory(payload.HistConf.FileName)
 	// history, err := module.OpenHistory()
 
-	var SshClient SshSetting
-
-	SshClient.SSHHost = "192.168.56.101:22"
-	SshClient.SSHAuthType = 0
-	SshClient.SSHUser = "eaciit1"
-	SshClient.SSHPassword = "12345"
-
-	output, err := SshClient.GetOutputCommandSsh(`uname`)
+	client, server, err := w.ConnectToSedotanServer()
 	if err != nil {
-		fmt.Println(err)
+		return helper.CreateResult(false, nil, err.Error())
 	}
+	SshClient := *client
 
 	apppath := ""
-	ecapppath := ""
-	ecdatapath := ""
-	if strings.Contains(strings.ToLower(output), "linux") == true || strings.Contains(strings.ToLower(output), "darwin") == true {
-		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
-		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
-		apppath = ecapppath+`/bin/sedotanread`
+	if server.OS == "linux" {
+		apppath = server.AppPath + `/cli/sedotanread`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=history`)
-		arrcmd = append(arrcmd, `-pathfile=`+ecdatapath+`/webgrabber/history/`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
-	}else{
-		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
-		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
-		apppath = ecapppath+`\bin\sedotanread.exe`
+		arrcmd = append(arrcmd, `-pathfile=`+server.DataPath+`/webgrabber/history/`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
+	} else {
+		apppath = server.AppPath + `\bin\sedotanread.exe`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=history`)
-		arrcmd = append(arrcmd, `-pathfile=`+ecapppath+`\webgrabber\history\`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
+		arrcmd = append(arrcmd, `-pathfile=`+server.DataPath+`\webgrabber\history\`+payload.HistConf.FileName+`-`+dateNow+`.csv`)
 	}
 
 	// apppath := ""
@@ -715,7 +687,9 @@ func (w *WebGrabberController) GetHistory(r *knot.WebContext) interface{} {
 
 	// fmt.Println(strings.Join(append(arrcmd[:1],arrcmd[1:]...)," "))
 
-	output, err = SshClient.GetOutputCommandSsh(strings.Join(append(arrcmd[:1],arrcmd[1:]...)," "))
+	cmds := strings.Join(append(arrcmd[:1], arrcmd[1:]...), " ")
+	fmt.Println("====>", cmds)
+	output, err := SshClient.GetOutputCommandSsh(cmds)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -772,56 +746,30 @@ func (w *WebGrabberController) GetSnapshot(r *knot.WebContext) interface{} {
 
 	// ===================END LOCALHOST TEST===============================
 
-	var SshClient SshSetting
-
-	SshClient.SSHHost = "192.168.56.101:22"
-	SshClient.SSHAuthType = 0
-	SshClient.SSHUser = "eaciit1"
-	SshClient.SSHPassword = "12345"
-
-	output, err := SshClient.GetOutputCommandSsh(`uname`)
+	client, server, err := w.ConnectToSedotanServer()
 	if err != nil {
-		fmt.Println(err)
+		return helper.CreateResult(false, nil, err.Error())
 	}
+	SshClient := *client
 
 	apppath := ""
-	ecapppath := ""
-	ecdatapath := ""
-	if strings.Contains(strings.ToLower(output), "linux") == true || strings.Contains(strings.ToLower(output), "darwin") == true {
-		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
-		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
-		apppath = ecapppath+`/bin/sedotanread`
+	if server.OS == "linux" {
+		apppath = server.AppPath + `/cli/sedotanread`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=snapshot`)
-		arrcmd = append(arrcmd, `-pathfile=`+ecdatapath+`/daemon/daemonsnapshot.csv`)
+		arrcmd = append(arrcmd, `-pathfile=`+server.DataPath+`/daemon/daemonsnapshot.csv`)
 		arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
-	}else{
-		ecapppath, err = SshClient.GetOutputCommandSsh(`echo $EC_APP_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecdatapath, err = SshClient.GetOutputCommandSsh(`echo $EC_DATA_PATH`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		ecapppath = strings.Replace(toolkit.ToString(ecapppath),"\n","",-1)
-		ecdatapath = strings.Replace(toolkit.ToString(ecdatapath),"\n","",-1)
-		apppath = ecapppath+`\bin\sedotanread.exe`
+	} else {
+		apppath = server.AppPath + `\bin\sedotanread.exe`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=snapshot`)
-		arrcmd = append(arrcmd, `-pathfile=`+ecapppath+`\daemon\daemonsnapshot.csv`)
+		arrcmd = append(arrcmd, `-pathfile=`+server.DataPath+`\daemon\daemonsnapshot.csv`)
 		arrcmd = append(arrcmd, `-nameid=`+payload.Nameid)
 	}
 
-	output, err = SshClient.GetOutputCommandSsh(strings.Join(append(arrcmd[:1],arrcmd[1:]...)," "))
+	cmds := strings.Join(append(arrcmd[:1], arrcmd[1:]...), " ")
+	fmt.Println("====>", cmds)
+	output, err := SshClient.GetOutputCommandSsh(cmds)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -1025,4 +973,32 @@ func (d *WebGrabberController) SyncConfig() error {
 	fmt.Println(configName, "synced w/ errors", errs)
 
 	return nil
+}
+
+func (w *WebGrabberController) ConnectToSedotanServer() (*SshSetting, *colonycore.Server, error) {
+	filter := dbox.And(dbox.Eq("os", "linux"), dbox.Eq("serverType", "node"))
+	cursor, err := colonycore.Find(new(colonycore.Server), filter)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	data := []colonycore.Server{}
+	err = cursor.Fetch(&data, 0, true)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, nil, errors.New("No sedotan server found")
+	}
+
+	server := data[0]
+
+	var client SshSetting
+	client.SSHHost = server.Host
+	client.SSHAuthType = SSHAuthType_Password
+	client.SSHUser = server.SSHUser
+	client.SSHPassword = server.SSHPass
+
+	return &client, &server, nil
 }
