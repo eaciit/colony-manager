@@ -542,8 +542,18 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	search := payload["search"].(string)
-	driver := payload["driver"].(string)
+	search := ""
+	if payload["search"] != nil{
+		search = payload["search"].(string)
+	}
+
+	driver := ""
+	if payload["driver"] != nil{
+		search = payload["driver"].(string)
+	}
+
+	// search := payload["search"]
+	// driver := payload["driver"]
 
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("Driver", search), dbox.Contains("Host", search), dbox.Contains("Database", search), dbox.Contains("UserName", search))
@@ -796,6 +806,10 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 		meta.Type = "string"
 
 		if val != nil {
+			if toolkit.TypeName(val) == "map[string]interface {}" {
+				val, _ = toolkit.ToM(val)
+			}
+
 			switch toolkit.TypeName(val) {
 			case "toolkit.M":
 				meta.Type = "object"
@@ -805,7 +819,12 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 				meta.Type = "array"
 
 				valArray := val.([]interface{})
+
 				if len(valArray) > 0 {
+					if toolkit.TypeName(valArray[0]) == "map[string]interface {}" {
+						valArray[0], _ = toolkit.ToM(valArray[0])
+					}
+
 					if toolkit.TypeName(valArray[0]) == "toolkit.M" {
 						meta.Type = "array-objects"
 						meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))

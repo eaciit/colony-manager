@@ -426,7 +426,7 @@ func (s *ServerController) ToggleSedotanService(op string, id string) (bool, err
 	}
 
 	if strings.Contains(op, "start") {
-		sedotanConfigArg := fmt.Sprintf(`-config="%s"`, filepath.Join(data.DataPath, "config", "webgrabbers.json"))
+		sedotanConfigArg := fmt.Sprintf(`-config="%s"`, filepath.Join(data.AppPath, "config", "webgrabbers.json"))
 		sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, filepath.Join(data.DataPath, "daemon"))
 		runSedotanCmd := fmt.Sprintf("cd %s && ./sedotand %s %s", filepath.Join(data.AppPath, "cli"), sedotanConfigArg, sedotanLogArg)
 		err = helper.RunCommandWithTimeout(&sshSetting, runSedotanCmd, 5)
