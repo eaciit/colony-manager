@@ -843,7 +843,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		}
 
-		if !nilFieldDest.Has("_id") || nilFieldDest.Get("_id", nil) == nil {
+		if !nilFieldDest.Has("_id") || nilFieldDest.Get("_id") == nil {
 			nilFieldDest.Set("_id", helper.RandomIDWithPrefix(""))
 		}
 
