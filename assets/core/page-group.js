@@ -5,34 +5,20 @@ grp.templateGroup = {
 	_id: "",
 	Title: "", 
 	Enable: false,
-	Grants: [], 
 	Owner:"", 
+	Grants: ko.observableArray([]), 
 };  
 grp.templateFilter ={
 	_id:"",
 	Title: "", 
 	Owner:"",
 };
-
-grp.templateAccessGrant = function(){
-    var self = {
-        AccessID       :ko.observable(""), 
-        AccessCreate   :ko.observable(false),
-        AccessRead     :ko.observable(false),
-        AccessUpdate   :ko.observable(false),
-        AccessDelete   :ko.observable(false),
-        AccessSpecial1 :ko.observable(false),
-        AccessSpecial2 :ko.observable(false),
-        AccessSpecial3 :ko.observable(false),
-        AccessSpecial4 :ko.observable(false),
-    }
-    return self;
-}; 
-grp.addFromPrivilage = function () {
-    var item = ko.mapping.fromJS($.extend(true, {}, grp.templateAccessGrant));
-    console.log(item);
-    grp.config.Grants.push(new grp.templateAccessGrant()); 
-};
+grp.AccessGrantGroup = {
+	AccessID:"",
+	AccessValue: [], 
+};  
+grp.Access = ko.mapping.fromJS(grp.AccessGrantGroup);
+grp.ListAccess = ko.observableArray([]);
 grp.GroupsColumns = ko.observableArray([
 	{ template: "<input type='checkbox' name='checkboxgroup' class='ckcGrid' value='#: _id #' />", width: 50  },
 	{ field: "_id", title: "ID" },
@@ -78,12 +64,47 @@ grp.getGroups = function(c) {
 
 grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
- 
-grp.savegroup = function () {
-	payload = ko.mapping.fromJS(grp.config);
-	console.log(payload)
-	app.ajaxPost("/group/savegroup", payload, function(res) {
-		console.log(res)
+
+// grp.addFromPrivilage = function () { 
+//     var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant)); 
+//     grp.config.Grants.push(new usr.templateAccessGrant()); 
+// };
+
+grp.savegroup = function () { 
+	var data =ko.mapping.toJS(usr.config.Grants); 
+	var AccessGrants= [];
+	for (var i = 0; i < data.length; i++) {
+		grp.Access.AccessID(data[i].AccessID)
+		if (data[i].AccessCreate==true) {
+			grp.Access.AccessValue.push("AccessCreate");
+		};
+		if (data[i].AccessRead==true) {
+			grp.Access.AccessValue.push("AccessRead");
+		};
+		if (data[i].AccessUpdate==true) {
+			grp.Access.AccessValue.push("AccessUpdate");
+		};
+		if (data[i].AccessDelete==true) {
+			grp.Access.AccessValue.push("AccessDelete");
+		};
+		if (data[i].AccessSpecial1==true) {
+			grp.Access.AccessValue.push("AccessSpecial1");
+		};
+		if (data[i].AccessSpecial2==true) {
+			grp.Access.AccessValue.push("AccessSpecial2");
+		};
+		if (data[i].AccessSpecial3==true) {
+			grp.Access.AccessValue.push("AccessSpecial3");
+		};
+		if (data[i].AccessSpecial4==true) {
+			grp.Access.AccessValue.push("AccessSpecial4");
+		}; 
+		AccessGrants.push(ko.mapping.toJSON(grp.Access))
+		grp.Access.AccessValue.removeAll()
+	};
+	console.log(AccessGrants);
+	group = ko.mapping.fromJS(grp.config);
+	app.ajaxPost("/group/savegroup", {group : group,grants :AccessGrants}, function(res) { 
 	if (!app.isFine(res)) {
 		return;
 	}
@@ -111,6 +132,9 @@ grp.deletegroup = function () {
 	grp.backToFront();
 };
 grp.createNewGroup = function () {
+	usr.Access.removeAll();
+    usr.config.Grants.removeAll();
+	usr.getAccess();
 	grp.config._id("");  
 	grp.config.Title("");  
 	grp.config.Enable("");  
