@@ -901,31 +901,26 @@ wg.saveSettingSelector = function() {
 		var totalAllowedForCSV = 0, totalAllowedForDB = 0;
 		var errors = $(".form-row-column-selector").data("kendoValidator").errors();
 
-		errors.forEach(function (item) {
-			if (type == "csv") {
-				if (item.indexOf("FileName") > -1 || item.indexOf("Delimiter") > -1) {
-					totalAllowedForCSV++;
-				}
-			} else {
-				if (item.indexOf("ConnectionId") > -1 || item.indexOf("Collection") > -1) {
-					totalAllowedForDB++;
-				}
-			}
-		});
-
 		if (type == "csv") {
-			if (errors.length >= 0 && totalAllowedForCSV == 0) {
+			errors = Lazy(errors).filter(function (d) {
+				return ["Connection cannot be empty","Collection is required"].indexOf(d) == -1;
+			}).toArray();
 
-			} else {
+			if (errors.length > 0) {
 				return;
 			}
-		} else {
-			if (errors.length >= 0 && totalAllowedForDB == 0) {
+		} else if(type == 'database'){
+			errors = Lazy(errors).filter(function (d) {
+				return ["FileName is required","Delimiter is required"].indexOf(d) == -1;
+			}).toArray();
 
-			} else {
+			if (errors.length > 0) {
 				return;
 			}
+		}else{
+			return;
 		}
+
 	}
 
 	if(wg.filtercond() !== "" && wg.isJson(wg.filtercond()) == false){
@@ -1128,7 +1123,7 @@ wg.saveSelectorConf = function(){
 	}
 
 	var config = wg.parseGrabConf();
-	console.log("Old Json",config)
+	//console.log("Old Json",config)
 	
 	app.ajaxPost("/webgrabber/savescrapperdata", config, function (res) {
 		if(!app.isFine(res)) {
