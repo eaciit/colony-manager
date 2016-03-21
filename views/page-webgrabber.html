@@ -483,8 +483,8 @@
 													<tbody data-bind="foreach: columnsettings" style="overflow-y: auto;height: 150px;width: 100%;position: absolute;">
 														<tr>
 															<td>
-																<input required class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
-																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
+																<input required data-required-msg="Alias cannot be empty" class="form-control input-sm full-width" type="text"  placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-alias-' + $index() }" style="width:90px;" />
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-alias-' + $index() }"></span>
 															</td>
 															<td>
 																<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
@@ -556,7 +556,7 @@
 																				<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-operation-' + $index() }"></span>
 																			</td>
 																			<td>
-																				<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
+																				<input required class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
 																				<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-value-' + $index() }"></span>
 																			</td>
 																			<td>

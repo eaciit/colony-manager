@@ -13,9 +13,10 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	. "github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
+	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
-	"path/filepath"
 	f "path/filepath"
 	"runtime"
 	"strconv"
@@ -802,26 +803,52 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 
 	// data, err = query.SelectAll("")
 
-	apppath := ""
-	if runtime.GOOS == "windows" {
-		arrcmd = append(arrcmd, "cmd")
-		arrcmd = append(arrcmd, "/C")
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
-	} else {
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
-	}
+	// apppath := ""
+	// if runtime.GOOS == "windows" {
+	// 	arrcmd = append(arrcmd, "cmd")
+	// 	arrcmd = append(arrcmd, "/C")
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	// } else {
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	// }
 
-	arrcmd = append(arrcmd, apppath)
-	arrcmd = append(arrcmd, `-readtype=rechistory`)
-	arrcmd = append(arrcmd, `-pathfile=`+payload.RecFile)
+	// arrcmd = append(arrcmd, apppath)
+	// arrcmd = append(arrcmd, `-readtype=rechistory`)
+	// arrcmd = append(arrcmd, `-pathfile=`+payload.RecFile)
 
-	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
-	byteoutput, err := cmd.CombinedOutput()
+	// cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	// byteoutput, err := cmd.CombinedOutput()
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	client, server, err := w.ConnectToSedotanServer()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	SshClient := *client
 
-	err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	apppath := ""
+	if server.OS == "linux" {
+		apppath = server.AppPath + `/cli/sedotanread`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=rechistory`)
+		arrcmd = append(arrcmd, `-pathfile=`+payload.RecFile)
+	} else {
+		apppath = server.AppPath + `\bin\sedotanread.exe`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=rechistory`)
+		arrcmd = append(arrcmd, `-pathfile=`+payload.RecFile)
+	}
+
+	cmds := strings.Join(append(arrcmd[:1], arrcmd[1:]...), " ")
+	fmt.Println("====>", cmds)
+	output, err := SshClient.GetOutputCommandSsh(cmds)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = toolkit.UnjsonFromString(output, &result)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -856,28 +883,58 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 
 	// history := NewHistory(payload.ID)
 	// logs := history.GetLogHistory([]interface{}{o}, payload.Date)
-	apppath := ""
-	if runtime.GOOS == "windows" {
-		arrcmd = append(arrcmd, "cmd")
-		arrcmd = append(arrcmd, "/C")
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
-	} else {
-		apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
-	}
+	// apppath := ""
+	// if runtime.GOOS == "windows" {
+	// 	arrcmd = append(arrcmd, "cmd")
+	// 	arrcmd = append(arrcmd, "/C")
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread.exe")
+	// } else {
+	// 	apppath = filepath.Join(EC_APP_PATH, "bin", "sedotanread")
+	// }
 
-	arrcmd = append(arrcmd, apppath)
-	arrcmd = append(arrcmd, `-readtype=logfile`)
-	arrcmd = append(arrcmd, `-datetime=`+payload.Date)
-	arrcmd = append(arrcmd, `-nameid=`+payload.ID)
-	arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
+	// arrcmd = append(arrcmd, apppath)
+	// arrcmd = append(arrcmd, `-readtype=logfile`)
+	// arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+	// arrcmd = append(arrcmd, `-nameid=`+payload.ID)
+	// arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
 
-	cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
-	byteoutput, err := cmd.CombinedOutput()
+	// cmd := exec.Command(arrcmd[0], arrcmd[1:]...)
+	// byteoutput, err := cmd.CombinedOutput()
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	client, server, err := w.ConnectToSedotanServer()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	SshClient := *client
 
-	err = toolkit.UnjsonFromString(string(byteoutput), &result)
+	apppath := ""
+	if server.OS == "linux" {
+		apppath = server.AppPath + `/cli/sedotanread`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=logfile`)
+		arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+		arrcmd = append(arrcmd, `-nameid=`+payload.ID)
+		arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
+	} else {
+		apppath = server.AppPath + `\bin\sedotanread.exe`
+		arrcmd = append(arrcmd, apppath)
+		arrcmd = append(arrcmd, `-readtype=logfile`)
+		arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+		arrcmd = append(arrcmd, `-nameid=`+payload.ID)
+		arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
+	}
+
+	cmds := strings.Join(append(arrcmd[:1], arrcmd[1:]...), " ")
+	fmt.Println("====>", cmds)
+	output, err := SshClient.GetOutputCommandSsh(cmds)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = toolkit.UnjsonFromString(output, &result)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -936,7 +993,31 @@ func (d *WebGrabberController) SyncConfig() error {
 	all := []colonycore.Server{}
 	serverC := &ServerController{}
 	configName := fmt.Sprintf("%s.json", new(colonycore.WebGrabber).TableName())
-	src := f.Join(EC_APP_PATH, "config", configName)
+	srcOriginal := f.Join(EC_APP_PATH, "config", configName)
+
+	bytes, err := ioutil.ReadFile(srcOriginal)
+	if err != nil {
+		return err
+	}
+
+	ifaces, _ := net.Interfaces()
+	addr, _ := ifaces[len(ifaces)-1].Addrs()
+	ip := addr[len(addr)-1].(*net.IPNet).IP.String()
+
+	srcString := string(bytes)
+	for _, keyword := range []string{`host":"localhost`, `host":"http://localhost`, `host":"https://localhost`} {
+		if strings.Contains(srcString, keyword) {
+			newKeyword := strings.Replace(keyword, "localhost", ip, -1)
+			srcString = strings.Replace(srcString, keyword, newKeyword, -1)
+		}
+	}
+
+	src := f.Join(EC_APP_PATH, "config", "tmp"+configName)
+	os.Create(src)
+	err = ioutil.WriteFile(src, []byte(srcString), 755)
+	if err != nil {
+		return err
+	}
 
 	filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
 	cursor, err := colonycore.Find(new(colonycore.Server), filters)
@@ -965,6 +1046,8 @@ func (d *WebGrabberController) SyncConfig() error {
 			continue
 		}
 	}
+
+	os.Remove(src)
 
 	if len(errs) == len(all) && len(errs) > 0 {
 		return errs[0]
