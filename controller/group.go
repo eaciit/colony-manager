@@ -18,6 +18,7 @@ import (
 	// "strings"
 	// "time"
 	// "reflect"
+	"strconv"
 )
 
 type GroupController struct {
@@ -62,6 +63,30 @@ func (a *GroupController) FindGroup(r *knot.WebContext) interface{} {
 	}
 
 }
+
+func (a *GroupController) Search(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	find := payload["search"].(string)
+	bfind, err := strconv.ParseBool(find)
+	tGroup := new(acl.Group)
+	arrm := make([]toolkit.M, 0, 0)
+	filter := dbox.Or(dbox.Contains("_id", find), dbox.Contains("id", find), dbox.Contains("title", find),
+		dbox.Contains("owner", find), dbox.Eq("enable", bfind))
+	c, e := acl.Find(tGroup, filter, toolkit.M{}.Set("take", 0))
+	if e == nil {
+		e = c.Fetch(&arrm, 0, false)
+	}
+
+	if e != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, arrm, "")
+	}
+}
+
 func (a *GroupController) GetAccessGroup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()

@@ -18,6 +18,7 @@ import (
 	// "strings"
 	// "time"
 	// "reflect"
+	"strconv"
 )
 
 type UserController struct {
@@ -62,6 +63,30 @@ func (a *UserController) FindUser(r *knot.WebContext) interface{} {
 	}
 
 }
+
+func (a *UserController) Search(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	find := payload["search"].(string)
+	bfind, err := strconv.ParseBool(find)
+	tUser := new(acl.User)
+	arrm := make([]toolkit.M, 0, 0)
+	filter := dbox.Or(dbox.Contains("_id", find), dbox.Contains("id", find), dbox.Contains("loginid", find),
+		dbox.Contains("fullname", find), dbox.Contains("email", find), dbox.Eq("enable", bfind))
+	c, e := acl.Find(tUser, filter, toolkit.M{}.Set("take", 0))
+	if e == nil {
+		e = c.Fetch(&arrm, 0, false)
+	}
+
+	if e != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, arrm, "")
+	}
+}
+
 func (a *UserController) DeleteUser(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()
@@ -187,69 +212,10 @@ func (a *UserController) ChangePass(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	user := payload["user"].(map[string]interface{})
-	groups := user["Groups"]
-	var group []string
-	for _, v := range groups.([]interface{}) {
-		group = append(group, v.(string))
-	}
-	fmt.Println(user["_id"].(string))
-	initUser := new(acl.User)
-	id := toolkit.RandomString(32)
-	if user["_id"].(string) == "" {
-		initUser.ID = id
-	} else {
-		initUser.ID = user["_id"].(string)
-	}
-	initUser.LoginID = user["LoginID"].(string)
-	initUser.FullName = user["FullName"].(string)
-	initUser.Email = user["Email"].(string)
-	initUser.Password = user["Password"].(string)
-	initUser.Enable = user["Enable"].(bool)
-	initUser.Groups = group
-
-	err = acl.Save(initUser)
-
+	err = acl.ChangePassword(user["_id"].(string), payload["pass"].(string))
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
-	if user["_id"].(string) == "" {
-		err = acl.ChangePassword(initUser.ID, user["Password"].(string))
-		if err != nil {
-			return helper.CreateResult(true, nil, err.Error())
-		}
-	}
-
-	var grant map[string]interface{}
-	for _, p := range payload["grants"].([]interface{}) {
-		dat := []byte(p.(string))
-		if err = json.Unmarshal(dat, &grant); err != nil {
-			return helper.CreateResult(true, nil, err.Error())
-		}
-		AccessID := grant["AccessID"].(string)
-		Accessvalue := grant["AccessValue"]
-		for _, v := range Accessvalue.([]interface{}) {
-			switch v {
-			case "AccessCreate":
-				initUser.Grant(AccessID, acl.AccessCreate)
-			case "AccessRead":
-				initUser.Grant(AccessID, acl.AccessRead)
-			case "AccessUpdate":
-				initUser.Grant(AccessID, acl.AccessUpdate)
-			case "AccessDelete":
-				initUser.Grant(AccessID, acl.AccessDelete)
-			case "AccessSpecial1":
-				initUser.Grant(AccessID, acl.AccessSpecial1)
-			case "AccessSpecial2":
-				initUser.Grant(AccessID, acl.AccessSpecial2)
-			case "AccessSpecial3":
-				initUser.Grant(AccessID, acl.AccessSpecial3)
-			case "AccessSpecial4":
-				initUser.Grant(AccessID, acl.AccessSpecial4)
-			}
-		}
-	}
-	err = acl.Save(initUser)
-
 	return helper.CreateResult(true, nil, "sukses")
 }
 
