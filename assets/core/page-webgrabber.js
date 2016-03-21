@@ -247,7 +247,7 @@ wg.scrapperColumns = ko.observableArray([
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
 	{ field: "grabstatus", title: "STATUS", attributes: { class: "align-center" }, template: function (d) {
-		if (["SUCCESS", "done"].indexOf(d.grabstatus) > -1) {
+		if (["SUCCESS", "done", "running"].indexOf(d.grabstatus) > -1) {
 			return '<i class="fa fa-check fa-2x color-green"></i>';
 		} else {
 			return '<i class="fa fa-times fa-2x color-red"></i>';
@@ -522,35 +522,39 @@ wg.runBotStats = function () {
 					var $grid = $(".grid-web-grabber").data("kendoGrid");
 					var row = Lazy($grid.dataSource.data()).find({ _id: each._id });
 
-					if (res.success) {
-						if (row != undefined) {
-							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+					if (row != undefined) {
+						var $tr = $(".grid-web-grabber").find(".k-grid-content-locked tr[data-uid='" + row.uid + "']");
 
+						if (res.success) {
 							if (res.data) {
 								$tr.addClass("started");
 							} else {
 								$tr.removeClass("started");
 							}
 						}
+
+						app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res2) {
+							if (!res2.success) {
+								return;
+							}
+
+							var $tr2 = $(".grid-web-grabber").find(".k-grid-content tr[data-uid='" + row.uid + "']");
+							var $td = $tr2.find("td:eq(3)");
+							if (res2.data.length > 0) {
+								var k = res2.data[0];
+						        var summary = [
+						        	"Start",  k.starttime,
+						        	"<br> Grab",  k.grabcount,
+						        	"times <br> Data retreive",  k.rowgrabbed,
+						        	"rows <br> Error",  k.errorfound,
+						        	"times"
+						        ].join(" ");
+								$td.html(summary);
+							}
+						}, {
+							withLoader: false
+						});
 					}
-
-					app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res) {
-						if (!res.success) {
-							return;
-						}
-
-						if (res.data.length > 0 && row != undefined){
-							var k = res.data[0];
-					        var summary = [
-					        	"Start",  k.starttime,
-					        	"<br> Grab",  k.grabcount,
-					        	"times <br> Data retreive",  k.rowgrabbed,
-					        	"rows <br> Error",  k.errorfound,
-					        	"times"
-					        ].join(" ");
-							row.set("note", summary);
-						}
-					});
 
 					if (isThereAnyError) {
 						return;
