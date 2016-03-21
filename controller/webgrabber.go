@@ -13,6 +13,8 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	. "github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
+	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -936,7 +938,31 @@ func (d *WebGrabberController) SyncConfig() error {
 	all := []colonycore.Server{}
 	serverC := &ServerController{}
 	configName := fmt.Sprintf("%s.json", new(colonycore.WebGrabber).TableName())
-	src := f.Join(EC_APP_PATH, "config", configName)
+	srcOriginal := f.Join(EC_APP_PATH, "config", configName)
+
+	bytes, err := ioutil.ReadFile(srcOriginal)
+	if err != nil {
+		return err
+	}
+
+	ifaces, _ := net.Interfaces()
+	addr, _ := ifaces[len(ifaces)-1].Addrs()
+	ip := addr[len(addr)-1].(*net.IPNet).IP.String()
+
+	srcString := string(bytes)
+	for _, keyword := range []string{`host":"localhost`, `host":"http://localhost`, `host":"https://localhost`} {
+		if strings.Contains(srcString, keyword) {
+			newKeyword := strings.Replace(keyword, "localhost", ip, -1)
+			srcString = strings.Replace(srcString, keyword, newKeyword, -1)
+		}
+	}
+
+	src := f.Join(EC_APP_PATH, "config", "tmp"+configName)
+	os.Create(src)
+	err = ioutil.WriteFile(src, []byte(srcString), 755)
+	if err != nil {
+		return err
+	}
 
 	filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
 	cursor, err := colonycore.Find(new(colonycore.Server), filters)
@@ -965,6 +991,8 @@ func (d *WebGrabberController) SyncConfig() error {
 			continue
 		}
 	}
+
+	os.Remove(src)
 
 	if len(errs) == len(all) && len(errs) > 0 {
 		return errs[0]
