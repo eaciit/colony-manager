@@ -8,7 +8,7 @@ ses.SessionColumns = ko.observableArray([
 	{ field: "created", title: "Created", template:'# if (created == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(created).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' },
 	{ field: "expired", title: "Expired", template:'# if (expired == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(expired).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' },
 	{ field: "duration", title: "Active In", template:'#= kendo.toString(duration, "n2")# H'},
-	{ title: "", width: 80, attributes: { class: "align-center" }, template:"#if(status=='EXPIRED'){# <button data-value='#:_id #' onclick='ses.setexpired(\"#: _id #\", \"#: username #\")' name='expired' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Set Expired'><span class='fa fa-stop'></span></button> #}else{# #}#" }
+	{ title: "Action", width: 80, attributes: { class: "align-center" }, template:"#if(status=='ACTIVE'){# <button data-value='#:_id #' onclick='ses.setexpired(\"#: _id #\", \"#: username #\")' name='expired' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Set Expired'><span class='fa fa-times'></span></button> #}else{# #}#" }
 	// { title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 	// 	if (status == "ACTIVE") {
 	// 		return [
@@ -28,44 +28,84 @@ ses.selectGridSession = function (e) {
 		// app.mode("editor"); 
 	});
 };
+
 ses.getSession = function(c) {
 	 
-	ses.SessionData([]);
-	var param = {};
-	app.ajaxPost("/session/getsession", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		if (res.data==null){
-			res.data="";
-		}
-		// console.log(res)
-		ses.SessionData(res.data);
-		var grid = $(".grid-sessions").data("kendoGrid"); 
-		$(grid.tbody).on("mouseleave", "tr", function (e) {
-		    $(this).removeClass("k-state-hover");
-		});
+	// ses.SessionData([]);
+	// var param = {};
+	// app.ajaxPost("/session/getsession", param, function (res) {
+	// 	if (!app.isFine(res)) {
+	// 		return;
+	// 	}
+	// 	if (res.data==null){
+	// 		res.data="";
+	// 	}
+	// 	// console.log(res)
+	// 	ses.SessionData(res.data);
+	// 	var grid = $(".grid-sessions").data("kendoGrid");
+	// 	$(grid.tbody).on("mouseleave", "tr", function (e) {
+	// 	    $(this).removeClass("k-state-hover");
+	// 	});
 
-		if (typeof c == "function") {
-			c(res);
-		}
-	});
+	// 	if (typeof c == "function") {
+	// 		c(res);
+	// 	}
+	// });
 };
  
 ses.setexpired = function (_id,username) {
-	var param ={ _id: _id };
+	var param ={ _id: _id,
+				username: username };
 	app.ajaxPost("/session/setexpired", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		ses.getSession()
-		// wg.selectedID(_id);
-		// app.mode('history');
-		// wg.historyData(res.data);
 	});
 } 
- 
+
+ses.GetFilter = function(){
+	return
+}
+
+ses.GenerateGrid = function() {
+    $(".grid-sessions").html("");
+    $('.grid-sessions').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/session/getsession",
+                    dataType: "json",
+                    data: ses.GetFilter(),
+                    type: "POST",
+                    success: function(data) {
+                        $(".grid-sessions>.k-grid-content-locked").css("height", $(".grid-sessions").data("kendoGrid").table.height());
+                    }
+                }
+            },
+            schema: {
+                data: "data.Datas",
+                total: "data.total"
+            },
+
+            pageSize: 10,
+            serverPaging: true, // enable server paging
+            serverSorting: true,
+        },
+        resizable: true,
+        scrollable: true,
+        // sortable: true,
+        // filterable: true,
+        pageable: {
+            refresh: false,
+            pageSizes: 10,
+            buttonCount: 5
+        },
+        columns: ses.SessionColumns()
+    });
+
+}
 // ses.editGroup = function(c) {
 // 	var payload = ko.mapping.toJS(ses.filter._id(c));
 // 	app.ajaxPost("/session/findsession", payload, function (res) {
@@ -86,5 +126,6 @@ ses.setexpired = function (_id,username) {
  
 $(function () {
 	ses.getSession(); 
+	ses.GenerateGrid();
 });
 
