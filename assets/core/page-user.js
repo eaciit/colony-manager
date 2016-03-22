@@ -64,22 +64,22 @@ usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
     width: 50
-}, {
+    }, {
     field: "loginid",
     title: "Login Id"
-}, {
+    }, {
     field: "fullname",
     title: "Fullame"
-}, {
+    }, {
     field: "email",
     title: "Email"
-}, {
+    }, {
     field: "password",
     title: "Password"
-}, {
+    }, {
     field: "enable",
     title: "Enable"
-}, {
+    }, {
     field: "groups",
     title: "Groups"
 }]);
@@ -148,15 +148,17 @@ usr.getUsers = function(c) {
     });
 };
 
-usr.searchUser = function(){ 
-    usr.UsersData([]); 
-    app.ajaxPost("/user/search", {search:usr.search()}, function(res) {
+usr.searchUser = function() {
+    usr.UsersData([]);
+    app.ajaxPost("/user/search", {
+        search: usr.search()
+    }, function(res) {
         if (!app.isFine(res)) {
             return;
         }
         if (res.data == null) {
             res.data = "";
-        } 
+        }
         usr.UsersData(res.data);
         var grid = $(".grid-access").data("kendoGrid");
         $(grid.tbody).on("mouseleave", "tr", function(e) {
@@ -374,7 +376,7 @@ usr.createGridPrivilege = function(ds) {
             data: ds
         }
     }).data("kendoGrid");
- 
+
 };
 
 
