@@ -36,41 +36,44 @@ func CreateSessionController(s *knot.Server) *SessionController {
 }
 
 func (a *SessionController) GetSession(r *knot.WebContext) interface{} {
+	var filter *dbox.Filter
 	r.Config.OutputType = knot.OutputJson
 	_ = a.InitialSetDatabase()
 
-	// payload := map[string]interface{}{}
-	// err := r.GetPayload(&payload)
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	tSession := new(acl.Session)
+	if payload["find"].(string) != "" {
+		filter = new(dbox.Filter)
+		filter = dbox.Contains("loginid", payload["find"].(string))
+	}
 
-	data := toolkit.M{}
-
-	arrm := make([]toolkit.M, 0, 0)
 	// c, err := acl.Find(tSession, nil, toolkit.M{}.Set("take", payload["take"].(int)).Set("skip", payload["skip"].(int)))
-	c, err := acl.Find(tSession, nil, toolkit.M{}.Set("take", 10).Set("skip", 0))
+	c, err := acl.Find(tSession, filter, toolkit.M{}.Set("take", 10).Set("skip", 0))
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
 
+	data := toolkit.M{}
+	arrm := make([]toolkit.M, 0, 0)
 	err = c.Fetch(&arrm, 0, false)
 	for i, val := range arrm {
-		tUser := new(acl.User)
-		e := acl.FindByID(tUser, toolkit.ToString(val.Get("userid", "")))
-		if e != nil {
-			continue
-		}
-		arrm[i].Set("username", tUser.LoginID)
+		// tUser := new(acl.User)
+		// e := acl.FindByID(tUser, toolkit.ToString(val.Get("userid", "")))
+		// if e != nil {
+		// 	continue
+		// }
+		// arrm[i].Set("username", tUser.LoginID)
 		arrm[i].Set("duration", time.Since(val["created"].(time.Time)).Hours())
 		arrm[i].Set("status", "ACTIVE")
 		if val["expired"].(time.Time).Before(time.Now().UTC()) {
 			arrm[i].Set("duration", val["expired"].(time.Time).Sub(val["created"].(time.Time)).Hours())
 			arrm[i].Set("status", "EXPIRED")
 		}
-		arrm[i].Set("username", tUser.LoginID)
 		// toolkit.Printf("Debug date : %v : %v\n", toolkit.TypeName(val["created"]), val["created"].(time.Time))
 	}
 	c.Close()
