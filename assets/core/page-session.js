@@ -1,14 +1,16 @@
 app.section('session');
 
+
 viewModel.session = {}; var ses = viewModel.session;
-  
+ses.search = ko.observable("");
+
 ses.SessionColumns = ko.observableArray([
 	{ field: "status", title: "" },
-	{ field: "username", title: "Username" },
+	{ field: "loginid", title: "Username" },
 	{ field: "created", title: "Created", template:'# if (created == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(created).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' },
 	{ field: "expired", title: "Expired", template:'# if (expired == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(expired).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' },
 	{ field: "duration", title: "Active In", template:'#= kendo.toString(duration, "n2")# H'},
-	{ title: "Action", width: 80, attributes: { class: "align-center" }, template:"#if(status=='ACTIVE'){# <button data-value='#:_id #' onclick='ses.setexpired(\"#: _id #\", \"#: username #\")' name='expired' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Set Expired'><span class='fa fa-times'></span></button> #}else{# #}#" }
+	{ title: "Action", width: 80, attributes: { class: "align-center" }, template:"#if(status=='ACTIVE'){# <button data-value='#:_id #' onclick='ses.setexpired(\"#: _id #\", \"#: loginid #\")' name='expired' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Set Expired'><span class='fa fa-times'></span></button> #}else{# #}#" }
 	// { title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 	// 	if (status == "ACTIVE") {
 	// 		return [
@@ -29,7 +31,7 @@ ses.selectGridSession = function (e) {
 	});
 };
 
-ses.getSession = function(c) {
+// ses.getSession = function(c) {
 	 
 	// ses.SessionData([]);
 	// var param = {};
@@ -51,7 +53,7 @@ ses.getSession = function(c) {
 	// 		c(res);
 	// 	}
 	// });
-};
+// };
  
 ses.setexpired = function (_id,username) {
 	var param ={ _id: _id,
@@ -61,11 +63,22 @@ ses.setexpired = function (_id,username) {
 			return;
 		}
 
-		ses.getSession()
+		$('.grid-sessions').data('kendoGrid').refresh();
 	});
 } 
 
 ses.GetFilter = function(){
+	data = {
+		find : ses.search,
+	}
+
+	return data
+}
+
+ses.searchsession = function(event){
+	if ((event != undefined) && (event.keyCode == 13)){
+		$('.grid-sessions').data('kendoGrid').dataSource.read();
+	}
 	return
 }
 
@@ -125,7 +138,7 @@ ses.GenerateGrid = function() {
 
  
 $(function () {
-	ses.getSession(); 
+	// ses.getSession(); 
 	ses.GenerateGrid();
 });
 

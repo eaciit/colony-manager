@@ -124,16 +124,16 @@
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,kendoTooltip: { content: adm.AccessSpecial1 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,attr: { title: adm.AccessSpecial1 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, kendoTooltip: { content: adm.AccessSpecial2 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, attr: { title: adm.AccessSpecial2 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, kendoTooltip: { content: adm.AccessSpecial3 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, attr: { title: adm.AccessSpecial3 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,kendoTooltip: { content: adm.AccessSpecial4 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
