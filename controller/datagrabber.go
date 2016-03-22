@@ -8,11 +8,14 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,6 +23,7 @@ var (
 	serviceHolder = map[string]bool{}
 	dgLogPath     = filepath.Join(EC_DATA_PATH, "datagrabber", "log")
 	dgOutputPath  = filepath.Join(EC_DATA_PATH, "datagrabber", "output")
+	mutex         sync.Mutex
 )
 
 type DataGrabberController struct {
@@ -40,7 +44,6 @@ func (d *DataGrabberController) getLogger(dataGrabber *colonycore.DataGrabber) (
 
 	logConf, err := toolkit.NewLog(false, true, dgLogPath, logFileNameParsed, logFilePattern)
 	if err != nil {
-		logConf.AddLog(err.Error(), "ERROR")
 		return nil, err
 	}
 
@@ -48,7 +51,7 @@ func (d *DataGrabberController) getLogger(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(currentDataGrabber, dataGrabber.ID)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		return nil, err
+		return logConf, err
 	}
 	if currentDataGrabber.RunAt == nil {
 		currentDataGrabber.RunAt = []string{}
@@ -60,13 +63,13 @@ func (d *DataGrabberController) getLogger(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Delete(currentDataGrabber)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		return nil, err
+		return logConf, err
 	}
 
 	err = colonycore.Save(currentDataGrabber)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		return nil, err
+		return logConf, err
 	}
 
 	return logConf, nil
@@ -341,6 +344,8 @@ func (d *DataGrabberController) RemoveMultipleDataGrabber(r *knot.WebContext) in
 func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	mutex.Lock()
+
 	dataGrabber := new(colonycore.DataGrabber)
 	err := r.GetPayload(dataGrabber)
 	if err != nil {
@@ -351,6 +356,8 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	mutex.Unlock()
 
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
 		serviceHolder[dataGrabber.ID] = false
@@ -484,6 +491,8 @@ func (d *DataGrabberController) Stat(r *knot.WebContext) interface{} {
 }
 
 func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (bool, []toolkit.M, string) {
+	mutex.Lock()
+
 	logConf, err := d.getLogger(dataGrabber)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
@@ -498,6 +507,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(dsOrigin, dataGrabber.DataSourceOrigin)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
+		mutex.Unlock()
 		return false, nil, err.Error()
 	}
 
@@ -505,6 +515,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(dsDestination, dataGrabber.DataSourceDestination)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
+		mutex.Unlock()
 		return false, nil, err.Error()
 	}
 
@@ -513,10 +524,12 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	if len(dataDS.QueryInfo) == 0 {
 		message := "Data source origin has invalid query"
 		logConf.AddLog(message, "ERROR")
+		mutex.Unlock()
 		return false, nil, message
 	}
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
+		mutex.Unlock()
 		return false, nil, err.Error()
 	}
 	defer conn.Close()
@@ -524,12 +537,14 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	if metaSave.keyword != "" {
 		message := `Data source origin query is not "Select"`
 		logConf.AddLog(message, "ERROR")
+		mutex.Unlock()
 		return false, nil, message
 	}
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
+		mutex.Unlock()
 		return false, nil, err.Error()
 	}
 	defer cursor.Close()
@@ -538,6 +553,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
+		mutex.Unlock()
 		return false, nil, err.Error()
 	}
 
@@ -545,8 +561,11 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(connDesc, dsDestination.ConnectionID)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
+		mutex.Unlock()
 		return false, nil, err.Error()
 	}
+
+	mutex.Unlock()
 
 	const FLAG_ARG_DATA string = `%1`
 	transformedData := []toolkit.M{}
@@ -646,8 +665,14 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 
 					eachTransformedData.Set(eachMap.Destination, valueObjects)
 				} else {
-					// eachTransformedData.Set(eachMap.Destination, convertDataType(eachMap.DestinationType, eachMap.Source, each))
-					eachTransformedData.Set(eachMap.Destination, d.convertTo(each.Get(eachMap.Source), eachMap.DestinationType))
+					if strings.Contains(eachMap.DestinationType, "array") {
+						valueObjects := each.Get(eachMap.Source)
+
+						eachTransformedData.Set(eachMap.Destination, valueObjects)
+					} else {
+						// eachTransformedData.Set(eachMap.Destination, convertDataType(eachMap.DestinationType, eachMap.Source, each))
+						eachTransformedData.Set(eachMap.Destination, d.convertTo(each.Get(eachMap.Source), eachMap.DestinationType))
+					}
 				}
 			} else {
 				prev := strings.Split(eachMap.Destination, "|")[0]
@@ -788,16 +813,20 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 						}
 
 						nilFieldDest.Set(metadataDest.ID, valueObjects)
-					} else if metadataDest.Type == "array-string" {
-						valueObjects := []interface{}{}
-
-						nilFieldDest.Set(metadataDest.ID, valueObjects)
 					} else {
-						nilFieldDest.Set(metadataDest.ID, nil)
+						if strings.Contains(metadataDest.Type, "array") {
+							valueObjects := []interface{}{}
+
+							nilFieldDest.Set(metadataDest.ID, valueObjects)
+						} else {
+							nilFieldDest.Set(metadataDest.ID, nil)
+						}
 					}
 				}
 			}
 		}
+
+		mutex.Lock()
 
 		tableName := dsDestination.QueryInfo.GetString("from")
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
@@ -805,27 +834,27 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			queryWrapper.Delete(tableName, dbox.Or())
 		}
 		if eachTransformedData.Has("_id") {
-			err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.GetString("_id")))
+			err = queryWrapper.Delete(tableName, dbox.Eq("_id", eachTransformedData.Get("_id")))
 		}
 
-		// queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
-
-		// err = queryWrapper.Save(tableName, dataToSave)
-		// if err != nil {
-		// 	logConf.AddLog(err.Error(), "ERROR")
-		// 	return false, nil, err.Error()
-		// }
-		if toolkit.HasMember([]string{"json", "jsons", "csv", "csvs"}, connDesc.Driver) {
-			queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, "", "", "", connDesc.Settings)
+		if toolkit.HasMember([]string{"json", "jsons", "csv", "csvs"}, connDesc.Driver) && strings.HasPrefix(connDesc.Host, "http") {
+			queryWrapper = helper.Query(connDesc.Driver, connDesc.FileLocation, "", "", "", connDesc.Settings)
 		} else {
 			queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
+		}
+
+		if !nilFieldDest.Has("_id") || nilFieldDest.Get("_id") == nil {
+			nilFieldDest.Set("_id", helper.RandomIDWithPrefix(""))
 		}
 
 		err = queryWrapper.Save(tableName, nilFieldDest)
 		if err != nil {
 			logConf.AddLog(err.Error(), "ERROR")
+			mutex.Unlock()
 			return false, nil, err.Error()
 		}
+
+		mutex.Unlock()
 
 		// ================ post transfer command
 		if dataGrabber.PostTransferCommand != "" {
@@ -900,6 +929,7 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 	var connSource dbox.IConnection
 	var connDest dbox.IConnection
 	var collObjectNames []string
+	var dirpath string
 
 	isNosql := false
 	result := []*colonycore.DataGrabber{}
@@ -919,8 +949,15 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 			return result, err
 		}
 		defer connDest.Close()
-		collObjectNames = connDest.ObjectNames(dbox.ObjTypeAll)
-		fmt.Println(" :: ", collObjectNames)
+
+		if toolkit.HasMember([]string{"json", "csv"}, dataConnDest.Driver) {
+			var filedata string
+			dirpath, filedata = filepath.Split(dataConnDest.FileLocation)
+			collObjectNames = []string{strings.Split(filedata, ".")[0]}
+		} else {
+			collObjectNames = connDest.ObjectNames(dbox.ObjTypeAll)
+		}
+
 		//connection source/from
 		err := colonycore.Get(dataConnSource, payload.ConnectionSource)
 		if err != nil {
@@ -938,6 +975,7 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 
 	for key, each := range payload.Transformations {
 		if tDest := strings.TrimSpace(each.TableDestination); tDest != "" {
+			var connectionIDDest string
 			if isNosql {
 				//pengecekan tidak adanya tabel di connection destination
 				if each.TableDestination != "" && !toolkit.HasMember(collObjectNames, each.TableDestination) {
@@ -970,16 +1008,76 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 						}
 					}
 
-					err = connDest.NewQuery().Save().From(each.TableDestination).Exec(toolkit.M{"data": data}) //.Save(each.TableSource, metaToSave, nil)
-					if err != nil {
-						return result, err
-					}
+					if toolkit.HasMember([]string{"csv", "json"}, dataConnDest.Driver) {
+						// filepath.WalkFunc
+						o := new(colonycore.Connection)
 
+						exts := filepath.Ext(dataConnDest.FileLocation)
+						extstrim := strings.TrimPrefix(exts, ".")
+						newpath := filepath.Join(dirpath, each.TableDestination+exts)
+						connectionIDDest = fmt.Sprintf("conn_%s_%s", extstrim, formatTime)
+
+						o.ID = connectionIDDest
+						o.Driver = extstrim
+						o.Host = newpath
+
+						if dataConnDest.Driver == "csv" {
+							o.Settings = toolkit.M{"newfile": true, "useheader": true, "delimiter": ","}
+						} else {
+							o.Settings = toolkit.M{"newfile": true}
+						}
+
+						if strings.HasPrefix(o.Host, "http") {
+							fileType := helper.GetFileExtension(o.Host)
+							o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
+
+							file, err := os.Create(o.FileLocation)
+							if err != nil {
+								return nil, err
+							}
+							defer file.Close()
+
+							resp, err := http.Get(o.Host)
+							if err != nil {
+								return nil, err
+							}
+							defer resp.Body.Close()
+
+							_, err = io.Copy(file, resp.Body)
+							if err != nil {
+								return nil, err
+							}
+						} else {
+							o.FileLocation = o.Host
+						}
+
+						err := colonycore.Save(o)
+						if err != nil {
+							return result, err
+						}
+
+						newconnDest, err := helper.ConnectUsingDataConn(o).Connect()
+						if err != nil {
+							return result, err
+						}
+						defer newconnDest.Close()
+
+						err = newconnDest.NewQuery().Save().Exec(toolkit.M{"data": data})
+						if err != nil {
+							return result, err
+						}
+					} else {
+						err = connDest.NewQuery().Save().From(each.TableDestination).Exec(toolkit.M{"data": data})
+						if err != nil {
+							return result, err
+						}
+					}
 				}
 			}
 
 			var prevDS string
 			var nextDS string
+			mapGrabber := []*colonycore.Map{}
 
 			for i := 0; i < 2; i++ {
 				var valueFrom string
@@ -996,7 +1094,11 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 
 				} else { //table destination
 					valueFrom = each.TableDestination
-					connectionID = payload.ConnectionDestination
+					if !toolkit.HasMember([]string{"csv", "json"}, dataConnDest.Driver) {
+						connectionID = payload.ConnectionDestination
+					} else {
+						connectionID = connectionIDDest
+					}
 				}
 				squery := fmt.Sprintf(`{"from":"%s", "select":"*"}`, valueFrom)
 				queryinf := toolkit.M{}
@@ -1026,6 +1128,13 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 						if qFrom == valueFrom && isSelectExists {
 							resultEachData.Set(valueFrom, eachData.ID)
 							resultDataRaw = append(resultDataRaw, resultEachData)
+
+							if i == 1 {
+								for _, eachMetadata := range eachData.MetaData {
+									mapGrabberField := colonycore.Map{Source: eachMetadata.ID, SourceType: eachMetadata.Type, Destination: eachMetadata.ID, DestinationType: eachMetadata.Type}
+									mapGrabber = append(mapGrabber, &mapGrabberField)
+								}
+							}
 						}
 					}
 
@@ -1051,6 +1160,13 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 						if err != nil {
 							return result, err
 						}
+
+						if i == 1 {
+							for _, eachMetadata := range metadata {
+								mapGrabberField := colonycore.Map{Source: eachMetadata.ID, SourceType: eachMetadata.Type, Destination: eachMetadata.ID, DestinationType: eachMetadata.Type}
+								mapGrabber = append(mapGrabber, &mapGrabberField)
+							}
+						}
 					}
 				} else {
 					resultEachData := toolkit.M{}
@@ -1074,13 +1190,22 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 					if err != nil {
 						return result, err
 					}
+
+					if i == 1 {
+						for _, eachMetadata := range metadata {
+							mapGrabberField := colonycore.Map{Source: eachMetadata.ID, SourceType: eachMetadata.Type, Destination: eachMetadata.ID, DestinationType: eachMetadata.Type}
+							mapGrabber = append(mapGrabber, &mapGrabberField)
+						}
+					}
 				}
 
 				for _, resd := range resultDataRaw {
-					if i == 0 {
+					if i == 0 { //table source
 						prevDS = resd.Get(valueFrom).(string)
-					} else {
+						break
+					} else { //table destination
 						nextDS = resd.Get(valueFrom).(string)
+						break
 					}
 				}
 			}
@@ -1098,7 +1223,8 @@ func (d *DataGrabberController) AutoGenerateDataSources(payload *colonycore.Data
 			owiz.GrabInterval = 20
 			owiz.IntervalType = "seconds"
 			owiz.InsertMode = "append"
-			owiz.Maps = []*colonycore.Map{}
+			// owiz.Maps = []*colonycore.Map{}
+			owiz.Maps = mapGrabber
 			owiz.PostTransferCommand = ""
 			owiz.PreTransferCommand = ""
 			owiz.TimeoutInterval = 20

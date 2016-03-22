@@ -252,7 +252,6 @@ var methodsFB = {
 		$strbtn.click(function(){
 			methodsFB.ActionRequest(elem,options,{action:"Download"},$strbtn);
 		})
-
 		streditor = "<div class='col-md-12'><textarea class='fb-editor'></textarea></div>"
 		$streditor = $(streditor);
 
@@ -261,10 +260,11 @@ var methodsFB = {
 		$streditor.appendTo($strpre);
 		$($(elem).find(".fb-editor")).kendoEditor({ resizable: {
                         content: true,
-                        toolbar: true
+                        toolbar: true,
                     }});
 
 		$conted = $($(elem).find("ul[data-role='editortoolbar']"));
+
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
 		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn tooltipster' unselectable='on' title='Save' aria-pressed='false'></a>");
@@ -300,6 +300,9 @@ var methodsFB = {
 		$edli.appendTo($conted);
 		$edtxt.appendTo($edli);
 		app.prepareTooltipster();
+
+		hei = screen.height*0.57;
+		$($(elem).find(".k-editor")).attr("style","height:"+hei+"px!important");
 	},
 	BuildPermission:function(elemarr,permstr){
 		var idx = 0;
@@ -532,10 +535,10 @@ var methodsFB = {
 
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
 			var dtitm = methodsFB.GetSelectedData(elem);
-			// if(!dtitm.iseditable){
-   // 			 swal("Warning!", "Action not permitted !", "warning");
-			// 	return;
-			// }
+			if(!dtitm.iseditable){
+   			 // swal("Warning!", "Action not permitted !", "warning");
+				return;
+			}
 		}
 
 		content.path = SelectedPath;
@@ -818,9 +821,9 @@ var methodsFB = {
 		var tree = $($(elem).find(".k-treeview")).getKendoTreeView();
 		var selectedparent = methodsFB.GetParent(elem,content);
 		if(selectedparent.length==0){
-			setTimeout(function(){
+			// setTimeout(function(){
 				app.isLoading(true);
-			},500);
+			// },500);
 			tree.dataSource.read();
 			return;
 		}

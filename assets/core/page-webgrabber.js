@@ -247,7 +247,7 @@ wg.scrapperColumns = ko.observableArray([
 wg.historyColumns = ko.observableArray([
 	{ field: "id", title: "ID", filterable: false, width: 50, attributes: { class: "align-center" }}, 
 	{ field: "grabstatus", title: "STATUS", attributes: { class: "align-center" }, template: function (d) {
-		if (["SUCCESS", "done"].indexOf(d.grabstatus) > -1) {
+		if (["SUCCESS", "done", "running"].indexOf(d.grabstatus) > -1) {
 			return '<i class="fa fa-check fa-2x color-green"></i>';
 		} else {
 			return '<i class="fa fa-times fa-2x color-red"></i>';
@@ -361,26 +361,47 @@ wg.editScrapper = function (_id) {
 			wg.modeSetup('interval');
 		}
 
+		var parseValue = function (row) {
+			var totalEls = 0;
+			for (var k in row) if (row.hasOwnProperty(k)) {
+				var column = k;
+				var operator = "$eq";
+				var value = "";
+
+				if (row[k] instanceof Object) {
+					for (var l in row[k]) if (row[k].hasOwnProperty(l)) {
+						operator = l;
+						value = row[k][l];
+					}
+				} else {
+					value = row[k];
+				}
+
+				return {
+					column: column,
+					operator: operator,
+					value: value
+				};
+			}
+		}
+
 		wg.selectorRowSetting([]);
 		res.data.datasettings.forEach(function (item, index) {
 			item.conditionlist = [];
-			for (var k in item.filtercond) {
-				if (item.filtercond.hasOwnProperty(k)) {
+
+			for (var k in item.filtercond) if (item.filtercond.hasOwnProperty(k)) {
+				var isComparisonExists = Lazy(wg.templateFilterCond()).find({ Id: k });
+
+				if (typeof isComparisonExists === "undefined") {
+					wg.configSelector.filtercond("$and");
+
+					var parsedValue = parseValue(item.filtercond[k])
+					item.conditionlist.push(parsedValue);
+				} else {
 					wg.configSelector.filtercond(k);
 					item.filtercond[k].forEach(function (d) {
-						for (var column in d) {
-							if (d.hasOwnProperty(column)) {
-								for (var valueKey in d[column]) {
-									if (d[column].hasOwnProperty(valueKey)) {
-										item.conditionlist.push(ko.mapping.fromJS({
-											column: column,
-											operator: valueKey,
-											value: d[column][valueKey]
-										}));
-									}
-								}
-							}
-						}
+						var parsedValue = parseValue(d);
+						item.conditionlist.push(parsedValue);
 					});
 				}
 			}
@@ -501,31 +522,39 @@ wg.runBotStats = function () {
 					var $grid = $(".grid-web-grabber").data("kendoGrid");
 					var row = Lazy($grid.dataSource.data()).find({ _id: each._id });
 
-					if (res.success) {
-						if (row != undefined) {
-							var $tr = $(".grid-web-grabber").find("tr[data-uid='" + row.uid + "']");
+					if (row != undefined) {
+						var $tr = $(".grid-web-grabber").find(".k-grid-content-locked tr[data-uid='" + row.uid + "']");
 
+						if (res.success) {
 							if (res.data) {
 								$tr.addClass("started");
 							} else {
 								$tr.removeClass("started");
 							}
 						}
-					}
 
-					app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res) {
-						if (res.data.length > 0 && row != undefined){
-							var k = res.data[0];
-					        var summary = [
-					        	"Start",  k.starttime,
-					        	"<br> Grab",  k.grabcount,
-					        	"times <br> Data retreive",  k.rowgrabbed,
-					        	"rows <br> Error",  k.errorfound,
-					        	"times"
-					        ].join(" ");
-							row.set("note", summary);
-						}
-					});
+						app.ajaxPost("/webgrabber/getsnapshot", { nameid: each._id }, function (res2) {
+							if (!res2.success) {
+								return;
+							}
+
+							var $tr2 = $(".grid-web-grabber").find(".k-grid-content tr[data-uid='" + row.uid + "']");
+							var $td = $tr2.find("td:eq(3)");
+							if (res2.data.length > 0) {
+								var k = res2.data[0];
+						        var summary = [
+						        	"Start",  k.starttime,
+						        	"<br> Grab",  k.grabcount,
+						        	"times <br> Data retreive",  k.rowgrabbed,
+						        	"rows <br> Error",  k.errorfound,
+						        	"times"
+						        ].join(" ");
+								$td.html(summary);
+							}
+						}, {
+							withLoader: false
+						});
+					}
 
 					if (isThereAnyError) {
 						return;
@@ -567,7 +596,16 @@ wg.parsePayload = function () {
 };
 wg.getURL = function () {
 	if (!app.isFormValid(".form-scrapper-top")) {
-		if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
+		if(wg.configScrapper.grabconf.authtype() == ''){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty","Username cannot be empty","Password cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
 			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
 			errors = Lazy(errors).filter(function (d) {
 				return ["Login Url cannot be empty","Logout Url cannot be empty"].indexOf(d) == -1;
@@ -576,7 +614,8 @@ wg.getURL = function () {
 			if (errors.length > 0) {
 				return;
 			}
-		}else{
+		}
+		else{
 			return;
 		}
 	}
@@ -830,13 +869,6 @@ wg.removeSelectorSetting = function(each){
 	wg.selectorRowSetting.remove(item);
 }
 
-wg.authtypeValidation = function(authtype){
-	if(authtype != 'AuthType_Basic'){
-		$('.authconf').prop('required',true);
-	}else{
-		$('.authconf').prop('required',false);
-	}
-}
 wg.showSelectorSetting = function(index,nameSelector){
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
@@ -869,31 +901,26 @@ wg.saveSettingSelector = function() {
 		var totalAllowedForCSV = 0, totalAllowedForDB = 0;
 		var errors = $(".form-row-column-selector").data("kendoValidator").errors();
 
-		errors.forEach(function (item) {
-			if (type == "csv") {
-				if (item.indexOf("FileName") > -1 || item.indexOf("Delimiter") > -1) {
-					totalAllowedForCSV++;
-				}
-			} else {
-				if (item.indexOf("ConnectionId") > -1 || item.indexOf("Collection") > -1) {
-					totalAllowedForDB++;
-				}
-			}
-		});
-
 		if (type == "csv") {
-			if (errors.length >= 0 && totalAllowedForCSV == 0) {
+			errors = Lazy(errors).filter(function (d) {
+				return ["Connection cannot be empty","Collection is required"].indexOf(d) == -1;
+			}).toArray();
 
-			} else {
+			if (errors.length > 0) {
 				return;
 			}
-		} else {
-			if (errors.length >= 0 && totalAllowedForDB == 0) {
+		} else if(type == 'database'){
+			errors = Lazy(errors).filter(function (d) {
+				return ["FileName is required","Delimiter is required"].indexOf(d) == -1;
+			}).toArray();
 
-			} else {
+			if (errors.length > 0) {
 				return;
 			}
+		}else{
+			return;
 		}
+
 	}
 
 	if(wg.filtercond() !== "" && wg.isJson(wg.filtercond()) == false){
@@ -976,60 +1003,38 @@ wg.parseGrabConf = function () {
 			c.selector = wg.replaceEqWithNthChild(c.selector);
 			return c;
 		});
-		
-		var condition = {}, conditionlist = item.conditionlist, columnsettings = item.columnsettings;
-		condition[item.filtercond] = [];
-		if (item.filtercond.length > 0){
-			for (var key in conditionlist){
-				var obj = {}, col = conditionlist[key].column, operation = conditionlist[key].operator, val = conditionlist[key].value;
-				obj[col] = {};
-				var format = ko.utils.arrayFilter(columnsettings,function (item) {
-				        return item.alias == col;
-				});
-				if(operation !== '$eq'){
-					switch (format[0]){
-						case "integer":
-							obj[col][operation] = parseInt(val);
-							break;
-						case "float":
-							obj[col][operation] = parseFloat(val);
-							break;
-						default:
-							obj[col][operation] = val;
-							break;
-					}
-				}else{
-					switch (format[0]){
-						case "integer":
-							obj[col] = parseInt(val);
-							break;
-						case "float":
-							obj[col] = parseFloat(val);
-							break;
-						default:
-							obj[col] = val;
-							break;
-					}
-				}
 
-				if(conditionlist.length == 1){
-					condition = obj;
-				}else{
-					condition[item.filtercond].push(obj);
-				}
-
-			}
-			item.filtercond = condition;
-		}
-		if (item.filtercond == "") {
+		if (item.filtercond == null || item.filtercond == "") {
 			item.filtercond = {};
-		}
+		} else {
+			var conditions = item.conditionlist.map(function (cl) {
+				var obj = {};
+				obj[cl.column] = {};
 
-		if (wg.filtercond() != ""){
-			item.filtercond = JSON.parse(wg.filtercond());
+				var format = ko.utils.arrayFilter(item.columnsettings, function (each) {
+			        return each.alias == cl.column;
+				});
+
+				if (format.length > 0) {
+					switch (format[0]) {
+						case "integer": obj[cl.column][cl.operator] = parseInt(cl.value, 10); break;
+						case "float":   obj[cl.column][cl.operator] = parseFloat(cl.value); break;
+						default:        obj[cl.column][cl.operator] = cl.value; break;
+					}
+				}
+
+				return obj;
+			});
+
+			var filtercond = {};
+			filtercond[item.filtercond] = conditions;
+			item.filtercond = filtercond;
+			console.log("filtercond", filtercond);
 		}
+		
 		delete item["conditionlist"];
 		delete item["__ko_mapping__"];
+
 		return JSON.parse(ko.mapping.toJSON(item));
 	});
 
@@ -1090,14 +1095,35 @@ wg.parseGrabConf = function () {
 };
 wg.saveSelectorConf = function(){
 	if (!app.isFormValid(".form-scrapper-top")) {
-		return;
+		if(wg.configScrapper.grabconf.authtype() == ''){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty","Username cannot be empty","Password cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}else if(wg.configScrapper.grabconf.authtype() == 'AuthType_Basic'){
+			var errors = $(".form-scrapper-top").data("kendoValidator").errors();
+			errors = Lazy(errors).filter(function (d) {
+				return ["Login Url cannot be empty","Logout Url cannot be empty"].indexOf(d) == -1;
+			}).toArray();
+
+			if (errors.length > 0) {
+				return;
+			}
+		}
+		else{
+			return;
+		}
 	}
 	if (!app.isFormValid(".form-row-selector")) {
 		return;
 	}
 
 	var config = wg.parseGrabConf();
-	console.log("Old Json",config)
+	//console.log("Old Json",config)
 	
 	app.ajaxPost("/webgrabber/savescrapperdata", config, function (res) {
 		if(!app.isFine(res)) {
@@ -1224,8 +1250,7 @@ function filterWebGrabber(event) {
 }
 
 wg.getConnection = function () {
-	var param = ko.mapping.toJS(wg.configConnection);
-	app.ajaxPost("/webgrabber/getconnections", param, function (res) {
+	app.ajaxPost("/datasource/getconnections", { search: "", driver: "" }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
