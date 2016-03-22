@@ -66,7 +66,16 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 			continue
 		}
 
-		settings[each["key"].(string)] = each["value"].(string)
+		value := each["value"].(string)
+		if temp := strings.TrimSpace(strings.ToLower(each["value"].(string))); temp == "false" || temp == "true" {
+			settings[each["key"].(string)], _ = strconv.ParseBool(temp)
+		} else {
+			if number, err := strconv.Atoi(temp); err == nil {
+				settings[each["key"].(string)] = number
+			} else {
+				settings[each["key"].(string)] = value
+			}
+		}
 	}
 
 	return settings
@@ -188,7 +197,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 		// toolkit.Println(stringQuery)
 	}
 
-	qcount, _ := d.parseQuery(connection.NewQuery(), payload)
+	qcount, _ := d.parseQuery(connection.NewQuery(), TblName)
 	query, _ := d.parseQuery(connection.NewQuery() /*.Skip(skip).Take(take) .Order(sorter)*/, payload)
 
 	var selectfield string
@@ -212,7 +221,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 					qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
 						toolkit.ToString(metadata.DataType), ""))
 				} else {
-					switch toolkit.TypeName(payload[tField]) {
+					switch toolkit.ToString(metadata.DataType) {
 					case "int":
 						query = query.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
 						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
@@ -258,6 +267,7 @@ func (d *DataSourceController) ConnectToDataSourceDB(payload toolkit.M) (int, []
 
 	data := []toolkit.M{}
 	cursor.Fetch(&data, 0, false)
+
 	if err != nil {
 		return 0, nil, nil, err
 	}
@@ -489,8 +499,8 @@ func (d *DataSourceController) SaveConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if toolkit.HasMember([]string{"csv", "json", "csvs", "jsons"}, o.Driver) {
-		if strings.Contains(o.FileLocation, "http") {
+	if toolkit.HasMember([]string{"csv", "json"}, o.Driver) {
+		if strings.HasPrefix(o.Host, "http") {
 			fileType := helper.GetFileExtension(o.Host)
 			o.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", o.ID), fileType)
 
@@ -532,8 +542,18 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	search := payload["search"].(string)
-	driver := payload["driver"].(string)
+	search := ""
+	if payload["search"] != nil{
+		search = payload["search"].(string)
+	}
+
+	driver := ""
+	if payload["driver"] != nil{
+		search = payload["driver"].(string)
+	}
+
+	// search := payload["search"]
+	// driver := payload["driver"]
 
 	var query *dbox.Filter
 	query = dbox.Or(dbox.Contains("_id", search), dbox.Contains("Driver", search), dbox.Contains("Host", search), dbox.Contains("Database", search), dbox.Contains("UserName", search))
@@ -646,7 +666,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 	}
 
 	if driver == "json" || driver == "csv" {
-		if strings.Contains(host, "http") {
+		if strings.HasPrefix(host, "http") {
 			fileTempID := helper.RandomIDWithPrefix("f")
 			fileType := helper.GetFileExtension(host)
 			fakeDataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(EC_DATA_PATH, "datasource", "upload", fileTempID), fileType)
@@ -677,7 +697,7 @@ func (d *DataSourceController) TestConnection(r *knot.WebContext) interface{} {
 
 	err = helper.ConnectUsingDataConn(fakeDataConn).CheckIfConnected()
 
-	if fakeDataConn.FileLocation != "" && strings.Contains(host, "http") {
+	if fakeDataConn.FileLocation != "" && strings.HasPrefix(host, "http") {
 		os.Remove(fakeDataConn.FileLocation)
 	}
 
@@ -786,6 +806,10 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 		meta.Type = "string"
 
 		if val != nil {
+			if toolkit.TypeName(val) == "map[string]interface {}" {
+				val, _ = toolkit.ToM(val)
+			}
+
 			switch toolkit.TypeName(val) {
 			case "toolkit.M":
 				meta.Type = "object"
@@ -795,7 +819,12 @@ func (d *DataSourceController) parseMetadata(data toolkit.M) []*colonycore.Field
 				meta.Type = "array"
 
 				valArray := val.([]interface{})
+
 				if len(valArray) > 0 {
+					if toolkit.TypeName(valArray[0]) == "map[string]interface {}" {
+						valArray[0], _ = toolkit.ToM(valArray[0])
+					}
+
 					if toolkit.TypeName(valArray[0]) == "toolkit.M" {
 						meta.Type = "array-objects"
 						meta.Sub = d.parseMetadata(valArray[0].(toolkit.M))

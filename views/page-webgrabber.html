@@ -186,32 +186,34 @@
 			    				<div class="form-group">
 								    <label class="col-md-2 filter-label">Auth Type</label>
 								    <div class="col-md-3">
-						        		<select class="full-width" name="authtype" data-bind="kendoDropDownList: { data: wg.dataAuthType, dataValueField: 'value', dataTextField: 'title'}"></select>
+						        		<select class="full-width" name="authtype" data-bind="kendoDropDownList: { data: wg.dataAuthType, dataValueField: 'value', value: wg.configScrapper.grabconf.authtype, dataTextField: 'title', optionLabel : 'Choose auth type'}"></select>
 										<span class="k-invalid-msg" data-for="authtype"></span>
 						        	</div>
 								</div>
-								<div class="form-group">
-						        	<label class="col-md-2 filter-label">Login Url</label>
-						        	<div class="col-md-4">
-						        		<input name="loginurl" class="authconf form-control input-sm full-width" type="text" placeholder="Type Login URL here" data-bind="value: wg.configScrapper.grabconf.loginurl")/>
-						        		<span class="k-invalid-msg" data-for="loginurl"></span>
-						        	</div>
+								<div class="form-group" data-bind="visible: wg.configScrapper.grabconf.authtype() !== ''">
+									<div data-bind="visible: wg.configScrapper.grabconf.authtype() !== 'AuthType_Basic'">
+							        	<label class="col-md-2 filter-label">Login Url</label>
+							        	<div class="col-md-4">
+							        		<input required data-required-msg="Login Url cannot be empty" name="loginurl" class="authconf form-control input-sm full-width" type="text" placeholder="Type Login URL here" data-bind="value: wg.configScrapper.grabconf.loginurl")/>
+							        		<span class="k-invalid-msg" data-for="loginurl"></span>
+							        	</div>
 
-						        	<label class="col-md-2 filter-label">Logout Url</label>
-						        	<div class="col-md-4">
-						        		<input class="authconf form-control input-sm full-width" type="text" placeholder="Type Logout URL here" data-bind="value: wg.configScrapper.grabconf.logouturl"/>
-							        </div>
+							        	<label class="col-md-2 filter-label">Logout Url</label>
+							        	<div class="col-md-4">
+							        		<input required data-required-msg="Logout Url cannot be empty" class="authconf form-control input-sm full-width" type="text" placeholder="Type Logout URL here" data-bind="value: wg.configScrapper.grabconf.logouturl"/>
+								        </div>
+								     </div>
 						        </div>
-						        <div class="form-group">
+						        <div class="form-group" data-bind="visible: wg.configScrapper.grabconf.authtype() !== ''">
 						        	<label class="col-md-2 filter-label">Username</label>
 						        	<div class="col-md-4">
-						        		<input name="username" class="authconf form-control input-sm full-width" type="text" placeholder="Type Username here" data-bind="value: wg.configScrapper.grabconf.username" />
+						        		<input required data-required-msg="Username cannot be empty" name="username" class="authconf form-control input-sm full-width" type="text" placeholder="Type Username here" data-bind="value: wg.configScrapper.grabconf.username" />
 						        		<span class="k-invalid-msg" data-for="username"></span>
 						        	</div>
 
 						        	<label class="col-md-2 filter-label">Password</label>
 						        	<div class="col-md-4">
-						        		<input name="password" class="authconf form-control input-sm full-width" type="password" placeholder="Type Password here" data-bind="value: wg.configScrapper.grabconf.password" />
+						        		<input required data-required-msg="Password cannot be empty" name="password" class="authconf form-control input-sm full-width" type="password" placeholder="Type Password here" data-bind="value: wg.configScrapper.grabconf.password" />
 						        		<span class="k-invalid-msg" data-for="password"></span>
 							        </div>
 						        </div>
@@ -322,36 +324,67 @@
 							       	</div>
 							       		<div class="clearfix">&nbsp;</div>
 							       		<label class="col-md-4">&nbsp;</label>
+							       		<div data-bind="visible:wg.configCron.mode() == 'custom'">
+							       			<div class="col-md-8 form-group">
+									       		<div class="col-md-8">
+									       			<select data-bind="kendoMultiSelect: { data: wg.minutes, value: wg.configCron.min, max: 59, min:0 }"></select><code>min.</code>
+									       		</div>
+									       	</div>
+									       	<label class="col-md-4">&nbsp;</label>
+									       	<div class="col-md-8 form-group">
+										       		<div class="col-md-8">
+										       			<select data-bind="kendoMultiSelect: { data: wg.hours, value: wg.configCron.hour, max: 23, min:0 }"></select><code>hour</code>
+										       		</div>
+									       	</div>
+									       	<label class="col-md-4">&nbsp;</label>
+									       	<div class="col-md-8 form-group">
+										       		<div class="col-md-8">
+										       			<select data-bind="kendoMultiSelect: { data: wg.days, value: wg.configCron.dayofmonth, max: 31, min:1 }"></select><code>date</code>
+										       		</div>
+									       	</div>
+									       	<label class="col-md-4">&nbsp;</label>
+									       	<div class="col-md-8 form-group">
+										       		<div class="col-md-8">
+										       			<select data-bind="kendoMultiSelect: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month}"></select><code>month</code>
+										       		</div>
+									       	</div>
+									       	<label class="col-md-4">&nbsp;</label>
+									       	<div class="col-md-8 form-group">
+										       		<div class="col-md-8">
+										       			<select data-bind="kendoMultiSelect:{ dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek}"></select><code>day of week</code>
+										       		</div>
+									       	</div>
+							       		</div>
 										<div class="col-md-8 form-group">
-											<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly'">
+											<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly' || wg.configCron.mode() == 'yearly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...', max: 23, min:0 }" style="width: 100px"></select>
+								       				<select id="dropdownHour" data-bind="kendoComboBox: { data: wg.hours, value: wg.configCron.hour,placeholder: 'Hour...', max: 23, min:0 }" style="width: 100px"></select><code>hour</code>
 								       			</div>
 								       		</div>
-								       		<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly' || wg.configCron.mode() != '' && wg.configCron.mode() != 'custom' ">
+								       		<div data-bind="visible: wg.configCron.mode() == 'daily' || wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly' || wg.configCron.mode() == 'yearly' || wg.configCron.mode() != '' && wg.configCron.mode() != 'custom' ">
 								       			<div class="col-md-6">
-									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min, max: 59, min:0 }" style="width: 90px"></select>
+									       			<select id="dropdownMinute" data-bind="kendoComboBox: { data: wg.minutes, placeholder: 'Minute...', value: wg.configCron.min, max: 59, min:0 }" style="width: 90px"></select><code>min.</code>
 								       			</div>
 								       		</div>
 										</div>
 										<label class="col-md-4">&nbsp;</label>
 										<div class="col-md-8 form-group">
-								       		<div data-bind="visible: wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'monthly'">
+								       		<div data-bind="visible: wg.configCron.mode() == 'weekly' || wg.configCron.mode() == 'yearly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" name="day" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek, optionLabel: 'Day...'}" style="width: 100px"></select>
+								       				<select id="dropdownDay" name="day" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.dayweek, value: wg.configCron.dayofweek, optionLabel: 'Day...'}" style="width: 100px"></select><code>day</code>
 								       			</div>
 								       		</div>
-								       		<div data-bind="visible: wg.configCron.mode() == 'monthly'">
+								       		<div data-bind="visible: wg.configCron.mode() == 'monthly' || wg.configCron.mode() == 'yearly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Date...', max: 31, min:1}" style="width: 90px"></select>
+								       				<select id="dropdownDate" data-bind="kendoComboBox: {data: wg.days, value: wg.configCron.dayofmonth, placeholder: 'Date...', max: 31, min:1}" style="width: 90px"></select><code>date</code>
 								       			</div>
 								       		</div>
 										</div>
 										<label class="col-md-4">&nbsp;</label>
 										<div class="col-md-8 form-group">
-								       		<div data-bind="visible: wg.configCron.mode() == 'monthly'">
+								       		<div data-bind="visible: wg.configCron.mode() == 'yearly'">
 								       			<div class="col-md-6">
-								       				<select id="dropdownHour" name="month" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month, optionLabel: 'Month...'}"></select>
+								       				<select id="dropdownMonth" name="month" data-bind="kendoDropDownList: { dataTextField: 'title', dataValueField: 'value', data: wg.months, value: wg.configCron.month, optionLabel: 'Month...'}"></select><code>month</code>
 								       			</div>
 								       		</div>
 										</div>
@@ -447,8 +480,8 @@
 													<tbody data-bind="foreach: columnsettings" style="overflow-y: auto;height: 150px;width: 100%;position: absolute;">
 														<tr>
 															<td>
-																<input required class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-key-' + $index() }" style="width:90px;" />
-																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-key-' + $index() }"></span>
+																<input required data-required-msg="Alias cannot be empty" class="form-control input-sm full-width" type="text"  placeholder="Type alias here" data-bind="value: alias, attr: { 'name': 'column-selector-alias-' + $index() }" style="width:90px;" />
+																<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-selector-alias-' + $index() }"></span>
 															</td>
 															<td>
 																<select required data-required-msg="Column Type cannot be empty" data-bind="kendoDropDownList: { data: wg.templateColumnType, dataValueField: 'key', dataTextField: 'value', value: valuetype, optionLabel: 'Select one'}, attr: { 'name': 'column-selector-key-' + $index()}" style="width:90px;"></select>
@@ -520,7 +553,7 @@
 																				<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-operation-' + $index() }"></span>
 																			</td>
 																			<td>
-																				<input class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
+																				<input required class="form-control input-sm full-width" type="text" data-required-msg="Alias cannot be empty" placeholder="Type alias here" data-bind="value: value, attr: { 'name': 'column-filtervalue-value-' + $index() }" style="width:90px;" />
 																				<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-filter-value-' + $index() }"></span>
 																			</td>
 																			<td>
@@ -545,6 +578,21 @@
 			    							</div>
 			    						</div>
 			    					</div>		    						
+		    					</div>
+		    					<div class="row">
+		    						<div class="panel">
+		    							<div class="panel-body">
+		    								<div class="row form-group">
+		    									<label class="col-md-4 filter-label"> Limit Row </label>
+		    									<div class="col-md-4">
+									       			<input type="text" data-bind="kendoNumericTextBox: { min: 1, format: '#', value: limitrow.skip, placeholder: 'Skip' }" style="width: 100px" />
+									       		</div>
+									       		<div class="col-md-4">
+									       			<input type="text" data-bind="kendoNumericTextBox: { min: 1, format: '#', value: limitrow.take, placeholder: 'Take' }" style="width: 100px" />
+									       		</div>
+											</div>
+		    							</div>
+		    						</div>
 		    					</div>
 		    					<div class="row">
 		    						<div class="panel">

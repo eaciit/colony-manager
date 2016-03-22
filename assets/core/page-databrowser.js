@@ -22,15 +22,20 @@ br.browserColumns = ko.observableArray([
 			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
 		].join(" ");
 	}},
-	{field:"_id", title: "ID" },
+	{field:"_id", title: "ID", template: function(d){
+		return[
+			"<div onclick= 'br.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d._id+"</div>"
+		]
+	}},
 	{title: "Name", template: function(d){
 		return[
 			"<div onclick= 'br.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
 		]
 	}},
-	{title: "", width: 80, attributes:{class:"align-center"}, template: function(d){
+	{title: "", width: 120, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Design the Data Browser' onclick='db.designDataBrowser(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Preview' onclick='br.ViewBrowserName(\"" + d._id + "\")'><span class='fa fa-eye'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Designer' onclick='db.designDataBrowser(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	}}
 ]);
@@ -72,7 +77,7 @@ br.DeleteBrowser = function(){
 	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
 		swal({
 		title: "",
-		text: 'You havent choose any application to delete',
+		text: 'You havent choose any data browser to delete',
 		type: "warning",
 		confirmButtonColor: "#DD6B55",
 		confirmButtonText: "OK",
@@ -85,7 +90,7 @@ br.DeleteBrowser = function(){
 
 		swal({
 		title: "Are you sure?",
-		text: 'Application with id "' + vals + '" will be deleted',
+		text: 'Data Browser(s) with id "' + vals + '" will be deleted',
 		type: "warning",
 		showCancelButton: true,
 		confirmButtonColor: "#DD6B55",
@@ -139,7 +144,7 @@ br.ViewBrowserName = function(id){
 	                  pageSize: 10,
 	                  serverSorting: true,
 	                  callOK: function(res){
-	                  	console.log(res);
+	                  	// console.log(res);
 	                  }
 	            },
 			metadata: res.data.dataresult.MetaData,

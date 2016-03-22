@@ -4,9 +4,12 @@ import (
 	"errors"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/json"
+	_ "github.com/eaciit/dbox/dbc/jsons"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	// _ "github.com/eaciit/dbox/dbc/mssql"
 	"github.com/eaciit/colony-core/v0"
+	_ "github.com/eaciit/dbox/dbc/csv"
+	_ "github.com/eaciit/dbox/dbc/csvs"
 	_ "github.com/eaciit/dbox/dbc/hive"
 	_ "github.com/eaciit/dbox/dbc/mysql"
 	// _ "github.com/eaciit/dbox/dbc/oracle"
@@ -188,8 +191,8 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 }
 
 func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
-	if dataConn.Driver == "json" || dataConn.Driver == "csv" {
-		return Query(dataConn.Driver, dataConn.FileLocation)
+	if toolkit.HasMember([]string{"json", "jsons", "csv", "csvs"}, dataConn.Driver) && strings.HasPrefix(dataConn.Host, "http") {
+		return Query(dataConn.Driver, dataConn.FileLocation, "", "", "", dataConn.Settings)
 	}
 
 	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password, dataConn.Settings)
