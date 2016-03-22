@@ -18,6 +18,7 @@ adm.templateFilter = {
     _id: "",
     Title: "",
 };
+
 adm.SumAccess = ko.observable(0);
 adm.AccessColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxaccess' class='ckcGrid' value='#: _id #' />",
@@ -59,9 +60,10 @@ adm.editAccess = ko.observable("");
 adm.search = ko.observable("");
 adm.showAccess = ko.observable(false);
 adm.AccessData = ko.observableArray([]);
+
 adm.selectGridAccess = function(e) {
     adm.isNew(false);
-    app.wrapGridSelect(".grid-access", ".btn", function(d) {
+    app.wrapGridSelect(".grid-access", ".btn", function(d) { 
         adm.editAccess(d._id);
         adm.showAccess(true);
         app.mode("editor");
@@ -90,6 +92,22 @@ adm.searchAccess = function() {
         }
     });
 };  
+
+adm.GetFilter = function(){
+    data = {
+        find : adm.search,
+    }
+
+    return data
+}
+
+adm.searchAccess = function(event){
+    if ((event != undefined) && (event.keyCode == 13)){
+        $('.grid-access').data('kendoGrid').dataSource.read();
+    }
+    return
+};
+
 adm.getAccess = function(c) {
     adm.AccessData([]);
     var param = ko.mapping.toJS(adm.filter);
@@ -219,7 +237,48 @@ adm.backToFront = function() {
     adm.getAccess();
 };
 
+adm.GenerateGrid = function() {
+    $(".grid-access").html("");
+    $('.grid-access').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/administration/getaccess",
+                    dataType: "json",
+                    data: adm.GetFilter(),
+                    type: "POST",
+                    success: function(data) {
+                        $(".grid-sessions>.k-grid-content-locked").css("height", $(".grid-access").data("kendoGrid").table.height());
+                    }
+                }
+            },
+            schema: {
+                data: "data.Datas",
+                total: "data.total"
+            },
+
+            pageSize: 10,
+            serverPaging: true, // enable server paging
+            serverSorting: true,
+        },
+        selectable: "multiple, row",
+        change: adm.selectGridAccess,
+        resizable: true,
+        scrollable: true,
+        // sortable: true,
+        // filterable: true,
+        pageable: {
+            refresh: false,
+            pageSizes: 10,
+            buttonCount: 5
+        },
+        columns: adm.AccessColumns()
+    });
+
+}
+
 $(function() {
     app.section("access");
-    adm.getAccess();
+    // adm.getAccess(); 
+    adm.GenerateGrid();
 });
