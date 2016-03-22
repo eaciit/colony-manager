@@ -344,14 +344,18 @@ func (d *DataGrabberController) RemoveMultipleDataGrabber(r *knot.WebContext) in
 func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	mutex.Lock()
+
 	dataGrabber := new(colonycore.DataGrabber)
 	err := r.GetPayload(dataGrabber)
 	if err != nil {
+		mutex.Unlock()
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	err = colonycore.Get(dataGrabber, dataGrabber.ID)
 	if err != nil {
+		mutex.Unlock()
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -383,7 +387,6 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	}
 
 	yo := func() {
-		mutex.Lock()
 		logAt := time.Now().Format("20060102-150405")
 		logConfTransformation, err := d.getLogger(dataGrabber)
 		if err != nil {
@@ -413,11 +416,11 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 				}
 			}
 		}
-		mutex.Unlock()
 	}
 	yo()
 
 	if !dataGrabber.UseInterval {
+		mutex.Unlock()
 		return helper.CreateResult(true, nil, "")
 	}
 
@@ -444,6 +447,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 		}
 	}(dataGrabber)
 
+	mutex.Unlock()
 	return helper.CreateResult(true, nil, "")
 }
 
