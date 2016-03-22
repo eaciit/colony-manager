@@ -40,7 +40,6 @@ grp.filter = ko.mapping.fromJS(grp.templateFilter);
 grp.isNew = ko.observable(false);
 grp.editGroup = ko.observable("");
 grp.showGroup = ko.observable(false);
-grp.GroupsData = ko.observableArray([]);
 grp.search = ko.observable("");
 grp.selectGridGroups = function(e) {
     usr.Access.removeAll();
@@ -53,50 +52,80 @@ grp.selectGridGroups = function(e) {
     });
 };
 
-grp.getGroups = function(c) {
-    grp.GroupsData([]);
+grp.getGroups = function() {
+    
+    //var param = ko.mapping.toJS(grp.filter);
+    // //console.log("")
+    // app.ajaxPost("/group/getgroup", param, function(res) {
+        // if (!app.isFine(res)) {
+        //     return;
+        // }
+        // if (res.data == null) {
+        //     res.data = "";
+        // }
+    //     grp.GroupsData(res.data);
+        // var grid = $(".grid-groups").data("kendoGrid");
+        // $(grid.tbody).on("mouseleave", "tr", function(e) {
+        //     $(this).removeClass("k-state-hover");
+        // });
+
+        // if (typeof c == "function") {
+        //     c(res);
+    //     }
+    // });
     var param = ko.mapping.toJS(grp.filter);
-    app.ajaxPost("/group/getgroup", param, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
-        grp.GroupsData(res.data);
-        var grid = $(".grid-groups").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
-
-        if (typeof c == "function") {
-            c(res);
-        }
+    $("#grid-groups").kendoGrid({
+            columns: grp.GroupsColumns(),
+            dataSource: {
+                   transport: {
+                        read:{
+                            url:"/group/search",
+                            data:{search:grp.search()},
+                            dataType:"json",
+                            type: "POST",
+                            success: function(data) {
+                                //$(".grid-sessions>.k-grid-content-locked").css("height", $(".grid-sessions").data("kendoGrid").table.height());
+                            }
+                        }
+                   },
+                   schema: {
+                        data: "data.Datas",
+                        total: "data.total"
+                   },
+                   pageSize: 5,
+                   serverPaging: true, 
+                   serverSorting: true,
+                   serverFiltering: true,
+               },
+            pageable: true,
+            scrollable: true,
+            sortable: true,
+            columns: grp.GroupsColumns()
     });
 };
 
-grp.searchGroup = function() {
-    grp.GroupsData([]);
-    app.ajaxPost("/group/search", {
-        search: grp.search()
-    }, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
-        grp.GroupsData(res.data);
-        var grid = $(".grid-access").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
+// grp.searchGroup = function() {
+//     grp.GroupsData([]);
+//     app.ajaxPost("/group/search", {
+//         search: grp.search()
+//     }, function(res) {
+//         if (!app.isFine(res)) {
+//             return;
+//         }
+//         if (res.data == null) {
+//             res.data = "";
+//         }
+//         grp.GroupsData(res.data);
+//         var grid = $(".grid-access").data("kendoGrid");
+//         $(grid.tbody).on("mouseleave", "tr", function(e) {
+//             $(this).removeClass("k-state-hover");
+//         });
 
-        if (typeof c == "function") {
-            c(res);
-        }
-    });
-};
+//         if (typeof c == "function") {
+//             c(res);
+//         }
+//     });
+// };
 
 grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
