@@ -8,7 +8,7 @@
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')"> 
     <div class="col-md-3">
-    <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" />
+    <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : ses.search, event:{keyup:ses.searchsession(event)}'/>
 </div>
 </nav>
  
