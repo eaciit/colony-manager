@@ -1,95 +1,95 @@
 <style>
-	.no-left-padding {
-		padding-left: 0px;
-	}
+    .no-left-padding {
+        padding-left: 0px;
+    }
 </style>
 
 <h1>Group</h1>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-	<div class="nav1">
-    <div class="col-md-4">
-	    <button class="btn btn-sm btn-primary navbar-btn" >
-			<span class="glyphicon glyphicon-refresh"></span> Refresh
-		</button>
-	    <button class="btn btn-sm btn-success" data-bind="click: grp.createNewGroup">
-				<span class="glyphicon glyphicon-plus"></span> Add
-	    </button>
-		<button class="btn btn-sm btn-danger navbar-btn" data-bind="click:grp.deletegroup" >
-			<span class="glyphicon glyphicon-remove"></span> Delete
-		</button>
-	</div>
-	<!-- <label class="col-md-4 filter-label no-left-padding"> -->
-	<div class="col-md-3">
-		<input class="form-control input-sm searchsrv" name="search" placeholder="Search" />
-	</div>
-	</div>
+    <div class="nav1">
+        <div class="col-md-4">
+            <button class="btn btn-sm btn-primary navbar-btn">
+            <span class="glyphicon glyphicon-refresh"></span> Refresh
+        </button>
+            <button class="btn btn-sm btn-success" data-bind="click: grp.createNewGroup">
+                <span class="glyphicon glyphicon-plus"></span> Add
+        </button>
+            <button class="btn btn-sm btn-danger navbar-btn" data-bind="click:grp.deletegroup">
+            <span class="glyphicon glyphicon-remove"></span> Delete
+        </button>
+        </div>
+        <!-- <label class="col-md-4 filter-label no-left-padding"> -->
+        <div class="col-md-3">
+            <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : grp.search, event:{keyup:grp.searchGroup}'/>   
+        </div>
+    </div>
 </nav>
-  <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+<nav class="navbar" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')">
     <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: grp.backToFront">
-		<span class="glyphicon glyphicon-chevron-left"></span> Back
-	</button>
+        <span class="glyphicon glyphicon-chevron-left"></span> Back
+    </button>
     <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: grp.savegroup">
-		<span class="glyphicon glyphicon-save"></span> Save
-	</button>
+        <span class="glyphicon glyphicon-save"></span> Save
+    </button>
     <button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup">
-		<span class="glyphicon glyphicon-remove"></span> Delete
-	</button>
+        <span class="glyphicon glyphicon-remove"></span> Delete
+    </button>
 </nav>
 
-<div class="panel" data-bind="visible: (app.mode() == '')"> 
-    	<div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div>
+<div class="panel" data-bind="visible: (app.mode() == '')">
+    <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div>
     <!-- </div> -->
     <p class="bg-danger bgcustom">Please click row to edit!</p>
-</div> 
+</div>
 
-<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
-	<div class="panel-heading">
+<div class="panel" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')" style="width: 800px;">
+    <div class="panel-heading">
         <h1 class="panel-title"><span data-bind="text: (grp.Groupmode() == '') ? 'Create New' : 'Edit'"></span>
         </h1>
     </div>
     <div class="panel-body">
-    	<form class="form-horizontal form-server" id="form-add-Server" novalidate>
-	    	<div class="col-md-6"> 
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">ID</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: grp.config._id">
-						<span class="k-invalid-msg" data-for="ID"></span>	    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Title</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" data-bind="value: grp.config.Title">
-						<span class="k-invalid-msg" data-for="Title"></span>	    			
-		    		</div>
-	    		</div>
-	    		
-	    	</div>
-	    		<div class="col-md-6">
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Enable</label>
-		    		<div class="col-md-7">
-		    			<input type="checkbox" name="Enable" data-bind="checked:grp.config.Enable">	    			
-		    		</div>
-	    		</div>  
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Owner</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Owner" type="text" class="form-control input-sm" name="Owner" placeholder="Type the Owner Here" data-bind="value: grp.config.Owner">
-						<span class="k-invalid-msg" data-for="Owner"></span>	    			
-		    		</div>
-	    		</div>  		
-    		</div>
-    		 <div class="col-md-12">
+        <form class="form-horizontal form-server" id="form-add-Server" novalidate>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">ID</label>
+                    <div class="col-md-7">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: grp.config._id">
+                        <span class="k-invalid-msg" data-for="ID"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Title</label>
+                    <div class="col-md-7">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" data-bind="value: grp.config.Title">
+                        <span class="k-invalid-msg" data-for="Title"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Enable</label>
+                    <div class="col-md-7">
+                        <input type="checkbox" name="Enable" data-bind="checked:grp.config.Enable">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Owner</label>
+                    <div class="col-md-7">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Owner" type="text" class="form-control input-sm" name="Owner" placeholder="Type the Owner Here" data-bind="value: grp.config.Owner">
+                        <span class="k-invalid-msg" data-for="Owner"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
                 <div class="form-group">
                     <label class="col-sm-1 filter-label">Privilege</label>
                     <div class="col-sm-12">
                         <div class="nav">
                             <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
-							    <span class="glyphicon glyphicon-plus"></span> Add
-							</button>
+                                <span class="glyphicon glyphicon-plus"></span> Add
+                            </button>
                         </div>
                         <table class="table" id="datasource-settings">
                             <thead>
@@ -102,14 +102,15 @@
                                     <th>Special Access 1</th>
                                     <th>Special Access 2</th>
                                     <th>Special Access 3</th>
-                                    <th>Special Access 4</th>                               
+                                    <th>Special Access 4</th>
                                 </tr>
                             </thead>
                             <tbody align="center" data-bind="foreach: usr.config.Grants">
                                 <tr>
                                     <td>
-                                         <select class="form-control input-sm" data-bind="value:usr.config.Grants()[$index()].AccessID ,options: usr.Access"></select>
-                                    </td> 
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access  "></select>
+                                    </td>
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
                                     </td>
@@ -123,21 +124,21 @@
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1"/>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,kendoTooltip: { content: adm.AccessSpecial1 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2"/>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, kendoTooltip: { content: adm.AccessSpecial2 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3"/>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, kendoTooltip: { content: adm.AccessSpecial3 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4"/>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,kendoTooltip: { content: adm.AccessSpecial4 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
-						        				<span class="glyphicon glyphicon-remove"></span>
-						        		</button>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -145,6 +146,6 @@
                     </div>
                 </div>
             </div>
-    	</form>
+        </form>
     </div>
 </div>

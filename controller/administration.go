@@ -17,6 +17,7 @@ import (
 	// "path/filepath"
 	// "strings"
 	// "time"
+	"strconv"
 )
 
 type AdministrationController struct {
@@ -32,6 +33,12 @@ func CreateAdminisrationController(s *knot.Server) *AdministrationController {
 func (a *AdministrationController) GetAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()
+	// payload := map[string]interface{}{}
+	// err := r.GetPayload(&payload)
+
+	// search := payload["search"].(string)
+
+	// fmt.Println(search)
 	tAccess := new(acl.Access)
 
 	arrm := make([]toolkit.M, 0, 0)
@@ -59,8 +66,31 @@ func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
 	} else {
 		return helper.CreateResult(true, tAccess, "")
 	}
-
 }
+func (a *AdministrationController) Search(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	find := payload["search"].(string)
+	bfind, err := strconv.ParseBool(find)
+	tAccess := new(acl.Access)
+	arrm := make([]toolkit.M, 0, 0)
+	filter := dbox.Or(dbox.Contains("_id", find), dbox.Contains("id", find), dbox.Contains("title", find), dbox.Contains("group1", find),
+		dbox.Contains("group2", find), dbox.Contains("group3", find), dbox.Contains("specialaccess1", find), dbox.Contains("specialaccess2", find),
+		dbox.Contains("specialaccess3", find), dbox.Contains("specialaccess4", find), dbox.Eq("enable", bfind))
+	c, e := acl.Find(tAccess, filter, toolkit.M{}.Set("take", 0))
+	if e == nil {
+		e = c.Fetch(&arrm, 0, false)
+	}
+
+	if e != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, arrm, "")
+	}
+}
+
 func (a *AdministrationController) DeleteAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()
