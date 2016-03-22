@@ -40,19 +40,20 @@ grp.filter = ko.mapping.fromJS(grp.templateFilter);
 grp.isNew = ko.observable(false);
 grp.editGroup = ko.observable("");
 grp.showGroup = ko.observable(false);
+grp.GroupsData = ko.observableArray([]);
 grp.search = ko.observable("");
 grp.selectGridGroups = function(e) {
     usr.Access.removeAll();
     usr.getAccess();
     grp.isNew(false);
-    app.wrapGridSelect(".grid-groups", ".btn", function(d) {
+    app.wrapGridSelect("#grid-groups", ".btn", function(d) {
         grp.editGroup(d._id);
         grp.showGroup(true);
         app.mode("editor");
     });
 };
 
-grp.getGroups = function() {
+grp.getGroups = function(c) {
     
     //var param = ko.mapping.toJS(grp.filter);
     // //console.log("")
@@ -84,7 +85,13 @@ grp.getGroups = function() {
                             dataType:"json",
                             type: "POST",
                             success: function(data) {
-                                //$(".grid-sessions>.k-grid-content-locked").css("height", $(".grid-sessions").data("kendoGrid").table.height());
+                                var grid = $("#grid-groups").data("kendoGrid");
+                                $(grid.tbody).on("mouseleave", "tr", function(e) {
+                                    $(this).removeClass("k-state-hover");
+                                });
+                                if (typeof c == "function") {
+                                    c(res);
+                                }
                             }
                         }
                    },
@@ -100,8 +107,13 @@ grp.getGroups = function() {
             pageable: true,
             scrollable: true,
             sortable: true,
+            selectable: 'multiple, row',
+            change: grp.selectGridGroups,
+            filterfable: false,
+            dataBound: app.gridBoundTooltipster('.grid-groups'), 
             columns: grp.GroupsColumns()
     });
+                                
 };
 
 // grp.searchGroup = function() {
