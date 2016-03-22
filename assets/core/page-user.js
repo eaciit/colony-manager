@@ -208,7 +208,12 @@ usr.saveuser = function() {
     if (usr.config.Enable() == "") {
         usr.config.Enable(false);
     }
-    usr.config.Groups($('#Groups').data('kendoMultiSelect').value());
+    var data=[]
+    for (var i = 0; i < grp.selectedGroupsData().length; i++) {
+        data.push(grp.selectedGroupsData()[i]._id);
+    };
+    usr.config.Groups(data)
+    // usr.config.Groups($('#Groups').data('kendoMultiSelect').value());
     user = ko.mapping.fromJS(usr.config);
     //======
     var data = ko.mapping.toJS(usr.config.Grants);
@@ -297,6 +302,9 @@ usr.createNewUser = function() {
     app.mode("new");
     usr.getGroup();
     usr.SelectedGroup.removeAll();
+    grp.listGroupsData.removeAll();
+    grp.selectedGroupsData.removeAll();
+    grp.getlistGroups();
 };
 
 
@@ -437,9 +445,10 @@ usr.addFromPrivilage = function() {
     }
 };
 usr.displayAccess = function(e) {
-    var dataItem = this.dataSource.view()[e.item.index()];
+    // var dataItem = this.dataSource.view()[e.item.index()];
     app.ajaxPost("/group/getaccessgroup", {
-        idGroup: dataItem.value
+        //idGroup: dataItem.value
+        idGroup: e
     }, function(res) {
         if (!app.isFine(res)) {
             return;
@@ -664,3 +673,7 @@ usr.ChangePass = function() {
         });
     }
 };
+
+usr.addaccessgroup=function(){
+
+}
