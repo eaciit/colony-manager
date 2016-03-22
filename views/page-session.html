@@ -1,0 +1,19 @@
+<style>
+    .no-left-padding {
+        padding-left: 0px;
+    }
+</style>
+
+<h1>Session</h1>
+
+<nav class="navbar" data-bind="visible: (app.mode() == '')"> 
+    <div class="col-md-3">
+    <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : ses.search, event:{keyup:ses.searchsession(event)}'/>
+</div>
+</nav>
+ 
+<div class="panel" data-bind="visible: (app.mode() == '')"> 
+        <div class="grid grid-sessions"></div>
+</div>
+
+ 

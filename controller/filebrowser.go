@@ -2,6 +2,8 @@ package controller
 
 import (
 	"fmt"
+	"mime/multipart"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -33,6 +35,11 @@ const (
 	SERVER_HDFS = "hdfs"
 	DELIMITER   = "/"
 )
+
+type ListDir struct {
+	Dir      colonycore.FileInfo
+	DirDepth int
+}
 
 func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
 	var controller = new(FileBrowserController)
@@ -67,6 +74,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 	if server.RecordID() != nil {
 		var result []colonycore.FileInfo
+		var tempResult []ListDir
 
 		if server.ServerType == SERVER_NODE {
 			if payload.Search != "" {
@@ -147,39 +155,65 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 			h := setHDFSConnection(server.Host, server.SSHUser)
 
 			//check whether SourcePath type is directory or file
+			var depth = 1
+			var dir = ""
+			var isComplete = false
+
 			if payload.Path == "" {
 				payload.Path = "/"
+				dir = payload.Path
 			}
 
-			res, err := h.List(payload.Path)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
+			if payload.Search != "" {
+				for !isComplete {
+					if depth == 10 {
+						isComplete = true
+					}
 
-			for _, files := range res.FileStatuses.FileStatus {
-				var xNode colonycore.FileInfo
+					DepthList := GetDirbyDepth(tempResult, depth)
+					depth++
 
-				xNode.Name = files.PathSuffix
-				xNode.Size = float64(files.Length)
-				xNode.Group = files.Group
-				xNode.Permissions = files.Permission
-				xNode.User = files.Owner
-				xNode.Path = strings.Replace(payload.Path+"/", "//", "/", -1) + files.PathSuffix
+					if len(DepthList) == 0 {
+						if dir != "/" {
+							isComplete = true
+						} else {
+							Dirs, _ := GetDirContent(dir, h)
 
-				if files.Type == "FILE" {
-					xNode.IsDir = false
-					xNode.IsEditable = true
-				} else {
-					xNode.IsDir = true
+							for _, singleDir := range Dirs {
+								var res ListDir
+								res.Dir = singleDir
+								res.DirDepth = depth
+								tempResult = append(tempResult, res)
 
-					if payload.Path == "/" {
-						xNode.IsEditable = false
+								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+									result = append(result, singleDir)
+								}
+							}
+						}
 					} else {
-						xNode.IsEditable = true
+						for _, singleDepthList := range DepthList {
+							dir = singleDepthList.Dir.Path
+
+							Dirs, _ := GetDirContent(dir, h)
+
+							for _, singleDir := range Dirs {
+								var res ListDir
+								res.Dir = singleDir
+								res.DirDepth = depth
+								tempResult = append(tempResult, res)
+
+								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+									result = append(result, singleDir)
+								}
+							}
+						}
 					}
 				}
-
-				result = append(result, xNode)
+			} else {
+				result, err = GetDirContent(payload.Path, h)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 			}
 		}
 
@@ -187,6 +221,51 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(false, nil, "")
+}
+
+func GetDirContent(path string, h *WebHdfs) (Dirs []colonycore.FileInfo, err error) {
+	res, err := h.List(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, files := range res.FileStatuses.FileStatus {
+		var xNode colonycore.FileInfo
+
+		xNode.Name = files.PathSuffix
+		xNode.Size = float64(files.Length)
+		xNode.Group = files.Group
+		xNode.Permissions = files.Permission
+		xNode.User = files.Owner
+		xNode.Path = strings.Replace(path+"/", "//", "/", -1) + files.PathSuffix
+
+		if files.Type == "FILE" {
+			xNode.IsDir = false
+			xNode.IsEditable = true
+		} else {
+			xNode.IsDir = true
+
+			if path == "/" {
+				xNode.IsEditable = false
+			} else {
+				xNode.IsEditable = true
+			}
+		}
+
+		Dirs = append(Dirs, xNode)
+	}
+
+	return Dirs, err
+}
+
+func GetDirbyDepth(List []ListDir, depth int) (Dirs []ListDir) {
+	for _, dir := range List {
+		if dir.DirDepth == depth {
+			Dirs = append(Dirs, dir)
+		}
+	}
+
+	return Dirs
 }
 
 func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
@@ -262,8 +341,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 				}
 
 				h := setHDFSConnection(server.Host, server.SSHUser)
-
-				err = h.Put(SourcePath, strings.Replace(DestPath+"/", "//", "/", -1), "", nil, &server)
+				err = h.Put(SourcePath, DestPath, "", map[string]string{"overwrite": "true"}, &server)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -464,26 +542,37 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 }
 
 func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server, payload colonycore.FileBrowserPayload, err error) {
-	file, _, err := r.Request.FormFile(fileName)
-
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	payload.File = file
-
 	var tmp map[string]interface{}
 	_, s, err := r.GetPayloadMultipart(&tmp)
 
 	if err != nil {
 		return
 	}
-
-	payload.Path = s["path"][0]
 	payload.ServerId = s["serverId"][0]
-	payload.FileName = s["filename"][0]
-	payload.FileSizes, _ = strconv.ParseInt(s["filesizes"][0], 10, 64)
+	payload.Path = s["path"][0]
+
+	err = r.Request.ParseMultipartForm(100000)
+	if err != nil {
+		return
+	}
+
+	m := r.Request.MultipartForm
+	files := m.File[fileName]
+
+	for key, _ := range files {
+		var file multipart.File
+		file, err = files[key].Open()
+		defer file.Close()
+		if err != nil {
+			return
+		}
+
+		payload.File = append(payload.File, file)
+		payload.FileName = append(payload.FileName, s["filename"][key])
+
+		tmpSize, _ := strconv.ParseInt(s["filesizes"][key], 10, 64)
+		payload.FileSizes = append(payload.FileSizes, tmpSize)
+	}
 
 	query := dbox.Eq("_id", payload.ServerId)
 
@@ -516,6 +605,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil {
+
 		if payload.Path != "" && payload.File != nil {
 			if server.ServerType == SERVER_NODE {
 				setting, err := sshConnect(&server)
@@ -524,32 +614,36 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 
-				err = setting.SshCopyByFile(payload.File, payload.FileSizes, 0666, payload.FileName, payload.Path)
+				for key, _ := range payload.File {
+					err = setting.SshCopyByFile(payload.File[key], payload.FileSizes[key], 0666, payload.FileName[key], payload.Path)
 
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 				}
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				DestPath := payload.Path
-				SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName
+				for key, _ := range payload.File {
+					DestPath := strings.Replace(payload.Path+"/", "//", "/", -1) + payload.FileName[key]
+					SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName[key]
 
-				read, err := ioutil.ReadAll(payload.File)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
-				}
+					read, err := ioutil.ReadAll(payload.File[key])
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 
-				err = ioutil.WriteFile(SourcePath, read, 0755)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
-				}
+					err = ioutil.WriteFile(SourcePath, read, 0755)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 
-				h := setHDFSConnection(server.Host, server.SSHUser)
+					h := setHDFSConnection(server.Host, server.SSHUser)
 
-				err = h.Put(SourcePath, strings.Replace(DestPath+"/", "//", "/", -1), "", nil, &server)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
+					err = h.Put(SourcePath, DestPath, "", nil, &server)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 				}
 				return helper.CreateResult(true, "", "")
 			}
@@ -595,7 +689,17 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
-				return helper.CreateResult(true, "", "")
+
+				result, err := ioutil.ReadFile(strings.Replace(GetHomeDir()+"/", "//", "/", -1) + strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1])
+
+				r.Writer.Header().Set("Content-Disposition", "attachment; filename='"+strings.Replace(GetHomeDir()+"/", "//", "/", -1)+strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1]+"'")
+				r.Writer.Header().Set("Content-Type", r.Writer.Header().Get("Content-Type"))
+				r.Writer.Header().Set("Content-Length", strconv.Itoa(len(result)))
+
+				io.Copy(r.Writer, bytes.NewReader(result))
+
+				//return helper.CreateResult(true, "", "")
+				return ""
 			}
 		}
 	}

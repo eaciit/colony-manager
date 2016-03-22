@@ -1,126 +1,240 @@
 <style>
-	.no-left-padding {
-		padding-left: 0px;
-	}
+    .no-left-padding {
+        padding-left: 0px;
+    }
 </style>
 
 <h1>User</h1>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-    <button class="btn btn-sm btn-primary navbar-btn" >
-		<span class="glyphicon glyphicon-refresh"></span> Refresh
-	</button>
-    <button class="btn btn-sm btn-success" data-bind="click: usr.createNewUser">
-			<span class="glyphicon glyphicon-plus"></span> Add
+    <div class="col-md-4">
+        <button class="btn btn-sm btn-primary navbar-btn">
+        <span class="glyphicon glyphicon-refresh"></span> Refresh
     </button>
-	<button class="btn btn-sm btn-danger navbar-btn" >
-		<span class="glyphicon glyphicon-remove"></span> Delete
-	</button>
-</nav>
-
-<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
-	<div class="col-md-4">
-		<div class="form-group">
-			<label class="col-md-4 filter-label no-left-padding">
-				Search
-			</label>
-			<div class="col-md-8">
-				<input class="form-control full-width input-sm searchsrv" name="search" placeholder="Type keyword here" />
-			</div>
-			<div class="clearfix"></div>
-		</div>
-	</div>
+        <button class="btn btn-sm btn-success" data-bind="click: usr.createNewUser">
+            <span class="glyphicon glyphicon-plus"></span> Add
+    </button>
+        <button class="btn btn-sm btn-danger navbar-btn" data-bind="click:usr.deleteuser">
+        <span class="glyphicon glyphicon-remove"></span> Delete
+    </button>
+    </div>
+    <div class="col-md-3">
+        <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : usr.search, event:{keyup:usr.searchUser}'/>   
+    </div>
 </nav>
 
 <div class="panel" data-bind="visible: (app.mode() == '')">
-    <div class="panel-heading">
-        <h1 class="panel-title">User</h1>
-    </div>
-    <div class="panel-body">
-    	<!-- <div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div> -->
-    </div>
+
+    <div class="grid grid-users" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: usr.UsersData, selectable: 'multiple, row', change: usr.selectGridUsers, columns: usr.UsersColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-users')}"></div>
+
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
 
-<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: usr.backToFront">
-		<span class="glyphicon glyphicon-chevron-left"></span> Back
-	</button>
-    <button class="btn btn-sm btn-primary navbar-btn" >
-		<span class="glyphicon glyphicon-save"></span> Save
-	</button>
-	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup" >
-		<span class="glyphicon glyphicon-remove"></span> Delete
-	</button>
+<nav class="navbar" data-bind="visible:(app.mode() == 'new') | (app.mode() == 'editor')">
+    <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: usr.backToFront">
+        <span class="glyphicon glyphicon-chevron-left"></span> Back
+    </button>
+    <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: usr.saveuser">
+        <span class="glyphicon glyphicon-save"></span> Save
+    </button>
+    <button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup">
+        <span class="glyphicon glyphicon-remove"></span> Delete
+    </button>
 </nav>
 
-<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 800px;">
-	<div class="panel-heading">
+<div class="panel" data-bind="visible: (app.mode() == 'new') | (app.mode() == 'editor') " style="width: 800px;">
+    <div class="panel-heading">
         <h1 class="panel-title"><span data-bind="text: (usr.Usermode() == '') ? 'Create New' : 'Edit'"></span>
         </h1>
     </div>
     <div class="panel-body">
-    	<form class="form-horizontal form-server" id="form-add-Server" novalidate>
-	    	<div class="col-md-6">
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">ID</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" >
-						<span class="k-invalid-msg" data-for="ID"></span>		    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Login ID</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" >
-						<span class="k-invalid-msg" data-for="LoginID"></span>	    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">FullName</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for FullName" type="text" class="form-control input-sm" name="FullName" placeholder="Type the FullName Here" >
-						<span class="k-invalid-msg" data-for="FullName"></span>	    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Email</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Email" type="text" class="form-control input-sm" name="Email" placeholder="Type the Email Here" >
-						<span class="k-invalid-msg" data-for="Email"></span>	    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Password</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="text" class="form-control input-sm" name="Password" placeholder="Type the Password Here" >
-						<span class="k-invalid-msg" data-for="Password"></span>		    			
-		    		</div>
-	    		</div>   		
-    		</div>
-    			<div class="col-md-6">	    		
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Enable</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Enable" type="text" class="form-control input-sm" name="Enable" placeholder="Type the Enable Here" >
-						<span class="k-invalid-msg" data-for="Enable"></span>	    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Groups</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Groups" type="text" class="form-control input-sm" name="Groups" placeholder="Type the Groups Here" >
-						<span class="k-invalid-msg" data-for="Groups"></span>	    			
-		    		</div>
-	    		</div>
-	    		<div class="form-group">
-		    		<label class="col-md-3 filter-label">Grants</label>
-		    		<div class="col-md-7">
-		    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Grants" type="text" class="form-control input-sm" name="Grants" placeholder="Type the Grants Here" >
-						<span class="k-invalid-msg" data-for="Grants"></span>	    			
-		    		</div>
-	    		</div>   		
-    		</div>
-    	</form>
+        <form class="form-horizontal form-server" id="form-add-Server" novalidate>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Login ID</label>
+                    <div class="col-md-7">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
+                        <span class="k-invalid-msg" data-for="LoginID"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">FullName</label>
+                    <div class="col-md-7">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for FullName" type="text" class="form-control input-sm" name="FullName" placeholder="Type the FullName Here" data-bind="value: usr.config.FullName">
+                        <span class="k-invalid-msg" data-for="FullName"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Enable</label>
+                    <div class="col-md-7">
+                        <input type="checkbox" name="Enable" data-bind="checked:usr.config.Enable">
+                        <span class="k-invalid-msg" data-for="Enable"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Email</label>
+                    <div class="col-md-7">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Email" type="text" class="form-control input-sm" name="Email" placeholder="Type the Email Here" data-bind="value: usr.config.Email">
+                        <span class="k-invalid-msg" data-for="Email"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Password</label>
+                    <div class="col-md-7" align="right" data-bind="visible: (app.mode() == 'editor')">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.config.Password" disabled>
+                        <span class="k-invalid-msg" data-for="Password"></span>
+                        <a href="#" data-bind="click : usr.showModalChPass" /> Change Password </a>
+                    </div>
+                    <div class="col-md-7" align="right" data-bind="visible: (app.mode() == 'new')">
+                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.config.Password">
+                        <span class="k-invalid-msg" data-for="Password"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Groups</label>
+                    <div class="col-md-7">
+                        <select type="text" id="Groups" data-bind="kendoMultiSelect: {value: usr.SelectedGroup, data:usr.listGroup, dataTextField: 'text', select: usr.displayAccess , dataValueField: 'value', filter: 'contains'}"></select>
+                        <span class="k-invalid-msg" data-for="Groups"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="col-md-12">
+                <p class="pcustom">Privilege</p> -->
+            <!-- <div id="gridaccess"></div> -->
+            <!-- </div> -->
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="col-sm-1 filter-label">Privilege</label>
+                    <div class="col-sm-12">
+                        <div class="nav">
+                            <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
+                                <span class="glyphicon glyphicon-plus"></span> Add
+                            </button>
+                        </div>
+                        <table class="table" id="datasource-settings">
+                            <thead>
+                                <tr>
+                                    <th width="200px;">Access</th>
+                                    <th>Create</th>
+                                    <th>Read</th>
+                                    <th>Update</th>
+                                    <th>Delete</th>
+                                    <th>Special Access 1</th>
+                                    <th>Special Access 2</th>
+                                    <th>Special Access 3</th>
+                                    <th>Special Access 4</th>
+                                </tr>
+                            </thead>
+                            <tbody align="center" data-bind="foreach: usr.config.Grants">
+                                <tr>
+                                    <td>
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access  "></select>
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessRead" />
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessUpdate" />
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
+                                    </td>
+                                   <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,attr: { title: adm.AccessSpecial1 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, attr: { title: adm.AccessSpecial2 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, attr: { title: adm.AccessSpecial3 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                    </td>
+                                    <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade modal-chpass" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modalcustom">
+        <div class="modal-content">
+            <div class="modal-1" id="modal-1">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Change Password
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="col-md-12 ">
+                            <div class="center-block">
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">Login ID</label>
+                                    <div class="col-md-7" align="right">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.LoginID">
+                                        <span class="k-invalid-msg" data-for="LoginID"></span>
+                                        <span class="fa fa-check" data-bind="visible: (usr.confloginid() == true)"></span>
+                                        <span class="glyphicon glyphicon-remove" data-bind="visible: (usr.confloginid() == false)"></span>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">New Password</label>
+                                    <div class="col-md-7">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password1" placeholder="Type the Password Here" data-bind="value: usr.NewPassword">
+                                        <span class="k-invalid-msg" data-for="Password1"></span>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">Confirm Password</label>
+                                    <div class="col-md-7" align="right">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password1" placeholder="Type the Password Here" data-bind="value: usr.ConfirmPass">
+                                        <span class="k-invalid-msg" data-for="ConfirmPass"></span>
+                                        <span class="glyphicon glyphicon-ok" data-bind="visible: (usr.confpass() == true)"></span>
+                                        <span class="glyphicon glyphicon-remove" data-bind="visible: (usr.confpass() == false)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <div class="grid grid-server-deploy"></div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
+                        <span class="glyphicon glyphicon-remove"></span> Cancel
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary" data-bind="click: usr.ChangePass">
+                        <span class="glyphicon glyphicon-ok"></span> Save
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

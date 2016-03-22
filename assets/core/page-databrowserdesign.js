@@ -63,10 +63,10 @@ db.aggrData = ko.observableArray([
 	// "MEDIAN"
 ]);
 db.connectionID = ko.observable('');
-db.isChecked = ko.observable('')
+db.isChecked = ko.observable('');
 db.collectionListData = ko.observableArray([]);
 db.databrowserData = ko.observableArray([]);
-// db.configMetaData = ko.mapping.fromJS(db.templateConfigMetaData);
+db.tempGetDataNrowserDesign = ko.observableArray([]);
 db.configDataBrowser = ko.mapping.fromJS(db.templateConfig);
 db.configDboxData = ko.mapping.fromJS(db.templateDboxData);
 db.databrowserColumns = ko.observableArray([
@@ -208,21 +208,16 @@ db.addProperties = function () {
 
 db.changeCheckboxOnGrid = function (o) {
 	var $grid = $(".grid-databrowser-design").data("kendoGrid");
-	var value = $(o).is(":checked");
-	var $tr = $(o).closest("tr");
-	var uid = $tr.attr("data-uid");
 	var field = $(o).attr("data-field");
+	var uid = $(o).closest("tr").attr("data-uid");
+	var value = $(o).is(":checked");
+
+	var rowData = $grid.dataSource.getByUid(uid);
+	rowData.set(field, value);
 
 	var data = $grid.dataSource.data();
-	var rowData = $grid.dataSource.getByUid(uid);
-	var rowDataIndex = data.indexOf(rowData);
-
-	rowData[field] = value;
-	data[rowDataIndex] = rowData;
-
 	var plainData = JSON.parse(kendo.stringify(data));
 	db.databrowserData(plainData);
-	db.setDataSource();
 	db.headerCheckedAll();
 
 	return true;
@@ -230,28 +225,29 @@ db.changeCheckboxOnGrid = function (o) {
 
 db.back = function(section){
 	if (section == "back") {
-			swal({
-				title: "Do you want to exit?",
-				text: "",
-				type: "warning",
-				showCancelButton: true,
-				confirmButtonColor: "#DD6B55",
-				confirmButtonText: "Exit & Save",
-				cancelButtonText: "Exit",
-				closeOnConfirm: true,
-				closeOnCancel: true
-			},
-				function(isConfirm){
-					if (isConfirm) {
-						db.saveAndBack('goback');
-					}else{
-						db.backToFront();
-					}
-				}
-			);			
-		} else {
-			br.ViewBrowserName(param._id)
-		}
+		db.backToFront();
+		// swal({
+		// 	title: "Do you want to exit?",
+		// 	text: "",
+		// 	type: "warning",
+		// 	showCancelButton: true,
+		// 	confirmButtonColor: "#DD6B55",
+		// 	confirmButtonText: "Exit & Save",
+		// 	cancelButtonText: "Exit",
+		// 	closeOnConfirm: true,
+		// 	closeOnCancel: true
+		// },
+		// 	function(isConfirm){
+		// 		if (isConfirm) {
+		// 			db.saveAndBack('goback');
+		// 		}else{
+		// 			db.backToFront();
+		// 		}
+		// 	}
+		// );			
+	} else {
+		br.ViewBrowserName(param._id)
+	}
 }
 
 db.saveAndBack = function(section) {
@@ -325,7 +321,9 @@ db.saveAndBack = function(section) {
 	});
 }
 
+db.isSaved = ko.observable(false);
 db.designDataBrowser = function(_id) {
+	db.isSaved(false);
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
 	db.databrowserData([]);
@@ -361,7 +359,7 @@ db.designDataBrowser = function(_id) {
 			_id();
 		}
 		ko.mapping.fromJS(res.data, db.configDataBrowser);
-		db.populateTable(res.data.ConnectionID);		
+		db.populateTable(res.data.ConnectionID, false);		
 
 		if (res.data.QueryText != '' && res.data.QueryType == 'Dbox') {
 			var querytext = JSON.parse(res.data.QueryText)
@@ -374,6 +372,13 @@ db.designDataBrowser = function(_id) {
 		db.isChecked($("#isFreetext").prop("checked"))
 		db.showHideFreeQuery();
 		db.headerCheckedAll();
+        db.connAggregate(res.data.ConnectionID);
+        
+        var obj = new Object();
+        obj.dataBrowserID = _id
+        obj.connectionID = res.data.ConnectionID
+        db.tempGetDataNrowserDesign([]);
+        db.tempGetDataNrowserDesign.push(obj);
 		// var ddl = $("#table").data("kendoDropDownList");
 		// var cetak = ddl.text(res.data.TableNames);
 		// console.log("cetak", cetak)
@@ -382,7 +387,7 @@ db.designDataBrowser = function(_id) {
 	});
 }
 
-db.populateTable = function (_id) {
+db.populateTable = function (_id, isPopulated) {
 	var param = { connectionID: _id };
 	app.ajaxPost("/datasource/getdatasourcecollections", param, function (res) {
 		if (!app.isFine(res)) {
@@ -409,9 +414,41 @@ db.populateTable = function (_id) {
 			a = ko.mapping.toJS(db.configDataBrowser);
 			ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 			ko.mapping.fromJS(a, db.configDataBrowser);
+            if (isPopulated){
+                db.connAggregate(_id);
+                var grid = $(".grid-databrowser-design").data("kendoGrid");
+                grid.dataSource.data([]);
+                
+                var dropdownlist = $("#table").data("kendoDropDownList");
+                dropdownlist.select(0);
+                db.isChecked(false);
+                db.configDataBrowser.QueryType("");
+                db.configDataBrowser.QueryText("");
+                db.configDataBrowser.TableNames("");
+                db.showHideFreeQuery();
+                $("#textquery").tokenInput("clear");
+                
+                if (db.tempGetDataNrowserDesign().length > 0) {
+                    if (db.tempGetDataNrowserDesign()[0].connectionID == _id && db.tempGetDataNrowserDesign()[0].dataBrowserID ==  db.configDataBrowser._id()){
+                        db.designDataBrowser(db.tempGetDataNrowserDesign()[0].dataBrowserID)
+                    }
+                }
+            }
 		}
 	});
 };
+
+db.connAggregate = function(_id) {
+    var param = { ConnectionID: _id };
+    app.ajaxPost("/databrowser/checkconnection", param, function (result) {
+        var grid = $(".grid-databrowser-design").data("kendoGrid");
+        if (result.data == "json" || result.data == "jsons" || result.data == "csv" || result.data == "csvs") {
+            grid.hideColumn(11);
+        }else{
+            grid.showColumn(11);
+        }
+    });
+}
 
 db.testQuery = function() {
 	if (db.configDataBrowser._id() == '') {
@@ -559,6 +596,7 @@ db.backToFront = function() {
 	br.pageVisible("");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
+    db.tempGetDataNrowserDesign([]);
 	$("#isFreetext").prop("checked", false);
 	$("#selectallhiddenfield").prop("checked", false);
 	$("#freeQuery").hide();

@@ -208,6 +208,7 @@ dg.createNewScrapper = function () {
 	app.mode("editor");
 	dg.scrapperMode('');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
+	$(".table-tree-map").replaceWith('<table class="table tree table-tree-map"></table>');
 	dg.addMap();
 	dg.showDataGrabber(false);
 };
@@ -296,11 +297,13 @@ dg.SaveAndProccessDataGrabberWizard = function () {
 		return;
 	}
 	setTimeout (function(){
-		dg.doSaveDataGrabber(function (res) {
+		dg.removeDataTable();
+		dg.dataTable();
+		dg.doSaveDataGrabberWizard(function (res) {
 			if (!app.isFine(res)){
 				return;
 			}
-
+			
 			res.data.forEach(function (d) {
 				dg.doRunTransformation(d._id);
 			});
@@ -336,11 +339,25 @@ dg.changeConnectionSource = function (){
 		dg.prepareFieldTableWizard(res.data);	
 		tbSource = res.data;		
 	});
-	// dg.dataTable();
-	dg.visibleSync1('show');
+	
+	if ($("#form-add-wizard").find("select:eq(0)").val() != "" && $("#form-add-wizard").find("select:eq(1)").val() != ""){
+		dg.visibleSync1('show');
+		dg.visibleSync2('show');
+	} else {
+		dg.visibleSync1('');
+		dg.visibleSync2('');
+	}
 }
 
 dg.changeConnectionDestination = function (){
+	if ($("#form-add-wizard").find("select:eq(1)").val() == ""){
+		dg.visibleSync2('');	
+	}
+
+	if (!app.isFormValid("#form-add-wizard")) {
+		$("#form-add-wizard").find("select:eq(1)").data("kendoDropDownList").value("");
+		return;
+	}
 	app.ajaxPost("/datasource/getdatasourcecollections", { connectionID: this.value()}, function(res) {
 		if (!app.isFine(res)){
 			return;
@@ -366,7 +383,13 @@ dg.changeConnectionDestination = function (){
 			}
 		});
 	});
-	dg.visibleSync2('show');
+	if ($("#form-add-wizard").find("select:eq(0)").val() != "" && $("#form-add-wizard").find("select:eq(1)").val() != ""){
+		dg.visibleSync1('show');
+		dg.visibleSync2('show');
+	} else {
+		dg.visibleSync1('');
+		dg.visibleSync2('');
+	}
 }
 
 dg.synctable = function(data){
@@ -651,8 +674,13 @@ dg.viewData = function (date) {
 	});
 };
 dg.prepareFieldTableWizard = function (tbSource){
-	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');;
+	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');
+	$("#form-add-wizard").find("select:eq(1)").data("kendoDropDownList").value("");
 	var $tableWizard = $(".table-wizard");
+	if (tbSource == ''){
+		$(".table-wizard").find("thead").remove();
+		return;
+	}
 	var header = [
 		'<thead>',
 			'<tr>',
@@ -832,6 +860,7 @@ dg.prepareFieldsOrigin = function (_id) {
 			}
 		});
 	};
+
 
 	renderTheMap(row.MetaData);
 
