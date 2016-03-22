@@ -905,6 +905,18 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	// if err != nil {
 	// 	return helper.CreateResult(false, nil, err.Error())
 	// }
+	logPath := ""
+	for _, v := range []interface{}{o} {
+		vMap, _ := toolkit.ToM(v)
+
+		logConf := vMap["logconf"].(map[string]interface{})
+		dateNowFormat := logConf["filepattern"].(string)
+		logpathconfig := logConf["logpath"].(string)
+		theDate := cast.String2Date(payload.Date, "YYYY/MM/dd HH:mm:ss")
+		theDateString := cast.Date2String(theDate, dateNowFormat)
+		fileName := fmt.Sprintf("%s-%s", logConf["filename"], theDateString)
+		logPath = logpathconfig + fileName
+	}
 
 	client, server, err := w.ConnectToSedotanServer()
 	if err != nil {
@@ -916,17 +928,17 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 	if server.OS == "linux" {
 		apppath = server.AppPath + `/cli/sedotanread`
 		arrcmd = append(arrcmd, apppath)
-		arrcmd = append(arrcmd, `-readtype=logfile`)
-		arrcmd = append(arrcmd, `-nameid=`+payload.ID)
-		arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
-		arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+		arrcmd = append(arrcmd, `-readtype="logfile"`)
+		arrcmd = append(arrcmd, `-nameid="`+payload.ID+`"`)
+		arrcmd = append(arrcmd, `-pathfile="`+logPath+`"`)
+		arrcmd = append(arrcmd, `-datetime="`+payload.Date+`"`)
 	} else {
 		apppath = server.AppPath + `\bin\sedotanread.exe`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=logfile`)
 		arrcmd = append(arrcmd, `-nameid=`+payload.ID)
-		arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
-		arrcmd = append(arrcmd, `-datetime=`+payload.Date)
+		arrcmd = append(arrcmd, `-pathfile=`+logPath)
+		arrcmd = append(arrcmd, `-datetime="`+payload.Date+`"`)
 	}
 
 	cmds := strings.Join(append(arrcmd[:1], arrcmd[1:]...), " ")
