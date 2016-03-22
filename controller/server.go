@@ -3,6 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -13,9 +17,6 @@ import (
 	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	"golang.org/x/crypto/ssh"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 type ServerController struct {
@@ -237,6 +238,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 
 			appDistSrcDest := filepath.Join(data.AppPath, "app-root.zip")
+			appDistSrcDest = strings.Replace(appDistSrcDest, "\\", "/", -1)
 			unzipAppCmd := fmt.Sprintf("unzip %s -d %s", appDistSrcDest, data.AppPath)
 			log.AddLog(unzipAppCmd, "INFO")
 			_, err = sshSetting.GetOutputCommandSsh(unzipAppCmd)
@@ -262,6 +264,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 
 			dataDistSrcDest := filepath.Join(data.DataPath, "data-root.zip")
+			dataDistSrcDest = strings.Replace(dataDistSrcDest, "\\", "/", -1)
 			unzipDataCmd := fmt.Sprintf("unzip %s -d %s", dataDistSrcDest, data.DataPath)
 			log.AddLog(unzipDataCmd, "INFO")
 			_, err = sshSetting.GetOutputCommandSsh(unzipDataCmd)
@@ -426,7 +429,7 @@ func (s *ServerController) ToggleSedotanService(op string, id string) (bool, err
 	}
 
 	if strings.Contains(op, "start") {
-		sedotanConfigArg := fmt.Sprintf(`-config="%s"`, filepath.Join(data.DataPath, "config", "webgrabbers.json"))
+		sedotanConfigArg := fmt.Sprintf(`-config="%s"`, filepath.Join(data.AppPath, "config", "webgrabbers.json"))
 		sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, filepath.Join(data.DataPath, "daemon"))
 		runSedotanCmd := fmt.Sprintf("cd %s && ./sedotand %s %s", filepath.Join(data.AppPath, "cli"), sedotanConfigArg, sedotanLogArg)
 		err = helper.RunCommandWithTimeout(&sshSetting, runSedotanCmd, 5)
