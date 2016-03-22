@@ -1,0 +1,153 @@
+<!-- core -->
+<script src="/res/core/page-selectorwidget.js"></script>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: SelectorWidget">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'selectorwidget')">
+		<h1>Selector Widget</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: sw.createNewSelector">
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Selector
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" >
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
+
+	    <!-- <nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-4 filter-label">
+		    		Search
+		    	</label>
+		    	<div class="col-md-8 no-padding">
+		    		<input class="form-control input-sm search" type="text" data-bind="value: wg.searchfield" placeholder="Type keyword here" />
+		    	</div>
+		    </div>
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
+		    		Request Type
+		    	</label>
+		    	<div class="col-md-7 no-padding">
+		    		<select name="requestType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataRequestTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterRequestTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		    <div class="col-md-3 no-padding">
+		    	<label class="col-md-5 filter-label">
+		    		Source Type
+		    	</label>
+		    	<div class="col-md-7 no-padding">
+		    		<select name="sourceType" class="full-width" data-bind="kendoDropDownList: { data: wg.dataSourceTypes, dataValueField: 'value', dataTextField: 'title', value: wg.filterDataSourceTypes, optionLabel: 'Select one' }"></select>
+		    	</div>
+		    </div>
+		</nav> -->
+
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">All Selector</h1>
+		    </div>
+
+		    <div class="panel-body">
+		    	<div class="grid grid-selectorwidget" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: sw.dataTemp, selectable: 'multiple, row', change: sw.selectSelectorWidget, columns: sw.selectorWidgetColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-selectorwidget') }"></div>
+		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveSelector">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+		</nav>
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+			<div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+			        	Selector
+	        	</h1>
+		    </div>
+		    <div class="clearfix">&nbsp;</div>
+		    <div class="col-md-11">
+			    <ul class="nav nav-tabs" role="tablist">
+			    	<li class="active"><a href="#general" data-toggle="tab" role="tab">General</a></li>
+			    	<li><a href="#datasource" data-toggle="tab" role="tab">Data Source - Field</a></li>
+			    </ul>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal form-selector-widget" data-bind="with: configSelectorWidget" novalidate>
+		    	<div class="tab-content">
+		    			<div class="tab-pane fade in active" id="general" role="tabpanel">
+		    				<div class="col-md-11">
+		    					<div class="clearfix">&nbsp;</div>
+		    					<div class="form-group">
+						        	<label class="col-md-2 filter-label">ID</label>
+						        	<div class="col-md-3">
+						        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+										<span class="k-invalid-msg" data-for="ID"></span>
+						        	</div>
+						        </div>
+						        <div class="form-group">
+						        	<label class="col-md-2 filter-label">Title</label>
+						        	<div class="col-md-3">
+						        		<input required type="text" class="form-control input-sm" name="title" placeholder="Type title here" data-bind="value: Title">
+										<span class="k-invalid-msg" data-for="title"></span>
+						        	</div>
+						        </div>
+						        <div class="form-group">
+						        	<label class="col-md-2 filter-label">Master Datasource</label>
+						        	<div class="col-md-3">
+						        		 <select class="full-width" name="authtype" data-bind="kendoDropDownList: { data: sw.dataSources, dataValueField: '_id', value: MasterDataSource, dataTextField: '_id', optionLabel : 'Select Master Data Source'}"></select>
+										<span class="k-invalid-msg" data-for="authtype"></span>
+						        	</div>
+						        </div>
+		    				</div>
+		    			</div>
+		    			<div class="tab-pane fade" id="datasource" role="tabpanel">
+		    				<div class="col-md-11">
+		    					<div class="clearfix">&nbsp;</div>
+			    				<div class="form-group">
+								    <label class="col-md-2 filter-label">Auth Type</label>
+								    <div class="col-sm-8">
+							        	<div class="nav">
+							        		<button class="btn btn-success btn-sm" data-bind="click: sw.addFields">
+							        			<span class="glyphicon glyphicon-plus"></span> Add
+							        		</button>
+							        	</div>
+							        	<table class="table" id="datasource-settings">
+						        			<thead>
+						        				<tr>
+						        					<th>Data Source</th>
+						        					<th>Field</th>
+						        				</tr>
+						        			</thead>
+						        			<tbody data-bind="foreach: Fields">
+						        				<tr>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+						        					</td>
+						        					<td>
+						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: value" />
+						        					</td>
+						        					<td>
+						        						<button class="btn btn-sm btn-danger" data-bind="visible: ($index() > 0 && deletable)">
+						        							<span class="glyphicon glyphicon-remove" data-bind="click: sw.removeField($data)"></span>
+						        						</button>
+						        					</td>
+						        				</tr>
+						        			</tbody>
+							        	</table>
+							        </div>
+								</div>
+		    				</div>	
+		    			</div>
+		    		</div>
+		    	</form>
+			</div>
+		</div>
+	</div>
+</div>
