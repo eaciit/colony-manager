@@ -36,6 +36,11 @@ const (
 	DELIMITER   = "/"
 )
 
+type ListDir struct {
+	Dir      colonycore.FileInfo
+	DirDepth int
+}
+
 func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
 	var controller = new(FileBrowserController)
 	controller.Server = s
@@ -69,6 +74,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 	if server.RecordID() != nil {
 		var result []colonycore.FileInfo
+		var tempResult []ListDir
 
 		if server.ServerType == SERVER_NODE {
 			if payload.Search != "" {
@@ -149,39 +155,65 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 			h := setHDFSConnection(server.Host, server.SSHUser)
 
 			//check whether SourcePath type is directory or file
+			var depth = 1
+			var dir = ""
+			var isComplete = false
+
 			if payload.Path == "" {
 				payload.Path = "/"
+				dir = payload.Path
 			}
 
-			res, err := h.List(payload.Path)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
+			if payload.Search != "" {
+				for !isComplete {
+					if depth == 10 {
+						isComplete = true
+					}
 
-			for _, files := range res.FileStatuses.FileStatus {
-				var xNode colonycore.FileInfo
+					DepthList := GetDirbyDepth(tempResult, depth)
+					depth++
 
-				xNode.Name = files.PathSuffix
-				xNode.Size = float64(files.Length)
-				xNode.Group = files.Group
-				xNode.Permissions = files.Permission
-				xNode.User = files.Owner
-				xNode.Path = strings.Replace(payload.Path+"/", "//", "/", -1) + files.PathSuffix
+					if len(DepthList) == 0 {
+						if dir != "/" {
+							isComplete = true
+						} else {
+							Dirs, _ := GetDirContent(dir, h)
 
-				if files.Type == "FILE" {
-					xNode.IsDir = false
-					xNode.IsEditable = true
-				} else {
-					xNode.IsDir = true
+							for _, singleDir := range Dirs {
+								var res ListDir
+								res.Dir = singleDir
+								res.DirDepth = depth
+								tempResult = append(tempResult, res)
 
-					if payload.Path == "/" {
-						xNode.IsEditable = false
+								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+									result = append(result, singleDir)
+								}
+							}
+						}
 					} else {
-						xNode.IsEditable = true
+						for _, singleDepthList := range DepthList {
+							dir = singleDepthList.Dir.Path
+
+							Dirs, _ := GetDirContent(dir, h)
+
+							for _, singleDir := range Dirs {
+								var res ListDir
+								res.Dir = singleDir
+								res.DirDepth = depth
+								tempResult = append(tempResult, res)
+
+								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+									result = append(result, singleDir)
+								}
+							}
+						}
 					}
 				}
-
-				result = append(result, xNode)
+			} else {
+				result, err = GetDirContent(payload.Path, h)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
 			}
 		}
 
@@ -189,6 +221,51 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(false, nil, "")
+}
+
+func GetDirContent(path string, h *WebHdfs) (Dirs []colonycore.FileInfo, err error) {
+	res, err := h.List(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, files := range res.FileStatuses.FileStatus {
+		var xNode colonycore.FileInfo
+
+		xNode.Name = files.PathSuffix
+		xNode.Size = float64(files.Length)
+		xNode.Group = files.Group
+		xNode.Permissions = files.Permission
+		xNode.User = files.Owner
+		xNode.Path = strings.Replace(path+"/", "//", "/", -1) + files.PathSuffix
+
+		if files.Type == "FILE" {
+			xNode.IsDir = false
+			xNode.IsEditable = true
+		} else {
+			xNode.IsDir = true
+
+			if path == "/" {
+				xNode.IsEditable = false
+			} else {
+				xNode.IsEditable = true
+			}
+		}
+
+		Dirs = append(Dirs, xNode)
+	}
+
+	return Dirs, err
+}
+
+func GetDirbyDepth(List []ListDir, depth int) (Dirs []ListDir) {
+	for _, dir := range List {
+		if dir.DirDepth == depth {
+			Dirs = append(Dirs, dir)
+		}
+	}
+
+	return Dirs
 }
 
 func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
