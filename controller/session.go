@@ -11,6 +11,7 @@ import (
 	// _ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"strings"
 	"time"
 	// "io"
 	// "io/ioutil"
@@ -45,15 +46,21 @@ func (a *SessionController) GetSession(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	tSession := new(acl.Session)
-	if payload["find"].(string) != "" {
-		filter = new(dbox.Filter)
-		filter = dbox.Contains("loginid", payload["find"].(string))
+	if strings.Contains(toolkit.TypeName(payload["find"]), "float") {
+		payload["find"] = toolkit.ToInt(payload["find"], toolkit.RoundingAuto)
 	}
 
+	tSession := new(acl.Session)
+	if find := toolkit.ToString(payload["find"]); find != "" {
+		filter = new(dbox.Filter)
+		filter = dbox.Contains("loginid", find)
+	}
+	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
+	skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
+
+	// c, err := acl.Find(tAccess, filter, toolkit.M{}.Set("take", take).Set("skip", skip))
 	// c, err := acl.Find(tSession, nil, toolkit.M{}.Set("take", payload["take"].(int)).Set("skip", payload["skip"].(int)))
-	c, err := acl.Find(tSession, filter, toolkit.M{}.Set("take", 10).Set("skip", 0))
+	c, err := acl.Find(tSession, filter, toolkit.M{}.Set("take", take).Set("skip", skip))
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
@@ -62,27 +69,19 @@ func (a *SessionController) GetSession(r *knot.WebContext) interface{} {
 	arrm := make([]toolkit.M, 0, 0)
 	err = c.Fetch(&arrm, 0, false)
 	for i, val := range arrm {
-		// tUser := new(acl.User)
-		// e := acl.FindByID(tUser, toolkit.ToString(val.Get("userid", "")))
-		// if e != nil {
-		// 	continue
-		// }
-		// arrm[i].Set("username", tUser.LoginID)
 		arrm[i].Set("duration", time.Since(val["created"].(time.Time)).Hours())
 		arrm[i].Set("status", "ACTIVE")
 		if val["expired"].(time.Time).Before(time.Now().UTC()) {
 			arrm[i].Set("duration", val["expired"].(time.Time).Sub(val["created"].(time.Time)).Hours())
 			arrm[i].Set("status", "EXPIRED")
 		}
-		// toolkit.Printf("Debug date : %v : %v\n", toolkit.TypeName(val["created"]), val["created"].(time.Time))
 	}
 	c.Close()
 
-	c, err = acl.Find(tSession, nil, nil)
+	c, err = acl.Find(tSession, filter, nil)
 
 	data.Set("Datas", arrm)
 	data.Set("total", c.Count())
-	// data.Set("total", 100)
 
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
