@@ -57,7 +57,7 @@
 		    	<button class="btn btn-sm btn-danger" data-bind="click: adm.deleteaccess"><span class="glyphicon glyphicon-remove"></span> Delete</button>
 		    	</div>
 		    	<div class="col-md-3"> 
-		    	<input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" />			
+		    	<input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : adm.search, event:{keyup:adm.searchAccess}'/>			
 				</div>
 		    </div>
 		</nav>	
