@@ -13,8 +13,7 @@
 </nav>
  
 <div class="panel" data-bind="visible: (app.mode() == '')"> 
-        <div class="grid grid-sessions" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: ses.SessionData, selectable: 'multiple, row', change:ses.selectGridSession, columns: ses.SessionColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-sessions')}"></div>
-    <p class="bg-danger bgcustom">Please click row to edit!</p>
+        <div class="grid grid-sessions"></div>
 </div>
 
  
