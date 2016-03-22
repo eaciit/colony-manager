@@ -22,37 +22,37 @@ adm.SumAccess = ko.observable(0);
 adm.AccessColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxaccess' class='ckcGrid' value='#: _id #' />",
     width: 50
-}, {
+    }, {
     field: "_id",
     title: "ID"
-}, {
+    }, {
     field: "title",
-    title: "Title"
-}, {
+    title: "Title"  
+    }, {
     field: "group1",
     title: "Group 1"
-}, {
+    }, {
     field: "group2",
     title: "Group 2"
-}, {
+    }, {
     field: "group3",
     title: "Group 3"
-}, {
+    }, {
     field: "enable",
     title: "Enable"
-}, {
+    }, {
     field: "specialaccess1",
     title: "Special Access 1"
-}, {
+    }, {
     field: "specialaccess2",
     title: "Special Access 2"
-}, {
+    }, {
     field: "specialaccess3",
     title: "Special Access 3"
-}, {
+    }, {
     field: "specialaccess4",
     title: "Special Access 4"
-}]);
+    }]);
 adm.filter = ko.mapping.fromJS(adm.templateFilter);
 adm.isNew = ko.observable(false);
 adm.editAccess = ko.observable("");
@@ -61,15 +61,17 @@ adm.showAccess = ko.observable(false);
 adm.AccessData = ko.observableArray([]);
 adm.selectGridAccess = function(e) {
     adm.isNew(false);
-    app.wrapGridSelect(".grid-access", ".btn", function(d) { 
+    app.wrapGridSelect(".grid-access", ".btn", function(d) {
         adm.editAccess(d._id);
         adm.showAccess(true);
         app.mode("editor");
     });
 };
-adm.searchAccess = function(){
-    adm.AccessData([]); 
-    app.ajaxPost("/administration/search", {search:adm.search()}, function(res) {
+adm.searchAccess = function() {
+    adm.AccessData([]);
+    app.ajaxPost("/administration/search", {
+        search: adm.search()
+    }, function(res) {
         if (!app.isFine(res)) {
             return;
         }
@@ -87,7 +89,7 @@ adm.searchAccess = function(){
             c(res);
         }
     });
-};
+};  
 adm.getAccess = function(c) {
     adm.AccessData([]);
     var param = ko.mapping.toJS(adm.filter);
@@ -219,5 +221,5 @@ adm.backToFront = function() {
 
 $(function() {
     app.section("access");
-    adm.getAccess(); 
+    adm.getAccess();
 });

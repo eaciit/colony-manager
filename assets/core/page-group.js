@@ -23,16 +23,16 @@ grp.ListAccess = ko.observableArray([]);
 grp.GroupsColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxgroup' class='ckcGrid' value='#: _id #' />",
     width: 50
-}, {
+    }, {
     field: "_id",
     title: "ID"
-}, {
+    }, {
     field: "title",
     title: "Title"
-}, {
+    }, {
     field: "enable",
     title: "Enable"
-}, {
+    }, {
     field: "owner",
     title: "Owner"
 }]);
@@ -75,15 +75,17 @@ grp.getGroups = function(c) {
     });
 };
 
-grp.searchGroup = function(){
-    grp.GroupsData([]); 
-    app.ajaxPost("/group/search", {search:grp.search()}, function(res) {
+grp.searchGroup = function() {
+    grp.GroupsData([]);
+    app.ajaxPost("/group/search", {
+        search: grp.search()
+    }, function(res) {
         if (!app.isFine(res)) {
             return;
         }
         if (res.data == null) {
             res.data = "";
-        } 
+        }
         grp.GroupsData(res.data);
         var grid = $(".grid-access").data("kendoGrid");
         $(grid.tbody).on("mouseleave", "tr", function(e) {
@@ -98,7 +100,7 @@ grp.searchGroup = function(){
 
 grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
- 
+
 grp.savegroup = function() {
     var data = ko.mapping.toJS(usr.config.Grants);
     var AccessGrants = [];
@@ -214,8 +216,7 @@ grp.displayAccess = function(e) {
         console.log(res.data);
         for (var i = 0; i < res.data.length; i++) {
             var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
-            usr.config.Grants.push(new usr.templateAccessGrant2());
-            console.log(res.data[i].AccessID);
+            usr.config.Grants.push(new usr.templateAccessGrant2()); 
             usr.config.Grants()[i].AccessID(res.data[i].AccessID);
             if (res.data[i].AccessValue.indexOf(1) == -1) {
                 usr.config.Grants()[i].AccessCreate(false)
@@ -260,7 +261,9 @@ grp.displayAccess = function(e) {
         };
     });
 };
-
+grp.content = ko.observable('test');
+  grp.isOpen = ko.observable(false);
+  
 grp.backToFront = function() {
     app.mode('');
     grp.getGroups();
@@ -269,5 +272,7 @@ grp.backToFront = function() {
 
 grp.OnRemove = function(_id) {};
 $(function() {
-    grp.getGroups(); 
+    grp.getGroups();
+
+     $('[data-toggle="tooltip"]').tooltip();   
 });

@@ -828,14 +828,14 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	}
 	SshClient := *client
 
-	payload.RecFile = strings.Replace(payload.RecFile,EC_DATA_PATH,server.DataPath,-1)
+	payload.RecFile = strings.Replace(payload.RecFile, EC_DATA_PATH, server.DataPath, -1)
 
 	apppath := ""
 	if server.OS == "linux" {
 		apppath = server.AppPath + `/cli/sedotanread`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=rechistory`)
-		arrcmd = append(arrcmd, `-pathfile=`+strings.Replace(payload.RecFile,`\`,`/`,-1))
+		arrcmd = append(arrcmd, `-pathfile=`+strings.Replace(payload.RecFile, `\`, `/`, -1))
 	} else {
 		apppath = server.AppPath + `\bin\sedotanread.exe`
 		arrcmd = append(arrcmd, apppath)
@@ -925,7 +925,7 @@ func (w *WebGrabberController) GetLog(r *knot.WebContext) interface{} {
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype=logfile`)
 		arrcmd = append(arrcmd, `-nameid=`+payload.ID)
-		arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))	
+		arrcmd = append(arrcmd, `-datas=`+toolkit.JsonString([]interface{}{o}))
 		arrcmd = append(arrcmd, `-datetime=`+payload.Date)
 	}
 
@@ -1007,7 +1007,7 @@ func (d *WebGrabberController) SyncConfig() error {
 	ip := addr[len(addr)-1].(*net.IPNet).IP.String()
 
 	srcString := string(bytes)
-	for _, keyword := range []string{`host":"localhost`, `host":"http://localhost`, `host":"https://localhost`} {
+	for _, keyword := range []string{`host":"localhost`, `host":"http://localhost`, `host":"https://localhost`, `host": "localhost`, `host": "http://localhost`, `host": "https://localhost`} {
 		if strings.Contains(srcString, keyword) {
 			newKeyword := strings.Replace(keyword, "localhost", ip, -1)
 			srcString = strings.Replace(srcString, keyword, newKeyword, -1)
