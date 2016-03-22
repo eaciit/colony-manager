@@ -2,6 +2,8 @@ package controller
 
 import (
 	"fmt"
+	"mime/multipart"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -279,7 +281,6 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	server, payload, err := getServer(r, "PAYLOAD")
-	fmt.Println("aaaaa")
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -464,26 +465,37 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 }
 
 func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server, payload colonycore.FileBrowserPayload, err error) {
-	file, _, err := r.Request.FormFile(fileName)
-
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	payload.File = file
-
 	var tmp map[string]interface{}
 	_, s, err := r.GetPayloadMultipart(&tmp)
 
 	if err != nil {
 		return
 	}
-
-	payload.Path = s["path"][0]
 	payload.ServerId = s["serverId"][0]
-	payload.FileName = s["filename"][0]
-	payload.FileSizes, _ = strconv.ParseInt(s["filesizes"][0], 10, 64)
+	payload.Path = s["path"][0]
+
+	err = r.Request.ParseMultipartForm(100000)
+	if err != nil {
+		return
+	}
+
+	m := r.Request.MultipartForm
+	files := m.File[fileName]
+
+	for key, _ := range files {
+		var file multipart.File
+		file, err = files[key].Open()
+		defer file.Close()
+		if err != nil {
+			return
+		}
+
+		payload.File = append(payload.File, file)
+		payload.FileName = append(payload.FileName, s["filename"][key])
+
+		tmpSize, _ := strconv.ParseInt(s["filesizes"][key], 10, 64)
+		payload.FileSizes = append(payload.FileSizes, tmpSize)
+	}
 
 	query := dbox.Eq("_id", payload.ServerId)
 
@@ -516,6 +528,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil {
+
 		if payload.Path != "" && payload.File != nil {
 			if server.ServerType == SERVER_NODE {
 				setting, err := sshConnect(&server)
@@ -524,32 +537,36 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 
-				err = setting.SshCopyByFile(payload.File, payload.FileSizes, 0666, payload.FileName, payload.Path)
+				for key, _ := range payload.File {
+					err = setting.SshCopyByFile(payload.File[key], payload.FileSizes[key], 0666, payload.FileName[key], payload.Path)
 
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 				}
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				DestPath := strings.Replace(payload.Path+"/", "//", "/", -1) + payload.FileName
-				SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName
+				for key, _ := range payload.File {
+					DestPath := strings.Replace(payload.Path+"/", "//", "/", -1) + payload.FileName[key]
+					SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName[key]
 
-				read, err := ioutil.ReadAll(payload.File)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
-				}
+					read, err := ioutil.ReadAll(payload.File[key])
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 
-				err = ioutil.WriteFile(SourcePath, read, 0755)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
-				}
+					err = ioutil.WriteFile(SourcePath, read, 0755)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 
-				h := setHDFSConnection(server.Host, server.SSHUser)
+					h := setHDFSConnection(server.Host, server.SSHUser)
 
-				err = h.Put(SourcePath, DestPath, "", nil, &server)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
+					err = h.Put(SourcePath, DestPath, "", nil, &server)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 				}
 				return helper.CreateResult(true, "", "")
 			}
