@@ -1,5 +1,26 @@
 package controller
 
+/** NOTE
+
+#### Linux/OSX
+ - make nested directory						mkdir -p "path/to/file"
+ - remove directory & it's content				rm -rf "path/to/file"
+ - move directory								mv "path/to/file" "path/to/destination"
+ - change permission							chmod 755 "path/to/file"
+ - set path	(append to .bashrc)					sed -i '/export EC_APP_PATH/d' ~/.bashrc
+ 													&& echo 'export EC_APP_PATH="path/to/file"' >> ~/.bashrc"
+ - show sub dir									ls
+
+#### Windows
+ - make nested directory						mkdir "path\to\file"
+ - remove directory & it's content				rmdir /S /Q "path\to\file"
+ - move directory								move "path\to\file" "path\to\destination"
+ - change permission							cacls "path\to\file" /g everyone:f 755
+ - set path (min: windows 7)					setx EC_APP_PATH "path\to\file"
+ - show sub dir									dir
+
+*/
+
 import (
 	"errors"
 	"fmt"
