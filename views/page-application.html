@@ -82,8 +82,11 @@
 		    <div class="panel-heading">
 		        <h1 class="panel-title">Application</h1>
 		    </div>
-		    <div class="panel-body">
-		    	<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, selectable: 'multiple, row', change: apl.selectApps, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-application') }"></div>
+		    <div class="panel-body  position-custom">
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniLoader">
+		    		<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, selectable: 'multiple, row', change: apl.selectApps, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-application') }"></div>
+		    	</div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -419,7 +422,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					{{template "_loader.html"}}
+					{{template "_miniloader.html"}}	
 					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
 						<span class="glyphicon glyphicon-remove"></span> Cancel
 					</button>

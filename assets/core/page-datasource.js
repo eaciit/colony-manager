@@ -409,6 +409,7 @@ ds.selectGridConnection = function (e) {
 };
 
 ds.editConnection = function (_id) {
+	app.miniloader(true);
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 
 	app.ajaxPost("/datasource/selectconnection", { _id: _id }, function (res) {
@@ -514,6 +515,7 @@ ds.selectGridDataSource = function (e) {
 };
 
 ds.editDataSource = function (_id) {
+	app.miniloader(true);
 	ds.dataSourceMode('edit');
 	app.resetValidation(".form-datasource");
 

@@ -396,6 +396,9 @@ table.table tr:hover td {
   line-height: 25px;
   text-align: left; }
 
+.position-custom {
+  position: relative; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
@@ -610,6 +613,12 @@ body {
   .dropdown-submenu > li > a #content-preview {
     border: 1px solid whitesmoke;
     min-height: 500px; }
+  .dropdown-submenu > li > a .loader-custom {
+    position: absolute !important;
+    background-color: transparent !important; }
+    .dropdown-submenu > li > a .loader-custom .loader {
+      margin-left: 0 !important;
+      margin-top: 0 !important; }
   .dropdown-submenu > li > a .loader-container {
     position: fixed;
     top: 0;
