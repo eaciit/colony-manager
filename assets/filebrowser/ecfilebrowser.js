@@ -187,7 +187,7 @@ BuildFileExplorer:function(elem,options){
 			}
 		});
 
-		$strpretree = $("<div class='row col-md-12'></div>");
+		$strpretree = $("<div class='col-md-12'></div>");
 		$strpretree.appendTo($strcont);
 
 		strtree = "<div class='fb-tree'></div>"
@@ -321,7 +321,7 @@ BuildFileExplorer:function(elem,options){
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
 		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end tooltipster fb-ed-btn-cancel' unselectable='on' title='Cancel' aria-pressed='false'></a>");
-		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-repeat'></span>");
+		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-remove'></span>");
 		$edlbl = $("<span class='k-tool-text'>Cancel</span>");
 
 		$edli.appendTo($conted);
