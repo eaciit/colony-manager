@@ -59,7 +59,7 @@ grp.selectGridGroups = function(e) {
     usr.Access.removeAll();
     usr.getAccess();
     grp.isNew(false);
-    app.wrapGridSelect(".grid-groups", ".btn", function(d) {
+    app.wrapGridSelect("#grid-groups", ".btn", function(d) {
         grp.editGroup(d._id);
         grp.showGroup(true);
         app.mode("editor");
@@ -126,25 +126,66 @@ grp.removeselectGridGroups = function(e) {
     });
 };
 grp.getGroups = function(c) {
-    grp.GroupsData([]);
-    var param = ko.mapping.toJS(grp.filter);
-    app.ajaxPost("/group/getgroup", param, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
-        grp.GroupsData(res.data);
-        var grid = $(".grid-groups").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
+    
+    //var param = ko.mapping.toJS(grp.filter);
+    // //console.log("")
+    // app.ajaxPost("/group/getgroup", param, function(res) {
+        // if (!app.isFine(res)) {
+        //     return;
+        // }
+        // if (res.data == null) {
+        //     res.data = "";
+        // }
+    //     grp.GroupsData(res.data);
+        // var grid = $(".grid-groups").data("kendoGrid");
+        // $(grid.tbody).on("mouseleave", "tr", function(e) {
+        //     $(this).removeClass("k-state-hover");
+        // });
 
-        if (typeof c == "function") {
-            c(res);
-        }
+        // if (typeof c == "function") {
+        //     c(res);
+    //     }
+    // });
+    var param = ko.mapping.toJS(grp.filter);
+    $("#grid-groups").kendoGrid({
+            columns: grp.GroupsColumns(),
+            dataSource: {
+                   transport: {
+                        read:{
+                            url:"/group/search",
+                            data:{search:grp.search()},
+                            dataType:"json",
+                            type: "POST",
+                            success: function(data) {
+                                var grid = $("#grid-groups").data("kendoGrid");
+                                $(grid.tbody).on("mouseleave", "tr", function(e) {
+                                    $(this).removeClass("k-state-hover");
+                                });
+                                if (typeof c == "function") {
+                                    c(res);
+                                }
+                            }
+                        }
+                   },
+                   schema: {
+                        data: "data.Datas",
+                        total: "data.total"
+                   },
+                   pageSize: 5,
+                   serverPaging: true, 
+                   serverSorting: true,
+                   serverFiltering: true,
+               },
+            pageable: true,
+            scrollable: true,
+            sortable: true,
+            selectable: 'multiple, row',
+            change: grp.selectGridGroups,
+            filterfable: false,
+            dataBound: app.gridBoundTooltipster('.grid-groups'), 
+            columns: grp.GroupsColumns()
     });
+                                
 };
 grp.listGroupsData=ko.observableArray([]);
 grp.selectedGroupsData=ko.observableArray([]);
@@ -177,28 +218,28 @@ grp.getlistGroups = function(c) {
     }); 
 };
 
-grp.searchGroup = function() {
-    grp.GroupsData([]);
-    app.ajaxPost("/group/search", {
-        search: grp.search()
-    }, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
-        grp.GroupsData(res.data);
-        var grid = $(".grid-access").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
+// grp.searchGroup = function() {
+//     grp.GroupsData([]);
+//     app.ajaxPost("/group/search", {
+//         search: grp.search()
+//     }, function(res) {
+//         if (!app.isFine(res)) {
+//             return;
+//         }
+//         if (res.data == null) {
+//             res.data = "";
+//         }
+//         grp.GroupsData(res.data);
+//         var grid = $(".grid-access").data("kendoGrid");
+//         $(grid.tbody).on("mouseleave", "tr", function(e) {
+//             $(this).removeClass("k-state-hover");
+//         });
 
-        if (typeof c == "function") {
-            c(res);
-        }
-    });
-};
+//         if (typeof c == "function") {
+//             c(res);
+//         }
+//     });
+// };
 
 grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
