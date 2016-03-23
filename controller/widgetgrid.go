@@ -22,7 +22,7 @@ func CreateWidgetGridController(s *knot.Server) *WidgetGridController {
 	return controller
 }
 
-func (t *WidgetGridController) GetGridData(r *knot.WebContext) interface{} {
+func (wg *WidgetGridController) GetGridData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	connection, err := helper.LoadConfig(filepath.Join(colonycore.ConfigPath, "widget", "grid.json"))
