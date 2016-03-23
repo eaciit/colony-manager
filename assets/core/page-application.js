@@ -170,14 +170,48 @@ apl.srvapplicationColumns = ko.observableArray([
 	} },
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
-	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='statuscheck-apl' />"
-		].join(" ");
+	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
+		// var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		// if (app == undefined) {
+		// 	return "";
+		// }
+
+		// var deployedTo = app.DeployedTo;
+
+		// if (deployedTo == null) {
+		// 	deployedTo = [];
+		// }
+
+		// if (deployedTo.indexOf(d._id) != -1) {
+		// 	var target = [d.host.split(":")[0], app.Port].join(":");	
+		// 	return "<input type='checkbox' class='statuscheck-apl grid-green' /> ";
+		// }
+
+		return "<input type='checkbox' class='statuscheck-apl grid-red' />";
 	} }
+	// { title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+	// 	return [
+	// 		"<input type='checkbox' class='statuscheck-apl' />"
+	// 	].join(" ");
+	// } }
 ]);
+
+apl.gridStatusColor = function () {
+	$grids = $('.grid-srvapplication');
+	var $grg = $grids.find("tr td .grid-green");
+	var $grr = $grids.find("tr td .grid-red");
+
+	if ($grg) {
+		$grg.parent().css("background-color", "#5cb85c");
+		$grg.prop("checked", true);		
+	}
+	if ($grr) {
+		$grr.parent().css("background-color", "#d9534f");
+		$grr.prop("checked", false);		
+	}
+}
+
 apl.gridStatusCheck = function () {
-	$('.statuscheck-apl').parent().css("background-color", "#d9534f");
 	$grid = $('.grid-srvapplication');
 	var $gr = $grid.find("tr td .statuscheck-apl");
 	$gr.change(function(){
@@ -342,8 +376,9 @@ apl.getLangEnv = function (c){
 	});
 }
 
-apl.editApplication = function(_id) {
-	apl.gridStatusCheck();
+apl.editApplication = function(_id) {	
+	apl.appIDToDeploy(_id);
+	apl.refreshGridModalDeploy();
 	app.miniloader(true);	
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
@@ -355,6 +390,7 @@ apl.editApplication = function(_id) {
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
+		// srv.getServers('app');
 	});
 };
 

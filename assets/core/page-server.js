@@ -129,7 +129,7 @@ srv.gridStatusCheck = function () {
 	})
 };
 
-srv.getServers = function(c) {
+srv.getServers = function(c, type) {
 	srv.ServerData([]);
 	var param = ko.mapping.toJS(srv.filter);
 	app.ajaxPost("/server/getservers", param, function (res) {
@@ -140,17 +140,34 @@ srv.getServers = function(c) {
 			res.data="";
 		}
 		srv.ServerData(res.data);
-		var grid = $(".grid-server").data("kendoGrid");
+
+		// if (type == 'app') {			
+			$(".grid-srvapplication").replaceWith("<div class='grid-srvapplication'></div>");
+			$(".grid-srvapplication").kendoGrid({
+				dataSource: { pageSize: 15, data: res.data },
+				columns: apl.srvapplicationColumns(),
+				filterfable: false,
+				pageable: true,
+				dataBound: function(e) {
+					apl.gridStatusColor();
+					apl.gridStatusCheck();
+				}
+			});
+		// }else{
+			var grid = $(".grid-server").data("kendoGrid");
+			$(grid.tbody).on("mouseleave", "tr", function (e) {
+			    $(this).removeClass("k-state-hover");
+			});
+			// srv.ServerData(res.data);
+		// };
+
 		// $(grid.tbody).on("mouseenter", "tr", function (e) {
 		//     $(this).addClass("k-state-hover");
 		// });
-		$(grid.tbody).on("mouseleave", "tr", function (e) {
-		    $(this).removeClass("k-state-hover");
-		});
 
 		if (typeof c == "function") {
 			c(res);
-		}
+		};
 	});
 };
 
