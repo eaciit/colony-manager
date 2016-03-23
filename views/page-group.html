@@ -6,7 +6,7 @@
 
 <h1>Group</h1>
 
-<nav class="navbar" data-bind="visible: (app.mode() == '')">
+<nav class="navbar" data-bind="visible: (app.mode() == '')" style="margin-top:-10px;">
     <div class="nav1">
         <div class="col-md-4">
             <button class="btn btn-sm btn-primary navbar-btn">
@@ -20,7 +20,7 @@
         </button>
         </div>
         <!-- <label class="col-md-4 filter-label no-left-padding"> -->
-        <div class="col-md-3">
+        <div class="col-md-3" style="margin-top:10px;">
             <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : grp.search, event:{keyup:grp.searchGroup}'/>   
         </div>
     </div>
