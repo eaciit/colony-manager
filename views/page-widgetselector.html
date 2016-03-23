@@ -17,7 +17,16 @@
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
 		</nav>
-
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+				<div class="col-md-4">
+					<label class="col-md-3 filter-label no-left-padding">
+						Search
+					</label>
+					<div class="col-md-8">
+						<input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="value: sw.searchfield" placeholder="Type keyword here" />
+					</div>
+				</div>
+			</nav>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-heading">
 		        <h1 class="panel-title">All Selector</h1>

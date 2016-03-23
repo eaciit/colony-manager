@@ -19,6 +19,7 @@ sw.scrapperMode = ko.observable("");
 sw.masterDataSources = ko.observableArray([]);
 sw.dataSources = ko.observableArray([]);
 sw.fieldMetaData = ko.observableArray([]);
+sw.searchfield = ko.observable("");
 sw.configSelectorWidget = ko.mapping.fromJS(sw.templateConfig);
 sw.selectorWidgetColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -31,7 +32,7 @@ sw.selectorWidgetColumns = ko.observableArray([
 ]);
 
 sw.getSelectorWidget = function() {
-	app.ajaxPost("/widgetselector/getselectorconfigs", {}, function(res){
+	app.ajaxPost("/widgetselector/getselectorconfigs", {search: sw.searchfield()}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -66,7 +67,7 @@ sw.editSelectorWidget = function(_id) {
 		app.mode("editor");
 		sw.scrapperMode("editor");
 		ko.mapping.fromJS(res.data, sw.configSelectorWidget);
-		console.log(sw.configSelectorWidget)
+		// console.log(sw.configSelectorWidget)
 		// sw.dataSources(res.data.masterDataSource);
 		// sw.addFields();
 	});
@@ -105,10 +106,10 @@ sw.deleteSelectorWidget = function(){
 					}
 
 				 swal({title: "Selector successfully deleted", type: "success"});
+				 $("#selectall").prop('checked', false).trigger("change");
 				 sw.getSelectorWidget();
 				});
 			},1000);
-
 		});
 	}
 }
@@ -134,7 +135,7 @@ sw.getDataSource = function(createNew) {
 			res.data = [];
 		}
 		sw.dataSources(res.data);
-		sw.masterDataSources(res.data)
+		sw.masterDataSources(res.data);
 		if (createNew){
 			sw.addFields();
 		}
