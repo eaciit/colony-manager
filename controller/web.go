@@ -68,15 +68,6 @@ func (w *WebController) DataBrowser(r *knot.WebContext) interface{} {
 	return true
 }
 
-func (w *WebController) WidgetGrid(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetgrid.html"
-
-	return true
-}
-
 func (w *WebController) FileBrowser(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
@@ -100,6 +91,15 @@ func (w *WebController) WidgetGrid(r *knot.WebContext) interface{} {
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
 	r.Config.ViewName = "views/page-widgetgrid.html"
+
+	return true
+}
+
+func (w *WebController) WidgetSelector(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = "views/page-widgetselector.html"
 
 	return true
 }
