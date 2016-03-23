@@ -100,8 +100,9 @@
 		</nav>
 
 		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
-	      <li class="active"><a href="#Form" data-toggle="tab">Form</a></li>
-	      <li data-bind="visible: (apl.applicationMode() != '')"><a href="#Editor"  data-toggle="tab">Editor</a></li>
+	      <li class="active"><a href="#Form-app" data-toggle="tab">Form</a></li>
+	      <li data-bind="visible: (apl.applicationMode() != '')"><a href="#Editor-app"  data-toggle="tab">Editor</a></li>
+	      <li data-bind="visible: (apl.applicationMode() != '')"><a href="#Servers-app"  data-toggle="tab">Servers</a></li>
 	    </ul>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
@@ -111,7 +112,7 @@
 		    </div>
 		    <div class="panel-body">
 			    <div id="myTabContent" class="tab-content">
-			    	<div class="tab-pane fade in active" id="Form">
+			    	<div class="tab-pane fade in active" id="Form-app">
 			    		<form class="form-horizontal form-application" id="form-add-Application" data-bind="with: configApplication" novalidate>
 				    		<div class="col-md-6">
 					    		<div class="form-group">
@@ -229,7 +230,7 @@
 						    </div>
 				    	</form>
 			    	</div>
-				    <div class="tab-pane fade" id="Editor">
+				    <div class="tab-pane fade" id="Editor-app">
 				    	<div class="col-md-12">
 				    		<!-- <div class="col-md-12 action-button no-padding">
 				    			<button class="btn btn-sm btn-success tooltipster" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir" title="Create new file/folder">
@@ -309,6 +310,11 @@
 					    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
 					    		</div><!-- isi -->
 				    		</div>
+				        </div>
+				    </div>
+				    <div class="tab-pane fade" id="Servers-app">
+				    	<div class="col-md-12">
+		    				<div class="grid grid-srvapplication" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: apl.srvapplicationColumns, filterfable: false, pageable: true }"></div>				    		
 				        </div>
 				    </div>
 				</div>

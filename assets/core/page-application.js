@@ -121,6 +121,36 @@ apl.ServerColumns = ko.observableArray([
 		return "UNDEPLOYED";
 	} }
 ]);
+
+apl.srvapplicationColumns = ko.observableArray([
+	{ field: "_id", title: "ID" },
+	{ field: "os", title: "OS", template: function (d) {
+		var row = Lazy(srv.templateOS()).find({ value: d.os });
+		if (row != undefined) {
+			return row.text;
+		}
+
+		return d.os;
+	} },
+	{ field: "host", title: "Host" },
+	{ field: "sshtype", title: "SSH Type" },
+	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='statuscheck-apl' />"
+		].join(" ");
+	} }
+]);
+apl.gridStatusCheck = function () {
+	$('.statuscheck-apl').parent().css("background-color", "#d9534f");
+	$('.statuscheck-apl').change(function(){
+		if ($(".statuscheck-apl").prop('checked') === true){
+			$(this).parent().css("background-color", "#5cb85c");
+		} else {
+			$(this).parent().css("background-color", "#d9534f");
+		}
+	})
+};
+
 apl.gridServerDeployDataBound = function () {
 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
 		var $td = $(e).find("td:eq(4)");
@@ -254,7 +284,8 @@ apl.editApplication = function(_id) {
 			return;
 		}
 		apl.treeView(_id);
-		app.mode('editor');
+		app.mode('editor')
+		apl.gridStatusCheck();
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
@@ -665,7 +696,7 @@ $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
-	apl.prepareTreeView();
+	apl.prepareTreeView();	
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
