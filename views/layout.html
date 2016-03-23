@@ -58,7 +58,15 @@
 							</a>
 							<ul class="dropdown-menu">
 								<li>
-									<a href="/web/widgetlist">Widget List</a>
+									<a href="/web/widgetlist">
+										Widget List
+										<i class="glyphicon glyphicon-menu-right icon-submenu"></i>
+									</a>
+									<ul class="dropdown-submenu">
+										<li><a href="/web/widgetgrid">Widget Grid</a></li>
+										<li><a href="#">Widget Chart</a></li>
+										<li><a href="#">Widget Selector</a></li>
+									</ul>
 								</li>
 								<li>
 									<a href="/web/widgetsettings">Widget Settings</a>
@@ -86,7 +94,7 @@
 			</div>
 		</div>
 
-		{{template "_loader.html"}}
+		<!-- {{template "_miniloader.html"}} -->
 
 		<script type="text/javascript">
 		    ko.applyBindings(viewModel);

@@ -289,6 +289,7 @@ srv.selectGridServer = function (e) {
 };
 
 srv.editServer = function (_id) {
+	app.miniloader(true);	
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());
 
@@ -497,7 +498,7 @@ srv.navModalWizard = function (status) {
 
 		allIP.forEach(function (ip) {
 			app.ajaxPost("/server/checkping", { ip: ip.ip }, function (res) {
-				app.isLoading(true);
+				app.miniloader(true);
 				var o = { host: ip.label, status: res.data };
 
 				if (!res.success) {
@@ -514,7 +515,7 @@ srv.navModalWizard = function (status) {
 		});
 
 		$(document).ajaxStop(function() {
-		  app.isLoading(false);
+		  app.miniloader(false);
 		});
 
 		srv.showModal(status);

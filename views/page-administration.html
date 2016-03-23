@@ -48,7 +48,7 @@
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
 			<div class="nav1">
 				<div class="col-md-4"> 
-				<button class="btn btn-sm btn-primary" data-bind="click: adm.getApplications">
+				<button class="btn btn-sm btn-primary" data-bind="click: adm.refreshAccess">
 			    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 			    </button>
 				 <button class="btn btn-sm btn-success" data-bind="click: adm.createNewAccess">
@@ -57,7 +57,7 @@
 		    	<button class="btn btn-sm btn-danger" data-bind="click: adm.deleteaccess"><span class="glyphicon glyphicon-remove"></span> Delete</button>
 		    	</div>
 		    	<div class="col-md-3"> 
-		    	<input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : adm.search, event:{keyup:adm.searchAccess}'/>			
+		    	<input class="form-control full-width input-sm searchsrv" type="text" name="search" placeholder="Search" data-bind='value : adm.search, event:{keyup:adm.searchAccess(event)}'/>			
 				</div>
 		    </div>
 		</nav>	
@@ -74,7 +74,8 @@
 		</nav> 
 		 
 		<div class="panel" data-bind="visible: (app.mode() == '')"> 
-    	<div class="grid grid-access" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: adm.AccessData, selectable: 'multiple, row', change: adm.selectGridAccess, columns: adm.AccessColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-access')}"></div>
+		<div class="grid grid-access"></div>
+    <!--	<div class="grid grid-access" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: adm.AccessData, selectable: 'multiple, row', change: adm.selectGridAccess, columns: adm.AccessColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-access')}"></div> -->
     <!-- </div> -->
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>

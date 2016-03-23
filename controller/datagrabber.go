@@ -349,15 +349,15 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	dataGrabber := new(colonycore.DataGrabber)
 	err := r.GetPayload(dataGrabber)
 	if err != nil {
+		mutex.Unlock()
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	err = colonycore.Get(dataGrabber, dataGrabber.ID)
 	if err != nil {
+		mutex.Unlock()
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	mutex.Unlock()
 
 	if _, ok := serviceHolder[dataGrabber.ID]; ok {
 		serviceHolder[dataGrabber.ID] = false
@@ -420,6 +420,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 	yo()
 
 	if !dataGrabber.UseInterval {
+		mutex.Unlock()
 		return helper.CreateResult(true, nil, "")
 	}
 
@@ -446,6 +447,7 @@ func (d *DataGrabberController) StartTransformation(r *knot.WebContext) interfac
 		}
 	}(dataGrabber)
 
+	mutex.Unlock()
 	return helper.CreateResult(true, nil, "")
 }
 
@@ -491,7 +493,6 @@ func (d *DataGrabberController) Stat(r *knot.WebContext) interface{} {
 }
 
 func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (bool, []toolkit.M, string) {
-	mutex.Lock()
 
 	logConf, err := d.getLogger(dataGrabber)
 	if err != nil {
@@ -507,7 +508,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(dsOrigin, dataGrabber.DataSourceOrigin)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		mutex.Unlock()
+
 		return false, nil, err.Error()
 	}
 
@@ -515,7 +516,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(dsDestination, dataGrabber.DataSourceDestination)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		mutex.Unlock()
+
 		return false, nil, err.Error()
 	}
 
@@ -524,12 +525,12 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	if len(dataDS.QueryInfo) == 0 {
 		message := "Data source origin has invalid query"
 		logConf.AddLog(message, "ERROR")
-		mutex.Unlock()
+
 		return false, nil, message
 	}
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		mutex.Unlock()
+
 		return false, nil, err.Error()
 	}
 	defer conn.Close()
@@ -537,14 +538,14 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	if metaSave.keyword != "" {
 		message := `Data source origin query is not "Select"`
 		logConf.AddLog(message, "ERROR")
-		mutex.Unlock()
+
 		return false, nil, message
 	}
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		mutex.Unlock()
+
 		return false, nil, err.Error()
 	}
 	defer cursor.Close()
@@ -553,7 +554,7 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		mutex.Unlock()
+
 		return false, nil, err.Error()
 	}
 
@@ -561,11 +562,9 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 	err = colonycore.Get(connDesc, dsDestination.ConnectionID)
 	if err != nil {
 		logConf.AddLog(err.Error(), "ERROR")
-		mutex.Unlock()
+
 		return false, nil, err.Error()
 	}
-
-	mutex.Unlock()
 
 	const FLAG_ARG_DATA string = `%1`
 	transformedData := []toolkit.M{}
@@ -826,8 +825,6 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			}
 		}
 
-		mutex.Lock()
-
 		tableName := dsDestination.QueryInfo.GetString("from")
 		queryWrapper := helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		if dataGrabber.InsertMode == "fresh" {
@@ -843,18 +840,16 @@ func (d *DataGrabberController) Transform(dataGrabber *colonycore.DataGrabber) (
 			queryWrapper = helper.Query(connDesc.Driver, connDesc.Host, connDesc.Database, connDesc.UserName, connDesc.Password, connDesc.Settings)
 		}
 
-		if !nilFieldDest.Has("_id") || nilFieldDest.Get("_id") == nil {
+		if !nilFieldDest.Has("_id") || nilFieldDest.Get("_id") == nil || nilFieldDest.GetString("_id") == "<nil>" {
 			nilFieldDest.Set("_id", helper.RandomIDWithPrefix(""))
 		}
 
 		err = queryWrapper.Save(tableName, nilFieldDest)
 		if err != nil {
 			logConf.AddLog(err.Error(), "ERROR")
-			mutex.Unlock()
+
 			return false, nil, err.Error()
 		}
-
-		mutex.Unlock()
 
 		// ================ post transfer command
 		if dataGrabber.PostTransferCommand != "" {

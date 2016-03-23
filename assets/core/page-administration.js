@@ -18,6 +18,7 @@ adm.templateFilter = {
     _id: "",
     Title: "",
 };
+
 adm.SumAccess = ko.observable(0);
 adm.AccessColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxaccess' class='ckcGrid' value='#: _id #' />",
@@ -59,14 +60,16 @@ adm.editAccess = ko.observable("");
 adm.search = ko.observable("");
 adm.showAccess = ko.observable(false);
 adm.AccessData = ko.observableArray([]);
+
 adm.selectGridAccess = function(e) {
     adm.isNew(false);
-    app.wrapGridSelect(".grid-access", ".btn", function(d) {
+    app.wrapGridSelect(".grid-access", ".btn", function(d) { 
         adm.editAccess(d._id);
         adm.showAccess(true);
         app.mode("editor");
     });
 };
+
 adm.searchAccess = function() {
     adm.AccessData([]);
     app.ajaxPost("/administration/search", {
@@ -90,29 +93,50 @@ adm.searchAccess = function() {
         }
     });
 };  
-adm.getAccess = function(c) {
-    adm.AccessData([]);
-    var param = ko.mapping.toJS(adm.filter);
-    console.log(param);
-    app.ajaxPost("/administration/getaccess", param, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
-        adm.SumAccess(res.data.length);
-        adm.AccessData(res.data);
-        var grid = $(".grid-access").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
 
-        if (typeof c == "function") {
-            c(res);
-        }
-    });
+adm.GetFilter = function(){
+    data = {
+        find : adm.search,
+    }
+
+    return data
+}
+
+adm.refreshAccess = function(){
+    $('.grid-access').data('kendoGrid').dataSource.read();
+    return
 };
+
+adm.searchAccess = function(event){
+    if ((event != undefined) && (event.keyCode == 13)){
+        $('.grid-access').data('kendoGrid').dataSource.read();
+    }
+    return
+};
+
+// adm.getAccess = function(c) {
+//     adm.AccessData([]);
+//     var param = ko.mapping.toJS(adm.filter);
+//     console.log(param);
+//     app.ajaxPost("/administration/getaccess", param, function(res) {
+//         if (!app.isFine(res)) {
+//             return;
+//         }
+//         if (res.data == null) {
+//             res.data = "";
+//         }
+//         adm.SumAccess(res.data.length);
+//         adm.AccessData(res.data);
+//         var grid = $(".grid-access").data("kendoGrid");
+//         $(grid.tbody).on("mouseleave", "tr", function(e) {
+//             $(this).removeClass("k-state-hover");
+//         });
+
+//         if (typeof c == "function") {
+//             c(res);
+//         }
+//     });
+// };
 
 adm.editAccess = function(c) {
     var payload = ko.mapping.toJS(adm.filter._id(c));
@@ -175,6 +199,7 @@ adm.saveaccess = function() {
         adm.backToFront();
     });
 };
+
 adm.createNewAccess = function() {
     adm.config._id("");
     adm.config.Title("");
@@ -188,6 +213,7 @@ adm.createNewAccess = function() {
     adm.config.SpecialAccess4("");
     app.mode("editor");
 };
+
 adm.deleteaccess = function() {
     var checkboxes = document.getElementsByName('checkboxaccess');
     var selected = [];
@@ -209,17 +235,58 @@ adm.deleteaccess = function() {
         type: "success",
         closeOnConfirm: true
     });
-    adm.getAccess();
+    $('.grid-access').data('kendoGrid').dataSource.read();
 };
 
 adm.OnRemove = function(_id) {};
 
 adm.backToFront = function() {
     app.mode('');
-    adm.getAccess();
+    $('.grid-access').data('kendoGrid').dataSource.read();
 };
+
+adm.GenerateGrid = function() {
+    $(".grid-access").html("");
+    $('.grid-access').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/administration/getaccess",
+                    dataType: "json",
+                    data: adm.GetFilter(),
+                    type: "POST",
+                    success: function(data) {
+                        $(".grid-access>.k-grid-content-locked").css("height", $(".grid-access").data("kendoGrid").table.height());
+                    }
+                }
+            },
+            schema: {
+                data: "data.Datas",
+                total: "data.total"
+            },
+
+            pageSize: 10,
+            serverPaging: true, // enable server paging
+            serverSorting: true,
+        },
+        selectable: "multiple, row",
+        change: adm.selectGridAccess,
+        resizable: true,
+        scrollable: true,
+        // sortable: true,
+        // filterable: true,
+        pageable: {
+            refresh: false,
+            pageSizes: 10,
+            buttonCount: 5
+        },
+        columns: adm.AccessColumns()
+    });
+
+}
 
 $(function() {
     app.section("access");
-    adm.getAccess();
+    // adm.getAccess(); 
+    adm.GenerateGrid();
 });
