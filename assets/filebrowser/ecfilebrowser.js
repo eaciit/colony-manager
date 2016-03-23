@@ -340,7 +340,7 @@ BuildFileExplorer:function(elem,options){
 		$edtxt.appendTo($edli);
 		app.prepareTooltipster();
 
-		hei = screen.height*0.57;
+		hei = screen.height*0.5;
 		$($(elem).find(".k-editor")).attr("style","height:"+hei+"px!important");
 	},
 	BuildPermission:function(elemarr,permstr){
@@ -653,6 +653,7 @@ BuildFileExplorer:function(elem,options){
 			  });
 		}else if(content.action == "GetContent"){
 			methodsFB.SendActionRequest(elem,content);
+			app.miniloader(true);
 			$($(elem).find(".modal-fb-editor")).modal("show");
 		}else{
 			methodsFB.SendActionRequest(elem,content);
