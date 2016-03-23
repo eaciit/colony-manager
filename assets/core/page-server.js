@@ -104,6 +104,31 @@ srv.ServerColumns = ko.observableArray([
 	// { field: "enable", title: "Enable" },
 ]);
 
+srv.appserverColumns = ko.observableArray([
+	{ field: "_id", title: "ID" },
+	{ field: "AppsName", title: "Name" },
+	{ field: "Type", title: "Type" },
+	{ field: "Port", title: "Running Port" },
+	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='statuscheck-srv' />"
+		].join(" ");
+	} },
+]);
+
+srv.gridStatusCheck = function () {
+	$('.statuscheck-srv').parent().css("background-color", "#d9534f");
+	$grid = $('.grid-aplserver');
+	var $gr = $grid.find("tr td .statuscheck-srv");
+	$gr.change(function(){
+		if ($(this).prop('checked') === true){
+			$(this).parent().css("background-color", "#5cb85c");
+		} else {
+			$(this).parent().css("background-color", "#d9534f");
+		}
+	})
+};
+
 srv.getServers = function(c) {
 	srv.ServerData([]);
 	var param = ko.mapping.toJS(srv.filter);
@@ -289,6 +314,7 @@ srv.selectGridServer = function (e) {
 };
 
 srv.editServer = function (_id) {
+	srv.gridStatusCheck();
 	app.miniloader(true);	
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());

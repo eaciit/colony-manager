@@ -158,6 +158,37 @@ apl.langEnvColumns = ko.observableArray([
 	}}
 	]);
 
+apl.srvapplicationColumns = ko.observableArray([
+	{ field: "_id", title: "ID" },
+	{ field: "os", title: "OS", template: function (d) {
+		var row = Lazy(srv.templateOS()).find({ value: d.os });
+		if (row != undefined) {
+			return row.text;
+		}
+
+		return d.os;
+	} },
+	{ field: "host", title: "Host" },
+	{ field: "sshtype", title: "SSH Type" },
+	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='statuscheck-apl' />"
+		].join(" ");
+	} }
+]);
+apl.gridStatusCheck = function () {
+	$('.statuscheck-apl').parent().css("background-color", "#d9534f");
+	$grid = $('.grid-srvapplication');
+	var $gr = $grid.find("tr td .statuscheck-apl");
+	$gr.change(function(){
+		if ($(this).prop('checked') === true){
+			$(this).parent().css("background-color", "#5cb85c");
+		} else {
+			$(this).parent().css("background-color", "#d9534f");
+		}
+	})
+}
+
 apl.gridServerDeployDataBound = function () {
 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
 		var $td = $(e).find("td:eq(4)");
@@ -312,6 +343,7 @@ apl.getLangEnv = function (c){
 }
 
 apl.editApplication = function(_id) {
+	apl.gridStatusCheck();
 	app.miniloader(true);	
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
