@@ -79,10 +79,12 @@ usr.UsersColumns = ko.observableArray([{
     }, {
     field: "enable",
     title: "Enable"
-    }, {
-    field: "groups",
-    title: "Groups"
-}]);
+    }
+    // , {
+    // field: "groups",
+    // title: "Groups"
+    // }
+]);
 usr.filter = ko.mapping.fromJS(usr.templateFilter);
 usr.isNew = ko.observable(false);
 usr.editUser = ko.observable("");
@@ -90,64 +92,116 @@ usr.showUser = ko.observable(false);
 usr.UsersData = ko.observableArray([]);
 usr.search = ko.observable("");
 usr.selectGridUsers = function(e) {
+     
     app.mode('edit')
     usr.Access.removeAll();
     usr.getAccess();
     usr.isNew(false);
-    app.wrapGridSelect(".grid-users", ".btn", function(d) {
+    app.wrapGridSelect("#grid-users", ".btn", function(d) {
         usr.config.Grants.removeAll();
+        grp.getlistGroups();
         usr.editUser(d._id);
         usr.displayAccessUser(d._id);
         usr.showUser(true);
         app.mode("editor");
-
+        grp.selectedGroupsData.removeAll(); 
     });
 };
 
-usr.getUsers = function(c) {
-    usr.UsersData([]);
-    var data = [];
-    var gr = "";
-    var param = ko.mapping.toJS(usr.filter);
-    app.ajaxPost("/user/getuser", param, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
+// usr.getUsers = function(c) {
+//     usr.UsersData([]);
+//     var data = [];
+//     var gr = "";
+//     var param = ko.mapping.toJS(usr.filter);
+//     app.ajaxPost("/user/getuser", param, function(res) {
+//         if (!app.isFine(res)) {
+//             return;
+//         }
+//         if (res.data == null) {
+//             res.data = "";
+//         }
 
-        for (var i in res.data) {
-            for (var j in res.data[i].groups) {
-                if (res.data[i].groups.length == 1) {
-                    gr = res.data[i].groups[j]
-                } else {
-                    gr = gr + "," + res.data[i].groups[j]
+        // for (var i in res.data) {
+        //     for (var j in res.data[i].groups) {
+        //         if (res.data[i].groups.length == 1) {
+        //             gr = res.data[i].groups[j]
+        //         } else {
+        //             gr = gr + "," + res.data[i].groups[j]
+        //         }
+        //     };
+        //     data.push({
+        //         _id: res.data[i]._id,
+        //         loginid: res.data[i].loginid,
+        //         fullname: res.data[i].fullname,
+        //         email: res.data[i].email,
+        //         password: res.data[i].password,
+        //         enable: res.data[i].enable,
+        //         groups: gr
+        //     })
+        // };
+//         console.log(data);
+//         usr.UsersData(data);
+//         var grid = $(".grid-users").data("kendoGrid");
+//         $(grid.tbody).on("mouseleave", "tr", function(e) {
+//             $(this).removeClass("k-state-hover");
+//         });
+
+//         if (typeof c == "function") {
+//             c(res);
+//         }
+//     });
+// };
+usr.GetFilter = function(){
+    data = {
+        find : usr.search,
+    }
+
+    return data
+}
+
+usr.getUsers = function() {
+    $("#grid-users").html("");
+    $('#grid-users').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/user/getuser",
+                    dataType: "json",
+                    data: usr.GetFilter(),
+                    type: "POST",
+                    success: function(data) { 
+                        $("#grid-users>.k-grid-content-locked").css("height", $("#grid-users").data("kendoGrid").table.height());
+                         
+                    }
                 }
-            };
-            data.push({
-                _id: res.data[i]._id,
-                loginid: res.data[i].loginid,
-                fullname: res.data[i].fullname,
-                email: res.data[i].email,
-                password: res.data[i].password,
-                enable: res.data[i].enable,
-                groups: gr
-            })
-        };
-        console.log(data);
-        usr.UsersData(data);
-        var grid = $(".grid-users").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
+            },
+            schema: {
+                data: "data.Datas",
+                total: "data.total"
+            },
 
-        if (typeof c == "function") {
-            c(res);
-        }
+            pageSize: 10,
+            serverPaging: true, // enable server paging
+            serverSorting: true,
+        },
+        resizable: true,
+        scrollable: true,
+        // sortable: true,
+        // filterable: true,
+        pageable: {
+            refresh: false,
+            pageSizes: 10,
+            buttonCount: 5
+        },
+        pageable: true,  
+        sortable: true,
+        selectable: 'multiple, row', 
+        filterfable: false,
+        change: usr.selectGridUsers,
+        columns: usr.UsersColumns()
     });
-};
 
+}
 usr.searchUser = function() {
     usr.UsersData([]);
     app.ajaxPost("/user/search", {
@@ -175,6 +229,8 @@ usr.editUser = function(c) {
     app.mode('edit')
     var payload = ko.mapping.toJS(usr.filter._id(c));
     var data = [];
+    var data2=[];
+    var data3 = []
     app.ajaxPost("/user/finduser", payload, function(res) {
         if (!app.isFine(res)) {
             return;
@@ -188,16 +244,38 @@ usr.editUser = function(c) {
         usr.config.Email(res.data.Email);
         usr.config.Password(res.data.Password);
         usr.config.Enable(res.data.Enable);
-
+       
         for (var i = 0; i < res.data.Groups.length; i++) {
             data.push({
                 text: res.data.Groups[i],
                 value: res.data.Groups[i]
             });
+            data2.push({
+                _id:res.data.Groups[i],
+                title:res.data.Groups[i]
+            })
+        }; 
+        var index = 0; 
+        for (var j = 0; j < data2.length; j++) {
+            console.log("ls "+grp.listGroupsData().length)
+            for (var i = 0; i < grp.listGroupsData().length; i++) { 
+                if (grp.listGroupsData()[i]._id == data2[j]._id){
+                    index=i; 
+                } 
+        } 
+        grp.listGroupsData().splice(index, 1);  
         };
-        console.log(data)
-        usr.SelectedGroup(data);
-        console.log(usr.SelectedGroup())
+        
+        for (var i = 0; i < grp.listGroupsData().length; i++) {
+             data3.push({
+                _id:grp.listGroupsData()[i]._id,
+                title:grp.listGroupsData()[i].title
+             })
+        };
+        grp.listGroupsData.removeAll();
+        grp.listGroupsData(data3) 
+        grp.selectedGroupsData(data2);
+        usr.SelectedGroup(data); 
         usr.config.Groups();
     });
 };
@@ -392,13 +470,14 @@ usr.createGridPrivilege = function(ds) {
 usr.getAccess = function() {
     var param = ko.mapping.toJS(usr.filter);
     var data = [];
-    app.ajaxPost("/administration/getaccess", param, function(res) {
+    app.ajaxPost("/administration/getaccessdropdown", param, function(res) {
         if (!app.isFine(res)) {
             return;
         }
         if (res.data == null) {
             res.data = "";
         }
+        console.log(res.data);
         for (var i in res.data) {
             usr.Access.push(res.data[i]._id);
             data.push({
@@ -439,10 +518,10 @@ usr.selectRow = function() {
 }
 usr.addFromPrivilage = function() {
     app.mode('new');
-    if (usr.config.Grants().length < adm.SumAccess()) {
+    // if (usr.config.Grants().length < adm.SumAccess()) {
         var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
         usr.config.Grants.push(new usr.templateAccessGrant());
-    }
+    // }
 };
 usr.displayAccess = function(e) {
     // var dataItem = this.dataSource.view()[e.item.index()];
