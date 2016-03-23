@@ -20,7 +20,7 @@
         </button>
         </div>
         <!-- <label class="col-md-4 filter-label no-left-padding"> -->
-        <div class="col-md-3">
+        <div class="col-md-3" id="nav-group-search">
             <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : grp.search'/>   
         </div>
     </div>
@@ -38,9 +38,10 @@
 </nav>
 
 <div class="panel" data-bind="visible: (app.mode() == '')">
-    <!-- <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div> -->
-    <div id="grid-groups"></div>
-    <!-- </div> -->
+   <div class="panel-body position-custom">
+        <!-- <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div> -->
+        <div id="grid-groups"></div>
+    </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
 

@@ -15,7 +15,7 @@ import (
 	// "io/ioutil"
 	// "os"
 	// "path/filepath"
-	// "strings"
+	"strings"
 	// "time"
 	// "reflect"
 	"strconv"
@@ -31,21 +31,66 @@ func CreateUserController(s *knot.Server) *UserController {
 	return controller
 }
 
-func (a *UserController) GetUser(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	a.InitialSetDatabase()
-	tUser := new(acl.User)
+// func (a *UserController) GetUser(r *knot.WebContext) interface{} {
+// 	r.Config.OutputType = knot.OutputJson
+// 	a.InitialSetDatabase()
+// 	tUser := new(acl.User)
 
-	arrm := make([]toolkit.M, 0, 0)
-	c, err := acl.Find(tUser, nil, toolkit.M{}.Set("take", 0))
-	if err == nil {
-		err = c.Fetch(&arrm, 0, false)
+// 	arrm := make([]toolkit.M, 0, 0)
+// 	c, err := acl.Find(tUser, nil, toolkit.M{}.Set("take", 0))
+// 	if err == nil {
+// 		err = c.Fetch(&arrm, 0, false)
+// 	}
+
+// 	if err != nil {
+// 		return helper.CreateResult(true, nil, err.Error())
+// 	} else {
+// 		return helper.CreateResult(true, arrm, "")
+// 	}
+
+// }
+
+func (a *UserController) GetUser(r *knot.WebContext) interface{} {
+	var filter *dbox.Filter
+	r.Config.OutputType = knot.OutputJson
+	_ = a.InitialSetDatabase()
+
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
+	if strings.Contains(toolkit.TypeName(payload["find"]), "float") {
+		payload["find"] = toolkit.ToInt(payload["find"], toolkit.RoundingAuto)
+	}
+
+	tUser := new(acl.User)
+	if find := toolkit.ToString(payload["find"]); find != "" {
+		filter = new(dbox.Filter)
+		filter = dbox.Contains("loginid", find)
+	}
+	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
+	skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
+
+	c, err := acl.Find(tUser, filter, toolkit.M{}.Set("take", take).Set("skip", skip))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	data := toolkit.M{}
+	arrm := make([]toolkit.M, 0, 0)
+	err = c.Fetch(&arrm, 0, false)
+	c.Close()
+
+	c, err = acl.Find(tUser, filter, nil)
+
+	data.Set("Datas", arrm)
+	data.Set("total", c.Count())
 
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	} else {
-		return helper.CreateResult(true, arrm, "")
+		return helper.CreateResult(true, data, "")
 	}
 
 }
