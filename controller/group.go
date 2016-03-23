@@ -15,10 +15,10 @@ import (
 	// "io/ioutil"
 	// "os"
 	// "path/filepath"
-	// "strings"
+	"strings"
 	// "time"
 	// "reflect"
-	"strconv"
+	//"strconv"
 )
 
 type GroupController struct {
@@ -65,26 +65,48 @@ func (a *GroupController) FindGroup(r *knot.WebContext) interface{} {
 }
 
 func (a *GroupController) Search(r *knot.WebContext) interface{} {
+	var filter *dbox.Filter
 	r.Config.OutputType = knot.OutputJson
-	a.InitialSetDatabase()
+	_ = a.InitialSetDatabase()
+
 	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
-	find := payload["search"].(string)
-	bfind, err := strconv.ParseBool(find)
-	tGroup := new(acl.Group)
-	arrm := make([]toolkit.M, 0, 0)
-	filter := dbox.Or(dbox.Contains("_id", find), dbox.Contains("id", find), dbox.Contains("title", find),
-		dbox.Contains("owner", find), dbox.Eq("enable", bfind))
-	c, e := acl.Find(tGroup, filter, toolkit.M{}.Set("take", 0))
-	if e == nil {
-		e = c.Fetch(&arrm, 0, false)
+
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if strings.Contains(toolkit.TypeName(payload["search"]), "float") {
+		payload["search"] = toolkit.ToInt(payload["search"], toolkit.RoundingAuto)
 	}
 
-	if e != nil {
-		return helper.CreateResult(true, nil, err.Error())
-	} else {
-		return helper.CreateResult(true, arrm, "")
+	tGroup := new(acl.Group)
+	if search := toolkit.ToString(payload["search"]); search != "" {
+		filter = new(dbox.Filter)
+		filter = dbox.Or(dbox.Contains("_id", search), dbox.Contains("title", search), dbox.Contains("owner", search))
+
 	}
+	fmt.Println(filter)
+	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
+	skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
+
+	c, err := acl.Find(tGroup, filter, toolkit.M{}.Set("take", take).Set("skip", skip))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	data := toolkit.M{}
+	arrm := make([]toolkit.M, 0, 0)
+	err = c.Fetch(&arrm, 0, false)
+
+	data.Set("Datas", arrm)
+	data.Set("total", c.Count())
+
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+
 }
 
 func (a *GroupController) GetAccessGroup(r *knot.WebContext) interface{} {

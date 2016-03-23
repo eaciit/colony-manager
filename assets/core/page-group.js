@@ -36,6 +36,19 @@ grp.GroupsColumns = ko.observableArray([{
     field: "owner",
     title: "Owner"
 }]);
+
+grp.listGroupsColumns = ko.observableArray([  
+    {
+    field: "_id",
+    title: "List Group" 
+    }
+]);
+
+grp.selectedGroupsColumns = ko.observableArray([{
+    field: "_id",
+    title: "Selected Group"
+    } 
+]);
 grp.filter = ko.mapping.fromJS(grp.templateFilter);
 grp.isNew = ko.observable(false);
 grp.editGroup = ko.observable("");
@@ -46,16 +59,140 @@ grp.selectGridGroups = function(e) {
     usr.Access.removeAll();
     usr.getAccess();
     grp.isNew(false);
-    app.wrapGridSelect(".grid-groups", ".btn", function(d) {
+    app.wrapGridSelect("#grid-groups", ".btn", function(d) {
         grp.editGroup(d._id);
         grp.showGroup(true);
         app.mode("editor");
     });
 };
-
+grp.temp=ko.observableArray([]);
+grp.selectlistGridGroups = function(e) {
+    usr.Access.removeAll();
+    usr.getAccess();
+    grp.isNew(false);
+    var data = {};
+    var data2 = [];
+    app.wrapGridSelect(".listgroup", ".btn", function(d) { 
+        data = {
+            _id : d._id,
+            title:d.title
+        }
+        usr.displayAccess(d._id);
+        var index = 0;
+        for (var i = 0; i < grp.listGroupsData().length; i++) {
+            if (grp.listGroupsData()[i]._id == d._id){
+                index=i; 
+            } 
+        }
+        grp.listGroupsData().splice(index, 1); 
+        for (var i = 0; i < grp.listGroupsData().length; i++) {
+             data2.push({
+                _id:grp.listGroupsData()[i]._id,
+                title:grp.listGroupsData()[i].title
+             })
+        };
+        grp.listGroupsData.removeAll();
+        grp.listGroupsData(data2) 
+        grp.selectedGroupsData.push(data);
+    });
+};
+grp.removeselectGridGroups = function(e) {
+    usr.Access.removeAll();
+    usr.getAccess();
+    grp.isNew(false);
+    var data = {};
+    var data2 = [];
+    app.wrapGridSelect(".selectedgroup", ".btn", function(d) { 
+        data = {
+            _id : d._id,
+            title:d.title
+        }
+        var index = 0;
+        for (var i = 0; i < grp.selectedGroupsData().length; i++) {
+            if (grp.selectedGroupsData()[i]._id == d._id){
+                index=i; 
+            } 
+        }
+        grp.selectedGroupsData().splice(index, 1); 
+        for (var i = 0; i < grp.selectedGroupsData().length; i++) {
+             data2.push({
+                _id:grp.selectedGroupsData()[i]._id,
+                title:grp.selectedGroupsData()[i].title
+             })
+        };
+        grp.selectedGroupsData.removeAll();
+        grp.selectedGroupsData(data2) 
+        grp.listGroupsData.push(data);
+    });
+};
 grp.getGroups = function(c) {
-    grp.GroupsData([]);
+    
+    //var param = ko.mapping.toJS(grp.filter);
+    // //console.log("")
+    // app.ajaxPost("/group/getgroup", param, function(res) {
+        // if (!app.isFine(res)) {
+        //     return;
+        // }
+        // if (res.data == null) {
+        //     res.data = "";
+        // }
+    //     grp.GroupsData(res.data);
+        // var grid = $(".grid-groups").data("kendoGrid");
+        // $(grid.tbody).on("mouseleave", "tr", function(e) {
+        //     $(this).removeClass("k-state-hover");
+        // });
+
+        // if (typeof c == "function") {
+        //     c(res);
+    //     }
+    // });
     var param = ko.mapping.toJS(grp.filter);
+    $("#grid-groups").kendoGrid({
+            columns: grp.GroupsColumns(),
+            dataSource: {
+                   transport: {
+                        read:{
+                            url:"/group/search",
+                            data:{search:grp.search()},
+                            dataType:"json",
+                            type: "POST",
+                            success: function(data) {
+                                var grid = $("#grid-groups").data("kendoGrid");
+                                $(grid.tbody).on("mouseleave", "tr", function(e) {
+                                    $(this).removeClass("k-state-hover");
+                                });
+                                if (typeof c == "function") {
+                                    c(res);
+                                }
+                            }
+                        }
+                   },
+                   schema: {
+                        data: "data.Datas",
+                        total: "data.total"
+                   },
+                   pageSize: 5,
+                   serverPaging: true, 
+                   serverSorting: true,
+                   serverFiltering: true,
+               },
+            pageable: true,
+            scrollable: true,
+            sortable: true,
+            selectable: 'multiple, row',
+            change: grp.selectGridGroups,
+            filterfable: false,
+            dataBound: app.gridBoundTooltipster('.grid-groups'), 
+            columns: grp.GroupsColumns()
+    });
+                                
+};
+grp.listGroupsData=ko.observableArray([]);
+grp.selectedGroupsData=ko.observableArray([]);
+grp.getlistGroups = function(c) {
+    grp.listGroupsData([]);
+    var param = ko.mapping.toJS(grp.filter);
+    var data = [];
     app.ajaxPost("/group/getgroup", param, function(res) {
         if (!app.isFine(res)) {
             return;
@@ -63,40 +200,46 @@ grp.getGroups = function(c) {
         if (res.data == null) {
             res.data = "";
         }
-        grp.GroupsData(res.data);
-        var grid = $(".grid-groups").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
+        for (var i = 0; i < res.data.length; i++) {
+            data.push({
+                _id:res.data[i]._id,
+                title : res.data[i].title
+            })
+        };
+        grp.listGroupsData(data);
+        // var grid = $(".listgroup").data("kendoGrid");
+        // $(grid.tbody).on("mouseleave", "tr", function(e) {
+        //     $(this).removeClass("k-state-hover");
+        // });
 
-        if (typeof c == "function") {
-            c(res);
-        }
-    });
+        // if (typeof c == "function") {
+        //     c(res);
+        // }
+    }); 
 };
 
-grp.searchGroup = function() {
-    grp.GroupsData([]);
-    app.ajaxPost("/group/search", {
-        search: grp.search()
-    }, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        if (res.data == null) {
-            res.data = "";
-        }
-        grp.GroupsData(res.data);
-        var grid = $(".grid-access").data("kendoGrid");
-        $(grid.tbody).on("mouseleave", "tr", function(e) {
-            $(this).removeClass("k-state-hover");
-        });
+// grp.searchGroup = function() {
+//     grp.GroupsData([]);
+//     app.ajaxPost("/group/search", {
+//         search: grp.search()
+//     }, function(res) {
+//         if (!app.isFine(res)) {
+//             return;
+//         }
+//         if (res.data == null) {
+//             res.data = "";
+//         }
+//         grp.GroupsData(res.data);
+//         var grid = $(".grid-access").data("kendoGrid");
+//         $(grid.tbody).on("mouseleave", "tr", function(e) {
+//             $(this).removeClass("k-state-hover");
+//         });
 
-        if (typeof c == "function") {
-            c(res);
-        }
-    });
-};
+//         if (typeof c == "function") {
+//             c(res);
+//         }
+//     });
+// };
 
 grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
@@ -263,7 +406,7 @@ grp.displayAccess = function(e) {
 };
 grp.content = ko.observable('test');
   grp.isOpen = ko.observable(false);
-  
+
 grp.backToFront = function() {
     app.mode('');
     grp.getGroups();

@@ -124,7 +124,6 @@ var methodsLookupDD = {
 		$textSearch.bind('keyup keydown').keyup(function(event){
 			var search = $(this).val();
 			var $co = $container.find(".eclookup-dropdown ul.eclookup-listsearch");
-			console.log($co.find('li.hlight'));
 			switch(event.keyCode) {
 				case KEY.UP:
 					if ($co.find('li.hlight').length == 0) {
@@ -159,11 +158,12 @@ var methodsLookupDD = {
 			}
 		}).keydown(function(event){
 			var search = $(this).val();
+			var $lo = $container.find(".eclookup-container ul.eclookup-list li.eclookup-item");
 			switch(event.keyCode) {		
 				case KEY.BACKSPACE:
-					if (search.length == 0){
-						$le = $(".eclookup-item").length - 1;
-						$(".eclookup-item").eq($le).remove();
+					if (search.length == 0){						
+						$le = $lo.length - 1;
+						$lo.eq($le).remove();
 						$o.data('ecLookupDD').ParamDataSource.dataSelect.splice(-1,1);
 				    }
 		    	break;
@@ -205,12 +205,10 @@ $.ecDataSourceDDLookup = function(element,options){
 		$.each(this.ParamDataSource.callData, function( key, value ) {
 			dataPost[key] = value;
 		});
-		console.log($(elementLookup).data('ecLookupDDSettings'));
 		dataPost[$(elementLookup).data('ecLookupDDSettings').inputSearch] = query;
 		if (this.ParamDataSource.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
-		console.log(dataPost);
 		$.ajax({
 			url: this.ParamDataSource.url,
 			type: this.ParamDataSource.call,

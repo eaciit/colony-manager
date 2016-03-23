@@ -73,8 +73,11 @@
     <div class="panel-heading">
         <h1 class="panel-title">Servers</h1>
     </div>
-    <div class="panel-body">
-    	<div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div>
+    <div class="panel-body position-custom">
+		{{template "_miniloader.html"}}	
+		<div data-bind="visible: !app.miniLoader">
+    		<div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div>
+    	</div>
     </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
@@ -348,7 +351,7 @@
 					<button type="button" class="btn btn-sm btn-primary" data-bind="click: srv.finishButton">
 						<span class="glyphicon glyphicon-ok"></span> Register IPs
 					</button>
-							{{template "_loader.html"}}
+							{{template "_miniloader.html"}}
 				</div>
 			</div>
 		</div>
