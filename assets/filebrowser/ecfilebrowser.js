@@ -110,7 +110,7 @@ BuildFileExplorer:function(elem,options){
 		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='List View'><span class='glyphicon glyphicon-list'></span> </button>");
 		$strbtn.appendTo($strbtngrpMode);
 
-		$strbtn = $("<button class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown'><span class='glyphicon glyphicon-file'></span> New</button>");
+		$strbtn = $("<button class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown' style='border-top-right-radius: 0px; border-bottom-right-radius: 0px;'><span class='glyphicon glyphicon-file'></span> New</button>");
 		$strul = $("<ul class='dropdown-menu'></ul>");
 
 		$strli = $("<li><a href=\"#\">File</a></li>");
