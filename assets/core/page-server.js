@@ -118,8 +118,10 @@ srv.appserverColumns = ko.observableArray([
 
 srv.gridStatusCheck = function () {
 	$('.statuscheck-srv').parent().css("background-color", "#d9534f");
-	$('.statuscheck-srv').change(function(){
-		if ($(".statuscheck-srv").prop('checked') === true){
+	$grid = $('.grid-aplserver');
+	var $gr = $grid.find("tr td .statuscheck-srv");
+	$gr.change(function(){
+		if ($(this).prop('checked') === true){
 			$(this).parent().css("background-color", "#5cb85c");
 		} else {
 			$(this).parent().css("background-color", "#d9534f");

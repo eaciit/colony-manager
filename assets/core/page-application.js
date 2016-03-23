@@ -178,8 +178,10 @@ apl.srvapplicationColumns = ko.observableArray([
 ]);
 apl.gridStatusCheck = function () {
 	$('.statuscheck-apl').parent().css("background-color", "#d9534f");
-	$('.statuscheck-apl').change(function(){
-		if ($(".statuscheck-apl").prop('checked') === true){
+	$grid = $('.grid-srvapplication');
+	var $gr = $grid.find("tr td .statuscheck-apl");
+	$gr.change(function(){
+		if ($(this).prop('checked') === true){
 			$(this).parent().css("background-color", "#5cb85c");
 		} else {
 			$(this).parent().css("background-color", "#d9534f");
