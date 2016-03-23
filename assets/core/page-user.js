@@ -470,13 +470,14 @@ usr.createGridPrivilege = function(ds) {
 usr.getAccess = function() {
     var param = ko.mapping.toJS(usr.filter);
     var data = [];
-    app.ajaxPost("/administration/getaccess", param, function(res) {
+    app.ajaxPost("/administration/getaccessdropdown", param, function(res) {
         if (!app.isFine(res)) {
             return;
         }
         if (res.data == null) {
             res.data = "";
         }
+        console.log(res.data);
         for (var i in res.data) {
             usr.Access.push(res.data[i]._id);
             data.push({
@@ -517,10 +518,10 @@ usr.selectRow = function() {
 }
 usr.addFromPrivilage = function() {
     app.mode('new');
-    if (usr.config.Grants().length < adm.SumAccess()) {
+    // if (usr.config.Grants().length < adm.SumAccess()) {
         var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
         usr.config.Grants.push(new usr.templateAccessGrant());
-    }
+    // }
 };
 usr.displayAccess = function(e) {
     // var dataItem = this.dataSource.view()[e.item.index()];
