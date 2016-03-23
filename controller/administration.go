@@ -18,6 +18,7 @@ import (
 	// "strings"
 	// "time"
 	"strconv"
+	"strings"
 )
 
 type AdministrationController struct {
@@ -31,29 +32,55 @@ func CreateAdminisrationController(s *knot.Server) *AdministrationController {
 }
 
 func (a *AdministrationController) GetAccess(r *knot.WebContext) interface{} {
+	var filter *dbox.Filter
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()
-	// payload := map[string]interface{}{}
-	// err := r.GetPayload(&payload)
 
-	// search := payload["search"].(string)
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
 
-	// fmt.Println(search)
+	if strings.Contains(toolkit.TypeName(payload["find"]), "float") {
+		payload["find"] = toolkit.ToInt(payload["find"], toolkit.RoundingAuto)
+	}
+
 	tAccess := new(acl.Access)
+	if find := toolkit.ToString(payload["find"]); find != "" {
+		filter = new(dbox.Filter)
+		filter = dbox.Or(dbox.Contains("id", find),
+			dbox.Contains("title", find),
+			dbox.Contains("group1", find),
+			dbox.Contains("group2", find),
+			dbox.Contains("group3", find),
+			dbox.Contains("specialaccess1", find),
+			dbox.Contains("specialaccess2", find),
+			dbox.Contains("specialaccess3", find),
+			dbox.Contains("specialaccess4", find))
+	}
 
+	data := toolkit.M{}
 	arrm := make([]toolkit.M, 0, 0)
-	c, err := acl.Find(tAccess, nil, toolkit.M{}.Set("take", 0))
+
+	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
+	skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
+
+	c, err := acl.Find(tAccess, filter, toolkit.M{}.Set("take", take).Set("skip", skip))
 	if err == nil {
 		err = c.Fetch(&arrm, 0, false)
 	}
+	c.Close()
+
+	c, err = acl.Find(tAccess, filter, nil)
+	data.Set("Datas", arrm)
+	data.Set("total", c.Count())
 
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	} else {
-		return helper.CreateResult(true, arrm, "")
+		return helper.CreateResult(true, data, "")
 	}
 
 }
+
 func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()
@@ -67,6 +94,7 @@ func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, tAccess, "")
 	}
 }
+
 func (a *AdministrationController) Search(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()

@@ -18,7 +18,7 @@
         <span class="glyphicon glyphicon-remove"></span> Delete
     </button>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3" style="margin-top:10px;">
         <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : usr.search, event:{keyup:usr.searchUser}'/>   
     </div>
 </nav>
@@ -47,74 +47,90 @@
         <h1 class="panel-title"><span data-bind="text: (usr.Usermode() == '') ? 'Create New' : 'Edit'"></span>
         </h1>
     </div>
-    <div class="panel-body">
-        <form class="form-horizontal form-server" id="form-add-Server" novalidate>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Login ID</label>
-                    <div class="col-md-7">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
-                        <span class="k-invalid-msg" data-for="LoginID"></span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">FullName</label>
-                    <div class="col-md-7">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for FullName" type="text" class="form-control input-sm" name="FullName" placeholder="Type the FullName Here" data-bind="value: usr.config.FullName">
-                        <span class="k-invalid-msg" data-for="FullName"></span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Enable</label>
-                    <div class="col-md-7">
-                        <input type="checkbox" name="Enable" data-bind="checked:usr.config.Enable">
-                        <span class="k-invalid-msg" data-for="Enable"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Email</label>
-                    <div class="col-md-7">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Email" type="text" class="form-control input-sm" name="Email" placeholder="Type the Email Here" data-bind="value: usr.config.Email">
-                        <span class="k-invalid-msg" data-for="Email"></span>
-                    </div>
-                </div>
+                <ul class="nav nav-tabs" id="myTab">
+              <li class="active"><a data-target="#User" data-toggle="tab">User</a></li>
+              <li><a data-target="#Groups" data-toggle="tab">Groups</a></li>
+              <li><a data-target="#Access" data-toggle="tab" data-bind="click:usr.addaccessgroup">Access</a></li> 
+            </ul>
 
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Password</label>
-                    <div class="col-md-7" align="right" data-bind="visible: (app.mode() == 'editor')">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.config.Password" disabled>
-                        <span class="k-invalid-msg" data-for="Password"></span>
-                        <a href="#" data-bind="click : usr.showModalChPass" /> Change Password </a>
-                    </div>
-                    <div class="col-md-7" align="right" data-bind="visible: (app.mode() == 'new')">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.config.Password">
-                        <span class="k-invalid-msg" data-for="Password"></span>
-                    </div>
+            <div class="tab-content">
+              <div class="tab-pane active" id="User"> 
+                    <div class="panel"> 
+                        <div class="panel-body">
+                            <form class="form-horizontal form-server" id="form-add-Server" novalidate>    
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">Login ID</label>
+                                    <div class="col-md-7">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
+                                        <span class="k-invalid-msg" data-for="LoginID"></span>
+                                    </div>   
+                                </div>                                  
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">FullName</label>
+                                    <div class="col-md-7">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for FullName" type="text" class="form-control input-sm" name="FullName" placeholder="Type the FullName Here" data-bind="value: usr.config.FullName">
+                                        <span class="k-invalid-msg" data-for="FullName"></span>
+                                    </div>              
+                                </div>  
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">Enable</label>
+                                        <div class="col-md-7">
+                                        <input type="checkbox" name="Enable" data-bind="checked:usr.config.Enable">
+                                        <span class="k-invalid-msg" data-for="Enable"></span>
+                                        </div>
+                                </div> 
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">Email</label>
+                                    <div class="col-md-7">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Email" type="text" class="form-control input-sm" name="Email" placeholder="Type the Email Here" data-bind="value: usr.config.Email">
+                                        <span class="k-invalid-msg" data-for="Email"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-3 filter-label">Password</label>
+                                    <div class="col-md-7" align="right" data-bind="visible: (app.mode() == 'editor')">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.config.Password" disabled>
+                                        <span class="k-invalid-msg" data-for="Password"></span>
+                                        <a href="#" data-bind="click : usr.showModalChPass" /> Change Password </a>
+                                    </div>
+                                    <div class="col-md-7" align="right" data-bind="visible: (app.mode() == 'new')">
+                                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.config.Password">
+                                        <span class="k-invalid-msg" data-for="Password"></span>
+                                    </div>
+                                </div>                                                
+                            </form>
+                        </div>
+                    </div>    
                 </div>
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Groups</label>
+                <div class="tab-pane" id="Groups"> 
+                    <!-- <label class="col-md-3 filter-label">Groups</label>
                     <div class="col-md-7">
                         <select type="text" id="Groups" data-bind="kendoMultiSelect: {value: usr.SelectedGroup, data:usr.listGroup, dataTextField: 'text', select: usr.displayAccess , dataValueField: 'value', filter: 'contains'}"></select>
                         <span class="k-invalid-msg" data-for="Groups"></span>
+                    </div> --> 
+                    <div class="panel"> 
+                        <div class="panel-body">
+                        <div class="col-md-12 ">
+                            <div class="form-group">
+                                <div class="col-md-6 ">
+                                    <div id="listgroup" class="grid listgroup" data-bind="kendoGrid: { dataSource: { pageSize: 15 },   data: grp.listGroupsData, selectable: 'multiple, row', change: grp.selectlistGridGroups, columns: grp.listGroupsColumns, filterfable: true,     sortable: true, pageable: true, dataBound: app. gridBoundTooltipster('.listgroup')}">
+                                    </div>  
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top:-100px;">
+                                <div class="col-md-6 ">
+                                    <div class="grid selectedgroup" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.selectedGroupsData, selectable: 'multiple, row', change: grp.removeselectGridGroups, columns: grp.selectedGroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.selectedgroup')}"></div>
+                                </div>
+                            </div>
+                        </div> 
                     </div>
                 </div>
-            </div>
-            <!-- <div class="col-md-12">
-                <p class="pcustom">Privilege</p> -->
-            <!-- <div id="gridaccess"></div> -->
-            <!-- </div> -->
-            <div class="col-md-12">
-                <div class="form-group">
-                    <label class="col-sm-1 filter-label">Privilege</label>
-                    <div class="col-sm-12">
-                        <div class="nav">
-                            <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
-                                <span class="glyphicon glyphicon-plus"></span> Add
-                            </button>
-                        </div>
-                        <table class="table" id="datasource-settings">
+                </div>            
+                <div class="tab-pane" id="Access">   
+                    <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
+                        <span class="glyphicon glyphicon-plus"></span> Add
+                    </button> 
+                    <table class="table" id="datasource-settings">
                             <thead>
                                 <tr>
                                     <th width="200px;">Access</th>
@@ -146,17 +162,17 @@
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
                                     </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,kendoTooltip: { content: adm.AccessSpecial1 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                   <td>
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,attr: { title: adm.AccessSpecial1 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, kendoTooltip: { content: adm.AccessSpecial2 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, attr: { title: adm.AccessSpecial2 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, kendoTooltip: { content: adm.AccessSpecial3 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, attr: { title: adm.AccessSpecial3 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,kendoTooltip: { content: adm.AccessSpecial4 } ,event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
@@ -165,10 +181,9 @@
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+                        </table>    
+                </div> 
+            </div>   
         </form>
     </div>
 </div>

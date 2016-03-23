@@ -658,6 +658,45 @@ body
 				margin: 0
 				margin-bottom: 15px
 
+.dropdown-menu .icon-submenu
+	position: absolute
+	right: 10px
+	top: 12px
+
+.dropdown-menu li:hover > .dropdown-submenu
+	display: block
+
+.dropdown-submenu
+	position: absolute
+	right: 0px
+	display: none
+	left: 95%
+	top: 0px
+	z-index: 1001
+	float: left
+	min-width: 160px
+	list-style: none
+	border-radius: 3px
+	-webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175)
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175)
+	background-clip: padding-box
+	background-color: #fff
+	padding-left: 0px
+
+.dropdown-submenu > li > a
+	display: block
+	padding: 3px 20px
+	clear: both
+	font-weight: 400
+	line-height: 1.42857143
+	color: #333
+	white-space: nowrap
+	text-decoration: none
+
+	&:hover
+		color: #444
+		background-color: #F2F2F2
+
 	.modal-query
 		.modal-title
 			span

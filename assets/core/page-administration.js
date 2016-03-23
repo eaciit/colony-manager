@@ -18,47 +18,49 @@ adm.templateFilter = {
     _id: "",
     Title: "",
 };
+
 adm.SumAccess = ko.observable(0);
 adm.AccessColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxaccess' class='ckcGrid' value='#: _id #' />",
     width: 50
-}, {
+    }, {
     field: "_id",
     title: "ID"
-}, {
+    }, {
     field: "title",
-    title: "Title"
-}, {
+    title: "Title"  
+    }, {
     field: "group1",
     title: "Group 1"
-}, {
+    }, {
     field: "group2",
     title: "Group 2"
-}, {
+    }, {
     field: "group3",
     title: "Group 3"
-}, {
+    }, {
     field: "enable",
     title: "Enable"
-}, {
+    }, {
     field: "specialaccess1",
     title: "Special Access 1"
-}, {
+    }, {
     field: "specialaccess2",
     title: "Special Access 2"
-}, {
+    }, {
     field: "specialaccess3",
     title: "Special Access 3"
-}, {
+    }, {
     field: "specialaccess4",
     title: "Special Access 4"
-}]);
+    }]);
 adm.filter = ko.mapping.fromJS(adm.templateFilter);
 adm.isNew = ko.observable(false);
 adm.editAccess = ko.observable("");
 adm.search = ko.observable("");
 adm.showAccess = ko.observable(false);
 adm.AccessData = ko.observableArray([]);
+
 adm.selectGridAccess = function(e) {
     adm.isNew(false);
     app.wrapGridSelect(".grid-access", ".btn", function(d) { 
@@ -67,9 +69,11 @@ adm.selectGridAccess = function(e) {
         app.mode("editor");
     });
 };
-adm.searchAccess = function(){
-    adm.AccessData([]); 
-    app.ajaxPost("/administration/search", {search:adm.search()}, function(res) {
+adm.searchAccess = function() {
+    adm.AccessData([]);
+    app.ajaxPost("/administration/search", {
+        search: adm.search()
+    }, function(res) {
         if (!app.isFine(res)) {
             return;
         }
@@ -87,7 +91,23 @@ adm.searchAccess = function(){
             c(res);
         }
     });
+};  
+
+adm.GetFilter = function(){
+    data = {
+        find : adm.search,
+    }
+
+    return data
+}
+
+adm.searchAccess = function(event){
+    if ((event != undefined) && (event.keyCode == 13)){
+        $('.grid-access').data('kendoGrid').dataSource.read();
+    }
+    return
 };
+
 adm.getAccess = function(c) {
     adm.AccessData([]);
     var param = ko.mapping.toJS(adm.filter);
@@ -217,7 +237,48 @@ adm.backToFront = function() {
     adm.getAccess();
 };
 
+adm.GenerateGrid = function() {
+    $(".grid-access").html("");
+    $('.grid-access').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/administration/getaccess",
+                    dataType: "json",
+                    data: adm.GetFilter(),
+                    type: "POST",
+                    success: function(data) {
+                        $(".grid-sessions>.k-grid-content-locked").css("height", $(".grid-access").data("kendoGrid").table.height());
+                    }
+                }
+            },
+            schema: {
+                data: "data.Datas",
+                total: "data.total"
+            },
+
+            pageSize: 10,
+            serverPaging: true, // enable server paging
+            serverSorting: true,
+        },
+        selectable: "multiple, row",
+        change: adm.selectGridAccess,
+        resizable: true,
+        scrollable: true,
+        // sortable: true,
+        // filterable: true,
+        pageable: {
+            refresh: false,
+            pageSizes: 10,
+            buttonCount: 5
+        },
+        columns: adm.AccessColumns()
+    });
+
+}
+
 $(function() {
     app.section("access");
-    adm.getAccess(); 
+    // adm.getAccess(); 
+    adm.GenerateGrid();
 });

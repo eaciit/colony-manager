@@ -36,6 +36,15 @@ apl.templateConfigVariable = {
 	key: "",
 	value: ""
 };
+
+apl.filterLangEnvTemplate = {
+	search: "",
+	serverOS: "",
+	serverType: "",
+	sshType: "",
+}
+
+apl.filterLangEnv = ko.mapping.fromJS(apl.filterLangEnvTemplate);
 apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
@@ -48,6 +57,7 @@ apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
+apl.langEnvData = ko.observable([]);
 apl.appTreeMode = ko.observable('');
 apl.renameFileMode = ko.observable(false);
 apl.boolEx = ko.observable(false);
@@ -122,34 +132,31 @@ apl.ServerColumns = ko.observableArray([
 	} }
 ]);
 
-apl.srvapplicationColumns = ko.observableArray([
-	{ field: "_id", title: "ID" },
-	{ field: "os", title: "OS", template: function (d) {
-		var row = Lazy(srv.templateOS()).find({ value: d.os });
-		if (row != undefined) {
-			return row.text;
-		}
-
-		return d.os;
-	} },
-	{ field: "host", title: "Host" },
-	{ field: "sshtype", title: "SSH Type" },
-	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+apl.langEnvColumns = ko.observableArray([
+	{headerTemplate : "<center><input type='checkbox' class='langEnvCheckAll'></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
 		return [
-			"<input type='checkbox' class='statuscheck-apl' />"
+		"<input type='checkbox' class='langEnvCheck'>"
 		].join(" ");
-	} }
-]);
-apl.gridStatusCheck = function () {
-	$('.statuscheck-apl').parent().css("background-color", "#d9534f");
-	$('.statuscheck-apl').change(function(){
-		if ($(".statuscheck-apl").prop('checked') === true){
-			$(this).parent().css("background-color", "#5cb85c");
-		} else {
-			$(this).parent().css("background-color", "#d9534f");
-		}
-	})
-};
+	}}, 
+	{field : "_id", title : "Server ID"},
+	{field : "os", title : "Server OS"},
+	{field : "host", title : "Host"},
+	{field : "", title : "Go", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return [
+		"<center><input type='checkbox' idcheck = '' ></center>"
+		].join(" ");
+	}},
+	{field : "", "title" : "Java", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return [
+		"<center><input type='checkbox' idcheck = '' ></center>"
+		].join(" ");
+	}},
+	{field : "", title : "Scala", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return [
+		"<center><input type='checkbox' idcheck = '' ></center>"
+		].join(" ");
+	}}
+	]);
 
 apl.gridServerDeployDataBound = function () {
 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
@@ -276,6 +283,34 @@ apl.getApplications = function(c) {
 	});
 };
 
+apl.getLangEnv = function (c){
+	apl.langEnvData([]);
+	var param = ko.mapping.toJS(apl.filterLangEnv);
+	app.ajaxPost("/server/getservers",param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		if (res.data==null){
+			res.data="";
+		}
+		
+		var FilterDataLangEnv = Lazy(res.data).where({serverType:""}).toArray();
+		apl.langEnvData(FilterDataLangEnv);
+		
+		var grid = $(".grid-server").data("kendoGrid");
+		// $(grid.tbody).on("mouseenter", "tr", function (e) {
+		//     $(this).addClass("k-state-hover");
+		// });
+		$(grid.tbody).on("mouseleave", "tr", function (e) {
+		    $(this).removeClass("k-state-hover");
+		});
+
+		if (typeof c == "function") {
+			c(res);
+		}
+	});
+}
+
 apl.editApplication = function(_id) {
 	app.miniloader(true);	
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
@@ -284,8 +319,7 @@ apl.editApplication = function(_id) {
 			return;
 		}
 		apl.treeView(_id);
-		app.mode('editor')
-		apl.gridStatusCheck();
+		app.mode('editor');
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
@@ -696,8 +730,9 @@ $(function () {
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
-	apl.prepareTreeView();	
+	apl.prepareTreeView();
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
+	apl.getLangEnv();
 });
 

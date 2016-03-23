@@ -26,6 +26,9 @@
 	.link-deploy:hover {
 		color: black;
 	}
+	.nav1 button {
+		margin-right: 3px;
+	}
 </style>
 
 <!-- sidebar -->
@@ -34,6 +37,7 @@
 		<ul class="nav">
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'application') }, click: app.changeActiveSection('application')">Application<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'servers') }, click: app.changeActiveSection('servers')">Servers<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'langEnv') }, click: app.changeActiveSection('langEnv')">Language Enviroment<span class="fa-pull-right"><i class="fa fa-cog"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -324,6 +328,28 @@
 	<div class="col-md-12" data-bind="visible: (app.section() == 'servers'), with: servers">
 		{{template "page-servers.html"}}
 	</div>
+	<div class="col-md-12" data-bind="visible: (app.section() == 'langEnv')">
+		<h1>Language Enviroment</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+			<div class="nav1">
+				<button class="btn btn-sm btn-primary">
+					<span class="glyphicon glyphicon-cog"></span> Setup
+				</button>
+			</div>
+		</nav>
+
+			<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">Language Enviroment</h1>
+		    </div>
+		    <div class="panel-body">
+		    	<div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.langEnvData, selectable: 'multiple, row', columns: apl.langEnvColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div>
+		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
+	</div>
+	
 </div>
 
 <div class="modal fade modal-new-file" tabindex="-1" role="dialog">

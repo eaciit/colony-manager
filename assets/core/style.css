@@ -569,19 +569,57 @@ body {
       width: 100%;
       margin: 0;
       margin-bottom: 15px; }
-  body .modal-query .modal-title span {
+
+.dropdown-menu .icon-submenu {
+  position: absolute;
+  right: 10px;
+  top: 12px; }
+
+.dropdown-menu li:hover > .dropdown-submenu {
+  display: block; }
+
+.dropdown-submenu {
+  position: absolute;
+  right: 0px;
+  display: none;
+  left: 95%;
+  top: 0px;
+  z-index: 1001;
+  float: left;
+  min-width: 160px;
+  list-style: none;
+  border-radius: 3px;
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  background-clip: padding-box;
+  background-color: #fff;
+  padding-left: 0px; }
+
+.dropdown-submenu > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: 400;
+  line-height: 1.42857;
+  color: #333;
+  white-space: nowrap;
+  text-decoration: none; }
+  .dropdown-submenu > li > a:hover {
+    color: #444;
+    background-color: #F2F2F2; }
+  .dropdown-submenu > li > a .modal-query .modal-title span {
     font-weight: bold;
     color: #3A8BDF; }
-  body #content-preview {
+  .dropdown-submenu > li > a #content-preview {
     border: 1px solid whitesmoke;
     min-height: 500px; }
-  body .loader-custom {
+  .dropdown-submenu > li > a .loader-custom {
     position: absolute !important;
     background-color: transparent !important; }
-    body .loader-custom .loader {
+    .dropdown-submenu > li > a .loader-custom .loader {
       margin-left: 0 !important;
       margin-top: 0 !important; }
-  body .loader-container {
+  .dropdown-submenu > li > a .loader-container {
     position: fixed;
     top: 0;
     left: 0;
@@ -589,7 +627,7 @@ body {
     bottom: 0;
     background-color: rgba(255, 255, 255, 0.6);
     z-index: 99999; }
-    body .loader-container .loader {
+    .dropdown-submenu > li > a .loader-container .loader {
       position: absolute;
       margin-left: -25px;
       margin-top: -25px;
@@ -601,7 +639,7 @@ body {
       height: 50px;
       background-color: #03a9f4;
       border-radius: 50%; }
-      body .loader-container .loader:after {
+      .dropdown-submenu > li > a .loader-container .loader:after {
         content: "";
         position: absolute;
         border-radius: 50%;

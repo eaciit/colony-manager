@@ -64,22 +64,22 @@ usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
     width: 50
-}, {
+    }, {
     field: "loginid",
     title: "Login Id"
-}, {
+    }, {
     field: "fullname",
     title: "Fullame"
-}, {
+    }, {
     field: "email",
     title: "Email"
-}, {
+    }, {
     field: "password",
     title: "Password"
-}, {
+    }, {
     field: "enable",
     title: "Enable"
-}, {
+    }, {
     field: "groups",
     title: "Groups"
 }]);
@@ -148,15 +148,17 @@ usr.getUsers = function(c) {
     });
 };
 
-usr.searchUser = function(){ 
-    usr.UsersData([]); 
-    app.ajaxPost("/user/search", {search:usr.search()}, function(res) {
+usr.searchUser = function() {
+    usr.UsersData([]);
+    app.ajaxPost("/user/search", {
+        search: usr.search()
+    }, function(res) {
         if (!app.isFine(res)) {
             return;
         }
         if (res.data == null) {
             res.data = "";
-        } 
+        }
         usr.UsersData(res.data);
         var grid = $(".grid-access").data("kendoGrid");
         $(grid.tbody).on("mouseleave", "tr", function(e) {
@@ -206,7 +208,12 @@ usr.saveuser = function() {
     if (usr.config.Enable() == "") {
         usr.config.Enable(false);
     }
-    usr.config.Groups($('#Groups').data('kendoMultiSelect').value());
+    var data=[]
+    for (var i = 0; i < grp.selectedGroupsData().length; i++) {
+        data.push(grp.selectedGroupsData()[i]._id);
+    };
+    usr.config.Groups(data)
+    // usr.config.Groups($('#Groups').data('kendoMultiSelect').value());
     user = ko.mapping.fromJS(usr.config);
     //======
     var data = ko.mapping.toJS(usr.config.Grants);
@@ -295,6 +302,9 @@ usr.createNewUser = function() {
     app.mode("new");
     usr.getGroup();
     usr.SelectedGroup.removeAll();
+    grp.listGroupsData.removeAll();
+    grp.selectedGroupsData.removeAll();
+    grp.getlistGroups();
 };
 
 
@@ -374,7 +384,7 @@ usr.createGridPrivilege = function(ds) {
             data: ds
         }
     }).data("kendoGrid");
- 
+
 };
 
 
@@ -435,9 +445,10 @@ usr.addFromPrivilage = function() {
     }
 };
 usr.displayAccess = function(e) {
-    var dataItem = this.dataSource.view()[e.item.index()];
+    // var dataItem = this.dataSource.view()[e.item.index()];
     app.ajaxPost("/group/getaccessgroup", {
-        idGroup: dataItem.value
+        //idGroup: dataItem.value
+        idGroup: e
     }, function(res) {
         if (!app.isFine(res)) {
             return;
@@ -662,3 +673,7 @@ usr.ChangePass = function() {
         });
     }
 };
+
+usr.addaccessgroup=function(){
+
+}
