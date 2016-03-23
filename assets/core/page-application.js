@@ -312,6 +312,7 @@ apl.getLangEnv = function (c){
 }
 
 apl.editApplication = function(_id) {
+	app.miniloader(true);	
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
