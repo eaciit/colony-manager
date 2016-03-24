@@ -2,6 +2,13 @@ app.section('widgetgrid');
 
 viewModel.widgetgrid = {}; var wg = viewModel.widgetgrid;
 
+/*buat nampilin data di bagian grid*/
+wg.templateMapGrid = {
+	_id: "",
+	gridName: "",
+	fileName: "",
+}
+
 wg.templateWidgetGrid = {
 	_id: "",
 	title: "",
@@ -93,6 +100,13 @@ wg.OnRemove = function(){
 
 };
 wg.saveWidget = function(){
+	/*nyoba thok mas*/
+	var param = ko.mapping.toJS(wg.configWidget);
+	app.ajaxPost("/widgetgrid/savegrid", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+	});
 
 };
 wg.addColumnGrid = function(){
