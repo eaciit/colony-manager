@@ -139,6 +139,10 @@ sw.getDataSource = function(createNew) {
 		if (createNew){
 			sw.addFields();
 		}
+
+		var current = ko.mapping.toJS(sw.configSelectorWidget);
+		ko.mapping.fromJS(sw.templateConfig, sw.configSelectorWidget);
+		ko.mapping.fromJS(current, sw.configSelectorWidget);
 	});
 }
 

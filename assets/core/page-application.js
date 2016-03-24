@@ -157,7 +157,44 @@ apl.langEnvColumns = ko.observableArray([
 		"<center><input type='checkbox' checkLang = 'scala' id='"+d._id+"' ></center>"
 		].join(" ");
 	}}
-	]);
+]);
+
+apl.checkAllRunCMD = function () {
+	$(".modal-run-cmd").find(".k-grid-content tr").each(function (e, i) {
+		$(e).find("td:eq(0) input:checkbox").val(true);
+	});
+};
+apl.commandDataColumns = ko.observableArray([
+	{headerTemplate : "<center><input type='checkbox' onclick=\"apl.checkAllRunCMD()\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
+		return "<input type='checkbox' data-id='"+d._id+"'>";
+	}}, 
+	{field : "CmdName", title : "Command Key"},
+	{field : "CmdValue", title : "Command Value"},
+]);
+apl.commandData = ko.observableArray([]);
+apl.showRunCommand = function (serverID) {
+	apl.commandData([]);
+	var appMap = ko.mapping.toJS(apl.configApplication);
+
+	$(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
+	$(".modal-run-cmd").find(".modal-title span.server").html(serverID);
+
+	appMap.Command.forEach(function (cmd, i) {
+		if (cmd.key == "" || cmd.value == "") {
+			return;
+		}
+
+		apl.commandData.push({
+			CmdName: cmd.key,
+			CmdValue: cmd.value
+		});
+	});
+
+	$(".modal-run-cmd").modal("show");
+};
+apl.runCmd = function () {
+
+};
 
 apl.srvapplicationColumns = ko.observableArray([
 	{ field: "_id", title: "ID" },
@@ -171,6 +208,9 @@ apl.srvapplicationColumns = ko.observableArray([
 	} },
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	} },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		// var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
 		// if (app == undefined) {
