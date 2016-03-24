@@ -172,35 +172,30 @@ apl.srvapplicationColumns = ko.observableArray([
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		// var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		// if (app == undefined) {
-		// 	return "";
-		// }
+		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (app == undefined) {
+			return "";
+		}
 
-		// var deployedTo = app.DeployedTo;
+		var deployedTo = app.DeployedTo;
 
-		// if (deployedTo == null) {
-		// 	deployedTo = [];
-		// }
+		if (deployedTo == null) {
+			deployedTo = [];
+		}
 
-		// if (deployedTo.indexOf(d._id) != -1) {
-		// 	var target = [d.host.split(":")[0], app.Port].join(":");	
-		// 	return "<input type='checkbox' class='statuscheck-apl grid-green' /> ";
-		// }
+		if (deployedTo.indexOf(d._id) != -1) {
+			var target = [d.host.split(":")[0], app.Port].join(":");	
+			return "<input type='checkbox' class='statuscheck-apl apl-green' disabled /> ";
+		}
 
-		return "<input type='checkbox' class='statuscheck-apl grid-red' />";
+		return "<input type='checkbox' class='statuscheck-apl apl-red' disabled />";
 	} }
-	// { title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-	// 	return [
-	// 		"<input type='checkbox' class='statuscheck-apl' />"
-	// 	].join(" ");
-	// } }
 ]);
 
 apl.gridStatusColor = function () {
 	$grids = $('.grid-srvapplication');
-	var $grg = $grids.find("tr td .grid-green");
-	var $grr = $grids.find("tr td .grid-red");
+	var $grg = $grids.find("tr td .apl-green");
+	var $grr = $grids.find("tr td .apl-red");
 
 	if ($grg) {
 		$grg.parent().css("background-color", "#5cb85c");
@@ -389,7 +384,6 @@ apl.editApplication = function(_id) {
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
-		// srv.getServers('app');
 	});
 };
 
