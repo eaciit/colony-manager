@@ -86,3 +86,20 @@ func (ws *WidgetSelectorController) SaveSelector(r *knot.WebContext) interface{}
 
 	return helper.CreateResult(true, payload, "")
 }
+
+func (ws *WidgetSelectorController) EditWidgetSelector(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := colonycore.Selector{}
+	err := r.GetPayload(&data)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(&data, data.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
