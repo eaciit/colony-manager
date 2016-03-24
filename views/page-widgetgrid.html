@@ -12,7 +12,9 @@
 				 <button class="btn btn-sm btn-success" data-bind="click: wg.createNewWidget">
 			    		<span class="glyphicon glyphicon-plus"></span> Add
 			    </button>
-		    	<button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+		    	<button class="btn btn-sm btn-danger" data-bind="click: wg.deleteWidgetGrid">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
 		    </div>
 		</nav>
 
@@ -73,7 +75,7 @@
 			    				<div class="form-group">
 								    <label class="col-md-3 filter-label">Data Source</label>
 								    <div class="col-md-9">
-					        		<select required id="datasource" data-required-msg="Data Source cannot be empty" data-bind="kendoDropDownList: { data: wg.recordDataSource, dataValueField: 'value', dataTextField: 'title', value: dataSourceID, optionLabel: 'Select one'}" style="width:40%;"></select>
+					        		<select required id="datasource" data-required-msg="Data Source cannot be empty" data-bind="kendoDropDownList: { data: wg.recordDataSource, dataValueField: '_id', dataTextField: '_id', value: dataSourceID, optionLabel: 'Select one'}" style="width:40%;"></select>
 									<span class="k-invalid-msg" data-for="datasource"></span></div>
 								</div>
 							</div>
