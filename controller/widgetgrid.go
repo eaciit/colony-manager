@@ -5,7 +5,7 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	"github.com/eaciit/toolkit"
 )
 
 type WidgetGridController struct {
@@ -18,20 +18,20 @@ func CreateWidgetGridController(s *knot.Server) *WidgetGridController {
 	return controller
 }
 
-func getMapGrid(search string) (*colonycore.MapGrid, error) {
+func getMapGrid(search string) ([]colonycore.MapGrid, error) {
 	var query *dbox.Filter
 
 	if search != "" {
 		query = dbox.Contains("ID", search)
 	}
 
-	mapgrid := new(colonycore.MapGrid)
+	mapgrid := []colonycore.MapGrid{}
 	cursor, err := colonycore.Find(new(colonycore.MapGrid), query)
 	if err != nil {
 		return mapgrid, err
 	}
 
-	err = cursor.Fetch(&mapgrid, 1, false)
+	err = cursor.Fetch(&mapgrid, 0, false)
 	if err != nil {
 		return mapgrid, err
 	}
@@ -177,31 +177,27 @@ func (wg *WidgetGridController) SaveGrid(r *knot.WebContext) interface{} {
 	}
 
 	datagrid := new(colonycore.Grid)
+	toolkit.Println("datagrid data : ", datagrid)
 	err = r.GetPayload(&datagrid)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	var isUpdate bool
-	newGrid := []colonycore.DataMapGrid{}
-	datamapgrid := colonycore.DataMapGrid{}
-	datamapgrid.GridName = datagrid.Title
-	for _, eachRaw := range mapgrid.Data {
+	newGrid := colonycore.MapGrid{}
+	// datamapgrid := colonycore.DataMapGrid{}
+	for _, eachRaw := range mapgrid {
 		if eachRaw.FileName == datagrid.ID+".json" {
-			eachRaw.GridName = datamapgrid.GridName
+			eachRaw.GridName = datagrid.Title
 			isUpdate = true
+			newGrid = eachRaw
 		}
-		newGrid = append(newGrid, eachRaw)
 	}
 
 	if !isUpdate {
-		mapgrid.ID = mapgrid.ID + 1
-		datamapgrid.FileName = datagrid.ID + ".json"
-		datamapgrid.ID = datagrid.ID
-		mapgrid.Data = append(mapgrid.Data, datamapgrid)
-
-	} else {
-		mapgrid.Data = newGrid
+		newGrid.ID = datagrid.ID
+		newGrid.FileName = datagrid.ID + ".json"
+		newGrid.GridName = datagrid.Title
 	}
 
 	// if !isUpdate {
@@ -210,7 +206,7 @@ func (wg *WidgetGridController) SaveGrid(r *knot.WebContext) interface{} {
 	// 	}
 	// }
 
-	if err := colonycore.Save(mapgrid); err != nil {
+	if err := colonycore.Save(&newGrid); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -218,7 +214,7 @@ func (wg *WidgetGridController) SaveGrid(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, mapgrid, "")
+	return helper.CreateResult(true, newGrid, "")
 	/*r.Config.OutputType = knot.OutputJson
 
 	filename := filepath.Join(colonycore.ConfigPath, "widget", "grid.json")
