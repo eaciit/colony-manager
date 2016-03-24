@@ -45,6 +45,7 @@ apl.filterLangEnvTemplate = {
 }
 
 apl.dataLanguageEnv = ko.observableArray([]);
+apl.checkServerLangEnv = ko.observableArray([]);
 apl.filterLangEnv = ko.mapping.fromJS(apl.filterLangEnvTemplate);
 apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
@@ -798,30 +799,54 @@ apl.selectLangEnv = function (elem, e){
 	}
 }
 
-apl.setupLangEnv = function (){	
+apl.setupLangEnv = function (){
+	apl.dataLanguageEnv([]);
 	$('.grid-LangEnv tbody tr').each(function(i,e){
+		var cekOrNot = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
+		if ( cekOrNot === true ){
+			apl.checkServerLangEnv.push("1");
+		} 
+	});
+	if (apl.checkServerLangEnv().length === 0 ){
+		swal({title: "No server selected", type: "error"});
+		return;
+	}
+	apl.checkServerLangEnv([]);
+	$('.grid-LangEnv tbody tr').each(function(i){
 		var data = { _id:"", lang:[] };
-		var checked = $(e).find("td:eq(0) input[type=checkbox]").is(':checked');
-		if (checked == true){
-			var server_id = $(e).find('td input[type=checkbox]:checked').attr('idcheck');
-			if ( server_id != undefined ){
-				data._id = server_id;
-			}
-			var go = $(e).find('td:eq(4) input[type=checkbox]:checked').attr('checkLang');
-			if ( go != undefined ){
-				data.lang.push(go);
-			}
-			var java = $(e).find('td:eq(5) input[type=checkbox]:checked').attr('checkLang');
-			if ( java != undefined ){
-				data.lang.push(java);
-			}
-			var scala = $(e).find('td:eq(6) input[type=checkbox]:checked').attr('checkLang');
-			if ( scala != undefined ){
-				data.lang.push(scala);
+		var checked = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
+		if (checked === true){
+			var checkedGo = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(4) input[type=checkbox]").is(':checked');
+			var checkedJava = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(5) input[type=checkbox]").is(':checked');
+			var checkedScala = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(6) input[type=checkbox]").is(':checked');
+
+			if ( checkedGo === true || checkedJava === true || checkedScala === true ){
+				var server_id = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td input[type=checkbox]:checked').attr('idcheck');
+				if ( server_id != undefined ){
+					data._id = server_id;
+				}
+				var go = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(4) input[type=checkbox]:checked').attr('checkLang');
+				if ( go != undefined ){
+					data.lang.push(go);
+				}
+				var java = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(5) input[type=checkbox]:checked').attr('checkLang');
+				if ( java != undefined ){
+					data.lang.push(java);
+				}
+				var scala = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(6) input[type=checkbox]:checked').attr('checkLang');
+				if ( scala != undefined ){
+					data.lang.push(scala);
+				}
+			}else {
+				swal({title: "No server selected", type: "error"});
+				return;
 			}
 			apl.dataLanguageEnv.push(data);
-		}
+		} 
 	});
+	console.log(JSON.stringify(ko.mapping.toJS(apl.dataLanguageEnv)));
+	$('.grid-LangEnv thead tr').find('input[type=checkbox]:checked').prop({checked:false});
+	$('.grid-LangEnv tr').find('td input[type=checkbox]:checked').prop({checked:false});
 }
 
 apl.prepareTreeView = function () {
