@@ -19,7 +19,7 @@
     </button>
     </div>
     <div class="col-md-3" style="margin-top:10px;">
-        <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : usr.search, event:{keyup:usr.searchUser}' />
+        <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : usr.search, event:{keyup:usr.searchUser(event)}'/>
     </div>
 </nav>
 
