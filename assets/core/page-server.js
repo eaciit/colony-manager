@@ -121,8 +121,6 @@ srv.appserverColumns = ko.observableArray([
 			deployedTo = [];
 		}
 
-		console.log("===", deployedTo, srv.configServer._id());
-
 		if (deployedTo.indexOf(srv.configServer._id()) > -1) {
 			var target = [d.host.split(":")[0], app.Port].join(":");	
 			return "<input type='checkbox' class='statuscheck-srv srv-green' disabled /> ";
