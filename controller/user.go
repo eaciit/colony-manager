@@ -31,25 +31,6 @@ func CreateUserController(s *knot.Server) *UserController {
 	return controller
 }
 
-// func (a *UserController) GetUser(r *knot.WebContext) interface{} {
-// 	r.Config.OutputType = knot.OutputJson
-// 	a.InitialSetDatabase()
-// 	tUser := new(acl.User)
-
-// 	arrm := make([]toolkit.M, 0, 0)
-// 	c, err := acl.Find(tUser, nil, toolkit.M{}.Set("take", 0))
-// 	if err == nil {
-// 		err = c.Fetch(&arrm, 0, false)
-// 	}
-
-// 	if err != nil {
-// 		return helper.CreateResult(true, nil, err.Error())
-// 	} else {
-// 		return helper.CreateResult(true, arrm, "")
-// 	}
-
-// }
-
 func (a *UserController) GetUser(r *knot.WebContext) interface{} {
 	var filter *dbox.Filter
 	r.Config.OutputType = knot.OutputJson
@@ -67,7 +48,9 @@ func (a *UserController) GetUser(r *knot.WebContext) interface{} {
 	tUser := new(acl.User)
 	if find := toolkit.ToString(payload["find"]); find != "" {
 		filter = new(dbox.Filter)
-		filter = dbox.Contains("loginid", find)
+		filter = dbox.Or(dbox.Contains("id", find),
+			dbox.Contains("fullname", find),
+			dbox.Contains("email", find))
 	}
 	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
