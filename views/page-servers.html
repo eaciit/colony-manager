@@ -290,8 +290,7 @@
     		</div>
     		<div class="tab-pane fade" id="Applications-server">
 		    	<div class="col-md-12">
-		    		<div class="grid grid-aplserver" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: srv.appserverColumns, filterfable: false, pageable: true, 
-					dataBound: app.gridBoundTooltipster('.grid-aplserver') }"></div>
+		    		<div class="grid grid-aplserver" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: srv.appserverColumns, filterfable: false, pageable: true, dataBound: function(e) {srv.gridStatusCheck();srv.gridStatusColor();app.gridBoundTooltipster('.grid-aplserver');} }"></div>
 		        </div>
 		    </div>
     	</div>
