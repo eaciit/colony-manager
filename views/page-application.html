@@ -445,3 +445,29 @@
 		</div>
 	</div>
 </div>
+
+<div class="modal fade modal-run-cmd" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+	<div class="modal-dialog modalcustom">
+		<div class="modal-content">
+			<div class="modal-1" id="modal-1">
+				<div class="modal-header">
+					<h4 class="modal-title">
+						Run Command on of Application <span class="app"></span> in Server <span class="server"></span>
+					</h4>
+				</div>
+				<div class="modal-body">
+					<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div>
+				</div>
+				<div class="modal-footer">
+					{{template "_miniloader.html"}}	
+					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
+						<span class="glyphicon glyphicon-remove"></span> Cancel
+					</button>
+					<button type="button" class="btn btn-sm btn-primary" data-bind="click: apl.runCmd">
+						<span class="glyphicon glyphicon-ok"></span> Run
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

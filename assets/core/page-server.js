@@ -109,6 +109,14 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
 	{ field: "Port", title: "Running Port" },
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	} },
+	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='statuscheck-srv' />"
+		].join(" ");
+	} },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
 		if (app == undefined) {
@@ -129,6 +137,28 @@ srv.appserverColumns = ko.observableArray([
 		return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
 	} }
 ]);
+
+srv.showRunCommand = function (appID) {
+	apl.commandData([]);
+	var serverMap = ko.mapping.toJS(srv.configServer);
+	var appMap = Lazy(apl.applicationData()).find({ _id: appID });
+
+	$(".modal-run-cmd").find(".modal-title span.app").html(appID);
+	$(".modal-run-cmd").find(".modal-title span.server").html(serverMap._id);
+
+	appMap.Command.forEach(function (cmd) {
+		if (cmd.key == "" || cmd.value == "") {
+			return;
+		}
+		
+		apl.commandData.push({
+			CmdName: cmd.key,
+			CmdValue: cmd.value
+		});
+	});
+
+	$(".modal-run-cmd").modal("show");
+};
 
 srv.gridStatusColor = function () {
 	$grids = $('.grid-aplserver');

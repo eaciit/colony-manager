@@ -1032,3 +1032,63 @@ func (a *ApplicationController) ConnectToDataSource() (dbox.IConnection, error) 
 	}
 	return connection, nil
 }
+
+func (a *ApplicationController) RunCommand(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := struct {
+		AppID    string
+		CMD      string
+		ServerID string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	app := new(colonycore.Application)
+	err = colonycore.Get(app, payload.AppID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	cmdString := ""
+
+	for _, raw := range app.Command.([]interface{}) {
+		for key, val := range raw.(map[string]string) {
+			if key == payload.CMD {
+				cmdString = val
+				break
+			}
+		}
+	}
+
+	for _, raw := range app.Variable.([]interface{}) {
+		for key, val := range raw.(map[string]string) {
+			if strings.Contains(cmdString, key) {
+				cmdString = strings.Replace(cmdString, key, val, -1)
+			}
+		}
+	}
+
+	if cmdString == "" {
+		return helper.CreateResult(false, nil, "Empty command or not found")
+	}
+
+	server := new(colonycore.Server)
+	err = colonycore.Get(server, payload.ServerID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	setting, _, err := new(ServerController).SSHConnect(server)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	_, err = setting.GetOutputCommandSsh(cmdString)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
