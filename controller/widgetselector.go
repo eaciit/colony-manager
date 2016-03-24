@@ -49,7 +49,7 @@ func (ws *WidgetSelectorController) GetSelectorConfigs(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	var search string
-	// search = payload["search"].(string)
+	search = payload["search"].(string)
 
 	var query *dbox.Filter
 
