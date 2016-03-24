@@ -44,6 +44,7 @@ apl.filterLangEnvTemplate = {
 	sshType: "",
 }
 
+apl.dataLanguageEnv = ko.observableArray([]);
 apl.filterLangEnv = ko.mapping.fromJS(apl.filterLangEnvTemplate);
 apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
@@ -133,27 +134,27 @@ apl.ServerColumns = ko.observableArray([
 ]);
 
 apl.langEnvColumns = ko.observableArray([
-	{headerTemplate : "<center><input type='checkbox' class='langEnvCheckAll'></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
+	{headerTemplate : "<center><input type='checkbox' class='langEnvCheckAll' onclick=\"apl.selectLangEnv(this,'CheckAll','all')\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
 		return [
-		"<input type='checkbox' class='langEnvCheck'>"
+		"<input type='checkbox' class='langEnvCheck' idcheck='"+d._id+"' onclick=\"apl.selectLangEnv(this,'langEnv')\">"
 		].join(" ");
 	}}, 
 	{field : "_id", title : "Server ID"},
 	{field : "os", title : "Server OS"},
 	{field : "host", title : "Host"},
-	{field : "", title : "Go", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+	{field : "", headerTemplate:"<center>Go</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return [
-		"<center><input type='checkbox' idcheck = '' ></center>"
+		"<center><input type='checkbox' checkLang = 'go' id='"+d._id+"'></center>"
 		].join(" ");
 	}},
-	{field : "", "title" : "Java", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+	{field : "", headerTemplate:"<center>Java</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return [
-		"<center><input type='checkbox' idcheck = '' ></center>"
+		"<center><input type='checkbox' checkLang = 'java' id='"+d._id+"'></center>"
 		].join(" ");
 	}},
-	{field : "", title : "Scala", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+	{field : "", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return [
-		"<center><input type='checkbox' idcheck = '' ></center>"
+		"<center><input type='checkbox' checkLang = 'scala' id='"+d._id+"' ></center>"
 		].join(" ");
 	}}
 	]);
@@ -170,14 +171,48 @@ apl.srvapplicationColumns = ko.observableArray([
 	} },
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
-	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='statuscheck-apl' />"
-		].join(" ");
+	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
+		// var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		// if (app == undefined) {
+		// 	return "";
+		// }
+
+		// var deployedTo = app.DeployedTo;
+
+		// if (deployedTo == null) {
+		// 	deployedTo = [];
+		// }
+
+		// if (deployedTo.indexOf(d._id) != -1) {
+		// 	var target = [d.host.split(":")[0], app.Port].join(":");	
+		// 	return "<input type='checkbox' class='statuscheck-apl grid-green' /> ";
+		// }
+
+		return "<input type='checkbox' class='statuscheck-apl grid-red' />";
 	} }
+	// { title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+	// 	return [
+	// 		"<input type='checkbox' class='statuscheck-apl' />"
+	// 	].join(" ");
+	// } }
 ]);
+
+apl.gridStatusColor = function () {
+	$grids = $('.grid-srvapplication');
+	var $grg = $grids.find("tr td .grid-green");
+	var $grr = $grids.find("tr td .grid-red");
+
+	if ($grg) {
+		$grg.parent().css("background-color", "#5cb85c");
+		$grg.prop("checked", true);		
+	}
+	if ($grr) {
+		$grr.parent().css("background-color", "#d9534f");
+		$grr.prop("checked", false);		
+	}
+}
+
 apl.gridStatusCheck = function () {
-	$('.statuscheck-apl').parent().css("background-color", "#d9534f");
 	$grid = $('.grid-srvapplication');
 	var $gr = $grid.find("tr td .statuscheck-apl");
 	$gr.change(function(){
@@ -201,6 +236,7 @@ apl.gridServerDeployDataBound = function () {
 		}
 	});
 };
+
 apl.addCommand = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
 	apl.configApplication.Command.push(item); 
@@ -329,9 +365,6 @@ apl.getLangEnv = function (c){
 		apl.langEnvData(FilterDataLangEnv);
 		
 		var grid = $(".grid-server").data("kendoGrid");
-		// $(grid.tbody).on("mouseenter", "tr", function (e) {
-		//     $(this).addClass("k-state-hover");
-		// });
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
 		});
@@ -342,8 +375,9 @@ apl.getLangEnv = function (c){
 	});
 }
 
-apl.editApplication = function(_id) {
-	apl.gridStatusCheck();
+apl.editApplication = function(_id) {	
+	apl.appIDToDeploy(_id);
+	apl.refreshGridModalDeploy();
 	app.miniloader(true);	
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
@@ -355,6 +389,7 @@ apl.editApplication = function(_id) {
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
+		// srv.getServers('app');
 	});
 };
 
@@ -747,6 +782,46 @@ apl.selectServer = function(elem, e){
 			apl.tempCheckIdServer.remove( function (item) { return item === $(elem).attr('idcheck'); } );
 		}
 	}
+}
+
+apl.selectLangEnv = function (elem, e){
+	if (e === 'CheckAll'){
+		if ($(elem).prop('checked') === true){
+			$('.langEnvCheck').each(function(index){
+				$(this).prop("checked", true);
+			});
+		}else {
+		$('.langEnvCheck').each(function(index){
+			$(this).prop("checked", false);
+		});
+		}
+	}
+}
+
+apl.setupLangEnv = function (){	
+	$('.grid-LangEnv tbody tr').each(function(i,e){
+		var data = { _id:"", lang:[] };
+		var checked = $(e).find("td:eq(0) input[type=checkbox]").is(':checked');
+		if (checked == true){
+			var server_id = $(e).find('td input[type=checkbox]:checked').attr('idcheck');
+			if ( server_id != undefined ){
+				data._id = server_id;
+			}
+			var go = $(e).find('td:eq(4) input[type=checkbox]:checked').attr('checkLang');
+			if ( go != undefined ){
+				data.lang.push(go);
+			}
+			var java = $(e).find('td:eq(5) input[type=checkbox]:checked').attr('checkLang');
+			if ( java != undefined ){
+				data.lang.push(java);
+			}
+			var scala = $(e).find('td:eq(6) input[type=checkbox]:checked').attr('checkLang');
+			if ( scala != undefined ){
+				data.lang.push(scala);
+			}
+			apl.dataLanguageEnv.push(data);
+		}
+	});
 }
 
 apl.prepareTreeView = function () {
