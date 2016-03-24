@@ -36,6 +36,7 @@ func main() {
 	server.Register(controller.CreateWebGrabberController(server), "")
 	server.Register(controller.CreateApplicationController(server), "")
 	server.Register(controller.CreateServerController(server), "")
+	server.Register(controller.CreateLangenvironmentController(server), "")
 	server.Register(controller.CreateUserController(server), "")
 	server.Register(controller.CreateGroupController(server), "")
 	server.Register(controller.CreateAdminisrationController(server), "")
