@@ -126,7 +126,7 @@ sw.createNewSelector = function() {
 }
 
 sw.getDataSource = function(createNew) {
-	app.ajaxPost("/datasource/getdatasources", {search: ""}, function(res){
+	app.ajaxPost("/widgetselector/getdatasource", {}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -184,10 +184,6 @@ sw.getMetaData = function (each, index) {
 			$("select.field").eq(index).data("kendoDropDownList").value(sw.configSelectorWidget.fields()[index].field());
 		},500);
 	});
-};
-
-sw.fieldChecker = function() {
-
 };
 
 sw.backToFront = function() {
