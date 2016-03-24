@@ -475,8 +475,14 @@ func (d *DataBrowserController) parseQuery(conn dbox.IConnection, dbrowser colon
 		dataQuery = conn.NewQuery().From(dbrowser.TableNames)
 	} else if dbrowser.QueryType == "SQL" {
 		if toolkit.HasMember(rdbms, datacon.Driver) {
-			dataQuery = conn.NewQuery().Command("freequery", toolkit.M{}.
-				Set("syntax", dbrowser.QueryText))
+			if strings.Contains(dbrowser.QueryText, "insert") || strings.Contains(dbrowser.QueryText, "INSERT") ||
+				strings.Contains(dbrowser.QueryText, "update") || strings.Contains(dbrowser.QueryText, "UPDATE") ||
+				strings.Contains(dbrowser.QueryText, "delete") || strings.Contains(dbrowser.QueryText, "DELETE") {
+				return nil, errors.New("Sorry DataBrowser cannot use update/delete/insert")
+			} else {
+				dataQuery = conn.NewQuery().Command("freequery", toolkit.M{}.
+					Set("syntax", dbrowser.QueryText))
+			}
 		} else {
 			return nil, errors.New("Free Text Query with SQL only for RDBMS, please use Dbox")
 		}
