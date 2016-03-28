@@ -6,28 +6,17 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 )
 
-type WidgetGridController struct {
+type WidgetChartController struct {
 	App
 }
 
-func CreateWidgetGridController(s *knot.Server) *WidgetGridController {
-	var controller = new(WidgetGridController)
+func CreateWidgetChartController(s *knot.Server) *WidgetChartController {
+	var controller = new(WidgetChartController)
 	controller.Server = s
 	return controller
 }
 
-func (wg *WidgetGridController) GetQueryDataSource(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	data, err := helper.GetDataSourceQuery()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, data, "")
-}
-
-func (wg *WidgetGridController) GetGridData(r *knot.WebContext) interface{} {
+func (wc *WidgetChartController) GetChartData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
@@ -43,7 +32,7 @@ func (wg *WidgetGridController) GetGridData(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (wg *WidgetGridController) GetDetailGrid(r *knot.WebContext) interface{} {
+func (wc *WidgetChartController) GetDetailChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	data := new(colonycore.Grid)
@@ -57,7 +46,7 @@ func (wg *WidgetGridController) GetDetailGrid(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (wg *WidgetGridController) SaveGrid(r *knot.WebContext) interface{} {
+func (wc *WidgetChartController) SaveChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	datagrid := new(colonycore.Grid)
@@ -71,7 +60,7 @@ func (wg *WidgetGridController) SaveGrid(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, datagrid, "")
 }
 
-func (wg *WidgetGridController) RemoveGrid(r *knot.WebContext) interface{} {
+func (wc *WidgetChartController) RemoveChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
