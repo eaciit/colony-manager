@@ -24,7 +24,7 @@ func (wc *WidgetChartController) GetChartData(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	search := payload["search"].(string)
-	data, err := new(colonycore.MapGrid).Get(search)
+	data, err := new(colonycore.MapChart).Get(search)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -35,7 +35,7 @@ func (wc *WidgetChartController) GetChartData(r *knot.WebContext) interface{} {
 func (wc *WidgetChartController) GetDetailChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	data := new(colonycore.Grid)
+	data := new(colonycore.Chart)
 	if err := r.GetPayload(&data); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -49,15 +49,15 @@ func (wc *WidgetChartController) GetDetailChart(r *knot.WebContext) interface{} 
 func (wc *WidgetChartController) SaveChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	datagrid := new(colonycore.Grid)
-	if err := r.GetPayload(&datagrid); err != nil {
+	datachart := new(colonycore.Chart)
+	if err := r.GetPayload(&datachart); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err := datagrid.Save(); err != nil {
+	if err := datachart.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, datagrid, "")
+	return helper.CreateResult(true, datachart, "")
 }
 
 func (wc *WidgetChartController) RemoveChart(r *knot.WebContext) interface{} {
@@ -69,19 +69,19 @@ func (wc *WidgetChartController) RemoveChart(r *knot.WebContext) interface{} {
 	}
 	idArray := payload["_id"].([]interface{})
 	for _, id := range idArray {
-		mapgrid := new(colonycore.MapGrid)
-		mapgrid.ID = id.(string)
-		if err := mapgrid.Delete(); !helper.HandleError(err) {
+		mapchart := new(colonycore.MapChart)
+		mapchart.ID = id.(string)
+		if err := mapchart.Delete(); !helper.HandleError(err) {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		filegrid := new(colonycore.Grid)
-		filegrid.ID = id.(string)
+		filechart := new(colonycore.Chart)
+		filechart.ID = id.(string)
 
-		if err := filegrid.Remove(); !helper.HandleError(err) {
+		if err := filechart.Remove(); !helper.HandleError(err) {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
 
-	return helper.CreateResult(true, payload["recordid"], "")
+	return helper.CreateResult(true, payload["_id"], "")
 }

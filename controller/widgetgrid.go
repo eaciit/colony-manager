@@ -94,5 +94,5 @@ func (wg *WidgetGridController) RemoveGrid(r *knot.WebContext) interface{} {
 		}
 	}
 
-	return helper.CreateResult(true, payload["recordid"], "")
+	return helper.CreateResult(true, payload["_id"], "")
 }
