@@ -104,7 +104,32 @@ srv.ServerColumns = ko.observableArray([
 	// { field: "enable", title: "Enable" },
 ]);
 
-srv.getServers = function(c) {
+srv.appserverColumns = ko.observableArray([
+	{ field: "_id", title: "ID" },
+	{ field: "AppsName", title: "Name" },
+	{ field: "Type", title: "Type" },
+	{ field: "Port", title: "Running Port" },
+	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+		return [
+			"<input type='checkbox' class='statuscheck-srv' />"
+		].join(" ");
+	} },
+]);
+
+srv.gridStatusCheck = function () {
+	$('.statuscheck-srv').parent().css("background-color", "#d9534f");
+	$grid = $('.grid-aplserver');
+	var $gr = $grid.find("tr td .statuscheck-srv");
+	$gr.change(function(){
+		if ($(this).prop('checked') === true){
+			$(this).parent().css("background-color", "#5cb85c");
+		} else {
+			$(this).parent().css("background-color", "#d9534f");
+		}
+	})
+};
+
+srv.getServers = function(c, type) {
 	srv.ServerData([]);
 	var param = ko.mapping.toJS(srv.filter);
 	app.ajaxPost("/server/getservers", param, function (res) {
@@ -115,17 +140,34 @@ srv.getServers = function(c) {
 			res.data="";
 		}
 		srv.ServerData(res.data);
-		var grid = $(".grid-server").data("kendoGrid");
+
+		// if (type == 'app') {			
+			$(".grid-srvapplication").replaceWith("<div class='grid-srvapplication'></div>");
+			$(".grid-srvapplication").kendoGrid({
+				dataSource: { pageSize: 15, data: res.data },
+				columns: apl.srvapplicationColumns(),
+				filterfable: false,
+				pageable: true,
+				dataBound: function(e) {
+					apl.gridStatusColor();
+					apl.gridStatusCheck();
+				}
+			});
+		// }else{
+			var grid = $(".grid-server").data("kendoGrid");
+			$(grid.tbody).on("mouseleave", "tr", function (e) {
+			    $(this).removeClass("k-state-hover");
+			});
+			// srv.ServerData(res.data);
+		// };
+
 		// $(grid.tbody).on("mouseenter", "tr", function (e) {
 		//     $(this).addClass("k-state-hover");
 		// });
-		$(grid.tbody).on("mouseleave", "tr", function (e) {
-		    $(this).removeClass("k-state-hover");
-		});
 
 		if (typeof c == "function") {
 			c(res);
-		}
+		};
 	});
 };
 
@@ -289,6 +331,7 @@ srv.selectGridServer = function (e) {
 };
 
 srv.editServer = function (_id) {
+	srv.gridStatusCheck();
 	app.miniloader(true);	
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());

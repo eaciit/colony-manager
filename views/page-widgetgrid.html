@@ -1,0 +1,273 @@
+<script src="/res/core/page-widgetgrid.js"></script>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-10" id="content">
+	<div class="col-md-12" data-bind="with: widgetgrid, visible: (app.section() == 'widgetgrid')">
+		<h1>Widget Grid</h1>
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+			<div class="nav1">
+				<button class="btn btn-sm btn-primary">
+			    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+			    </button>
+				 <button class="btn btn-sm btn-success" data-bind="click: wg.createNewWidget">
+			    		<span class="glyphicon glyphicon-plus"></span> Add
+			    </button>
+		    	<button class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+		    </div>
+		</nav>
+
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+			<div class="col-md-4">
+				<label class="col-md-4 filter-label">
+					Search
+				</label>
+			</div>
+		</nav>
+
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">Widget Grid</h1>
+		    </div>
+		    <div class="panel-body  position-custom">
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniLoader">
+		    		<div class="grid grid-widget" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.widgetGridData, selectable: 'multiple, row', change: wg.selectWidget, columns: wg.widgetGridColumns, filterfable: false, pageable: true }"></div>
+		    	</div>
+		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() != '')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: wg.backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+	    	<button class="btn btn-sm btn-primary" data-bind="click: wg.saveWidget" >
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+	    	<button class="btn btn-sm btn-info" >
+	    		<span class="glyphicon glyphicon-eye-open"></span> Preview
+	    	</button>
+	    	<button class="btn btn-sm btn-danger" data-bind="visible: (app.mode() == 'update'), click : wg.OnRemove">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
+
+	    <div class="panel" data-bind="visible: (app.mode() != '')" style="width: 100%;">
+	    	<div class="panel-heading">
+		        <h1 class="panel-title"><span data-bind="text: (app.mode() == 'add') ? 'Create New' : 'Edit'"></span>
+		        </h1>
+		    </div>
+		    <div class="panel-body">
+		    	<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() != ''">
+					<li class="active"><a href="#General" data-toggle="tab">General Setting</a></li>
+					<li><a href="#Column"  data-toggle="tab">Column Setting</a></li>
+					<li><a href="#Export"  data-toggle="tab">Export Grid</a></li>
+			    </ul>
+			    <div id="tabwidget" class="tab-content">
+			    	<div class="tab-pane fade in active" id="General">
+			    		<form class="form-horizontal form-widget" id="form-add-widget" data-bind="with: configWidget" novalidate>
+			    			<div class="col-md-12 row">
+				    			<p class="pcustom">Data Source</p>
+				    		</div>
+				    		<div class="col-md-6">
+			    				<div class="form-group">
+								    <label class="col-md-3 filter-label">Data Source</label>
+								    <div class="col-md-9">
+					        		<select required id="datasource" data-required-msg="Data Source cannot be empty" data-bind="kendoDropDownList: { data: wg.recordDataSource, dataValueField: 'value', dataTextField: 'title', value: dataSourceID, optionLabel: 'Select one'}" style="width:40%;"></select>
+									<span class="k-invalid-msg" data-for="datasource"></span></div>
+								</div>
+							</div>
+			    			<div class="col-md-12 row">
+				    			<p class="pcustom">Setting</p>
+				    		</div>
+				    		<div class="col-md-6">
+			    				<div class="form-group">
+								    <label class="col-md-3 filter-label">ID</label>
+								    <div class="col-md-9">
+						        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+										<span class="k-invalid-msg" data-for="ID"></span>
+						        	</div>
+								</div>
+								<div class="form-group">
+								    <label class="col-md-3 filter-label">Title</label>
+								    <div class="col-md-9">
+						        		<input required class="form-control input-sm" id="title" name="title" type="text" data-bind="value: title" placeholder="Type widget name here" />
+						    			<span class="k-invalid-msg" data-for="title"></span>
+						        	</div>
+								</div>
+			    				<div class="form-group">
+						        	<label class="col-md-3 filter-label">Page Size</label>
+						        	<div class="col-md-9">
+						        		<input required class="form-control input-sm" id="pagesize" name="pagesize" type="text" data-bind="value: pageSize" placeholder="Type page size here" />
+						    			<span class="k-invalid-msg" data-for="pagesize"></span>
+						        	</div>
+			    				</div>
+			    			</div>
+			    			<div class="col-md-6">
+			    				<div class="form-group">
+						        	<label class="col-md-3 filter-label">Filterable</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: filterable">
+						        	</div>
+			    				</div>
+			    				<div class="form-group">
+						        	<label class="col-md-3 filter-label">Sortable</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: sortable">
+						        	</div>
+			    				</div>
+								<div class="form-group">
+						        	<label class="col-md-3 filter-label">Groupable</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: groupable">
+						        	</div>
+			    				</div>
+			    				<div class="form-group">
+						        	<label class="col-md-3 filter-label">Column Menu</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: columnMenu">
+						        	</div>
+			    				</div>
+			    			</div>
+			    		</form>
+			    	</div>
+			    	<div class="tab-pane fade in" id="Column">
+			    		<form class="form-horizontal form-widget" id="form-add-widgetcoloumn" novalidate>
+			    			<div class="col-md-12" data-bind="visible: wg.modeAdvanceColumn() == false">
+				    			<div class="col-md-12 row">
+					    			<p class="pcustom">Column Setting</p>
+					    		</div>
+					    		<div class="col-md-12">
+					    			<label>Add Coloumn : </label>&nbsp;&nbsp;<button class="btn btn-sm btn-success" data-bind="click: wg.addColumnGrid"><span class="glyphicon glyphicon-plus"></span></button>
+					    		</div>
+					    		<div class="col-md-8">
+					    			<table class="table">
+					    				<thead>
+					    					<tr>
+					    						<th>Field</th>
+					    						<th>Title</th>
+					    						<th>Format</th>
+					    						<th>Width</th>
+					    						<th></th>
+					    					</tr>
+					    				</thead>
+					    				<tbody data-bind="foreach: configWidget.columns">
+					    					<tr>
+					    						<td>
+					    							<select required data-required-msg="Field cannot be empty" data-bind="kendoDropDownList: { data: wg.recordsField, dataValueField: 'value', dataTextField: 'title', value: field, optionLabel: 'Select one'}, attr: { 'name': 'column-field-widget-' + $index()}" style="width:120px;"></select>
+													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-field-widget-' + $index() }"></span>
+												</td>
+					    						<td>
+					    							<input required class="form-control input-sm full-width" type="text" data-required-msg="Title cannot be empty" placeholder="Type name here" data-bind="value: title, attr: { 'name': 'column-title-widget-' + $index() }" style="width:90%;" />
+													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-title-widget-' + $index() }"></span>
+					    						</td>
+					    						<td>
+					    							<input required class="form-control input-sm full-width" type="text" placeholder="Type format here" data-bind="value: format, attr: { 'name': 'column-format-widget-' + $index() }" style="width:90%;" />
+					    						</td>
+					    						<td>
+					    							<input required class="form-control input-sm full-width" type="text" placeholder="Type width here" data-bind="value: width, attr: { 'name': 'column-width-widget-' + $index() }" style="width:90%;" />
+					    						</td>
+					    						<td width="120">
+					    							<button class="btn btn-sm btn-success" data-bind="click: function(){wg.advanceSettingColumn($index())}">
+														<span class="glyphicon glyphicon-cog"></span>
+													</button>
+													<button class="btn btn-sm btn-danger" data-bind="click: function(){wg.removeAdvanceSettingColumn($index())}">
+														<span class="glyphicon glyphicon-remove"></span>
+													</button>
+					    						</td>
+					    					</tr>
+					    				</tbody>
+					    			</table>
+					    		</div>
+					    	</div>
+					    	<div class="col-md-12" data-bind="visible: wg.modeAdvanceColumn() == true, with: wg.configWidgetColoumn">
+					    		<div class="col-md-12">
+					    			<button class="btn btn-sm btn-warning" data-bind="click:wg.backGeneralSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+					    			<button class="btn btn-sm btn-success"><span class="glyphicon glyphicon-save"></span> Save</button>
+					    		</div>
+					    		<div class="col-md-6">
+						    		<div class="form-group">
+							        	<label class="col-md-3 filter-label">Template</label>
+							        	<div class="col-md-9">
+							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: template" placeholder="Type template here" />
+							        	</div>
+				    				</div>
+				    				<div class="form-group">
+							        	<label class="col-md-3 filter-label">Header Template</label>
+							        	<div class="col-md-9">
+							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: headerTemplate" placeholder="Type header template here" />
+							        	</div>
+				    				</div>
+				    				<div class="form-group">
+							        	<label class="col-md-3 filter-label">Footer Template</label>
+							        	<div class="col-md-9">
+							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: footerTemplate" placeholder="Type footer template here" />
+							        	</div>
+				    				</div>
+				    			</div>
+				    			<div class="col-md-6">
+				    				<div class="form-group">
+							        	<label class="col-md-3 filter-label">Header Attributes</label>
+							        	<div class="col-md-9">
+							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: headerAttributes" placeholder="Type header attribute here" />
+							        	</div>
+				    				</div>
+				    			</div>
+					    	</div>
+			    		</form>
+			    	</div>
+			    	<div class="tab-pane fade in" id="Export">
+			    		<form class="form-horizontal form-widget" id="form-add-widgetcoloumn" data-bind="with: configWidget" novalidate>
+			    			<div class="col-md-6 row">
+				    			<p class="pcustom">PDF</p>
+				    		</div>
+				    		<div class="col-md-6 row">
+				    			<p class="pcustom">Excel</p>
+				    		</div>
+				    		<div class="col-md-6">
+				    			<div class="form-group">
+						        	<label class="col-md-3 filter-label">Visible</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: outsider.visiblePDF, click: wg.visiblePDF">
+						        	</div>
+			    				</div>
+			    				<div class="form-group" data-bind="visible: outsider.visiblePDF() == true">
+						        	<label class="col-md-3 filter-label">All Pages</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: pdf.allPages">
+						        	</div>
+			    				</div>
+			    				<div class="form-group" data-bind="visible: outsider.visiblePDF() == true">
+						        	<label class="col-md-3 filter-label">File Name</label>
+						        	<div class="col-md-9">
+						        		<input required class="form-control input-sm" id="filename" name="filename" type="text" data-bind="value: pdf.fileName" placeholder="Type file name here" />
+						        	</div>
+			    				</div>
+				    		</div>
+				    		<div class="col-md-6">
+				    			<div class="form-group">
+						        	<label class="col-md-3 filter-label">Visible</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: outsider.visibleExcel, click: wg.visibleExcel">
+						        	</div>
+			    				</div>
+			    				<div class="form-group" data-bind="visible: outsider.visibleExcel() == true">
+						        	<label class="col-md-3 filter-label">All Pages</label>
+						        	<div class="col-md-9">
+						        		<input style="margin-top: 8px;" type="checkbox" data-bind="checked: excel.allPages">
+						        	</div>
+			    				</div>
+			    				<div class="form-group" data-bind="visible: outsider.visibleExcel() == true">
+						        	<label class="col-md-3 filter-label">File Name</label>
+						        	<div class="col-md-9">
+						        		<input required class="form-control input-sm" id="filename" name="filename" type="text" data-bind="value: excel.fileName" placeholder="Type file name here" />
+						        	</div>
+			    				</div>
+				    		</div>
+			    		</form>
+			    	</div>
+			    </div>
+		    </div>
+	    </div>
+	</div>
+</div>

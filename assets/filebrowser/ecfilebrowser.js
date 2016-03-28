@@ -73,7 +73,7 @@ var methodsFB = {
 		}
 		return 
 	},
-	BuildFileExplorer:function(elem,options){
+BuildFileExplorer:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
 
@@ -81,37 +81,119 @@ var methodsFB = {
 		$strcont = $(strcont);
 		$strcont.appendTo($ox);
 
-		strpre = "<div class='col-md-3 fb-pre'></div>";
-		$strpre = $(strpre);
-		$strpre.appendTo($strcont);
+		strpreserv = "<div class='col-md-3 fb-pre'></div>";
+		$strpreserv = $(strpreserv);
+		$strpreserv.appendTo($strcont);
 
 		strserv = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label'>Server</label></div><div class='col-md-9'><input class='fb-server'></input></div></div>";
 		$strserv = $(strserv);
-		$strserv.appendTo($strpre);
+		$strserv.appendTo($strpreserv);
+
+		strprebtn = "<div class='col-md-6 fb-pre'></div>";
+		$strprebtn = $(strprebtn);
+		$strprebtn.appendTo($strcont);
+
+		$strcontbtn = $("<div class='col-md-12 btn-cont'></div>");
+
+		$strtoolbar = $("<div class='btn-toolbar' role='toolbar'></div>");
+		$strtoolbar.appendTo($strcontbtn);
+
+		$strbtngrpMode = $("<div class='btn-group' role='group'>");
+		$strbtngrpMode.appendTo($strtoolbar);
+
+		$strbtngrp = $("<div class='btn-group' role='group'>");
+		$strbtngrp.appendTo($strtoolbar);
+		
+		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='Tree View'><span class='glyphicon glyphicon-indent-left'></span></button>");
+		$strbtn.appendTo($strbtngrpMode);
+
+		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='List View'><span class='glyphicon glyphicon-list'></span> </button>");
+		$strbtn.appendTo($strbtngrpMode);
+
+		$strbtn = $("<button class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown'><span class='glyphicon glyphicon-file'></span> New</button>");
+		$strul = $("<ul class='dropdown-menu'></ul>");
+
+		$strli = $("<li><a href=\"#\">File</a></li>");
+		$strli.appendTo($strul);
+		$strli.click(function(){
+			methodsFB.ActionRequest(elem,options,{action:"NewFile"},$strbtn);
+		});
+
+		$strli = $("<li class='divider'></li>");
+		$strli.appendTo($strul);
+
+		$strli = $("<li><a href=\"#\">Folder</a></li>");
+		$strli.appendTo($strul);
+		$strli.click(function(){
+			methodsFB.ActionRequest(elem,options,{action:"NewFolder"},$strbtn);
+		});
+
+		$strbtn.appendTo($strbtngrp);
+		$strul.appendTo($strbtngrp);
+
+		$strbtn = $("<button class='btn btn-sm btn-primary'><span class='glyphicon glyphicon-pencil'></span> Rename</button>");
+		$strbtn.appendTo($strbtngrp);
+		$strbtn.click(function(){
+			methodsFB.ActionRequest(elem,options,{action:"Rename"},$strbtn);
+		})
+
+		$strbtn = $("<button class='btn btn-sm btn-primary'><span class='glyphicon glyphicon-trash'></span> Delete</button>");
+		$strbtn.appendTo($strbtngrp);
+		$strbtn.click(function(){			
+				methodsFB.ActionRequest(elem,options,{action:"Delete"},$strbtn);   
+		})
+
+		$strbtn = $("<button class='btn btn-sm btn-primary'><span class='glyphicon glyphicon-cog'></span> Permission</button>");
+		$strbtn.appendTo($strbtngrp);
+		$strbtn.click(function(){
+			methodsFB.ActionRequest(elem,options,{action:"Permission"},$strbtn);
+		})
+
+		$strbtn = $("<button class='btn btn-sm btn-primary'><span class='glyphicon glyphicon-cloud-upload'></span> Upload</button>");
+		$strbtn.appendTo($strbtngrp);
+		$strbtn.click(function(){
+			methodsFB.ActionRequest(elem,options,{action:"Upload"},$strbtn);
+		})
+
+		$strbtn = $("<button class='btn btn-sm btn-primary'><span class='glyphicon glyphicon-cloud-download'></span> Download</button>");
+		$strbtn.appendTo($strbtngrp);
+		$strbtn.click(function(){
+			methodsFB.ActionRequest(elem,options,{action:"Download"},$strbtn);
+		})
+
+		$strcontbtn.appendTo($strprebtn);
+
+		strpresearch = "<div class='col-md-3 fb-pre'></div>";
+		$strpresearch = $(strpresearch);
+		$strpresearch.appendTo($strcont);
+
+		strsearch = "<div class='col-md-12'><label class='col-md-3'>Search</label><div class='col-md-8'><input class='form-control input-sm fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-sm btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
+		$strsearch = $(strsearch);
+		$strsearch.appendTo($strpresearch);
+
+		$($strsearch.find("button")).click(function(){
+				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
+				//app.isLoading(true);
+		});
 
 		$($(elem).find(".fb-server")).kendoDropDownList({
 			dataSource : options.serverSource.data,
 			dataTextField: options.serverSource.dataTextField,
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
-					app.isLoading(true);
+					//app.isLoading(true);
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
 		});
 
-		strsearch = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label' >Search</label></div><div class='col-md-8'><input class='form-control fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
-		$strsearch = $(strsearch);
-		$strsearch.appendTo($strpre);
-
-		$($strsearch.find("button")).click(function(){
-				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
-				app.isLoading(true);
-		});
+		$strpretree = $("<div class='col-md-12'></div>");
+		$strpretree.appendTo($strcont);
 
 		strtree = "<div class='fb-tree'></div>"
 		$strtree = $(strtree);
-		$strtree.appendTo($strpre);
+		$strtree.appendTo($strpretree);
+
 		var ds = options.dataSource;
 		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var data = ds.callData;
@@ -138,7 +220,7 @@ var methodsFB = {
 									$sp.prependTo($(this));
 
 									if(type!="folder"){
-										$(this).dblclick(function(){
+										$(this).click(function(){
 											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
 										});
 									}
@@ -147,9 +229,10 @@ var methodsFB = {
 						});
 						if($(elem).data("ecFileBrowser").isHold){
 										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
-				                	}else{
-				                		app.isLoading(false);
 				                	}
+				                	// else{
+				                	// 	app.isLoading(false);
+				                	// }
 	                },
 	            },
 	            parameterMap:function(data,type){
@@ -194,68 +277,24 @@ var methodsFB = {
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
 
-		$cont = $($(elem).find(".fb-container"));
+		$div = $("<div class='modal fade modal-fb-editor' tabindex='-1' role='dialog'></div>");
+		$div.appendTo($(elem));
 
-		strpre = "<div class='col-md-9 fb-pre'></div>";
+		$divmod = $("<div class='modal-dialog dialog-editor'></div>");
+		$divmod.appendTo($div);
+
+		$divcont = $("<div class='modal-content dialog-content'></div>");
+		$divcont.appendTo($divmod);
+
+		$divbody = $("<div class='modal-body'></div>");
+		$divbody.appendTo($divcont);
+
+		strpre = "<div class='col-md-12 fb-pre'></div>";
 		$strpre = $(strpre);
-		$strpre.appendTo($cont);
+		$strpre.appendTo($divbody);
 
-		$strcont = $("<div class='col-md-12 btn-cont'></div>");
-		
-		$strbtn = $("<button class='btn btn-primary dropdown-toggle' data-toggle='dropdown'><span class='glyphicon glyphicon-file'></span> New</button>");
-		$strul = $("<ul class='dropdown-menu'></ul>");
-
-		$strli = $("<li><a href=\"#\">File</a></li>");
-		$strli.appendTo($strul);
-		$strli.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"NewFile"},$strbtn);
-		});
-
-		$strli = $("<li class='divider'></li>");
-		$strli.appendTo($strul);
-
-		$strli = $("<li><a href=\"#\">Folder</a></li>");
-		$strli.appendTo($strul);
-		$strli.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"NewFolder"},$strbtn);
-		});
-
-		$strbtn.appendTo($strcont);
-		$strul.appendTo($strcont);
-
-		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-pencil'></span> Rename</button>");
-		$strbtn.appendTo($strcont);
-		$strbtn.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"Rename"},$strbtn);
-		})
-
-		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-trash'></span> Delete</button>");
-		$strbtn.appendTo($strcont);
-		$strbtn.click(function(){			
-				methodsFB.ActionRequest(elem,options,{action:"Delete"},$strbtn);   
-		})
-
-		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-cog'></span> Permission</button>");
-		$strbtn.appendTo($strcont);
-		$strbtn.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"Permission"},$strbtn);
-		})
-
-		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-cloud-upload'></span> Upload</button>");
-		$strbtn.appendTo($strcont);
-		$strbtn.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"Upload"},$strbtn);
-		})
-
-		$strbtn = $("<button class='btn btn-primary'><span class='glyphicon glyphicon-cloud-download'></span> Download</button>");
-		$strbtn.appendTo($strcont);
-		$strbtn.click(function(){
-			methodsFB.ActionRequest(elem,options,{action:"Download"},$strbtn);
-		})
 		streditor = "<div class='col-md-12'><textarea class='fb-editor'></textarea></div>"
 		$streditor = $(streditor);
-
-		$strcont.appendTo($strpre);
 
 		$streditor.appendTo($strpre);
 		$($(elem).find(".fb-editor")).kendoEditor({ resizable: {
@@ -282,7 +321,7 @@ var methodsFB = {
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
 		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end tooltipster fb-ed-btn-cancel' unselectable='on' title='Cancel' aria-pressed='false'></a>");
-		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-repeat'></span>");
+		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-remove'></span>");
 		$edlbl = $("<span class='k-tool-text'>Cancel</span>");
 
 		$edli.appendTo($conted);
@@ -301,7 +340,7 @@ var methodsFB = {
 		$edtxt.appendTo($edli);
 		app.prepareTooltipster();
 
-		hei = screen.height*0.57;
+		hei = screen.height*0.5;
 		$($(elem).find(".k-editor")).attr("style","height:"+hei+"px!important");
 	},
 	BuildPermission:function(elemarr,permstr){
@@ -369,7 +408,7 @@ var methodsFB = {
 				"</div>"+
 				"<div class='col-md-12'>"+
 				"<div class='col-md-2'><label class='filter-label'>File Name</label></div>"+
-				"<div class='col-md-9'><input placeholder='Type File Name ..' class='form-control'></input></div>"+
+				"<div class='col-md-9'><input placeholder='Type File Name ..' class='form-control input-sm'></input></div>"+
 				"</div>"+
 				"</div>");
 			$divNewFile.appendTo($body);
@@ -393,7 +432,7 @@ var methodsFB = {
 			$divNewFile = $("<div class='col-md-12'>"+
 				
 				"<div class='col-md-2'><label class='filter-label'>Folder Name</label></div>"+
-				"<div class='col-md-9'><input placeholder='Type Folder Name ..' class='form control'></input></div>"+
+				"<div class='col-md-9'><input placeholder='Type Folder Name ..' class='form-control input-sm'></input></div>"+
 				"</div>");
 			$divNewFile.appendTo($body);
 			$btn.click(function(){
@@ -410,7 +449,7 @@ var methodsFB = {
 			    $($(elem).find("h4")).html(lbl + " Name");
 			}
 
-			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>" +lbl+ " Name</label></div><div class='col-md-9'><input placeholder='Type "+lbl+" Name ..' class='form control'></input></div></div>");
+			$divNewFile = $("<div class='col-md-12'><div class='col-md-2'><label class='filter-label'>" +lbl+ " Name</label></div><div class='col-md-9'><input placeholder='Type "+lbl+" Name ..' class='form-control input-sm'></input></div></div>");
 			$($divNewFile.find("input")).val(name);
 			$divNewFile.appendTo($body);
 
@@ -499,19 +538,17 @@ var methodsFB = {
 				});
 		});
 
-		$($(elem).find(".modal")).modal("show");		
+		$($(elem).find(".modal-fb")).modal("show");		
 	},
 	ActionRequest:function(elem,options,content,sender){
 		if(!$(elem).data("ecFileBrowser").isHold && (content.action=="Edit"||content.action=="Cancel")){
+			$(elem).find(".modal-fb-editor").modal("hide");
 			return;
 		}
 
 		if($(elem).data("ecFileBrowser").isHold && content.action!="GetContent"){
 			if(content.action=="Edit" || content.action=="Cancel"){
-				var divtree = $($(elem).find(".fb-pre")[0]);
-                divtree.removeAttr("style");
-            	divtree.removeClass("k-state-disabled");
-				$(elem).data("ecFileBrowser").isHold = false;
+				 $(elem).find(".modal-fb-editor").modal("hide");
 			}else{
            		 swal("Warning!", "Please finish editing file !", "warning");
 				return;
@@ -555,7 +592,7 @@ var methodsFB = {
 					$($(elem).find(".fb-filename")).html(content.path);
 					$($(elem).find(".fb-editor")).data("kendoEditor").value("");
 					$($(elem).find(".fb-editor")).data("kendoEditor").focus();
-                	app.isLoading(false);
+                	// app.isLoading(false);
                 	divtree.css("pointer-events", "none");
                 	divtree.addClass("k-state-disabled");
                 	return;
@@ -614,9 +651,19 @@ var methodsFB = {
 					methodsFB.SendActionRequest(elem,content);
 					 } 
 			  });
+		}else if(content.action == "GetContent"){
+			methodsFB.SendActionRequest(elem,content);
+			app.miniloader(true);
+			$($(elem).find(".modal-fb-editor")).modal("show");
 		}else{
 			methodsFB.SendActionRequest(elem,content);
 		}
+		$(elem).find(".modal-fb-editor").on('hide.bs.modal', function(e) {
+			var divtree = $($(elem).find(".fb-pre")[0]);
+	        divtree.removeAttr("style");
+	        divtree.removeClass("k-state-disabled");
+			$(elem).data("ecFileBrowser").isHold = false;
+		});
 	},
 	UploadAjax: function(elem,param){
        	var inputFiles = document.getElementById("myfiles");
@@ -632,7 +679,7 @@ var methodsFB = {
         formdata.append('path', param.path);
         formdata.append('serverId', param.serverId);
 
-        app.isLoading(true);
+        // app.isLoading(true);
 
        	var xhr = new XMLHttpRequest();
         xhr.open('POST', param.url); 
@@ -642,8 +689,8 @@ var methodsFB = {
                 alert(xhr.responseText);
             }
 */
-            app.isLoading(false);
-            $(elem).find(".modal").modal("hide");
+            // app.isLoading(false);
+            $(elem).find(".modal-fb").modal("hide");
             methodsFB.RefreshTreeView(elem,param);
 	        swal("Saved!", "Your request has been processed !", "success");
         }
@@ -672,7 +719,7 @@ var methodsFB = {
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
-		app.isLoading(true);
+		// app.isLoading(true);
 		if (param.action == "Download") {
 			var arr = [];
 			for (var k in param) {
@@ -682,7 +729,7 @@ var methodsFB = {
 			}
 			var url = [url.split('#')[0], arr.join("&")].join("?");
 			document.location.href = url;
-			setTimeout(function(){ app.isLoading(false); },5000);
+			// setTimeout(function(){ app.isLoading(false); },5000);
 		} else if (param.action == "Upload") {
 			param.url = url;
 			methodsFB.UploadAjax(elem,param);
@@ -701,7 +748,7 @@ var methodsFB = {
                 	var divtree = $($(elem).find(".fb-pre")[0]);
                 	divtree.removeAttr("style");
                 	divtree.removeClass("k-state-disabled");
-            		app.isLoading(false);
+            		// app.isLoading(false);
 
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
@@ -709,9 +756,10 @@ var methodsFB = {
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
 						$($(elem).find(".fb-editor")).data("kendoEditor").focus();
 						$(elem).data("ecFileBrowser").isHold = true;
-                		app.isLoading(false);
+                		// app.isLoading(false);
                 		divtree.css("pointer-events", "none");
                 		divtree.addClass("k-state-disabled");
+
                 	}else if(param.action!="Edit"){
                 		methodsFB.RefreshTreeView(elem,param);
                 		if(param.action=="NewFile"){
@@ -723,14 +771,16 @@ var methodsFB = {
 						$($(elem).find(".fb-editor")).data("kendoEditor").value("");
                 	}
 
-                	$(elem).find(".modal").modal("hide");
+                	$(elem).find(".modal-fb").modal("hide");
+
                 	if(!$(elem).data("ecFileBrowser").isHold){
                 		swal("Saved!", "Your request has been processed !", "success");
-                		app.isLoading(false);
+                		$(elem).find(".modal-fb-editor").modal("hide");
+                		// app.isLoading(false);
                 	}
                 },
                 error: function (a, b, c) {
-                	app.isLoading(false);
+                	// app.isLoading(false);
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
                 	divtree.removeClass("k-state-disabled");
 				},
@@ -822,7 +872,7 @@ var methodsFB = {
 		var selectedparent = methodsFB.GetParent(elem,content);
 		if(selectedparent.length==0){
 			// setTimeout(function(){
-				app.isLoading(true);
+				// app.isLoading(true);
 			// },500);
 			tree.dataSource.read();
 			return;

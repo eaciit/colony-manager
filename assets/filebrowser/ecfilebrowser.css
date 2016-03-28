@@ -1,119 +1,111 @@
+.btn-cont > button {
+  margin-left: 5px; }
 
-.btn-cont > button{
-	margin-left: 5px;
-}
+.btn-cont {
+  margin-bottom: 10px; }
 
-.btn-cont{
-	margin-bottom: 10px;
-}
+.k-treeview {
+  border: solid 0.1px #e6e6e6 !important;
+  margin-top: 10px !important;
+  padding: 10px; }
 
-.k-treeview{
-	border: solid 0.1px #e6e6e6 !important;
-	margin-top: 10px!important;
-	padding:10px;
-}
+.fb-pre {
+  margin-top: 10px; }
 
-.fb-pre{
-	margin-top: 10px;
-}
-
-.fb-pre > .col-md-12{
-	margin-left: 0px!important;
-	margin-right: 0px!important;
-
-	padding-left: 0px!important;
-	padding-right: 0px!important;
-
-	margin-bottom: 10px;
-}
-
-.fb-ed-btn{
-	background-color: #3A8BDF!important;
-	border-color: #3282D6!important;
-	    color: #fff!important;   
-
-}	
-
-.fb-ed-btn-cancel {
-    color: #fff!important;
-    background-color: #d9534f!important;
-    border-color: #d43f3a!important;
-}
-
-.fb-ed-btn-cancel:hover {
-    color: #fff!important;    
-    background-color: #c9302c!important;    
-    border-color: #ac2925!important;
-}
-
-.modal-body{
-	overflow: auto;
-}
-
-.modal-body input{
-	width: 	70%;
-}
-
-.modal-body .checkbox input{
-	width: 	120%;
-}
-
-.perm-label{
-	    width: 74%;
-    text-align: center;
-}
-
-.fb-ed-btn:hover {
-    background-color: #4F9AE6!important;
-    border-color: #3282D6!important;
-}
-
-.fb-filename{
-	width: 200%;
-	color: #777;
-	margin:10px;
-}
-
-.fb-pre .col-md-3 {
-	padding-right: 	0px!important;
-	padding-left: 	0px!important;
-}
-
-.fb-pre .col-md-1 {
-	padding-right: 	0px!important;
-	padding-left: 	0px!important;
-}
-
-.fb-pre .col-md-8 {
-	padding-right: 	0px!important;
-}
-
-.fb-pre .col-md-8 .form-control {
-	border-radius: 4px 0 0 4px;
-	width: 	95%;
-}
-
-.fb-pre .col-md-1 .btn-primary {
-	border-radius: 0 4px 4px 0;
-	margin-left:-37%;
-}
-
-
-
-.dropdown-menu .divider{
-	margin: 3px 0 !important;
-}
+.fb-pre > .col-md-12 {
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  margin-bottom: 10px; }
 
 .k-sprite {
-            background-image: url("/res/img/coloricons-sprite.png");
- }
+  background-image: url("/res/img/coloricons-sprite.png"); }
 
-.rootfolder { background-position: 0 0; }
-.folder { background-position: 0 -16px; }
-.pdf { background-position: 0 -32px; }
-.html { background-position: 0 -48px; }
-.image { background-position: 0 -64px; }
+.fb-ed-btn {
+  background-color: #3A8BDF !important;
+  border-color: #3282D6 !important;
+  color: #fff !important; }
 
-.fb-tree{
-	max-height: 500px;
-}
+.fb-ed-btn:hover {
+  background-color: #4F9AE6 !important;
+  border-color: #3282D6 !important; }
+
+.fb-filename {
+  width: 200%;
+  color: #777;
+  margin: 10px; }
+
+.dropdown-menu .divider {
+  margin: 3px 0 !important; }
+
+.rootfolder {
+  background-position: 0 0; }
+
+.folder {
+  background-position: 0 -16px; }
+
+.pdf {
+  background-position: 0 -32px; }
+
+.html {
+  background-position: 0 -48px; }
+
+.image {
+  background-position: 0 -64px; }
+
+fb-pre .col-md-3 {
+  padding-right: 0px !important;
+  padding-left: 0px !important; }
+
+.fb-pre .col-md-1 {
+  padding-right: 0px !important;
+  padding-left: 0px !important; }
+
+.fb-pre .col-md-8 {
+  padding-right: 0px !important; }
+
+.fb-pre .col-md-8 .form-control {
+  border-radius: 4px 0 0 4px;
+  width: 95%; }
+
+.fb-pre .col-md-1 .btn-primary {
+  border-radius: 0 4px 4px 0;
+  margin-left: -37%; }
+
+.modal-body {
+  overflow: auto; }
+
+.modal-body input {
+  width: 70%; }
+
+.modal-body .checkbox input {
+  width: 120%; }
+
+.perm-label {
+  width: 74%;
+  text-align: center; }
+
+.fb-ed-btn-cancel {
+  color: #fff !important;
+  background-color: #d9534f !important;
+  border-color: #d43f3a !important; }
+
+.fb-ed-btn-cancel:hover {
+  color: #fff !important;
+  background-color: #c9302c !important;
+  border-color: #ac2925 !important; }
+
+div.k-treeview {
+  overflow: visible; }
+
+.dialog-editor {
+  width: 98%;
+  height: 90%;
+  padding: 0;
+  padding-top: 70px; }
+
+.dialog-content {
+  height: 99%; }
+
+/*# sourceMappingURL=ecfilebrowser.css.map */
