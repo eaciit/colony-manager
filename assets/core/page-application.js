@@ -161,6 +161,8 @@ apl.langEnvColumns = ko.observableArray([
 ]);
 
 apl.commandDataColumns = ko.observableArray([
+	{field: "AppID", title: "Application ID"},
+	{field: "SrvID", title: "Server ID"},
 	{field: "CmdName", title: "Command Key"},
 	{field: "CmdValue", title: "Command"},
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
@@ -170,27 +172,37 @@ apl.commandDataColumns = ko.observableArray([
 apl.commandData = ko.observableArray([]);
 apl.commandServerID = ko.observable('');
 apl.showRunCommand = function (serverID) {
+	app.mode('runcommand');	
 	apl.commandServerID(serverID);
 	apl.commandData([]);
 	var appMap = ko.mapping.toJS(apl.configApplication);
 
-	$(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
-	$(".modal-run-cmd").find(".modal-title span.server").html(serverID);
+	// $(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
+	// $(".modal-run-cmd").find(".modal-title span.server").html(serverID);
 
 	appMap.Command.forEach(function (cmd, i) {
 		if (cmd.key == "" || cmd.value == "") {
 			return;
 		}
 
+		var apid = 0;
+		for (i in apl.applicationData()){
+			var appid = apl.applicationData()[i]._id;
+		}
+		
+
 		apl.commandData.push({
+			AppID: appid,
+			// SrvID: srvid,
 			CmdName: cmd.key,
 			CmdValue: cmd.value
 		});
 	});
 
-	$(".modal-run-cmd").modal("show");
+	// $(".modal-run-cmd").modal("show");
 };
 apl.doRunCommand = function (cmdKey) {
+	$(".modal-run-cmd").modal("show");	
 	var param = {
 		AppID: apl.configApplication._id(),
 		ServerID: apl.commandServerID(),

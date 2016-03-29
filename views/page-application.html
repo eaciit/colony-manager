@@ -330,6 +330,16 @@
 				</div>
 			</div>
 		</div>
+
+		<div class="panel" data-bind="visible: (app.mode() == 'runcommand')" style="width: 100%;">
+			<div class="panel-heading">
+				<h1>Run Command on of Application <span class="app"></span> in Server <span class="server"></span></h1>
+		    </div>
+		    <div class="panel-body">
+					<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div>		    	
+		    </div>
+		</div>
+
 	</div>
 	<div class="col-md-12" data-bind="visible: (app.section() == 'servers'), with: servers">
 		{{template "page-servers.html"}}
@@ -452,11 +462,11 @@
 			<div class="modal-1" id="modal-1">
 				<div class="modal-header">
 					<h4 class="modal-title">
-						Run Command on of Application <span class="app"></span> in Server <span class="server"></span>
+						Run Command Modal Popup
 					</h4>
 				</div>
 				<div class="modal-body">
-					<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div>
+					<!-- <div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div> -->
 				</div>
 				<div class="modal-footer">
 					{{template "_miniloader.html"}}	
