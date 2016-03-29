@@ -221,7 +221,7 @@ BuildFileExplorer:function(elem,options){
 									$sp.prependTo($(this));
 
 									if(type!="folder"){
-										$(this).click(function(){
+										$(this).dblclick(function(){
 											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
 										});
 									}
