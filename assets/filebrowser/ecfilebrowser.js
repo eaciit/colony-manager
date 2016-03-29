@@ -826,7 +826,7 @@ BuildFileExplorer:function(elem,options){
 							dataTextField: options.serverSource.dataTextField,
 							dataValueField:options.serverSource.dataValueField,
 							change: function(){
-            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir")			
+            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir");			
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
 						});					

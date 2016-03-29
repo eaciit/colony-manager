@@ -180,12 +180,14 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 							Dirs, _ := GetDirContent(dir, h)
 
 							for _, singleDir := range Dirs {
-								var res ListDir
-								res.Dir = singleDir
-								res.DirDepth = depth
-								tempResult = append(tempResult, res)
+								if singleDir.IsDir {
+									var res ListDir
+									res.Dir = singleDir
+									res.DirDepth = depth
+									tempResult = append(tempResult, res)
+								}
 
-								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+								if strings.Contains(singleDir.Name, payload.Search) {
 									result = append(result, singleDir)
 								}
 							}
@@ -197,12 +199,14 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 							Dirs, _ := GetDirContent(dir, h)
 
 							for _, singleDir := range Dirs {
-								var res ListDir
-								res.Dir = singleDir
-								res.DirDepth = depth
-								tempResult = append(tempResult, res)
+								if singleDir.IsDir {
+									var res ListDir
+									res.Dir = singleDir
+									res.DirDepth = depth
+									tempResult = append(tempResult, res)
+								}
 
-								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+								if strings.Contains(singleDir.Name, payload.Search) {
 									result = append(result, singleDir)
 								}
 							}
