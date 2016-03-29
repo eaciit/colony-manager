@@ -1,0 +1,104 @@
+<!-- core -->
+<script src="/res/core/page-widget.js"></script>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: Widget">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'widget')">
+		<h1>Widget List</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getWidgetList">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: addWidget">
+	    		<span class="glyphicon glyphicon-plus"></span> Add Widgte
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: ">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+				<div class="col-md-4">
+					<label class="col-md-3 filter-label no-left-padding">
+						Search
+					</label>
+					<div class="col-md-8">
+						<input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="" placeholder="Type keyword here" />
+					</div>
+				</div>
+			</nav>
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-body">
+		    	<div class="grid grid-widget" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { 
+					model: { 
+			    		id: 'Field', 
+		    			fields: { 
+		    				title: { editable: false }, 
+		    				description: { editable: false }
+						} 
+					} 
+				} }, data: wl.widgetListdata, selectable: 'row', columns: wl.WidgetColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-widget') }"></div>
+		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveWidget">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+		</nav>
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+			<div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+			        	Widget
+	        	</h1>
+		    </div>
+		    <div class="clearfix">&nbsp;</div>
+			<div class="panel-body">
+				<form class="form-horizontal form-widget" data-bind="with: widgetListConfig" novalidate>
+			    	<div class="col-md-12">
+			    		<div class="col-md-12">
+				    		<div class="col-md-6">
+					    		<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">ID</label>
+						    		<div class="col-md-7">
+						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: _id, enable: (scrapperMode() == '')">
+										<span class="k-invalid-msg" data-for="ID"></span>					    			
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">Title</label>
+						    		<div class="col-md-7">
+						    			<input required type="text" class="form-control input-sm" name="BrowserName" placeholder="Type the browser name Here" data-bind="value: title">
+										<span class="k-invalid-msg" data-for="BrowserName"></span>					    			
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">Data Source</label>
+						    		<div class="col-md-7">
+							    		<select data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource }">
+							    		</select>
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<div class="col-md-6 col-md-offset-3">
+						    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
+										    <span class="fa fa-file"></span> Upload .zip / .tar / .tar.gz / .gz file 
+										    <input required id="files" name="files" type="file" accept=".zip,.tar,.tar.gz,.gz">
+										</span>
+										<div><span id="nama"></span></div>
+										<div><span class="k-invalid-msg" data-for="files"></span></div>
+						    		</div>
+								</div>
+				    		</div>
+				    	</div>
+			    	</div>
+		    	</form>
+			</div>
+		</div>
+	</div>
+</div>
