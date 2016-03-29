@@ -49,7 +49,7 @@ func (ws *WidgetSelectorController) GetSelectorConfigs(r *knot.WebContext) inter
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	var search string
-	// search = payload["search"].(string)
+	search = payload["search"].(string)
 
 	var query *dbox.Filter
 
@@ -97,6 +97,17 @@ func (ws *WidgetSelectorController) EditWidgetSelector(r *knot.WebContext) inter
 	}
 
 	err = colonycore.Get(&data, data.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (ws *WidgetSelectorController) GetDataSource(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data, err := helper.GetDataSourceQuery()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

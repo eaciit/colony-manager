@@ -109,12 +109,71 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
 	{ field: "Port", title: "Running Port" },
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	} },
 	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
 			"<input type='checkbox' class='statuscheck-srv' />"
 		].join(" ");
 	} },
+	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
+		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (app == undefined) {
+			return "";
+		}
+
+		var deployedTo = app.DeployedTo;
+
+		if (deployedTo == null) {
+			deployedTo = [];
+		}
+
+		if (deployedTo.indexOf(srv.configServer._id()) > -1) {
+			var target = [d.host.split(":")[0], app.Port].join(":");	
+			return "<input type='checkbox' class='statuscheck-srv srv-green' disabled /> ";
+		}
+
+		return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
+	} }
 ]);
+
+srv.showRunCommand = function (appID) {
+	apl.commandData([]);
+	var serverMap = ko.mapping.toJS(srv.configServer);
+	var appMap = Lazy(apl.applicationData()).find({ _id: appID });
+
+	$(".modal-run-cmd").find(".modal-title span.app").html(appID);
+	$(".modal-run-cmd").find(".modal-title span.server").html(serverMap._id);
+
+	appMap.Command.forEach(function (cmd) {
+		if (cmd.key == "" || cmd.value == "") {
+			return;
+		}
+		
+		apl.commandData.push({
+			CmdName: cmd.key,
+			CmdValue: cmd.value
+		});
+	});
+
+	$(".modal-run-cmd").modal("show");
+};
+
+srv.gridStatusColor = function () {
+	$grids = $('.grid-aplserver');
+	var $grg = $grids.find("tr td .srv-green");
+	var $grr = $grids.find("tr td .srv-red");
+
+	if ($grg) {
+		$grg.parent().css("background-color", "#5cb85c");
+		$grg.prop("checked", true);		
+	}
+	if ($grr) {
+		$grr.parent().css("background-color", "#d9534f");
+		$grr.prop("checked", false);		
+	}
+}
 
 srv.gridStatusCheck = function () {
 	$('.statuscheck-srv').parent().css("background-color", "#d9534f");
@@ -129,7 +188,7 @@ srv.gridStatusCheck = function () {
 	})
 };
 
-srv.getServers = function(c, type) {
+srv.getServers = function(c) {
 	srv.ServerData([]);
 	var param = ko.mapping.toJS(srv.filter);
 	app.ajaxPost("/server/getservers", param, function (res) {
@@ -140,26 +199,10 @@ srv.getServers = function(c, type) {
 			res.data="";
 		}
 		srv.ServerData(res.data);
-
-		// if (type == 'app') {			
-			$(".grid-srvapplication").replaceWith("<div class='grid-srvapplication'></div>");
-			$(".grid-srvapplication").kendoGrid({
-				dataSource: { pageSize: 15, data: res.data },
-				columns: apl.srvapplicationColumns(),
-				filterfable: false,
-				pageable: true,
-				dataBound: function(e) {
-					apl.gridStatusColor();
-					apl.gridStatusCheck();
-				}
-			});
-		// }else{
-			var grid = $(".grid-server").data("kendoGrid");
-			$(grid.tbody).on("mouseleave", "tr", function (e) {
-			    $(this).removeClass("k-state-hover");
-			});
-			// srv.ServerData(res.data);
-		// };
+		var grid = $(".grid-server").data("kendoGrid");
+		$(grid.tbody).on("mouseleave", "tr", function (e) {
+		    $(this).removeClass("k-state-hover");
+		});
 
 		// $(grid.tbody).on("mouseenter", "tr", function (e) {
 		//     $(this).addClass("k-state-hover");

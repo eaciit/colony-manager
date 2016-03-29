@@ -18,6 +18,7 @@ sw.selectorData = ko.observableArray([]);
 sw.scrapperMode = ko.observable("");
 sw.masterDataSources = ko.observableArray([]);
 sw.dataSources = ko.observableArray([]);
+sw.dataSelector = ko.observableArray([]);
 sw.fieldMetaData = ko.observableArray([]);
 sw.searchfield = ko.observable("");
 sw.configSelectorWidget = ko.mapping.fromJS(sw.templateConfig);
@@ -61,15 +62,13 @@ sw.editSelectorWidget = function(_id) {
 		}
 
 		sw.getDataSource(false);
+		sw.dataSelector(res.data);
 		$.each(res.data.fields, function(key, val) {
 			sw.getMetaData(val.dataSource, key)
 		});
 		app.mode("editor");
 		sw.scrapperMode("editor");
 		ko.mapping.fromJS(res.data, sw.configSelectorWidget);
-		// console.log(sw.configSelectorWidget)
-		// sw.dataSources(res.data.masterDataSource);
-		// sw.addFields();
 	});
 }
 
@@ -127,7 +126,7 @@ sw.createNewSelector = function() {
 }
 
 sw.getDataSource = function(createNew) {
-	app.ajaxPost("/datasource/getdatasources", {search: ""}, function(res){
+	app.ajaxPost("/widgetselector/getdatasource", {}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -139,6 +138,10 @@ sw.getDataSource = function(createNew) {
 		if (createNew){
 			sw.addFields();
 		}
+
+		var current = ko.mapping.toJS(sw.configSelectorWidget);
+		ko.mapping.fromJS(sw.templateConfig, sw.configSelectorWidget);
+		ko.mapping.fromJS(current, sw.configSelectorWidget);
 	});
 }
 
@@ -174,14 +177,13 @@ sw.getMetaData = function (each, index) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		var ds = new kendo.data.DataSource({ data: res.data.MetaData });
-		$("select.field").eq(index).data("kendoDropDownList").setDataSource(ds);
-		$("select.field").eq(index).data("kendoDropDownList").value(sw.configSelectorWidget.fields()[index].field());
+
+		setTimeout(function () {
+			var ds = new kendo.data.DataSource({ data: res.data.MetaData });
+			$("select.field").eq(index).data("kendoDropDownList").setDataSource(ds);
+			$("select.field").eq(index).data("kendoDropDownList").value(sw.configSelectorWidget.fields()[index].field());
+		},500);
 	});
-};
-
-sw.fieldChecker = function() {
-
 };
 
 sw.backToFront = function() {

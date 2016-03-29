@@ -45,6 +45,7 @@ apl.filterLangEnvTemplate = {
 }
 
 apl.dataLanguageEnv = ko.observableArray([]);
+apl.checkServerLangEnv = ko.observableArray([]);
 apl.filterLangEnv = ko.mapping.fromJS(apl.filterLangEnvTemplate);
 apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
@@ -157,7 +158,44 @@ apl.langEnvColumns = ko.observableArray([
 		"<center><input type='checkbox' checkLang = 'scala' id='"+d._id+"' ></center>"
 		].join(" ");
 	}}
-	]);
+]);
+
+apl.checkAllRunCMD = function () {
+	$(".modal-run-cmd").find(".k-grid-content tr").each(function (e, i) {
+		$(e).find("td:eq(0) input:checkbox").val(true);
+	});
+};
+apl.commandDataColumns = ko.observableArray([
+	{headerTemplate : "<center><input type='checkbox' onclick=\"apl.checkAllRunCMD()\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
+		return "<input type='checkbox' data-id='"+d._id+"'>";
+	}}, 
+	{field : "CmdName", title : "Command Key"},
+	{field : "CmdValue", title : "Command Value"},
+]);
+apl.commandData = ko.observableArray([]);
+apl.showRunCommand = function (serverID) {
+	apl.commandData([]);
+	var appMap = ko.mapping.toJS(apl.configApplication);
+
+	$(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
+	$(".modal-run-cmd").find(".modal-title span.server").html(serverID);
+
+	appMap.Command.forEach(function (cmd, i) {
+		if (cmd.key == "" || cmd.value == "") {
+			return;
+		}
+
+		apl.commandData.push({
+			CmdName: cmd.key,
+			CmdValue: cmd.value
+		});
+	});
+
+	$(".modal-run-cmd").modal("show");
+};
+apl.runCmd = function () {
+
+};
 
 apl.srvapplicationColumns = ko.observableArray([
 	{ field: "_id", title: "ID" },
@@ -171,36 +209,34 @@ apl.srvapplicationColumns = ko.observableArray([
 	} },
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	} },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		// var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		// if (app == undefined) {
-		// 	return "";
-		// }
+		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (app == undefined) {
+			return "";
+		}
 
-		// var deployedTo = app.DeployedTo;
+		var deployedTo = app.DeployedTo;
 
-		// if (deployedTo == null) {
-		// 	deployedTo = [];
-		// }
+		if (deployedTo == null) {
+			deployedTo = [];
+		}
 
-		// if (deployedTo.indexOf(d._id) != -1) {
-		// 	var target = [d.host.split(":")[0], app.Port].join(":");	
-		// 	return "<input type='checkbox' class='statuscheck-apl grid-green' /> ";
-		// }
+		if (deployedTo.indexOf(d._id) != -1) {
+			var target = [d.host.split(":")[0], app.Port].join(":");	
+			return "<input type='checkbox' class='statuscheck-apl apl-green' disabled /> ";
+		}
 
-		return "<input type='checkbox' class='statuscheck-apl grid-red' />";
+		return "<input type='checkbox' class='statuscheck-apl apl-red' disabled />";
 	} }
-	// { title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-	// 	return [
-	// 		"<input type='checkbox' class='statuscheck-apl' />"
-	// 	].join(" ");
-	// } }
 ]);
 
 apl.gridStatusColor = function () {
 	$grids = $('.grid-srvapplication');
-	var $grg = $grids.find("tr td .grid-green");
-	var $grr = $grids.find("tr td .grid-red");
+	var $grg = $grids.find("tr td .apl-green");
+	var $grr = $grids.find("tr td .apl-red");
 
 	if ($grg) {
 		$grg.parent().css("background-color", "#5cb85c");
@@ -389,7 +425,6 @@ apl.editApplication = function(_id) {
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
-		// srv.getServers('app');
 	});
 };
 
@@ -798,30 +833,54 @@ apl.selectLangEnv = function (elem, e){
 	}
 }
 
-apl.setupLangEnv = function (){	
+apl.setupLangEnv = function (){
+	apl.dataLanguageEnv([]);
 	$('.grid-LangEnv tbody tr').each(function(i,e){
+		var cekOrNot = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
+		if ( cekOrNot === true ){
+			apl.checkServerLangEnv.push("1");
+		} 
+	});
+	if (apl.checkServerLangEnv().length === 0 ){
+		swal({title: "No server selected", type: "error"});
+		return;
+	}
+	apl.checkServerLangEnv([]);
+	$('.grid-LangEnv tbody tr').each(function(i){
 		var data = { _id:"", lang:[] };
-		var checked = $(e).find("td:eq(0) input[type=checkbox]").is(':checked');
-		if (checked == true){
-			var server_id = $(e).find('td input[type=checkbox]:checked').attr('idcheck');
-			if ( server_id != undefined ){
-				data._id = server_id;
-			}
-			var go = $(e).find('td:eq(4) input[type=checkbox]:checked').attr('checkLang');
-			if ( go != undefined ){
-				data.lang.push(go);
-			}
-			var java = $(e).find('td:eq(5) input[type=checkbox]:checked').attr('checkLang');
-			if ( java != undefined ){
-				data.lang.push(java);
-			}
-			var scala = $(e).find('td:eq(6) input[type=checkbox]:checked').attr('checkLang');
-			if ( scala != undefined ){
-				data.lang.push(scala);
+		var checked = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
+		if (checked === true){
+			var checkedGo = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(4) input[type=checkbox]").is(':checked');
+			var checkedJava = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(5) input[type=checkbox]").is(':checked');
+			var checkedScala = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(6) input[type=checkbox]").is(':checked');
+
+			if ( checkedGo === true || checkedJava === true || checkedScala === true ){
+				var server_id = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td input[type=checkbox]:checked').attr('idcheck');
+				if ( server_id != undefined ){
+					data._id = server_id;
+				}
+				var go = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(4) input[type=checkbox]:checked').attr('checkLang');
+				if ( go != undefined ){
+					data.lang.push(go);
+				}
+				var java = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(5) input[type=checkbox]:checked').attr('checkLang');
+				if ( java != undefined ){
+					data.lang.push(java);
+				}
+				var scala = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(6) input[type=checkbox]:checked').attr('checkLang');
+				if ( scala != undefined ){
+					data.lang.push(scala);
+				}
+			}else {
+				swal({title: "No server selected", type: "error"});
+				return;
 			}
 			apl.dataLanguageEnv.push(data);
-		}
+		} 
 	});
+	console.log(JSON.stringify(ko.mapping.toJS(apl.dataLanguageEnv)));
+	$('.grid-LangEnv thead tr').find('input[type=checkbox]:checked').prop({checked:false});
+	$('.grid-LangEnv tr').find('td input[type=checkbox]:checked').prop({checked:false});
 }
 
 apl.prepareTreeView = function () {
