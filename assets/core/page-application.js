@@ -160,20 +160,17 @@ apl.langEnvColumns = ko.observableArray([
 	}}
 ]);
 
-apl.checkAllRunCMD = function () {
-	$(".modal-run-cmd").find(".k-grid-content tr").each(function (e, i) {
-		$(e).find("td:eq(0) input:checkbox").val(true);
-	});
-};
 apl.commandDataColumns = ko.observableArray([
-	{headerTemplate : "<center><input type='checkbox' onclick=\"apl.checkAllRunCMD()\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
-		return "<input type='checkbox' data-id='"+d._id+"'>";
-	}}, 
-	{field : "CmdName", title : "Command Key"},
-	{field : "CmdValue", title : "Command Value"},
+	{field: "CmdName", title: "Command Key"},
+	{field: "CmdValue", title: "Command"},
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.doRunCommand(\'' + d.CmdName + '\')"><span class="fa fa-play"></span></button>';
+	} },
 ]);
 apl.commandData = ko.observableArray([]);
+apl.commandServerID = ko.observable('');
 apl.showRunCommand = function (serverID) {
+	apl.commandServerID(serverID);
 	apl.commandData([]);
 	var appMap = ko.mapping.toJS(apl.configApplication);
 
@@ -193,8 +190,20 @@ apl.showRunCommand = function (serverID) {
 
 	$(".modal-run-cmd").modal("show");
 };
-apl.runCmd = function () {
+apl.doRunCommand = function (cmdKey) {
+	var param = {
+		AppID: apl.configApplication._id(),
+		ServerID: apl.commandServerID(),
+		CmdName: cmdKey
+	};
 
+	app.ajaxPost("/application/runcommand", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		console.log(param);
+	});
 };
 
 apl.srvapplicationColumns = ko.observableArray([
