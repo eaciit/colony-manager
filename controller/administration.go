@@ -80,7 +80,23 @@ func (a *AdministrationController) GetAccess(r *knot.WebContext) interface{} {
 	}
 
 }
+func (a *AdministrationController) Getaccessdropdown(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	tAccess := new(acl.Access)
 
+	arrm := make([]toolkit.M, 0, 0)
+	c, err := acl.Find(tAccess, nil, toolkit.M{}.Set("take", 0))
+	if err == nil {
+		err = c.Fetch(&arrm, 0, false)
+	}
+
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, arrm, "")
+	}
+}
 func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()

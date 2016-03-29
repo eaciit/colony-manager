@@ -75,9 +75,23 @@ func (a *UserController) GetUser(r *knot.WebContext) interface{} {
 	} else {
 		return helper.CreateResult(true, data, "")
 	}
-
 }
 func (a *UserController) FindUser(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	a.InitialSetDatabase()
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	tUser := new(acl.User)
+	err = acl.FindByID(tUser, payload["_id"].(string))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	} else {
+		return helper.CreateResult(true, tUser, "")
+	}
+
+}
+
+func (a *UserController) GetUserLdap(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	a.InitialSetDatabase()
 	payload := map[string]interface{}{}

@@ -8,7 +8,7 @@
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
     <div class="col-md-4">
-        <button class="btn btn-sm btn-primary navbar-btn">
+        <button class="btn btn-sm btn-primary navbar-btn" data-bind="click:usr.getUsers">
         <span class="glyphicon glyphicon-refresh"></span> Refresh
     </button>
         <button class="btn btn-sm btn-success" data-bind="click: usr.createNewUser">
@@ -55,8 +55,8 @@
 
     <div class="tab-content">
         <div class="tab-pane active" id="User">
-            <div class="panel">
-                <div class="panel-body">
+            <div>
+                <div>
                     <form class="form-horizontal form-server" id="form-add-Server" novalidate>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login ID</label>
@@ -108,9 +108,10 @@
                         <select type="text" id="Groups" data-bind="kendoMultiSelect: {value: usr.SelectedGroup, data:usr.listGroup, dataTextField: 'text', select: usr.displayAccess , dataValueField: 'value', filter: 'contains'}"></select>
                         <span class="k-invalid-msg" data-for="Groups"></span>
                     </div> -->
-            <div class="panel">
+            <div  >
                 <div class="panel-body">
-                    <div class="col-md-12 ">
+                    <div class="col-md-12 " style="margin-top:70px;">
+                        <div data-bind="visible:usr.modeLoad()==false">
                         <div class="form-group">
                             <div class="col-md-6 ">
                                 <div id="listgroup" class="grid listgroup" data-bind="kendoGrid: { dataSource: { pageSize: 15 },   data: grp.listGroupsData, selectable: 'multiple, row', change: grp.selectlistGridGroups, columns: grp.listGroupsColumns, filterfable: true,     sortable: true, pageable: true, dataBound: app. gridBoundTooltipster('.listgroup')}">
@@ -121,6 +122,10 @@
                             <div class="col-md-6 ">
                                 <div class="grid selectedgroup" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.selectedGroupsData, selectable: 'multiple, row', change: grp.removeselectGridGroups, columns: grp.selectedGroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.selectedgroup')}"></div>
                             </div>
+                        </div>
+                        </div>
+                        <div data-bind="visible:usr.modeLoad()==true" class="align-center" id="Loader">
+                            <img src="/res/img/loading-blue.gif" alt="Loading..." />
                         </div>
                     </div>
                 </div>
