@@ -214,7 +214,6 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 					}
 				}
 			} else {
-				fmt.Println(payload.Path)
 				result, err = GetDirContent(payload.Path, h)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
