@@ -10,6 +10,8 @@ usr.templateUser = {
     Email: "",
     Password: "",
     confPass: "",
+    loginType : "",
+    loginConf : "",
     Enable: ko.observable(false),
     Groups: ko.observableArray([]),
     Grants: [],
@@ -75,6 +77,7 @@ usr.search = ko.observable("");
 usr.config = ko.mapping.fromJS(usr.templateUser);
 usr.listGroup = ko.observableArray([]);
 usr.SelectedGroup = ko.observableArray([]);
+usr.modeLoad=ko.observable(true)
 
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
@@ -196,6 +199,7 @@ usr.searchUser = function(event){
 };
 usr.editUser = function(c) {
     app.mode('edit')
+    usr.modeLoad(true)
     var payload = ko.mapping.toJS(usr.filter._id(c));
     var data = [];
     var data2=[];
@@ -232,6 +236,7 @@ usr.editUser = function(c) {
                     index=i; 
                 } 
         } 
+
         grp.listGroupsData().splice(index, 1);  
         };
         
@@ -241,11 +246,15 @@ usr.editUser = function(c) {
                 title:grp.listGroupsData()[i].title
              })
         };
-        grp.listGroupsData.removeAll();
-        grp.listGroupsData(data3) 
-        grp.selectedGroupsData(data2);
-        usr.SelectedGroup(data); 
-        usr.config.Groups();
+
+        setTimeout(function(){ 
+            grp.listGroupsData.removeAll();
+            grp.listGroupsData(data3) 
+            grp.selectedGroupsData(data2);
+            usr.SelectedGroup(data); 
+            usr.config.Groups();
+            usr.modeLoad(false);
+        }, 1000);
     });
 };
 
