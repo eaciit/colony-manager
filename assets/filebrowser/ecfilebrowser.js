@@ -182,6 +182,7 @@ BuildFileExplorer:function(elem,options){
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
 					//app.isLoading(true);
+                    $($(elem).find(".fb-txt-search")).val("");
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
@@ -827,6 +828,7 @@ BuildFileExplorer:function(elem,options){
 							dataTextField: options.serverSource.dataTextField,
 							dataValueField:options.serverSource.dataValueField,
 							change: function(){
+                                $($(elem).find(".fb-txt-search")).val("");
             		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
