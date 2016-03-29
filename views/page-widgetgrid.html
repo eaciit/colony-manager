@@ -1,5 +1,13 @@
 <script src="/res/core/page-widgetgrid.js"></script>
 
+<style>
+	.k-autocomplete.k-header {
+		width: 100%;
+	}
+	.spaceForm {
+		margin-bottom: 15px;
+	}
+</style>
 <!-- main area -->
 <div class="col-xs-12 col-sm-10" id="content">
 	<div class="col-md-12" data-bind="with: widgetgrid, visible: (app.section() == 'widgetgrid')">
@@ -46,7 +54,7 @@
 	    	<button class="btn btn-sm btn-primary" data-bind="click: wg.saveWidget" >
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-	    	<button class="btn btn-sm btn-info" >
+	    	<button class="btn btn-sm btn-info" data-bind="click: wg.previewWidget" >
 	    		<span class="glyphicon glyphicon-eye-open"></span> Preview
 	    	</button>
 	    	<button class="btn btn-sm btn-danger" data-bind="visible: (app.mode() == 'update'), click : wg.OnRemove">
@@ -75,7 +83,7 @@
 			    				<div class="form-group">
 								    <label class="col-md-3 filter-label">Data Source</label>
 								    <div class="col-md-9">
-					        		<select required id="datasource" data-required-msg="Data Source cannot be empty" data-bind="kendoDropDownList: { data: wg.recordDataSource, dataValueField: '_id', dataTextField: '_id', value: dataSourceID, optionLabel: 'Select one'}" style="width:40%;"></select>
+					        		<select required id="datasource" data-required-msg="Data Source cannot be empty" data-bind="kendoDropDownList: { data: wg.recordDataSource, dataValueField: '_id', dataTextField: '_id', value: dataSourceID, optionLabel: 'Select one', select: wg.selectDataSource}" style="width:40%;"></select>
 									<span class="k-invalid-msg" data-for="datasource"></span></div>
 								</div>
 							</div>
@@ -156,7 +164,7 @@
 					    				<tbody data-bind="foreach: configWidget.columns">
 					    					<tr>
 					    						<td>
-					    							<select required data-required-msg="Field cannot be empty" data-bind="kendoDropDownList: { data: wg.recordsField, dataValueField: 'value', dataTextField: 'title', value: field, optionLabel: 'Select one'}, attr: { 'name': 'column-field-widget-' + $index()}" style="width:120px;"></select>
+					    							<select required data-required-msg="Field cannot be empty" data-bind="kendoDropDownList: { data: wg.recordsField, dataValueField: '_id', dataTextField: '_id', value: field, optionLabel: 'Select one', select: function(e){wg.selectFieldColumn($index(), this.dataItem(e.item))}}, attr: {'name' : 'column-field-widget-' + $index()}" style="width:120px;"></select>
 													<span class="k-invalid-msg" data-bind="attr: { 'data-for': 'column-field-widget-' + $index() }"></span>
 												</td>
 					    						<td>
@@ -183,9 +191,9 @@
 					    		</div>
 					    	</div>
 					    	<div class="col-md-12" data-bind="visible: wg.modeAdvanceColumn() == true, with: wg.configWidgetColoumn">
-					    		<div class="col-md-12">
+					    		<div class="col-md-12 spaceForm">
 					    			<button class="btn btn-sm btn-warning" data-bind="click:wg.backGeneralSetting"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
-					    			<button class="btn btn-sm btn-success"><span class="glyphicon glyphicon-save"></span> Save</button>
+					    			<button class="btn btn-sm btn-success" data-bind="click:wg.saveAdvanceSetting"><span class="glyphicon glyphicon-save"></span> Save</button>
 					    		</div>
 					    		<div class="col-md-6">
 						    		<div class="form-group">
@@ -203,7 +211,7 @@
 				    				<div class="form-group">
 							        	<label class="col-md-3 filter-label">Footer Template</label>
 							        	<div class="col-md-9">
-							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: footerTemplate" placeholder="Type footer template here" />
+							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="kendoAutoComplete:{dataSource:wg.dataAggregate(), filter: 'startswith', separator: ',', value: footerTemplate}" placeholder="Type footer template here" />
 							        	</div>
 				    				</div>
 				    			</div>
@@ -211,7 +219,7 @@
 				    				<div class="form-group">
 							        	<label class="col-md-3 filter-label">Header Attributes</label>
 							        	<div class="col-md-9">
-							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: headerAttributes" placeholder="Type header attribute here" />
+							        		<input required class="form-control input-sm" id="template" name="template" type="text" data-bind="value: headerAttributes.style" placeholder="Type header attribute here" />
 							        	</div>
 				    				</div>
 				    			</div>
@@ -272,4 +280,21 @@
 		    </div>
 	    </div>
 	</div>
+</div>
+
+<div class="modal fade" id="modal-preview" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Preview Grid</h4>
+      </div>
+      <div class="modal-body">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>

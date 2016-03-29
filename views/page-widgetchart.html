@@ -1,0 +1,209 @@
+<!-- core -->
+<script src="/res/core/page-widgetchart.js"></script>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: ChartWidget">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'chartwidget')">
+		<h1>Chart Widget</h1>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: cw.getChartWidget">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: cw.createNewChart">
+	    		<span class="glyphicon glyphicon-plus"></span> Create New Chart
+	    	</button>
+	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: cw.deleteChartWidget">
+	    		<span class="glyphicon glyphicon-remove"></span> Delete
+	    	</button>
+		</nav>
+		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+			<div class="col-md-4">
+				<label class="col-md-3 filter-label no-left-padding">
+					Search
+				</label>
+				<div class="col-md-8">
+					<input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="value: cw.searchfield" placeholder="Type keyword here" />
+				</div>
+			</div>
+		</nav>
+		<div class="panel" data-bind="visible: (app.mode() == '')">
+		    <div class="panel-heading">
+		        <h1 class="panel-title">All Charts</h1>
+		    </div>
+
+		    <div class="panel-body">
+		    	<div class="grid grid-chartwidget" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: cw.chartData, selectable: 'row', change: cw.selectChartWidget, columns: cw.chartWidgetColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-chartwidget') }"></div>
+		    </div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveChart">
+	    		<span class="glyphicon glyphicon-save"></span> Save
+	    	</button>
+		</nav>
+		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
+			<div class="panel-heading">
+		        <h1 class="panel-title">
+		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
+			        	Chart
+	        	</h1>
+		    </div>
+		    <div class="clearfix">&nbsp;</div>
+		    <div class="col-md-12">
+			    <ul class="nav nav-tabs" role="tablist" id="tabed">
+			    	<li class="active"><a href="#general" data-toggle="tab" role="tab">General</a></li>
+			    	<li><a href="#series" data-toggle="tab" role="tab">Series</a></li>
+			    	<li><a href="#cataxis" data-toggle="tab" role="tab">Category Axis</a></li>
+			    	<li><a href="#value" data-toggle="tab" role="tab">Value Axis</a></li>
+			    	<li><a href="#tooltip" data-toggle="tab" role="tab">Tooltip</a></li>
+			    	<li><a href="#legend" data-toggle="tab" role="tab">Legend</a></li>
+			    </ul>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal form-chart-widget" data-bind="with: configChartWidget" novalidate>
+		    	<div class="tab-content">
+		    			<div class="tab-pane fade in active" id="general" role="tabpanel">
+		    				<div class="col-md-12">
+		    					<div class="clearfix">&nbsp;</div>
+		    					<div class="panel panel-default">
+		    						<div class="panel-heading">
+		    							<h1>Chart Area</h1>
+		    						</div>
+		    						<div class="panel-body">
+		    							<div class="col-md-6">
+		    								<div class="form-group">
+									        	<label class="col-md-2 filter-label">ID</label>
+									        	<div class="col-md-6">
+									        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id" tabindex="1">
+													<span class="k-invalid-msg" data-for="ID"></span>
+									        	</div>
+									        </div>
+									        <div class="form-group">
+									        	<label class="col-md-2 filter-label">Width</label>
+									        	<div class="col-md-6">
+									        		<input required type="text" class="form-control input-sm" name="title" placeholder="Type title here" data-bind="value: chartName" tabindex="3">
+													<span class="k-invalid-msg" data-for="title"></span>
+									        	</div>
+									        </div>
+									        <div class="form-group">
+									        	<label class="col-md-2 filter-label">Height</label>
+									        	<div class="col-md-6">
+									        		<input required type="text" class="form-control input-sm" name="title" placeholder="Type title here" data-bind="value: chartName" tabindex="4">
+													<span class="k-invalid-msg" data-for="title"></span>
+									        	</div>
+									        </div>
+		    							</div>
+		    							<div class="col-md-6">
+		    								<div class="form-group">
+									        	<label class="col-md-2 filter-label">Title</label>
+									        	<div class="col-md-6">
+									        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id" tabindex="2">
+													<span class="k-invalid-msg" data-for="ID"></span>
+									        	</div>
+									        </div>
+									        <div class="form-group">
+									        	<label class="col-md-2 filter-label">Mode</label>
+									        	<div class="col-md-6">
+									        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id" tabindex="5">
+													<span class="k-invalid-msg" data-for="ID"></span>
+									        	</div>
+									        </div>
+									        <div class="form-group">
+									        	<label class="col-md-2 filter-label">Mode</label>
+									        	<div class="col-md-6">
+									        		<input required type="text" class="form-control input-sm" name="title" placeholder="Type title here" data-bind="value: chartName" tabindex="6">
+													<span class="k-invalid-msg" data-for="title"></span>
+									        	</div>
+									        </div>
+		    							</div>
+		    						</div>
+		    					</div>
+
+		    					<div class="panel panel-default">
+		    						<div class="panel-heading">
+		    							<h1>Data Source</h1>
+		    						</div>
+		    						<div class="panel-body">
+		    							<div class="form-group">
+								        	<label class="col-md-2 filter-label">ID</label>
+								        	<div class="col-md-3">
+								        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+												<span class="k-invalid-msg" data-for="ID"></span>
+								        	</div>
+								        </div>
+		    						</div>
+		    					</div>
+		    					<!-- <div class="form-group">
+						        	<label class="col-md-2 filter-label">ID</label>
+						        	<div class="col-md-3">
+						        		<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type ID here" data-bind="value: _id">
+										<span class="k-invalid-msg" data-for="ID"></span>
+						        	</div>
+						        </div>
+						        <div class="form-group">
+						        	<label class="col-md-2 filter-label">Title</label>
+						        	<div class="col-md-3">
+						        		<input required type="text" class="form-control input-sm" name="title" placeholder="Type title here" data-bind="value: title">
+										<span class="k-invalid-msg" data-for="title"></span>
+						        	</div>
+						        </div>
+						        <div class="form-group">
+						        	<label class="col-md-2 filter-label">Master Datasource</label>
+						        	<div class="col-md-3">
+						        		 <select required class="full-width" id="masterdatasource" name="masterdatasource" data-bind="kendoDropDownList: { data: sw.masterDataSources, dataValueField: '_id', value: masterDataSource, dataTextField: '_id', optionLabel : 'Select Master Data Source'}"></select>
+										<span class="k-invalid-msg" data-for="masterdatasource"></span>
+						        	</div>
+						        </div> -->
+		    				</div>
+		    			</div>
+		    			<div class="tab-pane fade" id="series" role="tabpanel">
+		    				<div class="col-md-11">
+		    					<div class="clearfix">&nbsp;</div>
+			    				<!-- <div class="form-group">
+								    <label class="col-md-2 filter-label">Fields</label>
+								    <div class="col-sm-8">
+							        	<div class="nav">
+							        		<button class="btn btn-success btn-sm" data-bind="click: sw.addFields">
+							        			<span class="glyphicon glyphicon-plus"></span> Add
+							        		</button>
+							        	</div>
+							        	<table class="table" id="datasource-settings">
+						        			<thead>
+						        				<tr>
+						        					<th>Data Source</th>
+						        					<th>Field</th>
+						        				</tr>
+						        			</thead>
+						        			<tbody data-bind="foreach: fields">
+						        				<tr>
+						        					<td>
+						        						<select required class="full-width" data-bind="kendoDropDownList: { data: sw.dataSources, dataValueField: '_id', value: dataSource, dataTextField: '_id', change: function(e) {sw.getMetaData(this.dataItem()._id, $index())}, optionLabel : 'Select Data Source'}, attr: { name: 'datasource-' + $index() }"></select>
+						        						<span class="k-invalid-msg" data-for="datasource"></span>
+						        					</td>
+						        					<td>
+						        						<select required class="full-width field" data-bind="kendoDropDownList: { dataValueField: '_id', value: field, dataTextField: '_id', optionLabel : 'Select Field'}, attr: { name: 'field-' + $index() }"></select>
+						        						<span class="k-invalid-msg" data-for="field"></span>
+						        					</td>
+						        					<td data-bind="visible: ($index() > 0)">
+						        						<button class="btn btn-sm btn-danger" data-bind="click: sw.removeFieldSelector($data)">
+						        							<span class="glyphicon glyphicon-remove" ></span>
+						        						</button>
+						        					</td>
+						        				</tr>
+						        			</tbody>
+							        	</table>
+							        </div>
+								</div> -->
+		    				</div>	
+		    			</div>
+		    		</div>
+		    	</form>
+			</div>
+		</div>
+	</div>
+</div>
