@@ -291,6 +291,32 @@ table.table tr:hover td {
 .right {
   float: right; }
 
+.login-body {
+  max-width: 100%;
+  overflow-x: hidden;
+  max-height: 100%;
+  z-index: 99;
+  overflow-y: hidden; }
+
+.login-form-group .form-login-label {
+  text-align: left; }
+
+.login-form {
+  z-index: 100; }
+
+.login-bg {
+  background: #007dba url("/res/img/bg_city.JPG") no-repeat center top;
+  background-size: cover;
+  height: 100vh;
+  z-index: 99; }
+
+.login-logo {
+  background: url("/res/img/logoeaciittrans.png") no-repeat center top;
+  width: 99px;
+  height: 90px;
+  background-size: 99px 90px;
+  margin-bottom: 30px; }
+
 .bgcustom {
   padding: 10px 15px;
   margin-left: 15px;
