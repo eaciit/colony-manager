@@ -411,7 +411,7 @@ apl.getLangEnv = function (c){
 	});
 }
 
-apl.editApplication = function(_id) {	
+apl.editApplication = function(_id) {
 	apl.appIDToDeploy(_id);
 	apl.refreshGridModalDeploy();
 	app.miniloader(true);	

@@ -112,25 +112,26 @@ srv.appserverColumns = ko.observableArray([
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
 	} },
-	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='statuscheck-srv' />"
-		].join(" ");
-	} },
+	// { title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
+	// 	return [
+	// 		"<input type='checkbox' class='statuscheck-srv' />"
+	// 	].join(" ");
+	// } },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		if (app == undefined) {
+		
+		var apps = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+		if (apps == undefined) {
 			return "";
 		}
 
-		var deployedTo = app.DeployedTo;
+		var deployedTo = apps.DeployedTo;
 
 		if (deployedTo == null) {
 			deployedTo = [];
 		}
 
 		if (deployedTo.indexOf(srv.configServer._id()) > -1) {
-			var target = [d.host.split(":")[0], app.Port].join(":");	
+			// var target = [d.host.split(":")[0], app.Port].join(":");	
 			return "<input type='checkbox' class='statuscheck-srv srv-green' disabled /> ";
 		}
 
@@ -374,8 +375,7 @@ srv.selectGridServer = function (e) {
 };
 
 srv.editServer = function (_id) {
-	srv.gridStatusCheck();
-	app.miniloader(true);	
+	app.miniloader(true);
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());
 
