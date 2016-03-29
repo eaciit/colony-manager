@@ -3,9 +3,7 @@ package controller
 import (
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
 )
 
 type WidgetSelectorController struct {
@@ -18,57 +16,18 @@ func CreateWidgetSelectorController(s *knot.Server) *WidgetSelectorController {
 	return controller
 }
 
-func (ws *WidgetSelectorController) RemoveSelector(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
-	if !helper.HandleError(err) {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	idArray := payload["_id"].([]interface{})
-
-	for _, id := range idArray {
-		o := new(colonycore.Selector)
-		o.ID = id.(string)
-		err = colonycore.Delete(o)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-	}
-	return helper.CreateResult(true, nil, "")
-}
-
 func (ws *WidgetSelectorController) GetSelectorConfigs(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
-	err := r.GetPayload(&payload)
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+	data, err := new(colonycore.Selector).Get(search)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	var search string
-	search = payload["search"].(string)
-
-	var query *dbox.Filter
-
-	if search != "" {
-		query = dbox.Contains("_id", search)
-	}
-
-	data := []colonycore.Selector{}
-	cursor, err := colonycore.Find(new(colonycore.Selector), query)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
 	return helper.CreateResult(true, data, "")
 }
 
@@ -79,8 +38,7 @@ func (ws *WidgetSelectorController) SaveSelector(r *knot.WebContext) interface{}
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	if err := colonycore.Save(payload); err != nil {
+	if err := payload.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -91,13 +49,10 @@ func (ws *WidgetSelectorController) EditWidgetSelector(r *knot.WebContext) inter
 	r.Config.OutputType = knot.OutputJson
 
 	data := colonycore.Selector{}
-	err := r.GetPayload(&data)
-	if err != nil {
+	if err := r.GetPayload(&data); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	err = colonycore.Get(&data, data.ID)
-	if err != nil {
+	if err := data.GetById(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -113,4 +68,25 @@ func (ws *WidgetSelectorController) GetDataSource(r *knot.WebContext) interface{
 	}
 
 	return helper.CreateResult(true, data, "")
+}
+
+func (ws *WidgetSelectorController) RemoveSelector(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	if err := r.GetPayload(&payload); !helper.HandleError(err) {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		o := new(colonycore.Selector)
+		o.ID = id.(string)
+		if err := o.Delete(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
 }
