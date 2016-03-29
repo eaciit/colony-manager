@@ -182,7 +182,7 @@ BuildFileExplorer:function(elem,options){
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
 					//app.isLoading(true);
-            		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
+            		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir")			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			}
 		});
@@ -195,7 +195,7 @@ BuildFileExplorer:function(elem,options){
 		$strtree.appendTo($strpretree);
 
 		var ds = options.dataSource;
-		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
+		var url = methodsFB.SetUrl(elem,"GetDir");
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
@@ -238,13 +238,12 @@ BuildFileExplorer:function(elem,options){
 	            parameterMap:function(data,type){
 	            	if(type=="read"){
 	            		var dt = data;
-	            		 
 	            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
-	            		if (dt["action"]=="GetDir"){
-	            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+	            		console.log(dt["action"]);
+	            		dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+
+	            		if (dt["action"]=="Search"){
 	            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
-	            		}else{
-	            			//dt["search"] = $($(elem).find(".fb-txt-search")).val();
 	            		}
 	            		return dt
 	            	}
@@ -624,8 +623,8 @@ BuildFileExplorer:function(elem,options){
 			content.permission = permiss;
 			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Search"){
-			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
-            $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
+			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "Search";
+            $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir")						
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			return;
 		}else if(content.action=="Download"){
@@ -827,7 +826,7 @@ BuildFileExplorer:function(elem,options){
 							dataTextField: options.serverSource.dataTextField,
 							dataValueField:options.serverSource.dataValueField,
 							change: function(){
-            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
+            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir")			
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
 						});					
