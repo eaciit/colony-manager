@@ -173,7 +173,7 @@ BuildFileExplorer:function(elem,options){
 
 		$($strsearch.find("button")).click(function(){
 				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
-				//app.isLoading(true);
+				app.miniloader(true);
 		});
 
 		$($(elem).find(".fb-server")).kendoDropDownList({
@@ -181,9 +181,10 @@ BuildFileExplorer:function(elem,options){
 			dataTextField: options.serverSource.dataTextField,
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
-					//app.isLoading(true);
-            		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir")			
+					app.miniloader(true);
+            		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
+
 			}
 		});
 
@@ -195,7 +196,7 @@ BuildFileExplorer:function(elem,options){
 		$strtree.appendTo($strpretree);
 
 		var ds = options.dataSource;
-		var url = methodsFB.SetUrl(elem,"GetDir");
+		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
@@ -220,7 +221,7 @@ BuildFileExplorer:function(elem,options){
 									$sp.prependTo($(this));
 
 									if(type!="folder"){
-										$(this).click(function(){
+										$(this).dblclick(function(){
 											methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
 										});
 									}
@@ -228,23 +229,24 @@ BuildFileExplorer:function(elem,options){
 							}
 						});
 						if($(elem).data("ecFileBrowser").isHold){
-										methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
-				                	}
-				                	// else{
-				                	// 	app.isLoading(false);
-				                	// }
+							methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
+				         }else{
+				            app.miniloader(true);
+				         }
 	                },
 	            },
 	            parameterMap:function(data,type){
 	            	if(type=="read"){
 	            		var dt = data;
+	            		 
 	            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
-	            		console.log(dt["action"]);
-	            		dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
-
-	            		if (dt["action"]=="Search"){
+	            		if (dt["action"]=="GetDir"){
+	            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
 	            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
+	            		}else{
+	            			//dt["search"] = $($(elem).find(".fb-txt-search")).val();
 	            		}
+
 	            		return dt
 	            	}
 	            }
@@ -263,8 +265,9 @@ BuildFileExplorer:function(elem,options){
 			template: templatetree,
 			dataSource: datatree,
 			dataTextField: options.dataSource.nameField
-		});
+		});		
 
+		
 		methodsFB.BuildEditor(elem,options);
 		methodsFB.BuildPopUp(elem,options);
 	},
@@ -272,11 +275,12 @@ BuildFileExplorer:function(elem,options){
 		$(elem).data("ecFileBrowser").dataSource.url = $(elem).data("ecFileBrowser").dataSource.originUrl + "/"+action.toLowerCase();
 		return $(elem).data("ecFileBrowser").dataSource.url;
 	},
+
 	BuildEditor:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
 
-		$div = $("<div class='modal fade modal-fb-editor' tabindex='-1' role='dialog'></div>");
+		$div = $("<div class='modal fade modal-fb-editor' tabindex='-1' role='dialog' data-backdrop='static' data-keyboard='false'></div>");
 		$div.appendTo($(elem));
 
 		$divmod = $("<div class='modal-dialog dialog-editor'></div>");
@@ -302,7 +306,6 @@ BuildFileExplorer:function(elem,options){
                     }});
 
 		$conted = $($(elem).find("ul[data-role='editortoolbar']"));
-
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
 		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn tooltipster' unselectable='on' title='Save' aria-pressed='false'></a>");
@@ -339,8 +342,8 @@ BuildFileExplorer:function(elem,options){
 		$edtxt.appendTo($edli);
 		app.prepareTooltipster();
 
-		hei = screen.height*0.5;
-		$($(elem).find(".k-editor")).attr("style","height:"+hei+"px!important");
+		// hei = screen.height*0.5;
+		// $($(elem).find(".k-editor")).attr("style","height:"+hei+"px");
 	},
 	BuildPermission:function(elemarr,permstr){
 		var idx = 0;
@@ -354,7 +357,7 @@ BuildFileExplorer:function(elem,options){
 		});
 	},
 	BuildPopUp : function(elem,options){
-		$div = $("<div class='modal fade modal-fb' tabindex='-1' role='dialog'></div>");
+		$div = $("<div class='modal fade modal-fb' tabindex='-1' role='dialog' data-backdrop='static' data-keyboard='false'></div>");
 		$div.appendTo($(elem));
 
 		$divmod = $("<div class='modal-dialog modalcustom'></div>");
@@ -364,9 +367,6 @@ BuildFileExplorer:function(elem,options){
 		$divcont.appendTo($divmod);
 
 		$divhead = $("<div class='modal-header'>"+
-					"<button type='button' class='close' data-dismiss='modal' aria-label='Close'>"+
-					"<span aria-hidden='true'>&times;</span>"+
-					"</button>"+
 					"<h4 class='modal-title'>"+
 					"</h4>"+
 					"</div>");
@@ -387,7 +387,7 @@ BuildFileExplorer:function(elem,options){
 	},
 	CallPopUp:function(elem,content,title){
 		$($(elem).find("h4")).html(title);
-		$body =	$($(elem).find(".modal-body"));
+		$body =	$($(elem).find(".modal-fb")).find(".modal-body");
 		$btn =	$($(elem).find(".fb-submit"));
 		$btn.unbind("click");
 		$body.html("");
@@ -537,7 +537,10 @@ BuildFileExplorer:function(elem,options){
 				});
 		});
 
-		$($(elem).find(".modal-fb")).modal("show");		
+		$($(elem).find(".modal-fb")).modal("show");	
+		// $($(elem).find(".modal-fb")).on('hidden.bs.modal', '.modal', function () {
+	 //        $($(elem).find(".modal-fb")).modal('hide').remove();
+	 //    });
 	},
 	ActionRequest:function(elem,options,content,sender){
 		if(!$(elem).data("ecFileBrowser").isHold && (content.action=="Edit"||content.action=="Cancel")){
@@ -591,7 +594,7 @@ BuildFileExplorer:function(elem,options){
 					$($(elem).find(".fb-filename")).html(content.path);
 					$($(elem).find(".fb-editor")).data("kendoEditor").value("");
 					$($(elem).find(".fb-editor")).data("kendoEditor").focus();
-                	// app.isLoading(false);
+                	app.miniloader(false);
                 	divtree.css("pointer-events", "none");
                 	divtree.addClass("k-state-disabled");
                 	return;
@@ -623,8 +626,8 @@ BuildFileExplorer:function(elem,options){
 			content.permission = permiss;
 			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Search"){
-			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "Search";
-            $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir")						
+			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
+            $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			return;
 		}else if(content.action=="Download"){
@@ -678,7 +681,7 @@ BuildFileExplorer:function(elem,options){
         formdata.append('path', param.path);
         formdata.append('serverId', param.serverId);
 
-        // app.isLoading(true);
+        app.miniloader(true);
 
        	var xhr = new XMLHttpRequest();
         xhr.open('POST', param.url); 
@@ -688,7 +691,7 @@ BuildFileExplorer:function(elem,options){
                 alert(xhr.responseText);
             }
 */
-            // app.isLoading(false);
+            app.miniloader(false);
             $(elem).find(".modal-fb").modal("hide");
             methodsFB.RefreshTreeView(elem,param);
 	        swal("Saved!", "Your request has been processed !", "success");
@@ -718,7 +721,7 @@ BuildFileExplorer:function(elem,options){
 		var data = ds.callData;
 		var call = ds.call;
 		var contentType = "";
-		// app.isLoading(true);
+		app.miniloader(true);
 		if (param.action == "Download") {
 			var arr = [];
 			for (var k in param) {
@@ -728,7 +731,7 @@ BuildFileExplorer:function(elem,options){
 			}
 			var url = [url.split('#')[0], arr.join("&")].join("?");
 			document.location.href = url;
-			// setTimeout(function(){ app.isLoading(false); },5000);
+			setTimeout(function(){ app.miniloader(true); },5000);
 		} else if (param.action == "Upload") {
 			param.url = url;
 			methodsFB.UploadAjax(elem,param);
@@ -747,7 +750,7 @@ BuildFileExplorer:function(elem,options){
                 	var divtree = $($(elem).find(".fb-pre")[0]);
                 	divtree.removeAttr("style");
                 	divtree.removeClass("k-state-disabled");
-            		// app.isLoading(false);
+            		app.miniloader(false);
 
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
@@ -755,7 +758,7 @@ BuildFileExplorer:function(elem,options){
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
 						$($(elem).find(".fb-editor")).data("kendoEditor").focus();
 						$(elem).data("ecFileBrowser").isHold = true;
-                		// app.isLoading(false);
+                		app.miniloader(false);
                 		divtree.css("pointer-events", "none");
                 		divtree.addClass("k-state-disabled");
 
@@ -775,11 +778,11 @@ BuildFileExplorer:function(elem,options){
                 	if(!$(elem).data("ecFileBrowser").isHold){
                 		swal("Saved!", "Your request has been processed !", "success");
                 		$(elem).find(".modal-fb-editor").modal("hide");
-                		// app.isLoading(false);
+                		app.miniloader(false);
                 	}
                 },
                 error: function (a, b, c) {
-                	// app.isLoading(false);
+                	app.miniloader(false);
 					$(elem).data('ecFileBrowser').dataSource.callFail(a,b,c);
                 	divtree.removeClass("k-state-disabled");
 				},
@@ -826,7 +829,7 @@ BuildFileExplorer:function(elem,options){
 							dataTextField: options.serverSource.dataTextField,
 							dataValueField:options.serverSource.dataValueField,
 							change: function(){
-            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,"GetDir");			
+            		 			$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 								$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 							}
 						});					
@@ -871,7 +874,7 @@ BuildFileExplorer:function(elem,options){
 		var selectedparent = methodsFB.GetParent(elem,content);
 		if(selectedparent.length==0){
 			// setTimeout(function(){
-				// app.isLoading(true);
+				app.miniloader(false);
 			// },500);
 			tree.dataSource.read();
 			return;
