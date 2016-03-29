@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/colony-manager/controller"
+	//"github.com/eaciit/colony-manager/controller"
+	"RyanCi/colony-manager/controller"
 	"github.com/eaciit/knot/knot.v1"
 	"net/http"
 	"path"
