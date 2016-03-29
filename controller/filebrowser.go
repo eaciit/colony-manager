@@ -187,7 +187,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 									tempResult = append(tempResult, res)
 								}
 
-								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+								if strings.Contains(singleDir.Name, payload.Search) {
 									result = append(result, singleDir)
 								}
 							}
@@ -206,7 +206,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 									tempResult = append(tempResult, res)
 								}
 
-								if strings.Contains(singleDir.Name, payload.Search) && !singleDir.IsDir {
+								if strings.Contains(singleDir.Name, payload.Search) {
 									result = append(result, singleDir)
 								}
 							}
