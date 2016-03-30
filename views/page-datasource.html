@@ -57,21 +57,34 @@ body {
 <!-- main area -->
 <div class="col-xs-12 col-sm-10" id="content" data-bind="with: datasource">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'connection-list')">
-		<h1>Connection List</h1>
+		<ol class="breadcrumb bc-custom">
+			<li>Connection List</li>
+			<li class="active">
+		    	<span data-bind="text: ds.breadcrumb"></span> Connections
+	        </li>
+		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridConnections">
-	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: openConnectionForm">
-	    		<span class="glyphicon glyphicon-plus"></span> Create New Connection
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: ds.removeConnection">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: ds.showSearchConnection(), click: showSearchConnection(false)">
+	    		<span class="glyphicon glyphicon-search"></span>					
+			</button>
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !ds.showSearchConnection(), click: showSearchConnection(true)">
+	    		<span class="glyphicon glyphicon-search"></span>					
+			</button>
+			<div class="btn-group" role="group">
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: populateGridConnections">
+		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+		    	</button>
+	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: openConnectionForm">
+		    		<span class="glyphicon glyphicon-plus"></span> Create New Connection
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" data-bind="click: ds.removeConnection">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+			</div>
 		</nav>
 
-		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: ds.showSearchConnection()">
 		    <div class="col-md-4">
 		    	<label class="col-md-4 filter-label">
 		    		Search
@@ -90,10 +103,7 @@ body {
 		    </div>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-heading">
-		    	<h1 class="panel-title">All Connections</h1>
-		    </div>
+		<div class="" data-bind="visible: (app.mode() == '')">		    
 		    <div class="panel-body">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniLoader">
@@ -118,13 +128,7 @@ body {
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'edit')" style="width: 600px;">
-		    <div class="panel-heading">
-		        <h1 class="panel-title">
-		        	<span data-bind="text: (ds.connectionListMode() == '') ? 'Create New' : 'Edit'"></span>
-		        	Connection
-	        	</h1>
-		    </div>
+		<div class="panel" data-bind="visible: (app.mode() == 'edit')" style="width: 600px;">		   
 		    <div class="panel-body">
 				<form class="form-horizontal" data-bind="with: config" id="form-add-connection" novalidate>
 				    <div class="form-group">
@@ -210,21 +214,34 @@ body {
 	</div>
 
 	<div class="col-md-12" data-bind="visible: (app.section() == 'data-source')">
-		<h1>Data Source</h1>
+		<ol class="breadcrumb bc-custom">
+			<li>Data Source</li>
+			<li class="active">
+				<span data-bind="text: ds.breadcrumb"></span> Data Sources
+			</li>
+		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: populateGridDataSource">
-	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-	    	</button>
-	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: openDataSourceForm">
-	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Source
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: ds.removeDataSource">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: ds.showSearchDataSource(), click: showSearchDataSource(false)">
+	    		<span class="glyphicon glyphicon-search"></span>					
+			</button>
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !ds.showSearchDataSource(), click: showSearchDataSource(true)">
+	    		<span class="glyphicon glyphicon-search"></span>					
+			</button>
+			<div class="btn-group" role="group">
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: populateGridDataSource">
+		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+		    	</button>
+	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: openDataSourceForm">
+		    		<span class="glyphicon glyphicon-plus"></span> Create New Connection
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" data-bind="click: ds.removeDataSource">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+			</div>
 		</nav>
 
-		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: ds.showSearchDataSource()">
 		    <div class="col-md-4">
 		    	<label class="col-md-4 filter-label">
 		    		Search
@@ -253,10 +270,7 @@ body {
 	    	</button>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-heading">
-		        <h1 class="panel-title">All Data Sources</h1>
-		    </div>
+		<div class="" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-body position-custom">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniLoader">

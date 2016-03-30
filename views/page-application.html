@@ -331,6 +331,11 @@
 			</div>
 		</div>
 
+		<nav class="navbar" data-bind="visible: (app.mode() == 'runcommand')">
+			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToEdit">
+	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
+	    	</button>
+	    </nav>
 		<div class="panel" data-bind="visible: (app.mode() == 'runcommand')" style="width: 100%;">
 			<div class="panel-heading">
 				<h1>Run Command on of Application <span class="app"></span> in Server <span class="server"></span></h1>

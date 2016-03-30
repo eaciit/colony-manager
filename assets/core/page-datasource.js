@@ -65,9 +65,12 @@ ds.constSettings = {
 	xlsx: ["useheader", "rowstart", "newfile"]
 };
 ds.config = ko.mapping.fromJS(ds.templateConfig);
+ds.showSearchConnection = ko.observable(false);
+ds.showSearchDataSource = ko.observable(false);
 ds.showDataSource = ko.observable(true);
 ds.showConnection = ko.observable(true);
 ds.connectionListMode = ko.observable('');
+ds.breadcrumb = ko.observable('');
 ds.dataSourceMode = ko.observable('');
 ds.valConnectionFilter = ko.observable('');
 ds.confDataSource = ko.mapping.fromJS(ds.templateDataSource);
@@ -279,6 +282,7 @@ ds.changeDriver = function (a, b) {
 ds.openConnectionForm = function () {
 	app.mode('edit');
 	ds.connectionListMode('');
+	ds.breadcrumb('Create New');
 	app.resetValidation("#form-add-connection");
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
@@ -297,6 +301,7 @@ ds.removeSetting = function (each) {
 };
 ds.backToFrontPage = function () {
 	app.mode('');
+	ds.breadcrumb('All');
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
 	ds.tempCheckIdDataSource([]);
@@ -402,6 +407,7 @@ ds.testConnection = function () {
 
 ds.selectGridConnection = function (e) {
 	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
+		ds.breadcrumb('All');
 		ds.editConnection(d._id);
 		ds.showConnection(true);
 		ds.tempCheckIdConnection.push(d._id);
@@ -410,6 +416,7 @@ ds.selectGridConnection = function (e) {
 
 ds.editConnection = function (_id) {
 	app.miniloader(true);
+	ds.showSearchConnection(false);
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 
 	app.ajaxPost("/datasource/selectconnection", { _id: _id }, function (res) {
@@ -419,6 +426,7 @@ ds.editConnection = function (_id) {
 
 		app.mode("edit");
 		ds.connectionListMode('edit');
+		ds.breadcrumb('Edit');		
 		app.resetValidation("#form-add-connection");
 		ko.mapping.fromJS(res.data, ds.config);
 		ds.config.Settings(function (s) {
@@ -508,6 +516,7 @@ ds.removeDataSource = function (_id) {
 
 ds.selectGridDataSource = function (e) {
 	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
+		ds.breadcrumb('All');
 		ds.editDataSource(d._id);
 		ds.showDataSource(true);
 		ds.tempCheckIdDataSource.push(d._id);
@@ -516,7 +525,9 @@ ds.selectGridDataSource = function (e) {
 
 ds.editDataSource = function (_id) {
 	app.miniloader(true);
+	ds.showSearchDataSource(false);
 	ds.dataSourceMode('edit');
+	ds.breadcrumb('Edit');		
 	app.resetValidation(".form-datasource");
 
 	ko.mapping.fromJS(ds.templateDataSource, ds.confDataSource);
@@ -585,6 +596,7 @@ ds.populateGridDataSource = function () {
 
 ds.openDataSourceForm = function(){
 	app.mode('editDataSource');
+	ds.breadcrumb('Create New');
 	ds.dataSourceMode('');
 	app.resetValidation(".form-datasource");
 
@@ -1007,6 +1019,9 @@ ds.toHierarchy = function (d) {
 $(function () {
 	ds.populateGridConnections();
 	ds.populateGridDataSource();
+	ds.showSearchConnection(false);
+	ds.showSearchDataSource(false);
+	ds.breadcrumb('All');
 	app.registerSearchKeyup($(".search"), ds.populateGridConnections);
 	app.registerSearchKeyup($(".searchds"), ds.populateGridDataSource);
 });

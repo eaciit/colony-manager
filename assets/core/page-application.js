@@ -174,7 +174,7 @@ apl.showRunCommand = function (serverID) {
 	// $(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
 	// $(".modal-run-cmd").find(".modal-title span.server").html(serverID);
 
-	appMap.Command.forEach(function (cmd, i) {
+	appMap.Command.forEach(function (cmd, i, d) {
 		if (cmd.key == "" || cmd.value == "") {
 			return;
 		}
@@ -184,10 +184,11 @@ apl.showRunCommand = function (serverID) {
 			var appid = apl.applicationData()[i]._id;
 		}
 		
+		var srvid = apl.commandServerID();
 
 		apl.commandData.push({
 			AppID: appid,
-			// SrvID: srvid,
+			SrvID: srvid,
 			CmdName: cmd.key,
 			CmdValue: cmd.value
 		});
@@ -507,6 +508,12 @@ apl.getUploadFile = function() {
 
 apl.backToFront = function () {
 	app.mode('');
+	apl.getApplications();
+	apl.tempCheckIdServer([]);
+};
+
+apl.backToEdit = function () {
+	app.mode('editor');
 	apl.getApplications();
 	apl.tempCheckIdServer([]);
 };
