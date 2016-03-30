@@ -10,11 +10,17 @@ import (
 	_ "github.com/eaciit/dbox/dbc/csv"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	//"gopkg.in/gomail.v2"
 	_ "time"
 )
 
 type LoginController struct {
 	App
+	SenderEmail   string
+	HostEmail     string
+	PortEmail     int
+	UserEmail     string
+	PasswordEmail string
 }
 
 func init() {
@@ -54,51 +60,48 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(true, "", err.Error())
 	}
-
+	r.SetSession("sessionid", sessid)
 	return helper.CreateResult(true, toolkit.M{}.Set("sessionid", sessid), "")
 
 }
-
-func (l *LoginController) Logout(r *knot.WebContext) interface{} {
+func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
 	err := r.GetPayload(&payload)
-	sessionid := ""
-	switch {
-	case err != nil:
-		return helper.CreateResult(false, nil, err.Error())
-	case !payload.Has("username") && !payload.Has("sessionid"):
-		return helper.CreateResult(false, nil, "username or session not found")
-	case payload.Has("sessionid"):
-		sessionid = toolkit.ToString(payload["sessionid"])
-	case payload.Has("username"):
-		tUser := new(acl.User)
-		err = acl.FindUserByLoginID(tUser, toolkit.ToString(payload["username"]))
-		if err != nil {
-			return helper.CreateResult(false, nil, "fail to get userid")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	email := payload.Has("email")
+	bashUrl := payload.Has("bashUrl")
+	fmt.Println(email)
+	fmt.Println(bashUrl)
+
+	/*
+		l.SenderEmail = "admin.support@eaciit.com"
+		l.HostEmail = "smtp.office365.com"
+		l.PortEmail = 587
+		l.UserEmail = "admin.support@eaciit.com"
+		l.PasswordEmail = "******"
+
+		m := gomail.NewMessage()
+
+		m.SetHeader("From", l.SenderEmail)
+		m.SetHeader("To", email)
+
+		m.SetHeader("Subject", "subject")
+		m.SetBody("text/html", "message")
+
+		d := gomail.NewPlainDialer(l.HostEmail, l.PortEmail, l.UserEmail, l.PasswordEmail)
+
+		err := d.DialAndSend(m)
+
+		if err != "" {
+			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		tSession := new(acl.Session)
-		err = acl.FindActiveSessionByUser(tSession, tUser.ID)
-		if err != nil {
-			return helper.CreateResult(false, nil, "fail to get sessionid")
-		}
-		sessionid = tSession.ID
-	}
-
-	if sessionid == "" {
-		return helper.CreateResult(true, nil, "Active sessionid not found")
-	}
-
-	err = acl.Logout(sessionid)
-	if err != nil && (err.Error() == "Session id not found" || err.Error() == "Session id is expired") {
-		return helper.CreateResult(true, nil, "Active sessionid not found")
-	} else if err != nil {
-		return helper.CreateResult(true, nil, toolkit.Sprintf("Error found : %v", err.Error()))
-	}
-
-	return helper.CreateResult(true, nil, "Logout success")
+	*/
+	return helper.CreateResult(false, nil, "ac")
 }
 
 /* ==========================================
