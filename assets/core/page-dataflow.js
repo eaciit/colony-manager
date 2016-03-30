@@ -49,10 +49,7 @@ df.init = function () {
             },
             html: true,
             width: 300,
-            height: 200,
-            hover: {
-                fill: "white"
-            }
+            height: 200
         },
         connectionDefaults: {
             stroke: {
