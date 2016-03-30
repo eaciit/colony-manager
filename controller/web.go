@@ -130,3 +130,12 @@ func (w *WebController) Widget(r *knot.WebContext) interface{} {
 
 	return true
 }
+
+func (w *WebController) ResetLogin(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = "views/page-resetlogin.html"
+
+	return true
+}
