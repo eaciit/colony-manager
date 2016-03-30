@@ -12,15 +12,18 @@ lg.templateForgotLogin ={
 	email: ""
 };
 
+lg.templateConfirmReset ={
+	new_pass: "",
+	confirm_pass: ""
+}
+
 lg.configLogin = ko.mapping.fromJS(lg.templateConfigLogin);
 lg.forgetLogin = ko.mapping.fromJS(lg.templateForgotLogin);
-lg.confirmAccessLogin = ko.mapping.fromJS(lg.templateConfirmation);
+lg.confirmReset = ko.mapping.fromJS(lg.templateConfirmReset);
 lg.rePassword = ko.observable('');
 
 lg.getLogin = function(){
 	var url = lg.configLogin.url(location.origin);
-	console.log(url);
-	console.log(lg.configLogin);
 	var param = ko.mapping.toJS(lg.configLogin);
 	app.ajaxPost("/login/processlogin", param, function(res){
 		if(!app.isFine(res)){
@@ -48,9 +51,15 @@ lg.getForgetLogin = function(){
 
 }
 
-lg.getConfirmLogin = function(){
-	var param = ko.mapping.toJS(lg.confirmAccessLogin);
+lg.getConfirmReset = function(){
+	var param = ko.mapping.toJS(lg.confirmReset);
 	console.log(param);
+	app.ajaxPost("/login/resetpassword", param, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+	});
 }
 
 $(function (){
