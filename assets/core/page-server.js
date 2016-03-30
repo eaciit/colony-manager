@@ -112,29 +112,23 @@ srv.appserverColumns = ko.observableArray([
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
 	} },
-	{ title: "Status", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='statuscheck-srv' />"
-		].join(" ");
-	} },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		if (app == undefined) {
-			return "";
+		var yo = 0;
+		for (i in apl.applicationData()){
+			if (apl.applicationData()[i].DeployedTo.length > 0 || apl.applicationData()[i].DeployedTo != undefined){
+				var app = ko.utils.arrayFilter(apl.applicationData()[i].DeployedTo, function (yoi) {
+					return yoi == srv.configServer._id();
+				});
+				if (app.length > 0)
+					yo = 1;
+			} else {
+				yo = 0;
+			}
 		}
-
-		var deployedTo = app.DeployedTo;
-
-		if (deployedTo == null) {
-			deployedTo = [];
-		}
-
-		if (deployedTo.indexOf(srv.configServer._id()) > -1) {
-			var target = [d.host.split(":")[0], app.Port].join(":");	
+		if (yo == 1)
 			return "<input type='checkbox' class='statuscheck-srv srv-green' disabled /> ";
-		}
-
-		return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
+		else
+			return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
 	} }
 ]);
 

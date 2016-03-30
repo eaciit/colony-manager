@@ -40,7 +40,7 @@ apl.templateConfigVariable = {
 apl.filterLangEnvTemplate = {
 	search: "",
 	serverOS: "",
-	serverType: "",
+	serverType: "node",
 	sshType: "",
 }
 
@@ -143,37 +143,28 @@ apl.langEnvColumns = ko.observableArray([
 	{field : "_id", title : "Server ID"},
 	{field : "os", title : "Server OS"},
 	{field : "host", title : "Host"},
-	{field : "", headerTemplate:"<center>Go</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
-		return [
-		"<center><input type='checkbox' checkLang = 'go' id='"+d._id+"'></center>"
-		].join(" ");
+	{field: "go", headerTemplate:"<center>Go</center> ", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}},
-	{field : "", headerTemplate:"<center>Java</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
-		return [
-		"<center><input type='checkbox' checkLang = 'java' id='"+d._id+"'></center>"
-		].join(" ");
+	{field: "java", headerTemplate:"<center>Java</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}},
-	{field : "", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
-		return [
-		"<center><input type='checkbox' checkLang = 'scala' id='"+d._id+"' ></center>"
-		].join(" ");
+	{field: "scala", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}}
 ]);
 
-apl.checkAllRunCMD = function () {
-	$(".modal-run-cmd").find(".k-grid-content tr").each(function (e, i) {
-		$(e).find("td:eq(0) input:checkbox").val(true);
-	});
-};
 apl.commandDataColumns = ko.observableArray([
-	{headerTemplate : "<center><input type='checkbox' onclick=\"apl.checkAllRunCMD()\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
-		return "<input type='checkbox' data-id='"+d._id+"'>";
-	}}, 
-	{field : "CmdName", title : "Command Key"},
-	{field : "CmdValue", title : "Command Value"},
+	{field: "CmdName", title: "Command Key"},
+	{field: "CmdValue", title: "Command"},
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.doRunCommand(\'' + d.CmdName + '\')"><span class="fa fa-play"></span></button>';
+	} },
 ]);
 apl.commandData = ko.observableArray([]);
+apl.commandServerID = ko.observable('');
 apl.showRunCommand = function (serverID) {
+	apl.commandServerID(serverID);
 	apl.commandData([]);
 	var appMap = ko.mapping.toJS(apl.configApplication);
 
@@ -193,8 +184,20 @@ apl.showRunCommand = function (serverID) {
 
 	$(".modal-run-cmd").modal("show");
 };
-apl.runCmd = function () {
+apl.doRunCommand = function (cmdKey) {
+	var param = {
+		AppID: apl.configApplication._id(),
+		ServerID: apl.commandServerID(),
+		CmdName: cmdKey
+	};
 
+	app.ajaxPost("/application/runcommand", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		console.log(param);
+	});
 };
 
 apl.srvapplicationColumns = ko.observableArray([
@@ -397,9 +400,10 @@ apl.getLangEnv = function (c){
 			res.data="";
 		}
 		
-		var FilterDataLangEnv = Lazy(res.data).where({serverType:""}).toArray();
-		apl.langEnvData(FilterDataLangEnv);
-		
+		// var FilterDataLangEnv = Lazy(res.data).where({serverType:"node"}).toArray();
+		// apl.langEnvData(FilterDataLangEnv);
+		apl.langEnvData(res.data);
+		console.log(apl.langEnvData());
 		var grid = $(".grid-server").data("kendoGrid");
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
@@ -830,13 +834,24 @@ apl.selectLangEnv = function (elem, e){
 			$(this).prop("checked", false);
 		});
 		}
-	}
+	} 
+}
+
+apl.doSetupLangEnv = function (){
+	var param = ko.mapping.toJS(apl.dataLanguageEnv);
+	app.ajaxPost("/langenvironment/setup", param, function(res){
+		if (!app.isFine(res)){
+			return;
+		}
+	$('.grid-LangEnv').find('input[type=checkbox]:checked').prop({checked:false});
+	});
 }
 
 apl.setupLangEnv = function (){
 	apl.dataLanguageEnv([]);
-	$('.grid-LangEnv tbody tr').each(function(i,e){
-		var cekOrNot = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
+	var $sel = $('.grid-LangEnv tbody');
+	$('.grid-LangEnv tbody tr').each(function(i){
+		var cekOrNot = $sel.find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
 		if ( cekOrNot === true ){
 			apl.checkServerLangEnv.push("1");
 		} 
@@ -847,40 +862,39 @@ apl.setupLangEnv = function (){
 	}
 	apl.checkServerLangEnv([]);
 	$('.grid-LangEnv tbody tr').each(function(i){
-		var data = { _id:"", lang:[] };
-		var checked = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
+		var data = { ServerId:"", Lang:[] };
+		var checked = $sel.find("tr:eq("+i+") td:eq(0) input[type=checkbox]").is(':checked');
 		if (checked === true){
-			var checkedGo = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(4) input[type=checkbox]").is(':checked');
-			var checkedJava = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(5) input[type=checkbox]").is(':checked');
-			var checkedScala = $('.grid-LangEnv tbody').find("tr:eq("+i+") td:eq(6) input[type=checkbox]").is(':checked');
+			var checkedGo = $sel.find("tr:eq("+i+") td:eq(4) input[type=checkbox]").is(':checked');
+			var checkedJava = $sel.find("tr:eq("+i+") td:eq(5) input[type=checkbox]").is(':checked');
+			var checkedScala = $sel.find("tr:eq("+i+") td:eq(6) input[type=checkbox]").is(':checked');
 
 			if ( checkedGo === true || checkedJava === true || checkedScala === true ){
-				var server_id = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td input[type=checkbox]:checked').attr('idcheck');
+				var server_id = $sel.find('tr:eq("'+i+'") td input[type=checkbox]:checked').attr('idcheck');
 				if ( server_id != undefined ){
-					data._id = server_id;
+					data.ServerId = server_id;
 				}
-				var go = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(4) input[type=checkbox]:checked').attr('checkLang');
+				var go = $sel.find('tr:eq("'+i+'") td:eq(4) input[type=checkbox]:checked').attr('checkLang');
 				if ( go != undefined ){
-					data.lang.push(go);
+					data.Lang.push(go);
 				}
-				var java = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(5) input[type=checkbox]:checked').attr('checkLang');
+				var java = $sel.find('tr:eq("'+i+'") td:eq(5) input[type=checkbox]:checked').attr('checkLang');
 				if ( java != undefined ){
-					data.lang.push(java);
+					data.Lang.push(java);
 				}
-				var scala = $('.grid-LangEnv tbody').find('tr:eq("'+i+'") td:eq(6) input[type=checkbox]:checked').attr('checkLang');
+				var scala = $sel.find('tr:eq("'+i+'") td:eq(6) input[type=checkbox]:checked').attr('checkLang');
 				if ( scala != undefined ){
-					data.lang.push(scala);
+					data.Lang.push(scala);
 				}
 			}else {
-				swal({title: "No server selected", type: "error"});
+				swal({title: "No language selected", type: "error"});
 				return;
 			}
 			apl.dataLanguageEnv.push(data);
 		} 
 	});
 	console.log(JSON.stringify(ko.mapping.toJS(apl.dataLanguageEnv)));
-	$('.grid-LangEnv thead tr').find('input[type=checkbox]:checked').prop({checked:false});
-	$('.grid-LangEnv tr').find('td input[type=checkbox]:checked').prop({checked:false});
+	apl.doSetupLangEnv();
 }
 
 apl.prepareTreeView = function () {
