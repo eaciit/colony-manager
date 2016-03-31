@@ -103,9 +103,14 @@ div.k-treeview {
   width: 98%;
   height: 90%;
   padding: 0;
-  padding-top: 70px; }
+  padding-top: 20px; }
 
 .dialog-content {
-  height: 99%; }
+  min-height: 100%; }
+
+.fb-thumbview {
+  border: solid 0.1px #e6e6e6 !important;
+  margin-top: 10px !important;
+  padding: 10px; }
 
 /*# sourceMappingURL=ecfilebrowser.css.map */
