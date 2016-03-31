@@ -24,6 +24,13 @@ usr.templateFilter = {
     Email: "",
     Groups: ko.observableArray([]),
 };
+usr.templateLdap = {
+    Address: "",
+    BaseDN: "",
+    Filter: "",
+    Username: "",
+    Password: "",
+};
 
 usr.templateAccessGrant = function() {
     var self = {
@@ -63,6 +70,7 @@ usr.templateAccessGrant2 = function() {
 };
 usr.Access = ko.observableArray([]);
 usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
+usr.ldap=ko.mapping.fromJS(usr.templateLdap);
 usr.LoginID = ko.observable("");
 usr.NewPassword = ko.observable("");
 usr.ConfirmPass = ko.observable("");
@@ -78,7 +86,8 @@ usr.config = ko.mapping.fromJS(usr.templateUser);
 usr.listGroup = ko.observableArray([]);
 usr.SelectedGroup = ko.observableArray([]);
 usr.modeLoad=ko.observable(true)
-
+usr.Logintype = ko.observableArray(["","Ldap","Google","Facebook"])
+usr.valueLoginType = ko.observable("");
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
     width: 50
@@ -100,8 +109,15 @@ usr.UsersColumns = ko.observableArray([{
     } 
 ]);
 
-usr.selectGridUsers = function(e) {
-     
+usr.UsersColumnsldap = ko.observableArray([ {
+    field: "cn",
+    title: "Cn"
+    }, {
+    field: "givenName",
+    title: "Name"
+    }  
+]);
+usr.selectGridUsers = function(e) { 
     app.mode('edit')
     usr.Access.removeAll();
     usr.getAccess();
@@ -116,6 +132,14 @@ usr.selectGridUsers = function(e) {
         grp.selectedGroupsData.removeAll(); 
     });
 };
+usr.selectGridLdap = function() {    
+    app.wrapGridSelect("#grid-ldap", ".btn", function(d) {
+        usr.config.LoginID(d.cn)
+        usr.config.FullName(d.givenName)
+        $(".modal-checklogin").modal("hide");
+    });
+    
+};
  
 usr.GetFilter = function(){
     data = {
@@ -125,6 +149,17 @@ usr.GetFilter = function(){
     return data
 }
 
+usr.GetFilterLdap = function(){
+    data = {
+        Address : usr.ldap.Address(),
+        BaseDN : usr.ldap.BaseDN(),
+        Filter : usr.ldap.Filter(),
+        Username : usr.ldap.Username(),
+        Password : usr.ldap.Password(),
+    }
+
+    return data
+}
 usr.getUsers = function() {
     $("#grid-users").html("");
     $('#grid-users').kendoGrid({
@@ -163,34 +198,43 @@ usr.getUsers = function() {
         sortable: true,
         selectable: 'multiple, row', 
         filterfable: false,
-        change: usr.selectGridUsers,
+        change: usr.selectGridLdap,
         columns: usr.UsersColumns()
     });
 
 }
-// usr.searchUser = function() {
-//     usr.UsersData([]);
-//     app.ajaxPost("/user/search", {
-//         search: usr.search()
-//     }, function(res) {
-//         if (!app.isFine(res)) {
-//             return;
-//         }
-//         if (res.data == null) {
-//             res.data = "";
-//         }
-//         usr.UsersData(res.data);
-//         var grid = $(".grid-access").data("kendoGrid");
-//         $(grid.tbody).on("mouseleave", "tr", function(e) {
-//             $(this).removeClass("k-state-hover");
-//         });
+ usr.getUsersLdap = function() {
+    $("#grid-ldap").html("");
+    $('#grid-ldap').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/user/testfinduserldap",
+                    dataType: "json",
+                    data: usr.GetFilterLdap(),
+                    type: "POST",
+                    success: function(data) { 
+                        $("#grid-ldap>.k-grid-content-locked").css("height", $("#grid-ldap").data("kendoGrid").table.height());
+                         
+                    }
+                }
+            },
+            schema: {
+                data: "data"
+            },
 
-//         if (typeof c == "function") {
-//             c(res);
-//         }
-//     });
-// };
+            pageSize: 5 
+        }, 
+        pageable: true,  
+        sortable: true,  
+        selectable: 'multiple, row', 
+        filterfable: true,
+        change: usr.selectGridLdap,
+        columns: usr.UsersColumnsldap()
 
+    });
+
+}
 usr.searchUser = function(event){
     if ((event != undefined) && (event.keyCode == 13)){
         $('#grid-users').data('kendoGrid').dataSource.read();
@@ -672,6 +716,15 @@ usr.showModalChPass = function() {
     $(".modal-chpass").modal("show");
 };
 
+usr.CheckLoginType =  function(){
+    usr.getUsersLdap();
+}
+
+usr.DisplayLdap =  function(){
+   if(usr.valueLogintype=="Ldap"){
+        $(".modal-checklogin").modal("show");
+   } 
+}
 usr.CheckPass = function() {
     if (usr.NewPassword() != "" && usr.ConfirmPass() != "" && usr.NewPassword() == usr.ConfirmPass()) {
         usr.confpass(true)

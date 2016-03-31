@@ -284,3 +284,29 @@ func (a *UserController) InitialSetDatabase() error {
 	}
 	return nil
 }
+
+func (a *UserController) TestFindUserLdap(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetForms(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	addr := toolkit.ToString(payload["Address"])  //"192.168.0.200:389"
+	basedn := toolkit.ToString(payload["BaseDN"]) //"DC=eaciit,DC=local"
+	filter := toolkit.ToString(payload["Filter"]) //"(&(objectclass=person)(objectclass=organizationalPerson)(cn=*))"
+
+	param := toolkit.M{}
+
+	param.Set("username", toolkit.ToString(payload["Username"])) //"Alip Sidik"
+	param.Set("password", toolkit.ToString(payload["Password"])) //"Password.1"
+	param.Set("attributes", []string{"cn", "givenName"})
+
+	arrtkm, err := acl.FindUserLdap(addr, basedn, filter, param)
+	fmt.Println(addr)
+	if err != nil {
+		return helper.CreateResult(true, err, "error")
+	}
+	return helper.CreateResult(true, arrtkm, "sukses")
+}
