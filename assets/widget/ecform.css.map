@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,iBAAiB;EAChB,WAAW,EAAE,IAAI;EACjB,UAAU,EAAE,IAAI;EAEhB,uBAAO;IACN,OAAO,EAAE,GAAG;IACZ,QAAQ,EAAE,QAAQ;IAClB,KAAK,EAAE,GAAG;;AAEZ,cAAc;EACb,aAAa,EAAE,IAAI",
+"sources": ["ecform.sass"],
+"names": [],
+"file": "ecform.css"
+}

@@ -424,6 +424,9 @@ table.table tr:hover td {
     position: absolute;
     right: 5px; }
 
+.setting-form {
+  margin-top: 10px; }
+
 .databrowser-query-label {
   line-height: 25px;
   text-align: left; }
