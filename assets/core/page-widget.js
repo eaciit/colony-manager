@@ -45,7 +45,10 @@ wl.selectCount = function(e) {
     console.log("event :: select (" + dataItem.text + " : " + dataItem.value + ")" );
 }
 
-wl.getWidgetList = function() {
+wl.getWidgetList = function(mode) {
+	if (mode == "refresh") {
+		wl.widgetDataSource([]);
+	}
 	app.ajaxPost("/widget/getwidget", {search: wl.searchfield()}, function(res){
 		if(!app.isFine(res)){
 			return;
@@ -235,13 +238,13 @@ wl.removeWidget = function() {
 wl.backToFront = function() {
 	app.mode("");
 	wl.scrapperMode("");
-	wl.getWidgetList();
+	wl.getWidgetList("");
 	wl.widgetDataSource([]);
 	$("#filename").text("");
 	ko.mapping.fromJS(wl.widgetListConfig, wl.configWidgetList);
 };
 
 $(function (){
-	wl.getWidgetList();
+	wl.getWidgetList("");
 	wl.selectAllWidget();
 });
