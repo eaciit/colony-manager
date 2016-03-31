@@ -9,14 +9,14 @@
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
     <div class="col-md-4">
         <button class="btn btn-sm btn-primary navbar-btn" data-bind="click:usr.getUsers">
-            <span class="glyphicon glyphicon-refresh"></span> Refresh
-        </button>
+        <span class="glyphicon glyphicon-refresh"></span> Refresh
+    </button>
         <button class="btn btn-sm btn-success" data-bind="click: usr.createNewUser">
             <span class="glyphicon glyphicon-plus"></span> Add
-        </button>
+    </button>
         <button class="btn btn-sm btn-danger navbar-btn" data-bind="click:usr.deleteuser">
-            <span class="glyphicon glyphicon-remove"></span> Delete
-        </button>
+        <span class="glyphicon glyphicon-remove"></span> Delete
+    </button>
     </div>
     <div class="col-md-3" style="margin-top:10px;">
         <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : usr.search, event:{keyup:usr.searchUser(event)}'/>
@@ -56,20 +56,8 @@
     <div class="tab-content">
         <div class="tab-pane active" id="User">
             <div>
-                <div> 
+                <div>
                     <form class="form-horizontal form-server" id="form-add-Server" novalidate>
-                        <div class="form-group">
-                            <label class="col-md-3 filter-label">Login Type</label>
-                            <div class="col-md-5">
-                                <select class="form-control input-sm" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
-                                <span class="k-invalid-msg" data-for="LoginType"></span>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-sm btn-success full-width" data-bind="click: usr.DisplayLdap">
-                                    <span class="glyphicon glyphicon-plus"></span> Check
-                                </button>
-                            </div>
-                        </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login ID</label>
                             <div class="col-md-7">
@@ -120,7 +108,6 @@
                         <select type="text" id="Groups" data-bind="kendoMultiSelect: {value: usr.SelectedGroup, data:usr.listGroup, dataTextField: 'text', select: usr.displayAccess , dataValueField: 'value', filter: 'contains'}"></select>
                         <span class="k-invalid-msg" data-for="Groups"></span>
                     </div> -->
-                    
             <div  >
                 <div class="panel-body">
                     <div class="col-md-12 " style="margin-top:70px;">
@@ -264,83 +251,6 @@
                     <button type="button" class="btn btn-sm btn-primary" data-bind="click: usr.ChangePass">
                         <span class="glyphicon glyphicon-ok"></span> Save
                     </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade modal-checklogin" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
-    <div class="modal-dialog modalcustom">
-        <div class="modal-content">
-            <div class="modal-1" id="modal-1">
-                <div class="modal-header">
-                    <h4 class="modal-title">
-                        Ldap
-                    </h4>
-                </div>
-                <div  >      
-                    <div class="col-md-12" >
-                    <form class="form-horizontal form-server" id="form-add-Server" novalidate> 
-                        <div class="col-md-6" >
-                        <div class="form-group"  >
-                            <label class="col-md-3 filter-label" >Address</label>
-                            <div class="col-md-8"  >
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Address" type="text" class="form-control input-sm" name="Address" placeholder="Type the Address Here" data-bind="value: usr.ldap.Address">
-                                <span class="k-invalid-msg" data-for="Address"></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-3 filter-label">Base DN</label>
-                            <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for BaseDN" type="text" class="form-control input-sm" name="BaseDN" placeholder="Type the BaseDN Here" data-bind="value: usr.ldap.BaseDN">
-                                <span class="k-invalid-msg" data-for="BaseDN"></span>
-                            </div>
-                        </div> 
-                        <div class="form-group">
-                            <label class="col-md-3 filter-label">Filter</label>
-                            <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Filter" type="text" class="form-control input-sm" name="Filter" placeholder="Type the Filter Here" data-bind="value: usr.ldap.Filter">
-                                <span class="k-invalid-msg" data-for="Filter"></span>
-                            </div>
-                        </div> 
-                    </div>
-                    <div class="col-md-6" >
-                         <div class="form-group"  >
-                            <label class="col-md-3 filter-label" >Username</label>
-                            <div class="col-md-8"  >
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Username" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Username Here" data-bind="value: usr.ldap.Username">
-                                <span class="k-invalid-msg" data-for="Username"></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-3 filter-label">Password</label>
-                            <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="text" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: usr.ldap.Password">
-                                <span class="k-invalid-msg" data-for="Password"></span>
-                            </div>
-                        </div>
-                        <div class="form-group"> 
-                            <div class="col-md-11" align="right">
-                            <button type="button" class="btn btn-sm btn-primary" data-bind="click: usr.getUsersLdap">
-                                 <span class="glyphicon glyphicon-refresh"></span> Search
-                            </button>
-                            </div>
-                        </div>    
-                    </div>
-                    </form>    
-                    <div class="col-md-12" >    
-                    <div class="form-group">
-                        <div id="grid-ldap"></div>
-                    </div>
-                    </div>
-                    <div class="clearfix"></div> 
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal" style="margin-right:45px;">
-                        <span class="glyphicon glyphicon-remove"></span> Cancel
-                    </button> 
                 </div>
             </div>
         </div>
