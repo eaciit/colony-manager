@@ -115,8 +115,13 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var yo = 0;
 		for (i in apl.applicationData()){
-			if (apl.applicationData()[i].DeployedTo.length > 0 || apl.applicationData()[i].DeployedTo != undefined){
-				var app = ko.utils.arrayFilter(apl.applicationData()[i].DeployedTo, function (yoi) {
+			var deployedTo = apl.applicationData()[i].DeployedTo;
+			if (typeof deployedTo === "undefined" || deployedTo == null) {
+				deployedTo = [];
+			}
+
+			if (deployedTo.length > 0){
+				var app = ko.utils.arrayFilter(deployedTo, function (yoi) {
 					return yoi == srv.configServer._id();
 				});
 				if (app.length > 0)

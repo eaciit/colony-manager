@@ -472,6 +472,11 @@ apl.saveApplication = function() {
 		return;
 	}
 
+	if (apl.applicationMode() == "" && $("#files").val() == "") {
+		swal({title: "Archive file cannot be empty", type: "error", closeOnConfirm: true});
+		return;
+	}
+
 	var data = ko.mapping.toJS(apl.configApplication);
 	var formData = new FormData();
 	formData.append("Enable", data.Enable);
@@ -482,6 +487,7 @@ apl.saveApplication = function() {
 	formData.append("Port", data.Port);
 	formData.append("Command",JSON.stringify(data.Command));
 	formData.append("Variable", JSON.stringify(data.Variable));
+	formData.append("IsEdit", (apl.applicationMode() != ""));
 
 	app.ajaxPost("/application/saveapps", formData, function (res) {
 		if (!app.isFine(res)) {
