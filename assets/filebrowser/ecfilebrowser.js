@@ -76,6 +76,7 @@ var methodsFB = {
 BuildFileExplorer:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
+		var serverId = "";
 
 		strcont = "<div class='col-md-12 fb-container'></div>";
 		$strcont = $(strcont);
@@ -109,11 +110,14 @@ BuildFileExplorer:function(elem,options){
 		$strbtn.click(function(){
 			$(elem).find(".fb-thumbview").hide();
 			$(elem).find(".fb-tree").show();
+
 		});
 
 		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='Thumbnail View'><span class='glyphicon glyphicon-th'></span> </button>");
 		$strbtn.appendTo($strbtngrpMode);
 		$strbtn.click(function(){
+			var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):null;
+			methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
 			$(elem).find(".fb-thumbview").show();
 			$(elem).find(".fb-tree").hide();
 		});
@@ -190,6 +194,7 @@ BuildFileExplorer:function(elem,options){
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
 					app.miniloader(true);
+					serverId = this.value();
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 					methodsFB.ThumbnailView(elem,options,{serverId: this.value(), path:null});
@@ -283,7 +288,6 @@ BuildFileExplorer:function(elem,options){
 			dataSource: datatree,
 			dataTextField: options.dataSource.nameField
 		});		
-		var serverId = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
 		$(elem).find(".fb-thumbview").hide();
 		methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:null});
 		methodsFB.BuildEditor(elem,options);
@@ -328,12 +332,13 @@ BuildFileExplorer:function(elem,options){
 		        });
 
 		        if(data.path !== null){
-		        	var newPathname = "";
+		        	newPathname = "";
+		        	pathData = [];
 		        	var pathArray = data.path.split( '/' );
 					for (i = 1; i < pathArray.length; i++) {
 					  newPathname += "/";
   					  newPathname += pathArray[i];
-
+  					  pathData.push(newPathname);
 		        	  if(i === (pathArray.length - 1)){
 		        	  	 $libreadcrumbs = $('<li class="active">'+pathArray[i]+'</li>');
 		        	  	 $libreadcrumbs.appendTo($breadcrumbs);
@@ -346,12 +351,13 @@ BuildFileExplorer:function(elem,options){
 						});
 		        	  }
 					}
+					methodsFB.SetSelectedNode(elem,data.path,pathData);
 		        }
 
 		        if(results !== null){
 		            $.each(results, function(index) {
 		            	var id = $.now();
-		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">')
+		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">');
 			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 5) + "..." : results[index].name);
 			            $strprecont = $('<div class="col-xs-2 col-md-1">'+
 			            					'<a href="#" id="'+id+'-'+index+'" class="thumbnail tooltipster" title="'+results[index].name+'">'+
@@ -1002,5 +1008,20 @@ BuildFileExplorer:function(elem,options){
 		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
 		var dataItem = tree.dataItem(tree.findByUid(selectedUid));
 		return dataItem;
+	},
+	SetSelectedNode:function(elem,id,arrPath){
+		var treeViewName = $($(elem).find(".k-treeview"));
+	    var treeView = treeViewName.data("kendoTreeView");
+
+	    var nodeDataItem = treeView.dataSource.get(id);
+	    var nodeElement = treeView.findByUid(nodeDataItem.uid);
+
+	    treeView.collapse('.k-item');
+        treeView.collapsingOthers = true;
+
+	    treeView.select(nodeElement);
+	    treeView.expandPath(arrPath);
+	    console.log(id);
+	    console.log(arrPath);
 	}
 }
