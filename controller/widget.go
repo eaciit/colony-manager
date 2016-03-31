@@ -98,7 +98,6 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	widget.ID = r.Request.FormValue("_id")
 	widget.Title = r.Request.FormValue("title")
 	datasource := r.Request.FormValue("dataSourceId")
-	// widget.DataSourceID = strings.Split(datasource, ",")
 	widget.Description = r.Request.FormValue("description")
 
 	widgetData, err := w.FetchDataSource(datasource)
@@ -107,15 +106,18 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	}
 	widget.DataSource = widgetData.DataSource
 
+	widgetConfig := toolkit.Ms{}
+	if fileName != "" {
+		widgetConfig, err = widget.ExtractFile(compressedSource, fileName)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+	widget.Config = widgetConfig
+
 	if err := widget.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	// if r.Request.FormValue("mode") == "editor" && fileName == "" {
-	if err := widget.ExtractFile(compressedSource, fileName); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	// }
 
 	return helper.CreateResult(true, widget, "")
 }
@@ -147,7 +149,7 @@ func (w *WidgetController) RemoveWidget(r *knot.WebContext) interface{} {
 	for _, id := range idArray {
 		o := new(colonycore.Widget)
 		o.ID = id.(string)
-		if err := o.Delete(); err != nil {
+		if err := o.Delete(compressedSource); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
