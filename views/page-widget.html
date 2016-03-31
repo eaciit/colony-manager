@@ -1,6 +1,9 @@
 <!-- core -->
 <script src="/res/core/page-widget.js"></script>
 
+<script src="/res/widget/ecform.js"></script>
+<link href="/res/widget/ecform.css" rel="stylesheet">
+
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: Widget">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'widget')">
@@ -11,7 +14,7 @@
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: addWidget">
-	    		<span class="glyphicon glyphicon-plus"></span> Add Widgte
+	    		<span class="glyphicon glyphicon-plus"></span> Add Widget
 	    	</button>
 	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: removeWidget">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
@@ -127,9 +130,14 @@
 
 				<div class="modal-body" data-bind="">
 				    <div class="form-group">
-			    		<label class="col-md-3 filter-label">Data Source</label>
-			        	<div class="col-md-7">
-			        		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource, value: dataSourceId }" name="datasource" id="datasource"></select>
+				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;">
+				    		<label class="col-md-3 ecform-formlabel">Data Source</label>
+				        	<div class="col-md-9">
+				        		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource, value: dataSourceId }" name="datasource" id="datasource"></select>
+				        	</div>
+			        	</div>
+			        	<div class="col-md-12 setting-form">
+			        		<div id="settingform"></div>
 			        	</div>
 			        	<div class="clearfix"></div>
 		        	</div>

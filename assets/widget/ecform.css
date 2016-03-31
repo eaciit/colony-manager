@@ -1,0 +1,12 @@
+.ecform-formlabel {
+  line-height: 25px;
+  text-align: left; }
+  .ecform-formlabel:after {
+    content: ":";
+    position: absolute;
+    right: 5px; }
+
+.ecform-column {
+  margin-bottom: 10px; }
+
+/*# sourceMappingURL=ecform.css.map */

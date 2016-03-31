@@ -84,6 +84,49 @@ wl.openWidget = function(_id, mode) {
 		backdrop: 'static',
 		keyboard: true
 	});
+	$('#settingform').ecForm({
+		title: "",
+		widthPerColumn: 12,
+		metadata: [
+			{
+				"name": "area_color",
+				"title": "Area Color",
+				"type": "text",
+				"value": "#B3ECFF",		
+			},
+			{
+				"name": "title",
+				"title": "Title",
+				"type": "text",
+				"value": "Example Widget 1",		
+			},
+			{
+				"name": "title_align",
+				"title": "Title Align",
+				"type": "dropdown",
+				"data": "left,right",
+				"value": "right",		
+			},
+			{
+				"name": "pagesize",
+				"title": "Page Size",
+				"type": "number",
+				"value": "2",		
+			},
+			{
+				"name": "filterable",
+				"title": "Filter",
+				"type": "bool",
+				"value": true,		
+			},
+			{
+				"name": "columnMenu",
+				"title": "Column Menu",
+				"type": "bool",
+				"value": false,		
+			},
+		]
+	});
 };
 
 wl.previewWidget = function(_id) {
