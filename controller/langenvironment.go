@@ -1,6 +1,7 @@
 package controller
 
 import (
+	// "archive/zip"
 	"encoding/json"
 	// "errors"
 	"fmt"
@@ -24,20 +25,17 @@ var (
 	leSourcePath = filepath.Join(EC_DATA_PATH, "langenvironment", "installer")
 )
 
-// const (
-// 	// os+arsitektur os+bahasa
-// 	SERVER_OS = ""
-// 	ARCH_OS   = ""
-// 	LANG      = ""
-// )
 const (
-	SERVER_WIN   = "windows"
-	SERVER_LINUX = "linux"
-	SERVER_OSX   = "osx"
+	DESTINSTALL_PATH = "/usr/local/"
+	SERVER_WIN       = "windows"
+	SERVER_LINUX     = "linux"
+	SERVER_OSX       = "osx"
 
 	LANG_GO    = "go"
 	LANG_JAVA  = "java"
 	LANG_SCALA = "scala"
+
+	INSTALLER_LINUX_GO = "go1.6.linux-x86_64.tar.gz"
 )
 
 type LangenvironmentController struct {
@@ -198,4 +196,107 @@ func (l *LangenvironmentController) Setup(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, payload, "")
+}
+
+func (l *LangenvironmentController) GetSampleFromSH() {
+	s := `[{"LangName":"go", "commands":[{ "name": "build", "cmd": "go build" }, { "name": "run", "cmd": "go run" }], "installer":[{ "os": "linux", "InstallerFile": "/data-root/install.sh", "InstallerSource":"go1.6.installer.tar.gz" }, { "os": "windows", "InstallerFile": "installer.bat", "InstallerSource": "go1.6.installer.tar.gz" }]}]`
+	fmt.Println(s)
+}
+
+func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := l.GetSampleDataForSetupLang()
+
+	fmt.Println("payload ServerId : ", payload.ServerId)
+
+	dataServers := new(colonycore.Server)
+	err := colonycore.Get(dataServers, payload.ServerId)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	serverPathSeparator := CreateApplicationController(l.Server).GetServerPathSeparator(dataServers)
+
+	sshSetting, sshClient, err := CreateServerController(l.Server).SSHConnect(dataServers)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer sshClient.Close()
+
+	var sourcePath string
+	var destinationPath string
+	var pathstring []string
+
+	for _, vallang := range payload.Lang {
+		if vallang == LANG_GO {
+			pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_GO}
+
+			sourcePath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, INSTALLER_LINUX_GO)
+			destinationPath = strings.Join(append(pathstring, dataServers.OS), serverPathSeparator)
+		}
+		installShPath := filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "install.sh")
+
+		pathstring = append(pathstring, dataServers.OS)
+		installShdestPath := strings.Join(append(pathstring, "install.sh"), serverPathSeparator)
+		installFilePath := strings.Join(append(pathstring, INSTALLER_LINUX_GO), serverPathSeparator)
+
+		fmt.Println(" :: ", sourcePath)
+		fmt.Println(" :: ", destinationPath)
+		fmt.Println(" :: ", INSTALLER_LINUX_GO)
+
+		// compressPath := filepath.Join(leSourcePath)
+		// err = toolkit.TarCompress(compressPath, filepath.Join(compressPath, fmt.Sprintf("%s.tar", dataServers.OS)))
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		err = sshSetting.SshCopyByPath(sourcePath, destinationPath)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		err = sshSetting.SshCopyByPath(installShPath, destinationPath)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		//sed -i 's/^M//' install.sh
+		cmdSedInstall := fmt.Sprintf("sed -i 's/\r//g' %s", installShdestPath)
+		_, err = sshSetting.GetOutputCommandSsh(cmdSedInstall)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		fmt.Println(" installation sh dest :: ", installShdestPath)
+		// // chmod +x install.sh
+		cmdChmodCli := fmt.Sprintf("chmod -x %s", installShdestPath)
+		_, err = sshSetting.GetOutputCommandSsh(cmdChmodCli)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		// sh install.sh installFilePath DESTINSTALL_PATH projectpath
+		cmdShCli := fmt.Sprintf("sh install.sh %s %s %s", installFilePath, DESTINSTALL_PATH, "goproject")
+		fmt.Println("sh command :: ", cmdShCli)
+		_, err = sshSetting.GetOutputCommandSsh(cmdShCli)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+	}
+
+	return helper.CreateResult(true, payload, "")
+}
+
+func (l *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	dsLang, err := new(colonycore.LanguangeEnvironment).Get("")
+	// dsLang := new(colonycore.LanguangeEnvironment)
+	// err := colonycore.Get(dsLang, "halo")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(dsLang)
+
+	return helper.CreateResult(true, dsLang, "")
 }
