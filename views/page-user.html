@@ -1,4 +1,4 @@
-<style>
+    <style>
     .no-left-padding {
         padding-left: 0px;
     }
@@ -280,13 +280,15 @@
                     </h4>
                 </div>
                 <div  >      
-                    <div class="col-md-12" >
-                    <form class="form-horizontal form-server" id="form-add-Server" novalidate> 
+                    <div class="col-md-12" style="margin-top:20px;">
+                    <form class="form-horizontal form-server" id="form-add-Server" novalidate > 
                         <div class="col-md-6" >
                         <div class="form-group"  >
                             <label class="col-md-3 filter-label" >Address</label>
                             <div class="col-md-8"  >
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Address" type="text" class="form-control input-sm" name="Address" placeholder="Type the Address Here" data-bind="value: usr.ldap.Address">
+                               <!--  <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Address" type="text" class="form-control input-sm" name="Address" placeholder="Type the Address Here" data-bind="value: usr.ldap.Address"> -->
+                                <!-- <select class="form-control input-sm" data-bind="options: usr.ListAddress, selectedOptions: usr.selectedAddress , event:{ change: usr.setLdap}" ></select> -->
+                                <input  class="form-control input-sm full-width"  id="Address" data-bind="value: usr.ldap.Address" />
                                 <span class="k-invalid-msg" data-for="Address"></span>
                             </div>
                         </div>

@@ -4,8 +4,8 @@ import (
 	// "archive/zip"
 	"encoding/json"
 	"fmt"
-	// "github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/acl"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	// _ "github.com/eaciit/dbox/dbc/jsons"
@@ -197,7 +197,13 @@ func (a *UserController) SaveUser(r *knot.WebContext) interface{} {
 	initUser.Password = user["Password"].(string)
 	initUser.Enable = user["Enable"].(bool)
 	initUser.Groups = group
-
+	if user["LoginType"].(string) == "1" {
+		initUser.LoginType = acl.LogTypeLdap
+	} else if user["LoginType"].(string) == "0" {
+		initUser.LoginType = acl.LogTypeBasic
+	}
+	fmt.Println(user["LoginType"].(string))
+	fmt.Println(initUser.LoginType)
 	err = acl.Save(initUser)
 
 	if err != nil {
@@ -293,14 +299,14 @@ func (a *UserController) TestFindUserLdap(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	addr := toolkit.ToString(payload["Address"])  //"192.168.0.200:389"
-	basedn := toolkit.ToString(payload["BaseDN"]) //"DC=eaciit,DC=local"
-	filter := toolkit.ToString(payload["Filter"]) //"(&(objectclass=person)(objectclass=organizationalPerson)(cn=*))"
+	addr := toolkit.ToString(payload["Address"])  //192.168.0.200:389
+	basedn := toolkit.ToString(payload["BaseDN"]) //DC=eaciit,DC=local
+	filter := toolkit.ToString(payload["Filter"]) //(&(objectclass=person)(objectclass=organizationalPerson)(cn=*))
 
 	param := toolkit.M{}
 
-	param.Set("username", toolkit.ToString(payload["Username"])) //"Alip Sidik"
-	param.Set("password", toolkit.ToString(payload["Password"])) //"Password.1"
+	param.Set("username", toolkit.ToString(payload["Username"])) //Alip Sidik
+	param.Set("password", toolkit.ToString(payload["Password"])) //Password.1
 	param.Set("attributes", []string{"cn", "givenName"})
 
 	arrtkm, err := acl.FindUserLdap(addr, basedn, filter, param)
@@ -309,4 +315,53 @@ func (a *UserController) TestFindUserLdap(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, err, "error")
 	}
 	return helper.CreateResult(true, arrtkm, "sukses")
+}
+
+func (a *UserController) SaveConfigLdap(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	o := new(colonycore.Ldap)
+	o.ID = payload["Address"].(string)
+	o.Address = payload["Address"].(string)
+	o.BaseDN = payload["BaseDN"].(string)
+	o.Filter = payload["Filter"].(string)
+	o.Username = payload["Username"].(string)
+	o.Password = payload["Password"].(string)
+
+	err = colonycore.Save(o)
+	if err != nil {
+		return helper.CreateResult(false, o, err.Error())
+	}
+
+	return helper.CreateResult(true, o, "")
+}
+
+func (a *UserController) GetConfigLdap(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	filters := []*dbox.Filter{}
+
+	var query *dbox.Filter
+	if len(filters) > 0 {
+		query = dbox.And(filters...)
+	}
+
+	cursor, err := colonycore.Find(new(colonycore.Ldap), query)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.Ldap{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
 }
