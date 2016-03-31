@@ -92,9 +92,9 @@
 		</nav>
 
 		<div class="" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-body  position-custom">
+		    <div class="pdCustom position-custom">
 				{{template "_miniloader.html"}}	
-				<div data-bind="visible: !app.miniLoader">
+				<div data-bind="visible: !app.miniloader()">
 		    		<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, selectable: 'multiple, row', change: apl.selectApps, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-application') }"></div>
 		    	</div>
 		    </div>
@@ -119,221 +119,223 @@
 	      <li data-bind="visible: (apl.applicationMode() != '')"><a href="#Servers-app"  data-toggle="tab">Servers</a></li>
 	    </ul>
 
-		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
-		    <div class="panel-body">
-			    <div id="myTabContent" class="tab-content">
-			    	<div class="tab-pane fade in active" id="Form-app">
-			    		<form class="form-horizontal form-application" id="form-add-Application" data-bind="with: configApplication" novalidate>
-				    		<div class="col-md-6">
-					    		<div class="form-group">
-						    		<label class="col-md-3 filter-label">ID</label>
-						    		<div class="col-md-6">
-						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')" placeholder="Type application ID here" />
-						    			<span class="k-invalid-msg" data-for="ID"></span>
-						    		</div>
-					    		</div>
-					    		<div class="form-group">
-						    		<label class="col-md-3 filter-label">Name</label>
-						    		<div class="col-md-6">
-						    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" placeholder="Type application name here" />
-						    			<span class="k-invalid-msg" data-for="name"></span>
-						    		</div>
-					    		</div>
-				    		</div>
-				    		<div class="col-md-6">
-					    		<div class="form-group">
-						    		<label class="col-md-3 filter-label">Type</label>
-						    		<div class="col-md-6">
-						    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
-						    			<span class="k-invalid-msg" data-for="AppType"></span>
-						    		</div>
-					    		</div>
-					    		<div class="form-group">
-						    		<label class="col-md-3 filter-label">Running Port</label>
-						    		<div class="col-md-6">
-						    			<input class="full-width" type="number" name="Port" required data-bind="kendoNumericTextBox: { min: 0, placeholder: 'Example: 8080', value: Port, format: '#' }" />
-						    			<span class="k-invalid-msg" data-for="Port"></span>
-						    		</div>
-					    		</div>
-					    		<div class="form-group">
-						    		<div class="col-md-6 col-md-offset-3">
-						    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
-										    <span class="fa fa-file"></span> Upload .zip / .tar / .tar.gz / .gz file 
-										    <input required id="files" name="files" type="file" accept=".zip,.tar,.tar.gz,.gz">
-										</span>
-										<div><span id="nama" data-bind="value:AppPath"></span></div>
-										<div><span class="k-invalid-msg" data-for="files"></span></div>
-						    		</div>
-								</div>
-				    		</div>
-
-							<div class="col-md-12">
-								<div class="form-group">
-							        <label class="col-sm-2 filter-label">Command</label>
-							        <div class="col-sm-8">
-							        	<div class="nav">
-							        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addCommand">
-							        			<span class="glyphicon glyphicon-plus"></span> Add
-							        		</button>
-							        	</div>
-							        	<table class="table" id="datasource-settings">
-						        			<thead>
-						        				<tr>
-						        					<th>Key</th>
-						        					<th>Value</th>
-						        				</tr>
-						        			</thead>
-						        			<tbody data-bind="foreach: apl.configApplication.Command" > 
-						        				<tr>
-						        					<td>
-						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
-						        					</td>
-						        					<td>
-						        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
-						        					</td>
-						        					<td>
-						        						<button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: apl.removeCommand($data)">
-						        							<span class="glyphicon glyphicon-remove"></span>
-						        						</button>
-						        						<button type="button" class="btn btn-sm btn-success" data-bind="visible: ($index() >= 0)">
-						        							<span class="glyphicon glyphicon-play"></span>
-						        						</button>
-						        					</td>
-						        				</tr>
-						        			</tbody>
-							        	</table>
-							        </div>
-							    </div>
-						    </div>
-
-							<div class="col-md-12">
-								<div class="form-group">
-							        <label class="col-sm-2 filter-label">Variable</label>
-							        <div class="col-sm-8">
-							        	<div class="nav">
-							        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addVariable">
-							        			<span class="glyphicon glyphicon-plus"></span> Add
-							        		</button>
-							        	</div>
-							        	<table class="table" id="datasource-settings">
-						        			<thead>
-						        				<tr>
-						        					<th>Key</th>
-						        					<th>Value</th>
-						        				</tr>
-						        			</thead>
-						        			<tbody data-bind="foreach: apl.configApplication.Variable" > 
-						        				<tr>
-						        					<td>
-						        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
-						        					</td>
-						        					<td>
-						        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
-						        					</td>
-						        					<td>
-						        						<button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: apl.removeVariable($data)" > 
-						        							<span class="glyphicon glyphicon-remove"></span>
-						        						</button>
-						        						<button type="button" class="btn btn-sm btn-success" data-bind="visible: ($index() >= 0)">
-						        							<span class="glyphicon glyphicon-play"></span>
-						        						</button>
-						        					</td>
-						        				</tr>
-						        			</tbody>
-							        	</table>
-							        </div>
-							    </div>
-						    </div>
-				    	</form>
-			    	</div>
-				    <div class="tab-pane fade" id="Editor-app">
-				    	<div class="col-md-12">
-				    		<!-- <div class="col-md-12 action-button no-padding">
-				    			<button class="btn btn-sm btn-success tooltipster" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir" title="Create new file/folder">
-				    				<span class="glyphicon glyphicon-file"></span>
-			    				</button>
-				    			<button class="btn btn-sm btn-danger tooltipster" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir" title="Delete">
-				    				<span class="glyphicon glyphicon-remove"></span>
-				    			</button>
-				    			<button class="btn btn-sm btn-warning tooltipster" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''" title="Rename">
-				    				<span class="glyphicon glyphicon-pencil"></span>
-				    			</button>
-				    			<button class="btn btn-sm btn-primary tooltipster" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir" title="Save changes">
-				    				<span class="fa fa-save"></span>
-			    				</button>
-				    		</div> -->
-					    	<!-- <div class="col-md-12 headercustom">
-					            <div class="col-md-6">
-					    		    <div class="col-md-10 form-group head-form">
-							    		<label class="col-md-3 srch pdTop6">Search :</label>
-							    		<div class="col-md-5 inpt-src">
-							    			<div class="input-group">
-										      <input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
-										      <span class="input-group-btn">
-										        <button class="btn btn-sm btn-default btncustom" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><i class="glyphicon glyphicon-search"></i></button>
-										      </span>
-										    </div>
-										    <div class="trv-btn">
-									    		<div class="btn-group btn-group-md" >
-												  <button type="button" class="btn btn-primary btn-menu"  id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span></button>
-												  <button type="button" class="btn btn-primary btn-menu"  data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span></button>
-												  <button type="button" class="btn btn-primary btn-menu" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span></button>
-												  <button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh"></span></button>
-												</div>
-								    		</div>
+		<div data-bind="visible: (app.mode() == 'editor')" style="width: 100%;">
+		    <div id="myTabContent" class="tab-content">
+		    	<div class="tab-pane fade in active" id="Form-app">
+		    		<div class="panel" >
+		    			<div class="panel-body">
+				    		<form class="form-horizontal form-application" id="form-add-Application" data-bind="with: configApplication" novalidate>
+					    		<div class="col-md-6">
+						    		<div class="form-group">
+							    		<label class="col-md-3 filter-label">ID</label>
+							    		<div class="col-md-6">
+							    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" class="form-control input-sm" id="ID" name="ID"  type="text" data-bind="value: _id, enable: (apl.applicationMode() == '')" placeholder="Type application ID here" />
+							    			<span class="k-invalid-msg" data-for="ID"></span>
 							    		</div>
 						    		</div>
-							    </div>
-							    <div class="col-md-3">
-							    	<label class="col-md-3 pdTop6" id=""></label>
-					    			<div id="nm-file" class="pdTop6"></div>
-					    		</div>
-					    		<div class="col-md-5">
-					    			<label class="col-md-8 pdTop6" id="txt-path"></label>
-					            	
-					    		</div>
-					    	</div> -->
-					    	<div class="col-md-12 headercustom">
-					            <div class="col-md-5 trv-4">
-					    		    <!-- <div class="col-md-12"> -->
-							    		<label class="col-md-3 srch pdTop6">Search</label>
-							    		<div class="col-md-5 inpt-src">
-											<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
+						    		<div class="form-group">
+							    		<label class="col-md-3 filter-label">Name</label>
+							    		<div class="col-md-6">
+							    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" placeholder="Type application name here" />
+							    			<span class="k-invalid-msg" data-for="name"></span>
 							    		</div>
-										<div class="row-grup">
-											<div class="onbutton gr" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh icn"></span></div>
-											<div class="onbutton gr" type="button" id="btnNewFileDir icn" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file icn"></span></div>
-											<div class="onbutton gr" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove icn"></span></div>
-											<div class="onbutton gr"  data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil icn"></span></div>
-										</div>
-						    		
+						    		</div>
+					    		</div>
+					    		<div class="col-md-6">
+						    		<div class="form-group">
+							    		<label class="col-md-3 filter-label">Type</label>
+							    		<div class="col-md-6">
+							    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
+							    			<span class="k-invalid-msg" data-for="AppType"></span>
+							    		</div>
+						    		</div>
+						    		<div class="form-group">
+							    		<label class="col-md-3 filter-label">Running Port</label>
+							    		<div class="col-md-6">
+							    			<input class="full-width" type="number" name="Port" required data-bind="kendoNumericTextBox: { min: 0, placeholder: 'Example: 8080', value: Port, format: '#' }" />
+							    			<span class="k-invalid-msg" data-for="Port"></span>
+							    		</div>
+						    		</div>
+						    		<div class="form-group">
+							    		<div class="col-md-6 col-md-offset-3">
+							    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
+											    <span class="fa fa-file"></span> Upload .zip / .tar / .tar.gz / .gz file 
+											    <input required id="files" name="files" type="file" accept=".zip,.tar,.tar.gz,.gz">
+											</span>
+											<div><span id="nama" data-bind="value:AppPath"></span></div>
+											<div><span class="k-invalid-msg" data-for="files"></span></div>
+							    		</div>
+									</div>
+					    		</div>
+
+								<div class="col-md-12">
+									<div class="form-group">
+								        <label class="col-sm-2 filter-label">Command</label>
+								        <div class="col-sm-8">
+								        	<div class="nav">
+								        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addCommand">
+								        			<span class="glyphicon glyphicon-plus"></span> Add
+								        		</button>
+								        	</div>
+								        	<table class="table" id="datasource-settings">
+							        			<thead>
+							        				<tr>
+							        					<th>Key</th>
+							        					<th>Value</th>
+							        				</tr>
+							        			</thead>
+							        			<tbody data-bind="foreach: apl.configApplication.Command" > 
+							        				<tr>
+							        					<td>
+							        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+							        					</td>
+							        					<td>
+							        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+							        					</td>
+							        					<td>
+							        						<button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: apl.removeCommand($data)">
+							        							<span class="glyphicon glyphicon-remove"></span>
+							        						</button>
+							        						<button type="button" class="btn btn-sm btn-success" data-bind="visible: ($index() >= 0)">
+							        							<span class="glyphicon glyphicon-play"></span>
+							        						</button>
+							        					</td>
+							        				</tr>
+							        			</tbody>
+								        	</table>
+								        </div>
+								    </div>
 							    </div>
-							    <div class="col-md-3 row">
-							    	<label class="col-md-3" id=""></label>
-					    			<div id="nm-file" class="pdpath"></div>
+
+								<div class="col-md-12">
+									<div class="form-group">
+								        <label class="col-sm-2 filter-label">Variable</label>
+								        <div class="col-sm-8">
+								        	<div class="nav">
+								        		<button  class="btn btn-success btn-sm" data-bind="click: apl.addVariable">
+								        			<span class="glyphicon glyphicon-plus"></span> Add
+								        		</button>
+								        	</div>
+								        	<table class="table" id="datasource-settings">
+							        			<thead>
+							        				<tr>
+							        					<th>Key</th>
+							        					<th>Value</th>
+							        				</tr>
+							        			</thead>
+							        			<tbody data-bind="foreach: apl.configApplication.Variable" > 
+							        				<tr>
+							        					<td>
+							        						<input class="form-control input-sm" type="text" class="full-width" data-bind="value: key" />
+							        					</td>
+							        					<td>
+							        						<input class="form-control input-sm" type="text" class="full-width"  data-bind="value: value" /> 
+							        					</td>
+							        					<td>
+							        						<button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: apl.removeVariable($data)" > 
+							        							<span class="glyphicon glyphicon-remove"></span>
+							        						</button>
+							        						<button type="button" class="btn btn-sm btn-success" data-bind="visible: ($index() >= 0)">
+							        							<span class="glyphicon glyphicon-play"></span>
+							        						</button>
+							        					</td>
+							        				</tr>
+							        			</tbody>
+								        	</table>
+								        </div>
+								    </div>
+							    </div>
+					    	</form>
+					    </div>
+				    </div>
+		    	</div>
+			    <div class="tab-pane fade" id="Editor-app">
+			    	<div class="col-md-12">
+			    		<!-- <div class="col-md-12 action-button no-padding">
+			    			<button class="btn btn-sm btn-success tooltipster" id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir" title="Create new file/folder">
+			    				<span class="glyphicon glyphicon-file"></span>
+		    				</button>
+			    			<button class="btn btn-sm btn-danger tooltipster" id="btnRemoveDir" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir" title="Delete">
+			    				<span class="glyphicon glyphicon-remove"></span>
+			    			</button>
+			    			<button class="btn btn-sm btn-warning tooltipster" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''" title="Rename">
+			    				<span class="glyphicon glyphicon-pencil"></span>
+			    			</button>
+			    			<button class="btn btn-sm btn-primary tooltipster" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir" title="Save changes">
+			    				<span class="fa fa-save"></span>
+		    				</button>
+			    		</div> -->
+				    	<!-- <div class="col-md-12 headercustom">
+				            <div class="col-md-6">
+				    		    <div class="col-md-10 form-group head-form">
+						    		<label class="col-md-3 srch pdTop6">Search :</label>
+						    		<div class="col-md-5 inpt-src">
+						    			<div class="input-group">
+									      <input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
+									      <span class="input-group-btn">
+									        <button class="btn btn-sm btn-default btncustom" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><i class="glyphicon glyphicon-search"></i></button>
+									      </span>
+									    </div>
+									    <div class="trv-btn">
+								    		<div class="btn-group btn-group-md" >
+											  <button type="button" class="btn btn-primary btn-menu"  id="btnNewFileDir" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file"></span></button>
+											  <button type="button" class="btn btn-primary btn-menu"  data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove"></span></button>
+											  <button type="button" class="btn btn-primary btn-menu" data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil"></span></button>
+											  <button class="btn btn-sm btn-primary navbar-btn bd0 mg0 bdcolornone" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh"></span></button>
+											</div>
+							    		</div>
+						    		</div>
 					    		</div>
-					    			<label class="pdpath" id="txt-path"></label>
-					    			<!-- <button type="button" class="btn btn-primary btn-menu flr" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk"></span></button> -->
-					    			<div class="onbutton1 flr"  data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk icn"></span></div>
-					    	</div>
-					    	<div class="col-md-12 bd1" id="splitter">
-					            <div class="col-md-5 trv-5">
-						            <div class="tvcustom">
-						                <div id="treeview-left"></div>
-						            </div>
-					    		</div>
-					    		<div class="col-md-7">			    		
-					    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
-					    		</div><!-- isi -->
+						    </div>
+						    <div class="col-md-3">
+						    	<label class="col-md-3 pdTop6" id=""></label>
+				    			<div id="nm-file" class="pdTop6"></div>
 				    		</div>
-				        </div>
-				    </div>
-				    <div class="tab-pane fade" id="Servers-app">
-				    	<div class="col-md-12">
-		    				<div class="grid grid-srvapplication" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: apl.srvapplicationColumns, filterfable: false, pageable: true, dataBound: function(e) {apl.gridStatusCheck();apl.gridStatusColor();app.gridBoundTooltipster('.grid-srvapplication')()} }"></div>
-				        </div>
-				    </div>
-				</div>
+				    		<div class="col-md-5">
+				    			<label class="col-md-8 pdTop6" id="txt-path"></label>
+				            	
+				    		</div>
+				    	</div> -->
+				    	<div class="col-md-12 headercustom">
+				            <div class="col-md-5 trv-4">
+				    		    <!-- <div class="col-md-12"> -->
+						    		<label class="col-md-3 srch pdTop6">Search</label>
+						    		<div class="col-md-5 inpt-src">
+										<input class="form-control input-sm inputcustom" id="searchDirectori" type="text" data-bind="event:{keyup:apl.searchTreeView}"/>
+						    		</div>
+									<div class="row-grup">
+										<div class="onbutton gr" data-bind="click:function(){apl.treeView(apl.configApplication._id())}"><span class="glyphicon glyphicon-refresh icn"></span></div>
+										<div class="onbutton gr" type="button" id="btnNewFileDir icn" data-bind="visible: apl.appTreeMode() === 'folder'|| apl.applicationMode() === '', click: apl.modalNewFileDir"><span class="glyphicon glyphicon-file icn"></span></div>
+										<div class="onbutton gr" data-bind="visible:apl.appTreeMode() !== '', click: apl.removeFileDir"><span class="glyphicon glyphicon-remove icn"></span></div>
+										<div class="onbutton gr"  data-bind="click: apl.modalRenameFile, visible:apl.appTreeMode() !== ''"><span class="glyphicon glyphicon-pencil icn"></span></div>
+									</div>
+					    		
+						    </div>
+						    <div class="col-md-3 row">
+						    	<label class="col-md-3" id=""></label>
+				    			<div id="nm-file" class="pdpath"></div>
+				    		</div>
+				    			<label class="pdpath" id="txt-path"></label>
+				    			<!-- <button type="button" class="btn btn-primary btn-menu flr" data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk"></span></button> -->
+				    			<div class="onbutton1 flr"  data-bind="visible: apl.appTreeMode() === 'file'|| apl.applicationMode() === '', click:apl.updateFileDir"><span class="glyphicon glyphicon-floppy-disk icn"></span></div>
+				    	</div>
+				    	<div class="col-md-12 bd1" id="splitter">
+				            <div class="col-md-5 trv-5">
+					            <div class="tvcustom">
+					                <div id="treeview-left"></div>
+					            </div>
+				    		</div>
+				    		<div class="col-md-7">			    		
+				    			<textarea class="form-control tacustom" id="scriptarea" rows="13"></textarea>
+				    		</div><!-- isi -->
+			    		</div>
+			        </div>
+			    </div>
+			    <div class="tab-pane fade" id="Servers-app">
+			    	<div class="col-md-12">
+	    				<div class="grid grid-srvapplication" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: apl.srvapplicationColumns, filterfable: false, pageable: true, dataBound: function(e) {apl.gridStatusCheck();apl.gridStatusColor();app.gridBoundTooltipster('.grid-srvapplication')()} }"></div>
+			        </div>
+			    </div>
 			</div>
 		</div>
 

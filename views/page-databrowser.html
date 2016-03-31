@@ -14,7 +14,7 @@
 <script src="/res/tokeninput/jquery.tokeninput.js"></script>
 
 <!-- main -->
-<div class="col-xs-12 col-sm-12" id="content">
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: databrowser">
 	<div class="col-md-12">
 		<ol class="breadcrumb bc-custom">
 			<li>Data Browser</li>
@@ -23,12 +23,12 @@
 			</li>
 		</ol>
 		<div data-bind="visible: (br.pageVisible() == '')">
-			<!-- <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: br.showSearchDataBrowser(), click: showSearchDataBrowser(false)">
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: br.showSearchDataBrowser(), click: showSearchDataBrowser(false)">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
 			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !br.showSearchDataBrowser(), click: showSearchDataBrowser(true)">
 	    		<span class="glyphicon glyphicon-search"></span>					
-			</button> -->
+			</button>
 			<div class="btn-group" role="group">
 		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: br.getDataBrowser">
 		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
@@ -51,9 +51,9 @@
 				</div>
 			</nav>
 			<div class="">
-				<div class="panel-body position-custom">
+				<div class="pdCustom position-custom">
 					{{template "_miniloader.html"}}
-					<div data-bind="visible: !app.miniLoader">
+					<div data-bind="visible: !app.miniloader()">
 						<div class="grid grid-databrowser" data-bind="kendoGrid: { dataSource:{ pageSize: 15 }, data: br.dataBrowser, columns: br.browserColumns, change: br.selectBrowser, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-databrowser') }"></div>
 					</div>
 				</div>
