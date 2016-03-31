@@ -40,7 +40,7 @@
 		    </div>
 		    <div class="panel-body  position-custom">
 				{{template "_miniloader.html"}}	
-				<div data-bind="visible: !app.miniLoader">
+				<div data-bind="visible: !app.miniloader()">
 		    		<div class="grid grid-widget" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.widgetGridData, selectable: 'multiple, row', change: wg.selectWidget, columns: wg.widgetGridColumns, filterfable: false, pageable: true }"></div>
 		    	</div>
 		    </div>

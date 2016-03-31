@@ -155,7 +155,17 @@ apl.langEnvColumns = ko.observableArray([
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}}
 ]);
+apl.deployThisApp = function (_id) {
+	var param = { _id: apl.appIDToDeploy(), Server: _id };
 
+	app.ajaxPost("/application/deploy", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		apl.getApplications();
+	});
+};
 apl.commandDataColumns = ko.observableArray([
 	{field: "AppID", title: "Application ID"},
 	{field: "SrvID", title: "Server ID"},
@@ -227,8 +237,11 @@ apl.srvapplicationColumns = ko.observableArray([
 	} },
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
-	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	{ title: "", width: 100, attributes: { class: 'align-center' }, template: function (d) {
+		return [
+			'<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-play"></span></button>',
+			'<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Deploy to this server" onclick="apl.deployThisApp(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>',
+		].join(" ");
 	} },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
@@ -380,7 +393,7 @@ apl.selectApps = function (e) {
 
 apl.getApplications = function(c) {
 	apl.applicationData([]);
-	apl.appIDToDeploy('');
+	// apl.appIDToDeploy('');
 
 	var ongrid = $(".grid-application").data("kendoGrid");
 	$(ongrid.tbody).on("mouseenter", "tr", function (e) {

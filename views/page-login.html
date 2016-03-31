@@ -9,27 +9,28 @@
 
     		        <div class="login-form col-md-3 col-xs-12" id="loginForm">
                         <!-- create process loader here -->
-    		            <div class="form form-horizontal fh" style="padding-left:20px;">
+                
+    		            <div class="form form-horizontal fh">
 
     		                <div class="login-logo"></div>
 
     		                <div class="form-group login-form-group">
     		                    <label class="col-sm-12 form-login-label">Login ID</label>
     		                    <div class="col-sm-12">
-    		                        <input type="text" id="username" name="username" placeholder="Login ID" data-bind="value: lg.configLogin.username"  required />
+    		                        <input type="text" class="form-control input-sm full-width" id="username" name="username" placeholder="Login ID" data-bind="value: lg.configLogin.username"  required />
     		                    </div>
     		                </div>
     		                <div class="form-group login-form-group">
     		                    <label class="col-sm-12 form-login-label">Password</label>
     		                    <div class="col-sm-12">
-    		                        <input type="password" id="password" name="password" placeholder="Your Password" data-bind="value: lg.configLogin.password"  required />
+    		                        <input type="password" class="form-control input-sm full-width" id="password" name="password" placeholder="Your Password" data-bind="value: lg.configLogin.password"  required />
     		                    </div>
     		                </div>
     		                <div class="form-group login-form-group">
     		                    <div class="col-sm-12">
-    		                        <button class="btn btn-primary" id="btnLogin" data-bind="click: lg.getLogin">Login</button>
+    		                        <button class="btn btn-sm btn-primary full-width" id="btnLogin" data-bind="click: lg.getLogin">Login</button>
     		                        <div class="form-login-forgot">
-    		                            <a href="#" id="forgetPassword">Can't access your account?</a>
+    		                            <a id="forgetPassword" data-toggle="modal" data-target="#modalForgot">Can't access your account?</a>
     		                        </div>
     		                    </div>
     		                </div>
@@ -42,7 +43,48 @@
     		           &nbsp;
     		        </div>
     		    </div>
-    		    <!-- Modal Forget Password -->
+                <!-- Modal Forget Password -->
+                <div class="modal fade" id="modalForgot" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <button type="button" class="close" 
+                                   data-dismiss="modal">
+                                       <span aria-hidden="true">&times;</span>
+                                       <span class="sr-only">Close</span>
+                                </button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    Create Account Access
+                                </h4>
+                            </div>
+                            
+                            <!-- Modal Body -->
+                            <div class="modal-body">
+                                
+                                <form role="form" class="form-horizontal">
+                                  <div class="form-group">
+                                    <label class="control-label col-sm-3">Email address</label>
+                                    <div class="col-xs-8">
+                                      <input type="email" class="form-control input-sm" placeholder="Enter email" data-bind="value: lg.forgetLogin.email"  required/>
+                                    </div>
+                                  </div>
+                                </form> 
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-default"
+                                        data-dismiss="modal">
+                                            Close
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal" data-bind="click: lg.getForgetLogin">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    		    <!-- Modal Forget Password End -->
+                
     		 </div>
     	</section>
     </div>
