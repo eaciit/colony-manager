@@ -71,6 +71,8 @@ srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.filter = ko.mapping.fromJS(srv.templateFilter);
 srv.showServer = ko.observable(true);
+srv.breadcrumb = ko.observable('');
+srv.showSearchServer = ko.observable(false);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
@@ -217,6 +219,7 @@ srv.createNewServer = function () {
 	srv.isMultiServer(false);
 	srv.isNew(true);
 	$("#privatekey").replaceWith($("#privatekey").clone());
+	srv.breadcrumb('Create New');
 	app.mode("editor");
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
@@ -375,6 +378,8 @@ srv.selectGridServer = function (e) {
 srv.editServer = function (_id) {
 	srv.gridStatusCheck();
 	app.miniloader(true);	
+	srv.showSearchServer(false);
+	srv.breadcrumb('Edit');
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());
 
@@ -521,6 +526,7 @@ function ServerFilter(event){
 srv.backToFront = function () {
 	srv.isMultiServer(false);
 	srv.isNew(false);
+	srv.breadcrumb('All');
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
@@ -653,5 +659,7 @@ srv.finishButton = function () {
 
 $(function () {
     srv.getServers();
+	srv.breadcrumb('All');
+	srv.showSearchServer(false);
 	app.registerSearchKeyup($(".searchsrv"), srv.getServers);
 });

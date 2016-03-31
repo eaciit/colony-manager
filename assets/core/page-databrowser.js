@@ -11,6 +11,8 @@ br.templateConfigDataBrowser= {
 br.dataBrowser 	= ko.observableArray([]);
 br.dataBrowserDesc = ko.observableArray([]);
 br.dataBrowserDescColumns = ko.observableArray([]);
+br.showSearchDataBrowser = ko.observable(false);
+br.breadcrumb = ko.observable('');
 br.searchfield 	= ko.observable("");
 br.pageVisible	= ko.observable("");
 br.onVisible 	= ko.observable("");
@@ -53,6 +55,7 @@ br.getDataBrowser = function(){
 }
 
 br.OpenBrowserForm = function(ID){
+	br.breadcrumb('Create New');
 	br.pageVisible("editor");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	dbq.clearQuery()
@@ -127,6 +130,8 @@ br.ViewBrowserName = function(id){
 			res.data = [];
 		}
 
+		br.showSearchDataBrowser(false);
+		br.breadcrumb('View');
 		br.pageVisible("view");
 		br.onVisible("simple");
 		console.log(res.data.dataresult.MetaData);
@@ -183,6 +188,8 @@ br.filterDataBrowser = function(){
 }
 
 $(function (){
+	br.showSearchDataBrowser(false);
+	br.breadcrumb('All');
 	br.getDataBrowser();
 	br.getAllbrowser();
 	app.registerSearchKeyup($(".searchbr"), br.getDataBrowser);
