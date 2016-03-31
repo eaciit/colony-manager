@@ -5,11 +5,11 @@ viewModel.login = {}; var lg = viewModel.login;
 lg.templateConfigLogin = {
 	username: "",
 	password: "",
-	url: ""
 };
 
 lg.templateForgotLogin ={
-	email: ""
+	email: "",
+	url: ""
 };
 
 lg.templateConfirmReset ={
@@ -23,7 +23,6 @@ lg.confirmReset = ko.mapping.fromJS(lg.templateConfirmReset);
 lg.rePassword = ko.observable('');
 
 lg.getLogin = function(){
-	var url = lg.configLogin.url(location.origin);
 	var param = ko.mapping.toJS(lg.configLogin);
 	app.ajaxPost("/login/processlogin", param, function(res){
 		if(!app.isFine(res)){
@@ -34,6 +33,7 @@ lg.getLogin = function(){
 }
 
 lg.getForgetLogin = function(){
+	var url = lg.forgetLogin.url(location.origin);
 	var param = ko.mapping.toJS(lg.forgetLogin);
 	console.log(param);
 	$('#modalConfirm').modal({
