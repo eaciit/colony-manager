@@ -44,6 +44,7 @@ func main() {
 	server.Register(controller.CreateSessionController(server), "")
 	server.Register(controller.CreateWidgetGridController(server), "")
 	server.Register(controller.CreateWidgetSelectorController(server), "")
+	server.Register(controller.CreateLoginController(server), "")
 	server.Register(controller.CreateWidgetController(server), "")
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
