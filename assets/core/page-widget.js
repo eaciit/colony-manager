@@ -20,7 +20,7 @@ wl.WidgetColumns = ko.observableArray([
 	}},
 	{ field: "title", title: "Title" },
 	{ field: "description", title: "Description" },
-	{ field: "dataSourceId", title: "Data Source", template: "#= dataSourceId.join(', ') #", 
+	/*{ field: "dataSourceId", title: "Data Source", template: "#= dataSourceId.join(', ') #", 
 		editor: function(container, options) {
 			$("<select multiple='multiple' data-bind='value: dataSourceId' />")
             .appendTo(container)
@@ -30,10 +30,10 @@ wl.WidgetColumns = ko.observableArray([
                 select: wl.selectCount
             });
 		}
-	},
+	},*/
 	{title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Preview' onclick=''><span class='fa fa-eye'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Preview' onclick='wl.openWidget(\"" + d._id + "\",\"grid\")'><span class='fa fa-eye'></span></button>",
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Setting' onclick=''><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	}}
@@ -73,20 +73,114 @@ wl.getDataSource = function() {
 	});
 }
 
+wl.openWidget = function(_id, mode) {
+	var getId = (mode == "grid") ? _id : _id();
+	$(".modal-widget-preview").modal("hide");
+	wl.editWidget(getId, "preview")
+	$(".modal-widget-datasource").modal({
+		backdrop: 'static',
+		keyboard: true
+	});
+};
+
+wl.previewWidget = function(_id) {
+	// $(".modal-widget-datasource").modal("hide");
+	app.ajaxPost("/widget/previewexample", {_id: _id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		
+		$("#preview").html(res.data); 
+		$(".modal-widget-preview").modal({
+			backdrop: 'static',
+			keyboard: true
+		});
+	});
+};
+
+wl.closeModal = function() {
+	$(".modal-widget-preview").modal("hide");
+	$(".modal-widget-datasource").modal("hide");
+	wl.configWidgetList.dataSourceId([]);
+};
+
 wl.addWidget = function() {
 	app.mode("editor");
 	wl.scrapperMode("");
-	wl.getDataSource();
+	wl.getFile();
 };
 
 wl.saveWidget = function() {
+	if (!app.isFormValid(".form-widget")) {
+		return;
+	}
 
+	var data = ko.mapping.toJS(wl.configWidgetList);
+	var formData = new FormData();
+	formData.append("_id", data._id);
+	formData.append("title", data.title);
+	formData.append("description", data.description);
+	formData.append("dataSourceId",data.dataSourceId.join(","));
+	formData.append("mode", wl.scrapperMode());
+	
+	var file = $('#files').val();
+	if (file == "" && wl.scrapperMode() == "") {
+		sweetAlert("Oops...", 'Please choose file', "error");
+		return;
+	} else {
+		formData.append("userfile", $('input[type=file]#files')[0].files[0]);	
+	}
+
+	app.ajaxPost("/widget/savewidget", formData, function (res) {
+		if (!app.isFine(res)) {
+			console.log("error")
+			return;
+		}
+		wl.backToFront();
+	});
+};
+
+wl.selectWidget = function() {
+	app.wrapGridSelect(".grid-widget", ".btn", function (d) {
+		wl.editWidget(d._id, "editor");
+	});
+}
+
+wl.editWidget = function(_id, mode) {
+	wl.getFile();
+	ko.mapping.fromJS(wl.widgetListConfig, wl.configWidgetList);
+	app.ajaxPost("/widget/editwidget", {_id: _id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		// console.log(_id,res.data)
+		ko.mapping.fromJS(res.data, wl.configWidgetList);
+		if (mode == "editor") {
+			app.mode("editor");
+			wl.scrapperMode("editor");
+		}
+	});
+};
+
+wl.getFile = function() {
+	$('#files').change(function(){
+		var filename = $(this).val().replace(/^.*[\\\/]/, '');
+	     $("#filename").text(filename)
+	 });
 };
 
 wl.backToFront = function() {
 	app.mode("");
 	wl.scrapperMode("");
 	wl.getWidgetList();
+	wl.widgetDataSource([]);
+	ko.mapping.fromJS(wl.widgetListConfig, wl.configWidgetList);
 };
 
 $(function (){
