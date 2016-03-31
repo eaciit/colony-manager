@@ -147,7 +147,7 @@ func (w *WidgetController) RemoveWidget(r *knot.WebContext) interface{} {
 	for _, id := range idArray {
 		o := new(colonycore.Widget)
 		o.ID = id.(string)
-		if err := o.Delete(compressedSource); err != nil {
+		if err := o.Delete(); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
