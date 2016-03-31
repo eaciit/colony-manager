@@ -407,7 +407,6 @@ ds.testConnection = function () {
 
 ds.selectGridConnection = function (e) {
 	app.wrapGridSelect(".grid-connection", ".btn", function (d) {
-		ds.breadcrumb('All');
 		ds.editConnection(d._id);
 		ds.showConnection(true);
 		ds.tempCheckIdConnection.push(d._id);
@@ -516,7 +515,6 @@ ds.removeDataSource = function (_id) {
 
 ds.selectGridDataSource = function (e) {
 	app.wrapGridSelect(".grid-datasource", ".btn", function (d) {
-		ds.breadcrumb('All');
 		ds.editDataSource(d._id);
 		ds.showDataSource(true);
 		ds.tempCheckIdDataSource.push(d._id);

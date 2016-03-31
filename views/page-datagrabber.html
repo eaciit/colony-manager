@@ -15,24 +15,37 @@
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataGrabber">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'scrapper')">
-		<h1>Data Serializer</h1>
+		<ol class="breadcrumb bc-custom">
+			<li>Data Serializer</li>
+			<li class="active">
+		    	<span data-bind="text: dg.breadcrumb"></span> Data Serializer
+	        </li>
+		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: dg.getScrapperData">
-	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: dg.createNewScrapper">
-	    		<span class="glyphicon glyphicon-plus"></span> Create New Data Serializer
-	    	</button>
-	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: dg.addWizard">
-	    		<span class="glyphicon glyphicon-plus"></span> Add Wizard
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeDataGrabber" data-bind="click: dg.removeScrapper">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: dg.showSearchDataGrabber(), click: showSearchDataGrabber(false)">
+	    		<span class="glyphicon glyphicon-search"></span>					
+			</button>
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !dg.showSearchDataGrabber(), click: showSearchDataGrabber(true)">
+	    		<span class="glyphicon glyphicon-search"></span>					
+			</button>
+			<div class="btn-group" role="group">
+				<button class="btn btn-sm btn-primary mgTop15" data-bind="click: dg.getScrapperData">
+		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+		    	</button>
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: dg.createNewScrapper">
+		    		<span class="glyphicon glyphicon-plus"></span> Create New Data Serializer
+		    	</button>
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: dg.addWizard">
+		    		<span class="glyphicon glyphicon-send"></span> Add Wizard
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" data-bind="click: dg.removeScrapper">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+			</div>
 		</nav>
 
-		<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: dg.showSearchDataGrabber()">
 		    <div class="col-md-4">
 		    	<label class="col-md-3 filter-label">
 		    		Search
@@ -51,10 +64,7 @@
 		    </div>
 		</nav>
 
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-heading">
-		        <h1 class="panel-title">All Data Serializer</h1>
-		    </div>
+		<div class="" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-body">
 		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
 		    </div>
@@ -77,12 +87,6 @@
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
-		    <div class="panel-heading">
-		        <h1 class="panel-title">
-		        	<span data-bind="text: (dg.scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
-		        	Data Serializer
-	        	</h1>
-		    </div>
 		    <div class="panel-body">
 		    	<form class="form-horizontal form-datagrabber" data-bind="with: configScrapper" id="form-add-scrapper" novalidate>
 					<div class="col-md-12 no-padding no-margin">

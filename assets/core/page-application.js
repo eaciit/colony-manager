@@ -58,6 +58,8 @@ apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
+apl.breadcrumb = ko.observable('');
+apl.showSearchApplication = ko.observable(false);
 apl.applicationData = ko.observableArray([]);
 apl.langEnvData = ko.observable([]);
 apl.appTreeMode = ko.observable('');
@@ -431,7 +433,8 @@ apl.getLangEnv = function (c){
 apl.editApplication = function(_id) {
 	apl.appIDToDeploy(_id);
 	apl.refreshGridModalDeploy();
-	app.miniloader(true);	
+	apl.showSearchApplication(false);
+	app.miniloader(true);
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
@@ -439,6 +442,7 @@ apl.editApplication = function(_id) {
 		}
 		apl.treeView(_id);
 		app.mode('editor');
+		apl.breadcrumb('Edit');
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
@@ -457,6 +461,7 @@ apl.createNewApplication = function () {
 	editor.setValue("");
 	editor.focus();
 	app.mode("editor");
+	apl.breadcrumb('Create New');
 	$("#searchDirectori").val("");
 	$('a[href="#Form"]').tab('show');
 	apl.appRecordsDir([])
@@ -508,6 +513,7 @@ apl.getUploadFile = function() {
 
 apl.backToFront = function () {
 	app.mode('');
+	apl.breadcrumb('All');
 	apl.getApplications();
 	apl.tempCheckIdServer([]);
 };
@@ -926,10 +932,12 @@ apl.prepareTreeView = function () {
 }
 
 $(function () {
+	apl.showSearchApplication(false);
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
 	apl.prepareTreeView();
+	apl.breadcrumb('All');
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 	apl.getLangEnv();
