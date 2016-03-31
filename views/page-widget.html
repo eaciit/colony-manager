@@ -37,7 +37,7 @@
 		    				description: { editable: false }
 						} 
 					} 
-				} }, data: wl.widgetListdata, change: wl.selectWidget,selectable: 'row', columns: wl.WidgetColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-widget') }"></div>
+				} }, data: wl.widgetListdata, selectable: 'row', columns: wl.WidgetColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-widget') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -59,48 +59,38 @@
 		    </div>
 		    <div class="clearfix">&nbsp;</div>
 			<div class="panel-body">
-				<form class="form-horizontal form-widget" data-bind="with: configWidgetList" novalidate>
+				<form class="form-horizontal form-widget" data-bind="with: widgetListConfig" novalidate>
 			    	<div class="col-md-12">
 			    		<div class="col-md-12">
 				    		<div class="col-md-6">
 					    		<div class="form-group">
 						    		<label class="col-md-3 databrowser-label">ID</label>
 						    		<div class="col-md-7">
-						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: _id, enable: (wl.scrapperMode() == '')">
+						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: _id, enable: (scrapperMode() == '')">
 										<span class="k-invalid-msg" data-for="ID"></span>					    			
 						    		</div>
 					    		</div>
 					    		<div class="form-group">
 						    		<label class="col-md-3 databrowser-label">Title</label>
 						    		<div class="col-md-7">
-						    			<input required type="text" class="form-control input-sm" name="title" placeholder="Type the browser name Here" data-bind="value: title">
-										<span class="k-invalid-msg" data-for="title"></span>					    			
+						    			<input required type="text" class="form-control input-sm" name="BrowserName" placeholder="Type the browser name Here" data-bind="value: title">
+										<span class="k-invalid-msg" data-for="BrowserName"></span>					    			
 						    		</div>
 					    		</div>
 					    		<div class="form-group">
 						    		<label class="col-md-3 databrowser-label">Data Source</label>
 						    		<div class="col-md-7">
-							    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource, value: dataSourceId }" name="datasource" id="datasource">
+							    		<select data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource }">
 							    		</select>
-							    		<span class="k-invalid-msg" data-for="datasource"></span>
-						    		</div>
-					    		</div>
-				    		</div>
-				    		<div class="col-md-6">
-				    			<div class="form-group">
-						    		<label class="col-md-3 databrowser-label">Description</label>
-						    		<div class="col-md-7">
-						    			<textarea rows="4" required type="text" class="form-control input-sm" name="description" placeholder="Type the browser name Here" data-bind="value: description"></textarea>
-										<span class="k-invalid-msg" data-for="description"></span>					    			
 						    		</div>
 					    		</div>
 					    		<div class="form-group">
 						    		<div class="col-md-6 col-md-offset-3">
 						    			<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file">
 										    <span class="fa fa-file"></span> Upload .zip / .tar / .tar.gz / .gz file 
-										    <input id="files" name="files" type="file" accept=".zip,.tar,.tar.gz,.gz">
+										    <input required id="files" name="files" type="file" accept=".zip,.tar,.tar.gz,.gz">
 										</span>
-										<div><span id="filename"></span></div>
+										<div><span id="nama"></span></div>
 										<div><span class="k-invalid-msg" data-for="files"></span></div>
 						    		</div>
 								</div>
@@ -108,70 +98,6 @@
 				    	</div>
 			    	</div>
 		    	</form>
-			</div>
-		</div>
-	</div>
-
-	<!-- Modal DataSource -->
-	<div class="modal fade modal-widget-datasource" tabindex="-1" role="dialog">
-		<div class="modal-dialog">
-			<div class="modal-content" data-bind="with: configWidgetList">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: wl.closeModal">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					<h4 class="modal-title">
-						Choose Data Source
-					</h4>
-				</div>
-
-				<div class="modal-body" data-bind="">
-				    <div class="form-group">
-			    		<label class="col-md-3 filter-label">Data Source</label>
-			        	<div class="col-md-7">
-			        		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource, value: dataSourceId }" name="datasource" id="datasource"></select>
-			        	</div>
-			        	<div class="clearfix"></div>
-		        	</div>
-	        	</div>
-
-				<div class="modal-footer">
-					<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
-						<span class="glyphicon glyphicon-remove"></span> Close
-					</button>
-					<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.previewWidget(_id)}">
-						<span class="glyphicon glyphicon-eye-open"></span> Preview
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Modal Preview -->
-	<div class="modal fade modal-widget-preview" tabindex="-1" role="dialog">
-		<div class="modal-dialog">
-			<div class="modal-content" data-bind="with: configWidgetList">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: wl.closeModal">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					<h4 class="modal-title">
-						Preview
-					</h4>
-				</div>
-
-				<div class="modal-body" data-bind="">
-				    <div id="preview"></div>
-	        	</div>
-
-				<div class="modal-footer">
-					<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.openWidget(_id, 'modal')}">
-						<span class="glyphicon glyphicon-arrow-left"></span> Back
-					</button>
-					<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
-						<span class="glyphicon glyphicon-remove"></span> Close
-					</button>
-				</div>
 			</div>
 		</div>
 	</div>

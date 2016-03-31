@@ -4,8 +4,6 @@ import (
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/toolkit"
-	"io/ioutil"
 	"path/filepath"
 	"strings"
 )
@@ -52,10 +50,8 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 
 	err, fileName := helper.UploadHandler(r, "userfile", compressedSource)
 
-	if r.Request.FormValue("mode") != "editor" {
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	widget := new(colonycore.Widget)
@@ -109,26 +105,4 @@ func (w *WidgetController) RemoveWidget(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, nil, "")
-}
-
-func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	data := toolkit.M{}
-	if err := r.GetPayload(&data); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	widgetSource := filepath.Join(EC_DATA_PATH, "widget")
-	widgetPath := filepath.Join(widgetSource, data.Get("_id", "").(string), "index.html")
-
-	contentstring := ""
-	content, err := ioutil.ReadFile(widgetPath)
-	if err != nil {
-		toolkit.Println("Error : ", err)
-		contentstring = ""
-	} else {
-		contentstring = string(content)
-	}
-	toolkit.Println(contentstring)
-	return helper.CreateResult(true, contentstring, "")
 }
