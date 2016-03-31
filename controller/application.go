@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -620,14 +621,20 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	err, fileName := helper.UploadHandler(r, "userfile", zipSource)
+	o := new(colonycore.Application)
+	o.ID = r.Request.FormValue("_id")
 
+	cursor, err := colonycore.Find(new(colonycore.Application), dbox.Eq("_id", o.ID))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	defer cursor.Close()
+	if cursor.Count() > 0 {
+		temp := []*colonycore.Application{}
+		cursor.Fetch(&temp, 0, false)
+		o = temp[0]
+	}
 
-	o := new(colonycore.Application)
-	o.ID = r.Request.FormValue("_id")
 	o.AppsName = r.Request.FormValue("AppsName")
 	o.Type = r.Request.FormValue("Type")
 	o.Port = r.Request.FormValue("Port")
@@ -651,20 +658,12 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	cursor, err := colonycore.Find(new(colonycore.Application), dbox.Eq("Port", o.Port))
+	cursor2, err := colonycore.Find(new(colonycore.Application), dbox.Eq("Port", o.Port))
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	defer cursor.Close()
-
-	err = colonycore.Delete(o)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	data := []colonycore.Application{}
-	err = cursor.Fetch(&data, 0, false)
-	if len(data) > 0 {
+	defer cursor2.Close()
+	if cursor2.Count() > 0 {
 		return helper.CreateResult(false, nil, fmt.Sprintf("Port %s already in use", o.Port))
 	}
 
@@ -673,50 +672,52 @@ func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
-	destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
+	_, fileName := helper.UploadHandler(r, "userfile", zipSource)
 
-	if runtime.GOOS == "windows" {
-		err = exec.Command("cmd", "-c", "rmdir", "/s", "/q", destinationExtract).Run()
-		// if err != nil {
-		// 	return helper.CreateResult(false, nil, err.Error())
-		// }
-	} else {
-		err = exec.Command("rm", "-rf", destinationExtract).Run()
-		// if err != nil {
-		// 	return helper.CreateResult(false, nil, err.Error())
-		// }
+	if isEdit, _ := strconv.ParseBool(r.Request.FormValue("IsEdit")); !isEdit && fileName == "" {
+		return helper.CreateResult(false, nil, "Archive file cannot be empty")
 	}
 
-	if strings.Contains(fileName, ".tar.gz") {
-		err = toolkit.TarGzExtract(fileExtract, destinationExtract)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-	} else if strings.Contains(fileName, ".gz") {
-		err = toolkit.GzExtract(fileExtract, destinationExtract)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-	} else if strings.Contains(fileName, ".tar") {
-		err = toolkit.TarExtract(fileExtract, destinationExtract)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-	} else if strings.Contains(fileName, ".zip") {
-		err = toolkit.ZipExtract(fileExtract, destinationExtract)
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-	}
-
-	os.Remove(filepath.Join(zipSource, fileName))
-	var zipFile string
 	if fileName != "" {
-		zipFile = filepath.Join(zipSource, fileName)
-	}
+		fileExtract := strings.Join([]string{zipSource, fileName}, toolkit.PathSeparator)
+		destinationExtract := strings.Join([]string{zipSource, o.ID}, toolkit.PathSeparator)
 
-	if zipFile != "" && o.ID != "" {
+		if runtime.GOOS == "windows" {
+			err = exec.Command("cmd", "-c", "rmdir", "/s", "/q", destinationExtract).Run()
+			// if err != nil {
+			// 	return helper.CreateResult(false, nil, err.Error())
+			// }
+		} else {
+			err = exec.Command("rm", "-rf", destinationExtract).Run()
+			// if err != nil {
+			// 	return helper.CreateResult(false, nil, err.Error())
+			// }
+		}
+
+		if strings.Contains(fileName, ".tar.gz") {
+			err = toolkit.TarGzExtract(fileExtract, destinationExtract)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else if strings.Contains(fileName, ".gz") {
+			err = toolkit.GzExtract(fileExtract, destinationExtract)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else if strings.Contains(fileName, ".tar") {
+			err = toolkit.TarExtract(fileExtract, destinationExtract)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else if strings.Contains(fileName, ".zip") {
+			err = toolkit.ZipExtract(fileExtract, destinationExtract)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		}
+
+		os.Remove(filepath.Join(zipSource, fileName))
+		zipFile := filepath.Join(zipSource, fileName)
 		newDirName = o.ID
 		directoryTree, zipName, _ := unzip(zipFile)
 		createJson(directoryTree)

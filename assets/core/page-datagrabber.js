@@ -55,7 +55,9 @@ dg.visibleSync2 = ko.observable('');
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
+dg.showSearchDataGrabber = ko.observable(false);
 dg.showDataGrabber = ko.observable(true);
+dg.breadcrumb = ko.observable('');
 dg.scrapperMode = ko.observable('');
 dg.scrapperData = ko.observableArray([]);
 dg.scrapperIntervals = ko.observableArray([]);
@@ -206,6 +208,7 @@ dg.removeMap = function (index) {
 
 dg.createNewScrapper = function () {
 	app.mode("editor");
+	dg.breadcrumb('Create New');
 	dg.scrapperMode('');
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 	$(".table-tree-map").replaceWith('<table class="table tree table-tree-map"></table>');
@@ -245,6 +248,7 @@ dg.saveDataGrabber = function () {
 };
 dg.backToFront = function () {
 	app.mode("");
+	dg.breadcrumb('All');
 	dg.tempCheckIdDataGrabber([]);
 	dg.visibleSync1('');
 	dg.visibleSync2('');
@@ -410,6 +414,7 @@ dg.selectGridDataGrabber = function (e) {
 };
 dg.editScrapper = function (_id) {
 	dg.scrapperMode('edit');
+	dg.showSearchDataGrabber(false);
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 
 	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {
@@ -418,6 +423,7 @@ dg.editScrapper = function (_id) {
 		}
 		app.mode("editor");
 		dg.scrapperMode('editor');
+		dg.breadcrumb('Edit');
 		app.resetValidation("#form-add-scrapper");
 		ko.mapping.fromJS(res.data, dg.configScrapper);
 		dg.prepareFieldsOrigin(dg.configScrapper.DataSourceOrigin());
@@ -938,6 +944,8 @@ dg.checkDeleteDataGrabber = function(elem, e){
 }
 
 $(function () {
+	dg.showSearchDataGrabber(false);
+	dg.breadcrumb('All');
 	dg.getScrapperData();
 	dg.getDataSourceData();
 	dg.getConnectionsData();

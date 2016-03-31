@@ -45,7 +45,6 @@ type ServerController struct {
 }
 
 func CreateServerController(s *knot.Server) *ServerController {
-	fmt.Sprintln("test")
 	var controller = new(ServerController)
 	controller.Server = s
 	return controller
@@ -94,13 +93,11 @@ func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
 	data := []colonycore.Server{}
 	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	if err == nil {
+		defer cursor.Close()
 	}
-	defer cursor.Close()
 
 	return helper.CreateResult(true, data, "")
 }
@@ -167,14 +164,11 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	}
 	oldDataAll := []colonycore.Server{}
 	err = cursor.Fetch(&oldDataAll, 0, false)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	if len(oldDataAll) > 0 {
-		oldData = &oldDataAll[0]
+	if err == nil {
+		defer cursor.Close()
+		if len(oldDataAll) > 0 {
+			oldData = &oldDataAll[0]
+		}
 	}
 
 	if data.ServerType == "hdfs" {
