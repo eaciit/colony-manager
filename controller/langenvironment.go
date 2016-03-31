@@ -78,6 +78,25 @@ func (l *LangenvironmentController) GetSampleDataForSetupLang() colonycore.Langu
 	return r
 }
 
+func (le *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	cursor, err := colonycore.Find(new(colonycore.LanguageEnviroment), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.LanguageEnviroment{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	fmt.Println(data)
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
+}
+
 func (l *LangenvironmentController) Setup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := []*colonycore.LanguageEnvironmentPayload{}
