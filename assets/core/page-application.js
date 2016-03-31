@@ -58,6 +58,8 @@ apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
+apl.breadcrumb = ko.observable('');
+apl.showSearchApplication = ko.observable(false);
 apl.applicationData = ko.observableArray([]);
 apl.langEnvData = ko.observable([]);
 apl.appTreeMode = ko.observable('');
@@ -174,7 +176,7 @@ apl.showRunCommand = function (serverID) {
 	// $(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
 	// $(".modal-run-cmd").find(".modal-title span.server").html(serverID);
 
-	appMap.Command.forEach(function (cmd, i) {
+	appMap.Command.forEach(function (cmd, i, d) {
 		if (cmd.key == "" || cmd.value == "") {
 			return;
 		}
@@ -184,10 +186,11 @@ apl.showRunCommand = function (serverID) {
 			var appid = apl.applicationData()[i]._id;
 		}
 		
+		var srvid = apl.commandServerID();
 
 		apl.commandData.push({
 			AppID: appid,
-			// SrvID: srvid,
+			SrvID: srvid,
 			CmdName: cmd.key,
 			CmdValue: cmd.value
 		});
@@ -430,7 +433,8 @@ apl.getLangEnv = function (c){
 apl.editApplication = function(_id) {
 	apl.appIDToDeploy(_id);
 	apl.refreshGridModalDeploy();
-	app.miniloader(true);	
+	apl.showSearchApplication(false);
+	app.miniloader(true);
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
@@ -438,6 +442,7 @@ apl.editApplication = function(_id) {
 		}
 		apl.treeView(_id);
 		app.mode('editor');
+		apl.breadcrumb('Edit');
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
@@ -456,6 +461,7 @@ apl.createNewApplication = function () {
 	editor.setValue("");
 	editor.focus();
 	app.mode("editor");
+	apl.breadcrumb('Create New');
 	$("#searchDirectori").val("");
 	$('a[href="#Form"]').tab('show');
 	apl.appRecordsDir([])
@@ -472,6 +478,11 @@ apl.saveApplication = function() {
 		return;
 	}
 
+	if (apl.applicationMode() == "" && $("#files").val() == "") {
+		swal({title: "Archive file cannot be empty", type: "error", closeOnConfirm: true});
+		return;
+	}
+
 	var data = ko.mapping.toJS(apl.configApplication);
 	var formData = new FormData();
 	formData.append("Enable", data.Enable);
@@ -482,6 +493,7 @@ apl.saveApplication = function() {
 	formData.append("Port", data.Port);
 	formData.append("Command",JSON.stringify(data.Command));
 	formData.append("Variable", JSON.stringify(data.Variable));
+	formData.append("IsEdit", (apl.applicationMode() != ""));
 
 	app.ajaxPost("/application/saveapps", formData, function (res) {
 		if (!app.isFine(res)) {
@@ -507,6 +519,13 @@ apl.getUploadFile = function() {
 
 apl.backToFront = function () {
 	app.mode('');
+	apl.breadcrumb('All');
+	apl.getApplications();
+	apl.tempCheckIdServer([]);
+};
+
+apl.backToEdit = function () {
+	app.mode('editor');
 	apl.getApplications();
 	apl.tempCheckIdServer([]);
 };
@@ -919,10 +938,12 @@ apl.prepareTreeView = function () {
 }
 
 $(function () {
+	apl.showSearchApplication(false);
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
 	apl.prepareTreeView();
+	apl.breadcrumb('All');
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 	apl.getLangEnv();

@@ -21,7 +21,9 @@ wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
 wg.connectionListData = ko.observableArray([]);
 wg.collectionInput = ko.observable();
+wg.showSearchWebGrabber = ko.observable(false);
 wg.showWebGrabber = ko.observable(true);
+wg.breadcrumb = ko.observable('');
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
 wg.searchfield = ko.observable('');
 wg.filtercond = ko.observable('');
@@ -335,6 +337,7 @@ wg.toggleDaemon = function (to) {
 };
 wg.editScrapper = function (_id) {
 	app.miniloader(true);
+	wg.showSearchWebGrabber(false);
 	wg.scrapperMode('edit');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 
@@ -343,6 +346,7 @@ wg.editScrapper = function (_id) {
 			return;
 		}
 		app.mode('editor');
+		wg.breadcrumb('Edit');		
 		wg.scrapperMode('edit');
 		wg.modeSelector('');
 		wg.modeSetting(1);
@@ -466,6 +470,8 @@ wg.getScrapperData = function () {
 	});
 };
 wg.createNewScrapper = function () {
+	wg.breadcrumb('Create New');
+	wg.showSearchWebGrabber(false);
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 	ko.mapping.fromJS(wg.templateCron, wg.configCron);
@@ -480,6 +486,7 @@ wg.createNewScrapper = function () {
 	//wg.timePreset('');
 };
 wg.backToFront = function () {
+	wg.breadcrumb('All');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 	wg.selectorRowSetting([]);
 	wg.modeSetting(0);
@@ -1348,6 +1355,8 @@ wg.isJson = function(str) {
     return true;
 }
 $(function () {
+	wg.breadcrumb('All');
+	wg.showSearchWebGrabber(false);
 	wg.getConnection();
 	wg.getScrapperData();
 	app.registerSearchKeyup($(".search"), wg.getScrapperData);

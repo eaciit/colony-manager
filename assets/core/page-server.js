@@ -71,6 +71,8 @@ srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.filter = ko.mapping.fromJS(srv.templateFilter);
 srv.showServer = ko.observable(true);
+srv.breadcrumb = ko.observable('');
+srv.showSearchServer = ko.observable(false);
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
@@ -115,8 +117,13 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var yo = 0;
 		for (i in apl.applicationData()){
-			if (apl.applicationData()[i].DeployedTo.length > 0 || apl.applicationData()[i].DeployedTo != undefined){
-				var app = ko.utils.arrayFilter(apl.applicationData()[i].DeployedTo, function (yoi) {
+			var deployedTo = apl.applicationData()[i].DeployedTo;
+			if (typeof deployedTo === "undefined" || deployedTo == null) {
+				deployedTo = [];
+			}
+
+			if (deployedTo.length > 0){
+				var app = ko.utils.arrayFilter(deployedTo, function (yoi) {
 					return yoi == srv.configServer._id();
 				});
 				if (app.length > 0)
@@ -212,6 +219,7 @@ srv.createNewServer = function () {
 	srv.isMultiServer(false);
 	srv.isNew(true);
 	$("#privatekey").replaceWith($("#privatekey").clone());
+	srv.breadcrumb('Create New');
 	app.mode("editor");
 	srv.ServerMode('');
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
@@ -370,6 +378,8 @@ srv.selectGridServer = function (e) {
 srv.editServer = function (_id) {
 	srv.gridStatusCheck();
 	app.miniloader(true);	
+	srv.showSearchServer(false);
+	srv.breadcrumb('Edit');
 	srv.isMultiServer(false);
 	$("#privatekey").replaceWith($("#privatekey").clone());
 
@@ -516,6 +526,7 @@ function ServerFilter(event){
 srv.backToFront = function () {
 	srv.isMultiServer(false);
 	srv.isNew(false);
+	srv.breadcrumb('All');
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
@@ -648,5 +659,7 @@ srv.finishButton = function () {
 
 $(function () {
     srv.getServers();
+	srv.breadcrumb('All');
+	srv.showSearchServer(false);
 	app.registerSearchKeyup($(".searchsrv"), srv.getServers);
 });

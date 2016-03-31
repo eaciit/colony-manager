@@ -4,24 +4,37 @@
 	}
 </style>
 
-<h1>Servers</h1>
+<ol class="breadcrumb bc-custom">
+	<li>Servers</li>
+	<li class="active">
+		<span data-bind="text: srv.breadcrumb"></span> Servers
+	</li>
+</ol>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-    <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
-		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: srv.showSearchServer(), click: showSearchServer(false)">
+		<span class="glyphicon glyphicon-search"></span>					
 	</button>
-    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
-		<span class="glyphicon glyphicon-plus"></span> Add
+	<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !srv.showSearchServer(), click: showSearchServer(true)">
+		<span class="glyphicon glyphicon-search"></span>					
 	</button>
-	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: srv.removeServer">
-		<span class="glyphicon glyphicon-remove"></span> Delete
-	</button>
-	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.popupWizard">
-		<span class="glyphicon glyphicon-send"></span> Add Wizard
-	</button>
+	<div class="btn-group" role="group">
+		<button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.getServers">
+    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+    	</button>
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.createNewServer">
+    		<span class="glyphicon glyphicon-plus"></span> Add Server
+    	</button>
+    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.popupWizard">
+    		<span class="glyphicon glyphicon-send"></span> Add Wizard
+    	</button>
+    	<button class="btn btn-sm btn-danger mgTop15" data-bind="click: srv.removeServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
+    	</button>
+	</div>
 </nav>
 
-<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: srv.showSearchServer()">
 	<div class="col-md-4">
 		<div class="form-group">
 			<label class="col-md-4 filter-label no-left-padding">
@@ -69,10 +82,7 @@
     </div>
 </nav>
 
-<div class="panel" data-bind="visible: (app.mode() == '')">
-    <div class="panel-heading">
-        <h1 class="panel-title">Servers</h1>
-    </div>
+<div class="" data-bind="visible: (app.mode() == '')">
     <div class="panel-body position-custom">
 		{{template "_miniloader.html"}}	
 		<div data-bind="visible: !app.miniLoader">
@@ -103,10 +113,6 @@
 </ul>
 
 <div class="panel" data-bind="visible: (app.mode() == 'editor')">
-	<div class="panel-heading">
-        <h1 class="panel-title"><span data-bind="text: (srv.ServerMode() == '') ? 'Create New' : 'Edit'"></span>
-        </h1>
-    </div>
     <div class="panel-body">
     	<div id="myTabContent" class="tab-content">
 			<div class="tab-pane fade in active" id="Form-server">
