@@ -9,7 +9,7 @@ import (
 
 func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
 	var steps []FlowAction
-	steps = append(steps, flow.Actions[0].(colonycore.FlowAction))
+	// steps = append(steps, flow.Actions[0].(colonycore.FlowAction))
 
 	process := colonycore.DataFlowProcess{
 		Id:          generateProcessID(),
