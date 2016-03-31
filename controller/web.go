@@ -131,6 +131,15 @@ func (w *WebController) Widget(r *knot.WebContext) interface{} {
 	return true
 }
 
+func (w *WebController) Reset(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = "views/page-reset.html"
+
+	return true
+}
+
 func (w *WebController) DataFlow(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
