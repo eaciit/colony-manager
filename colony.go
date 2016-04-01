@@ -27,7 +27,7 @@ func main() {
 	server = new(knot.Server)
 	server.Address = "localhost:3000"
 	server.RouteStatic("res", path.Join(controller.AppBasePath, "assets"))
-	server.RouteStatic("res-widget", controller.EC_DATA_PATH+"/widget")
+	server.RouteStatic("res-widget", path.Join(controller.EC_DATA_PATH, "widget"))
 	server.Register(controller.CreateWebController(server), "")
 	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateDataSourceController(server), "")
