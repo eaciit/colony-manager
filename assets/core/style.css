@@ -319,8 +319,10 @@ table.table tr:hover td {
 
 .bgcustom {
   padding: 10px 15px;
-  margin-left: 15px;
   width: 300px; }
+
+.pdCustom {
+  padding: 15px 0; }
 
 .mgBtm-15 {
   margin-bottom: -15px !important; }
