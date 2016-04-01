@@ -823,6 +823,10 @@ apl.renameFile = function(){
 	});
 }
 
+apl.backToEdit = function () {
+	apl.mode("editor");
+}
+
 apl.checkDelData = function (elem,e ){
 	if ( e === 'apl') {
 		if ($(elem).prop('checked') === true){
@@ -964,6 +968,6 @@ $(function () {
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 	apl.getLangEnv();
 	apl.getLanguage();
-	apl.languageGrid();
+	// apl.languageGrid();
 });
 
