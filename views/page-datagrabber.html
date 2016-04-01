@@ -72,18 +72,20 @@
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+			<button class="btn btn-sm btn-default mgTop15" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveDataGrabber">
-	    		<span class="glyphicon glyphicon-save"></span> Save
-	    	</button>
-	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: runTransformationWhenEdit">
-	    		<span class="glyphicon glyphicon-play"></span> Execute Transformation
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataGrabber" data-bind="visible: dg.showDataGrabber, click: dg.removeScrapper">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+			<div class="btn-group">
+	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: saveDataGrabber">
+		    		<span class="glyphicon glyphicon-save"></span> Save
+		    	</button>
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: runTransformationWhenEdit">
+		    		<span class="glyphicon glyphicon-play"></span> Execute Transformation
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" id="removeOnEditDataGrabber" data-bind="visible: dg.showDataGrabber, click: dg.removeScrapper">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+	    	</div>
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
