@@ -50,8 +50,8 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-/*func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, error) {
-	widgetData := &colonycore.Widget{}
+func (w *WidgetController) FetchDataSource(ids string) (toolkit.Ms, error) {
+	widgetData := toolkit.Ms{}
 	_ids := strings.Split(ids, ",")
 	for _, _id := range _ids {
 		getFunc := DataSourceController{}
@@ -75,15 +75,15 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 		if err != nil {
 			return nil, err
 		}
-		datasourcewidget := &colonycore.DataSourceWidget{}
-		datasourcewidget.ID = _id
-		datasourcewidget.Data = data
-		widgetData.DataSource = append(widgetData.DataSource, datasourcewidget)
+		datasourcewidget := toolkit.M{}
+		// datasourcewidget.ID = _id
+		datasourcewidget.Set("Data", data)
+		widgetData = append(widgetData, datasourcewidget)
 	}
 
 	return widgetData, nil
 }
-*/
+
 func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -100,11 +100,8 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	datasource := r.Request.FormValue("dataSourceId")
 	widget.Description = r.Request.FormValue("description")
 
-	/*widgetData, err := w.FetchDataSource(datasource)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}*/
 	widget.DataSourceId = strings.Split(datasource, ",")
+	widget.URL = w.Server.Address
 
 	widgetConfig := toolkit.Ms{}
 	if fileName != "" {
@@ -182,6 +179,22 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	} else {
 		contentstring = string(content)
 	}
-	// toolkit.Println(contentstring)
-	return helper.CreateResult(true, contentstring, "")
+
+	dataWidget := colonycore.Widget{}
+	dataWidget.ID = data.Get("_id", "").(string)
+	if err := dataWidget.GetById(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	dataSourceArry := strings.Join(dataWidget.DataSourceId, ",")
+	widgetData, err := w.FetchDataSource(dataSourceArry)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	previewData := toolkit.M{}
+	previewData.Set("container", contentstring)
+	previewData.Set("dataSource", widgetData)
+
+	return helper.CreateResult(true, previewData, "")
 }

@@ -139,7 +139,8 @@ wl.previewWidget = function(_id) {
 			res.data = [];
 		}
 		
-		$("#preview").html(res.data); 
+		console.log(res.data.dataSource)
+		$("#preview").html(res.data.container); 
 		$(".modal-widget-preview").modal({
 			backdrop: 'static',
 			keyboard: true
