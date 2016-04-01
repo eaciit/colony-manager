@@ -318,6 +318,8 @@ db.saveAndBack = function(section) {
 		} else {
 			br.ViewBrowserName(param._id)
 		}
+	}, {
+		timeout: 10 * 1000
 	});
 }
 
@@ -338,7 +340,7 @@ db.designDataBrowser = function(_id) {
 
 		
 		br.pageVisible("editor");
-		br.breadcrumb('Edit');
+		br.breadcrumb('Design');
 		br.showSearchDataBrowser(false);
 		app.mode('editor')
 		for(var i in res.data.MetaData) {
