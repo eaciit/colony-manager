@@ -91,7 +91,7 @@ lg.getConfirmReset = function(){
 	lg.getConfirReset.token(lg.getUrlParam('2'));
 	lg.getConfirReset.password(lg.confirmReset.confirm_pass())
 	var param = ko.mapping.toJS(lg.getConfirReset);
-	console.log(param);
+	//console.log(param);
 	app.ajaxPost("/login/savepassword", param, function(res){
 		if(!app.isFine(res)){
 			return;
