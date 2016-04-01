@@ -197,7 +197,7 @@ srv.getServers = function(c) {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data = [];;
 		}
 		srv.ServerData(res.data);
 		var grid = $(".grid-server").data("kendoGrid");

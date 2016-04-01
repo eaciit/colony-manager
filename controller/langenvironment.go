@@ -305,17 +305,3 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 
 	return helper.CreateResult(true, payload, "")
 }
-
-// func (l *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
-// 	r.Config.OutputType = knot.OutputJson
-
-// 	dsLang, err := new(colonycore.LanguageEnviroment).Get("")
-// 	// dsLang := new(colonycore.LanguangeEnvironment)
-// 	// err := colonycore.Get(dsLang, "halo")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	fmt.Println(dsLang)
-
-// 	return helper.CreateResult(true, dsLang, "")
-// }

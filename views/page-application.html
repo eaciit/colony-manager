@@ -59,10 +59,10 @@
 		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: apl.showSearchApplication(), click: showSearchApplication(false)">
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: apl.showSearchApplication(), click: function () { showSearchApplication(false) }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
-			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !apl.showSearchApplication(), click: showSearchApplication(true)">
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !apl.showSearchApplication(), click: function () { showSearchApplication(true) }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
 			<div class="btn-group" role="group">
