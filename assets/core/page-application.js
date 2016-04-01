@@ -180,7 +180,7 @@ apl.datadinamis = ko.observableArray([
 
 apl.commandDataColumns = ko.observableArray([
 	{field: "AppID", title: "Application ID"},
-	{field: "SrvID", title: "Server ID"},
+	{field: "ServerID", title: "Server ID"},
 	{field: "CmdName", title: "Command Key"},
 	{field: "CmdValue", title: "Command"},
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
@@ -211,7 +211,7 @@ apl.showRunCommand = function (serverID) {
 
 		apl.commandData.push({
 			AppID: appid,
-			// SrvID: srvid,
+			ServerID: serverID,
 			CmdName: cmd.key,
 			CmdValue: cmd.value
 		});
@@ -220,7 +220,6 @@ apl.showRunCommand = function (serverID) {
 	// $(".modal-run-cmd").modal("show");
 };
 apl.doRunCommand = function (cmdKey) {
-	$(".modal-run-cmd").modal("show");	
 	var param = {
 		AppID: apl.configApplication._id(),
 		ServerID: apl.commandServerID(),
@@ -232,7 +231,17 @@ apl.doRunCommand = function (cmdKey) {
 			return;
 		}
 
-		console.log(param);
+		var text = "<pre style='text-align: left; height: 200px;'>" + res.data + "</pre>";
+
+		swal({
+			title: "Command result",
+			text: text,
+			showConfirmButton: true,
+			closeOnConfirm: false,
+			confirmButtonText: "OK",
+			html: true,
+			allowOutsideClick: true
+		});
 	});
 };
 
@@ -824,7 +833,7 @@ apl.renameFile = function(){
 }
 
 apl.backToEdit = function () {
-	apl.mode("editor");
+	app.mode("editor");
 }
 
 apl.checkDelData = function (elem,e ){

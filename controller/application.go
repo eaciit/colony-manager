@@ -1084,12 +1084,10 @@ func (a *ApplicationController) RunCommand(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	fmt.Println("run command", cmdString)
-	output, err := setting.GetOutputCommandSsh("printenv")
-	fmt.Println("output command", output)
+	output, err := setting.RunCommandSshAsMap(cmdString)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, output, "")
+	return helper.CreateResult(true, output[0].Output, "")
 }
