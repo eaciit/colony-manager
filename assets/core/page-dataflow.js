@@ -189,7 +189,6 @@ df.init = function () {
         placement : 'top'
     });
 
-
     var xmouse = 0;
     var ymouse = 0;
 
@@ -229,4 +228,5 @@ df.init = function () {
 
 $(function () {
     df.init();
+    app.section('');
 });
