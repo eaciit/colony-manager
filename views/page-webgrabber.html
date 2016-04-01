@@ -75,8 +75,8 @@
 		    </div>
 		</nav>
 
-		<div class="mgTop15" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-body  position-custom">
+		<div data-bind="visible: (app.mode() == '')">
+		    <div class="pdCustom">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniloader()">
 		    		<div class="grid grid-web-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: wg.scrapperData, selectable: 'multiple, row', change: wg.selectGridWebGrabber, columns: scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-web-grabber') }"></div>
@@ -86,7 +86,7 @@
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
+			<button class="btn btn-sm btn-default navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getURL">

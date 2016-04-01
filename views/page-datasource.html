@@ -114,18 +114,20 @@ body {
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'edit')">
-            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
+            <button class="btn btn-sm btn-default mgTop15" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveNewConnection">
-	    		<span class="glyphicon glyphicon-save"></span> Save
-	    	</button>
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: testConnection">
-	    		<span class="fa fa-info-circle"></span> Test Connection
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditConnection" data-bind="visible: showConnection, click : ds.removeConnection">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+			<div class="btn-group" role="group">
+	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: saveNewConnection">
+		    		<span class="glyphicon glyphicon-save"></span> Save
+		    	</button>
+	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: testConnection">
+		    		<span class="fa fa-info-circle"></span> Test Connection
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" id="removeOnEditConnection" data-bind="visible: showConnection, click : ds.removeConnection">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+	    	</div>
 		</nav>
 
 		<div class="panel" data-bind="visible: (app.mode() == 'edit')" style="width: 600px;">		   
@@ -179,7 +181,7 @@ body {
 				        <label class="col-sm-4 filter-label">Settings</label>
 				        <div class="col-sm-8">
 				        	<div class="nav">
-				        		<button class="btn btn-success btn-sm" data-bind="click: ds.addSettings">
+				        		<button class="btn btn-primary btn-sm" data-bind="click: ds.addSettings">
 				        			<span class="glyphicon glyphicon-plus"></span> Add
 				        		</button>
 				        	</div>
@@ -253,21 +255,24 @@ body {
 		</nav>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editDataSource')">
-            <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFrontPage">
+            <button class="btn btn-sm btn-default mgTop15" data-bind="click: backToFrontPage">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveNewDataSource">
-	    		<span class="glyphicon glyphicon-save"></span> Save
-	    	</button>
-	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: forceFetchDataSourceMetaData">
-	    		<span class="glyphicon glyphicon-refresh"></span> Refresh Meta Data
-	    	</button>
-	    	<button class="btn btn-sm btn-success navbar-btn" data-bind="click: testQuery">
-	    		<span class="glyphicon glyphicon-play"></span> Run Query
-	    	</button>
-	    	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditDataSource" data-bind="visible: showDataSource, click : ds.removeDataSource">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+
+			<div class="btn-group" role="group">
+	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: saveNewDataSource">
+		    		<span class="glyphicon glyphicon-save"></span> Save
+		    	</button>
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: forceFetchDataSourceMetaData">
+		    		<span class="glyphicon glyphicon-refresh"></span> Refresh Meta Data
+		    	</button>
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: testQuery">
+		    		<span class="glyphicon glyphicon-play"></span> Run Query
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" id="removeOnEditDataSource" data-bind="visible: showDataSource, click : ds.removeDataSource">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+	    	</div>
 		</nav>
 
 		<div class="" data-bind="visible: (app.mode() == '')">

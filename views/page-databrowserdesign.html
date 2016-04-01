@@ -1,14 +1,16 @@
 <!-- main area -->
 <nav class="navbar" >
-    <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: function(){db.back('back')}">
+    <button class="btn btn-sm btn-default mgTop15" data-bind="click: function(){db.back('back')}">
 		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	</button>
-	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){db.saveAndBack('nothing')}">
-		<span class="glyphicon glyphicon-save"></span> Save
-	</button>
-	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){db.saveAndBack('goview')}">
-		<span class="glyphicon glyphicon-save"></span> Save and View
-	</button>
+	<div class="btn-group">
+		<button class="btn btn-sm btn-primary mgTop15" data-bind="click: function(){db.saveAndBack('nothing')}">
+			<span class="glyphicon glyphicon-save"></span> Save
+		</button>
+		<button class="btn btn-sm btn-primary mgTop15" data-bind="click: function(){db.saveAndBack('goview')}">
+			<span class="glyphicon glyphicon-save"></span> Save and View
+		</button>
+	</div>
 	<!-- <button class="btn btn-sm btn-danger navbar-btn" id="removeWebGrabber" data-bind="click: db.backToFront">
 		<span class="glyphicon glyphicon-remove"></span> Cancel
 	</button> -->
