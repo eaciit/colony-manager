@@ -185,6 +185,8 @@ wl.saveWidget = function() {
 			return;
 		}
 		// console.log(res.data)
+		$('#files').wrap('<form>').closest('form').get(0).reset();
+    	$('#files').unwrap();
 		wl.backToFront();
 	});
 };
