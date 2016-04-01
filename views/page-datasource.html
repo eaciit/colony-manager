@@ -104,7 +104,7 @@ body {
 		</nav>
 
 		<div class="" data-bind="visible: (app.mode() == '')">		    
-		    <div class="panel-body">
+		    <div class="pdCustom">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniloader()">
 		    		<div class="grid grid-connection" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: connectionListData, selectable: 'multiple, row', change: ds.selectGridConnection, columns: connectionListColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-connection') }"></div>
@@ -271,7 +271,7 @@ body {
 		</nav>
 
 		<div class="" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-body position-custom">
+		    <div class="pdCustom position-custom">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniloader()">
 			    	<div class="gridDataSource grid-datasource" data-bind="kendoGrid: { dataSource: { pageSize: 10 }, data: dataSourcesData,  selectable: 'multiple, row', change: ds.selectGridDataSource, columns: dataSourceColumns, filterfable: false, sortable: true, pageable: true, dataBound: app.gridBoundTooltipster('.gridDataSource') }"></div>
