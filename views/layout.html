@@ -15,11 +15,16 @@
 					</a>
 				</div>
 				<div class="navbar-collapse collapse">
-					<ul class="nav navbar-nav navbar-right">
-						<li><a href="#">
-							<i class="fa fa-user"></i>
-							Account
-						</a></li>
+					<ul class="nav navbar-nav navbar-right nav-account">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+								<i class="fa fa-user"></i>
+								Account <span class="caret"></span>
+							</a>
+							<ul class="dropdown-menu logout">
+								<li><a data-bind="click: ly.getLogout">Logout</a></li>
+							</ul>
+						</li>
 					</ul>
 				</div>
 				<div class="clearfix"></div>				

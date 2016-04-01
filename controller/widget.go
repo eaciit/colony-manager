@@ -169,24 +169,25 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	widgetSource := filepath.Join(EC_DATA_PATH, "widget")
-	widgetPath := filepath.Join(widgetSource, data.Get("_id", "").(string), "index.html")
 
-	contentstring := ""
-	content, err := ioutil.ReadFile(widgetPath)
+	getFileIndex, err := colonycore.GetPath(widgetSource)
 	if err != nil {
-		toolkit.Println("Error : ", err)
-		contentstring = ""
-	} else {
-		contentstring = string(content)
-	}
-
-	dataWidget := colonycore.Widget{}
-	dataWidget.ID = data.Get("_id", "").(string)
-	if err := dataWidget.GetById(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	widgetPath := filepath.Join(getFileIndex, "index.html")
 
-	dataSourceArry := strings.Join(dataWidget.DataSourceId, ",")
+	content, err := ioutil.ReadFile(widgetPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	contentstring := string(content)
+
+	var datasource []string
+	for _, val := range data.Get("dataSource").([]interface{}) {
+		datasource = append(datasource, val.(string))
+	}
+
+	dataSourceArry := strings.Join(datasource, ",")
 	widgetData, err := w.FetchDataSource(dataSourceArry)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -196,5 +197,39 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	previewData.Set("container", contentstring)
 	previewData.Set("dataSource", widgetData)
 
+	if data.Get("mode", "").(string) == "save" {
+		dataWidget := colonycore.Widget{}
+		dataWidget.ID = data.Get("_id", "").(string)
+		toolkit.Println(dataWidget)
+		if err := dataWidget.GetById(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		dataWidget.DataSourceId = datasource
+		if err := dataWidget.Save(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
 	return helper.CreateResult(true, previewData, "")
 }
+
+/*
+func (w *WidgetController) savePreviewConfig(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	dataConfig := toolkit.M{}
+	if err := r.GetPayload(&dataConfig); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := colonycore.Widget{}
+	if err := r.GetPayload(&data); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if err := data.GetById(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	return helper.CreateResult(true, data, "")
+}
+*/
