@@ -226,6 +226,15 @@ df.init = function () {
         });
 };
 
+df.run = function () {
+    app.ajaxPost("/dataflow/start", {}, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        
+    });
+}
+
 $(function () {
     df.init();
     app.section('');
