@@ -171,7 +171,7 @@ dg.getScrapperData = function (){
 		}
 		console.log(res);
 		if (res.data==null){
-			res.data="";
+			res.data = [];;
 		}
 		dg.scrapperData(res.data);
 		dg.checkTransformationStatus();

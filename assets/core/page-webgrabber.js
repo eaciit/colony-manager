@@ -457,7 +457,7 @@ wg.getScrapperData = function () {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data = [];;
 		}
 
 		res.data = res.data.map(function (each) {

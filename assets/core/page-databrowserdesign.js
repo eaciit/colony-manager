@@ -397,7 +397,7 @@ db.populateTable = function (_id, isPopulated) {
 		}
 
 		if (res.data.length==0){
-			res.data="";
+			res.data = [];;
 			db.collectionListData([{value:"", text: ""}]);
 		} else {
 			var datavalue = [];
