@@ -10,23 +10,25 @@
     		        <div class="login-form col-md-3 col-xs-12" id="loginForm">
                         <!-- create process loader here -->
                 
-    		            <div class="form form-horizontal fh-reset">
+    		            <form class="form form-horizontal fh-reset" id="form-reset" novalidate>
 
     		                <center>
                                 <div class="login-logo-reset"></div>
                                 <h4 class="head-reset">Reset Your Password</h4>
                             </center>
-
-    		                <div class="form-group login-form-group">
+    		                <div class="form-group login-form-group" id="confirm_form">
     		                    <label class="col-sm-12 form-login-label">New Password</label>
     		                    <div class="col-sm-12">
-    		                        <input type="password" class="form-control input-sm full-width" id="password" name="password" placeholder="Your Password" data-bind="value: lg.confirmReset.new_pass"  required />
+    		                        <input type="password" class="form-control input-sm full-width" id="new_pass" name="new-password" placeholder="Your Password" data-bind="value: lg.confirmReset.new_pass"  required />
+                                    <span class="k-invalid-msg" data-for="new-password"></span>
     		                    </div>
     		                </div>
                             <div class="form-group login-form-group">
                                 <label class="col-sm-12 form-login-label">Confirm New Password</label>
                                 <div class="col-sm-12">
-                                    <input type="password" class="form-control input-sm full-width" id="password" name="password" placeholder="Your Password" data-bind="value: lg.confirmReset.confirm_pass"  required />
+                                    <input type="password" class="form-control input-sm full-width" id="conf_pass" name="confirm-password" placeholder="Your Password" data-bind="value: lg.confirmReset.confirm_pass" required />
+                                    <!-- <span class="k-invalid-msg" data-for="confirm-password"></span> -->
+                                    <span class="k-invalid-msg" data-for="confirm-password"></span>
                                 </div>
                             </div>
     		                <div class="form-group login-form-group">
@@ -37,7 +39,7 @@
     		                <div class="form-group login-form-group">
     		                    <label class="label label-danger form-login-label"></label>
     		                </div>
-    		            </div>
+    		            </form>
     		        </div>
                     
     		        <div class="login-bg col-md-9">

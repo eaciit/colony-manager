@@ -1,17 +1,46 @@
 <!-- core -->
 <script src="/res/core/page-dataflow.js"></script>
 
+<style>
+.btn-nav-container {
+	padding-top: 5px;
+	padding-bottom: 10px;
+	padding-left: 3px;
+}
+.sidebar {
+	padding-right: 0px;
+}
+.designer {
+	padding-left: 0px;
+	padding-top: 20px;
+}
+</style>
+
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataflow">
-	<div class="col-md-1" data-bind="visible: (app.section() == '')">
-		  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;">
-              <div data-bind="css: Name,attr:{name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
-          </div>
-	</div>
-	<div class="col-md-11" data-bind="visible: (app.section() == '')">
-		<div class="diagram"></div>
+	<div class="col-md-12" data-bind="visible: (app.section() == '')">
+		<ol class="breadcrumb bc-custom">
+			<li>Data Flow Designer</li>
+		</ol>
+
+		<div class="row dataflow-content">
+			<div class="col-md-1 sidebar" data-bind="visible: (app.section() == '')">
+				<div class="btn-nav-container">
+					<button class="btn btn-sm btn-primary mgTop15" data-bind="click: df.run">
+			    		<span class="glyphicon glyphicon-play"></span> Run
+			    	</button>
+		    	</div>
+
+				  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;">
+		              <div data-bind="css: Name,attr:{name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
+		          </div>
+			</div>
+			
+			<div class="col-md-11 designer" data-bind="visible: (app.section() == '')">
+				<div class="diagram"></div>
+			</div>
+		</div>
 	</div>
 </div>
-<button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <style>
        #sortable-All {
@@ -53,5 +82,20 @@
 
           .hint {
             opacity: 0.4;
+        }
+        .k-layer{
+            width: 100%!important;
+            height: 100%!important;
+        }
+        circle{
+            stroke: #000000!important;
+            stroke-width: 6px!important;
+        }
+
+        circle:hover{
+            stroke: #000000;
+            stroke-width: 9px;
+            height: 120%;
+            width: 120%;
         }
 </style>

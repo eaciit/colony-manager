@@ -163,6 +163,8 @@ br.ViewBrowserName = function(id){
 	// 	//br.dataBrowserDescColumns(datacol);
 	// 	br.dataBrowserDesc(ondataval);
 	// 	br.dataBrowserDescColumns(datacol);
+	}, {
+		timeout: 10 * 1000
 	});
 	
 }

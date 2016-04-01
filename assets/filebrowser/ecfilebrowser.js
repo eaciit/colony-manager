@@ -332,8 +332,9 @@ BuildFileExplorer:function(elem,options){
 		        });
 
 		        if(data.path !== null){
-		        	newPathname = "";
-		        	pathData = [];
+		        	var newPathname = "";
+		        	var pathData = [];
+		        	var parrentId = "";
 		        	var pathArray = data.path.split( '/' );
 					for (i = 1; i < pathArray.length; i++) {
 					  newPathname += "/";
@@ -350,8 +351,9 @@ BuildFileExplorer:function(elem,options){
 							methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path: path});
 						});
 		        	  }
+		        	  parrentId = "/"+ pathArray[1];
 					}
-					methodsFB.SetSelectedNode(elem,data.path,pathData);
+					methodsFB.SetSelectedNode(elem,parrentId,pathData);
 		        }
 
 		        if(results !== null){
@@ -360,7 +362,7 @@ BuildFileExplorer:function(elem,options){
 		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">');
 			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 5) + "..." : results[index].name);
 			            $strprecont = $('<div class="col-xs-2 col-md-1">'+
-			            					'<a href="#" id="'+id+'-'+index+'" class="thumbnail tooltipster" title="'+results[index].name+'">'+
+			            					'<a href="#" id="'+id+'-'+index+'" name="'+results[index].name+'" permission="'+results[index].permissions+'" path="'+results[index].path+'" class="thumbnail tooltipster" title="'+results[index].name+'">'+
 			            						ico +
 			            						'<div class="caption" >'+
 			            							'<p align="center">'+shortName+'</p>'+
@@ -368,14 +370,19 @@ BuildFileExplorer:function(elem,options){
 			            					'</a>'+
 			            				'</div>');
 						$strprecont.appendTo($strthumb);
-
+						
 						$strprecont.click(function(e){
+						   $strprecont.find("a").removeClass("thumb-selected");
+						   $(this).find("a").addClass("thumb-selected");
 					       return false; // disable single click
 					    }).dblclick(function(e){
+					    	$strprecont.find("a").removeClass("thumb-selected");
 					    	if(results[index].isdir == true){
 					    		methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path:results[index].path});
 					    	}else{
-					    		methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
+					    		var path = $(this).find('a').attr("path");
+					    		$(this).find("a").addClass("thumb-selected");
+					    		methodsFB.ActionRequest(elem,options,{action:"GetContent",path:path});
 					    	}
 					       
 					    })
@@ -444,7 +451,8 @@ BuildFileExplorer:function(elem,options){
 		$edlbl.appendTo($edhref);
 
 		$edhref.click(function(){
-			methodsFB.ActionRequest(elem,options,{"action":"Edit"});
+			var path = $(elem).find(".k-editor-toolbar").find(".fb-filename").html();
+			methodsFB.ActionRequest(elem,options,{"action":"Edit","path":path});
 		});
 
 		$edli = $("<li class='k-tool-group k-button-group' role='presentation'></li>");
@@ -672,17 +680,27 @@ BuildFileExplorer:function(elem,options){
 		}
 
 		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
+		//var SelectedTree = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
+		// var SelectedFile = $($(elem).find(".thumb-selected")).length > 0 ? $($(elem).find(".thumb-selected")).attr("path") : "";
+		// console.log(SelectedFile);
+
 		var name = "";
 		var type = "";
 		var permiss = "";
-		if(SelectedPath=="" && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
+
+		if( SelectedPath == ""  && content.action!="Cancel" && content.action!="GetContent" && content.action!="Search"){
             swal("Warning!", "Please choose folder or file !", "warning");
 			return;
 		}
 
+		//var SelectedPath = (SelectedFile != "" ? SelectedFile : SelectedTree);
+
 		if(content.action!="Search"){
+			// name  = (SelectedFile !== '' ? $($(elem).find(".thumb-selected")).attr("name") : $($($(elem).find(".k-state-selected")).find("a")).attr("name"));
+			// permiss = (SelectedFile !== '' ? $($(elem).find(".thumb-selected")).attr("permission") : $($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
 			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
 			permiss = $($($(elem).find(".k-state-selected")).find("a")).attr("permission");
+			
 			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 		}
 
@@ -694,14 +712,14 @@ BuildFileExplorer:function(elem,options){
 			}
 		}
 
-		content.path = SelectedPath;
+		
 		if(content.action=="Cancel"){
 			$($(elem).find(".fb-filename")).html("");
 			$($(elem).find(".fb-editor")).data("kendoEditor").value("");
 			return;
 		}else if(content.action=="GetContent"){
-			var path = ($($(sender).find("a")).attr("path")); 
-			content.path = path;
+			var path = $($(sender).find("a")).attr("path");
+			content.path = (content.path == null ? path : content.path);
 			methodsFB.SetUrl(elem,content.action);
 			if($(elem).data("ecFileBrowser").isHold){
 					var divtree = $($(elem).find(".fb-pre")[0]);
@@ -714,24 +732,30 @@ BuildFileExplorer:function(elem,options){
                 	return;
 			}
 		}else if(content.action=="Rename"){
+			content.path = SelectedPath;
 			methodsFB.CallPopUp(elem,content,"Rename File");
 			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="NewFile"){
+			content.path = SelectedPath;
 			methodsFB.CallPopUp(elem,content,"Create New File");
 			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="NewFolder"){
+			content.path = SelectedPath;
 			methodsFB.CallPopUp(elem,content,"Create New Folder");
 			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Delete"){
+			content.path = SelectedPath;
 			methodsFB.SetUrl(elem,content.action);
 		}else if(content.action=="Permission"){
+			content.path = SelectedPath;
 			methodsFB.CallPopUp(elem,content,"Edit Permission");
 			methodsFB.SetUrl(elem,content.action);
 			return;
 		}else if(content.action=="Upload"){
+			content.path = SelectedPath;
 			methodsFB.CallPopUp(elem,content,"Upload File");
 			methodsFB.SetUrl(elem,content.action);
 			return;
@@ -745,12 +769,14 @@ BuildFileExplorer:function(elem,options){
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
 			return;
 		}else if(content.action=="Download"){
+			content.path = SelectedPath;
 			if (type=="folder"){
             swal("Warning!", "Please choose file !", "warning");
 				return;
 			}
 			methodsFB.SetUrl(elem,content.action);
 		}
+
 		if (content.action=="Delete"){
 			 swal({
 			    title: "Are you sure?",
@@ -772,6 +798,7 @@ BuildFileExplorer:function(elem,options){
 			app.miniloader(true);
 			$($(elem).find(".modal-fb-editor")).modal("show");
 		}else{
+			content.path = (content.path !== null ? content.path : SelectedPath);
 			methodsFB.SendActionRequest(elem,content);
 		}
 		$(elem).find(".modal-fb-editor").on('hide.bs.modal', function(e) {
@@ -1009,11 +1036,12 @@ BuildFileExplorer:function(elem,options){
 		var dataItem = tree.dataItem(tree.findByUid(selectedUid));
 		return dataItem;
 	},
-	SetSelectedNode:function(elem,id,arrPath){
+
+	SetSelectedNode:function(elem,parrentId,arrPath){
 		var treeViewName = $($(elem).find(".k-treeview"));
 	    var treeView = treeViewName.data("kendoTreeView");
 
-	    var nodeDataItem = treeView.dataSource.get(id);
+	    var nodeDataItem = treeView.dataSource.get(parrentId);
 	    var nodeElement = treeView.findByUid(nodeDataItem.uid);
 
 	    treeView.collapse('.k-item');
@@ -1021,7 +1049,5 @@ BuildFileExplorer:function(elem,options){
 
 	    treeView.select(nodeElement);
 	    treeView.expandPath(arrPath);
-	    console.log(id);
-	    console.log(arrPath);
 	}
 }

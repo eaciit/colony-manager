@@ -189,7 +189,6 @@ df.init = function () {
         placement : 'top'
     });
 
-
     var xmouse = 0;
     var ymouse = 0;
 
@@ -227,6 +226,16 @@ df.init = function () {
         });
 };
 
+df.run = function () {
+    app.ajaxPost("/dataflow/start", {}, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        
+    });
+}
+
 $(function () {
     df.init();
+    app.section('');
 });
