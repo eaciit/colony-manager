@@ -129,9 +129,9 @@ wl.openWidget = function(_id, mode) {
 	});
 };
 
-wl.previewWidget = function(_id) {
+wl.previewWidget = function(_id, dataSourceId) {
 	// $(".modal-widget-datasource").modal("hide");
-	app.ajaxPost("/widget/previewexample", {_id: _id}, function(res){
+	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: dataSourceId(), mode: "preview"}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -139,7 +139,7 @@ wl.previewWidget = function(_id) {
 			res.data = [];
 		}
 		
-		console.log(res.data.dataSource)
+		console.log(res.data)
 		$("#preview").html(res.data.container); 
 		$(".modal-widget-preview").modal({
 			backdrop: 'static',
@@ -153,6 +153,21 @@ wl.closeModal = function() {
 	$(".modal-widget-datasource").modal("hide");
 	wl.configWidgetList.dataSourceId([]);
 };
+
+wl.saveAndCloseModal = function(_id, datasource) {
+	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: datasource(), mode: "save"}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		
+		$(".modal-widget-preview").modal("hide");
+		$(".modal-widget-datasource").modal("hide");
+		wl.configWidgetList.dataSourceId([]);
+	});
+}
 
 wl.addWidget = function() {
 	app.mode("editor");
