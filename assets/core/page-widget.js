@@ -12,6 +12,7 @@ wl.widgetDataSource = ko.observableArray([]);
 wl.configWidgetList = ko.mapping.fromJS(wl.widgetListConfig);
 wl.searchfield = ko.observable("");
 wl.scrapperMode = ko.observable("");
+wl.previewMode = ko.observable("");
 wl.WidgetColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -77,6 +78,7 @@ wl.getDataSource = function() {
 }
 
 wl.openWidget = function(_id, mode) {
+	wl.previewMode("");
 	var getId = (mode == "grid") ? _id : _id();
 	$(".modal-widget-preview").modal("hide");
 	wl.editWidget(getId, "preview")
@@ -129,6 +131,17 @@ wl.openWidget = function(_id, mode) {
 	});
 };
 
+wl.writeContent = function (html) {
+	var baseURL = wg.configScrapper.grabconf.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/, '$1');
+	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
+	
+	var contentDoc = $("#preview")[0].contentWindow.document;
+	contentDoc.open();
+	contentDoc.write(html);
+	contentDoc.close();
+	return contentDoc;
+};
+
 wl.previewWidget = function(_id) {
 	// $(".modal-widget-datasource").modal("hide");
 	app.ajaxPost("/widget/previewexample", {_id: _id}, function(res){
@@ -138,18 +151,35 @@ wl.previewWidget = function(_id) {
 		if (!res.data) {
 			res.data = [];
 		}
-		
-		$("#preview").html(res.data); 
-		$(".modal-widget-preview").modal({
-			backdrop: 'static',
-			keyboard: true
+		wl.previewMode("preview");
+		var contentDoc = $("#preview")[0].contentWindow.document;
+		contentDoc.open();
+		contentDoc.write(res.data);
+		contentDoc.close();
+		$("#preview").load(function(){
+			var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
+			document.getElementById("preview").contentWindow.Render([], setting, {});
 		});
+		// $("#preview").html(res.data); 
+		// $(".modal-widget-preview").modal({
+		// 	backdrop: 'static',
+		// 	keyboard: true
+		// });
 	});
 };
 
+wl.confertJsontoSetting = function(data){
+	var settingobj = {};
+	for (var i in data){
+		settingobj[data[i].name] = data[i].value;
+	}
+	return settingobj;
+}
+
 wl.closeModal = function() {
-	$(".modal-widget-preview").modal("hide");
+	// $(".modal-widget-preview").modal("hide");
 	$(".modal-widget-datasource").modal("hide");
+	wl.previewMode("");
 	wl.configWidgetList.dataSourceId([]);
 };
 

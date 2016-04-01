@@ -123,64 +123,49 @@
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: wl.closeModal">
 						<span aria-hidden="true">&times;</span>
 					</button>
-					<h4 class="modal-title">
-						Choose Data Source
+					<h4 class="modal-title" data-bind="text: wl.previewMode() == '' ? 'Choose Data Source' : 'Preview Widget'">
 					</h4>
 				</div>
 
 				<div class="modal-body" data-bind="">
 				    <div class="form-group">
-				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;">
+				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;" data-bind="visible: wl.previewMode() == ''">
 				    		<label class="col-md-3 ecform-formlabel">Data Source</label>
 				        	<div class="col-md-9">
 				        		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wl.widgetDataSource, value: dataSourceId }" name="datasource" id="datasource"></select>
 				        	</div>
 			        	</div>
-			        	<div class="col-md-12 setting-form">
+			        	<div class="col-md-12 setting-form" data-bind="visible: wl.previewMode() == ''">
 			        		<div id="settingform"></div>
+			        	</div>
+			        	<div class="col-md-12" data-bind="visible: wl.previewMode() != ''">
+			        		<!-- <div id="preview"></div> -->
+			        		<iframe class="full-width" id="preview"></iframe>
 			        	</div>
 			        	<div class="clearfix"></div>
 		        	</div>
 	        	</div>
 
 				<div class="modal-footer">
-					<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
-						<span class="glyphicon glyphicon-remove"></span> Close
-					</button>
-					<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.previewWidget(_id)}">
-						<span class="glyphicon glyphicon-eye-open"></span> Preview
-					</button>
+					<div data-bind="visible: wl.previewMode() == ''">
+						<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
+							<span class="glyphicon glyphicon-remove"></span> Close
+						</button>
+						<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.previewWidget(_id)}">
+							<span class="glyphicon glyphicon-eye-open"></span> Preview
+						</button>
+					</div>
+					<div data-bind="visible: wl.previewMode() != ''">
+						<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.openWidget(_id, 'modal')}">
+							<span class="glyphicon glyphicon-arrow-left"></span> Back
+						</button>
+						<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
+							<span class="glyphicon glyphicon-remove"></span> Close
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Modal Preview -->
-	<div class="modal fade modal-widget-preview" tabindex="-1" role="dialog">
-		<div class="modal-dialog">
-			<div class="modal-content" data-bind="with: configWidgetList">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: wl.closeModal">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					<h4 class="modal-title">
-						Preview
-					</h4>
-				</div>
-
-				<div class="modal-body" data-bind="">
-				    <div id="preview"></div>
-	        	</div>
-
-				<div class="modal-footer">
-					<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.openWidget(_id, 'modal')}">
-						<span class="glyphicon glyphicon-arrow-left"></span> Back
-					</button>
-					<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
-						<span class="glyphicon glyphicon-remove"></span> Close
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
 </div>
