@@ -16,6 +16,10 @@ ly.varMenu = [{"id":"dasboard", "title":"Dashboard", "childrens":[], "link":"/we
 				], "link":""},
 			{"id":"application", "title":"Application", "childrens":[], "link":"/web/application"},
 			{"id":"process", "title":"Process", "childrens":[], "link":"/web/process"},
+			{"id":"workflow", "title":"Workflow", "childrens":[
+				{"id":"dataflow", "title":"Data Flow", "childrens":[], "link":"/web/dataflow"},
+				{"id":"businessflow", "title":"Business Flow", "childrens":[], "link":"/web/businessflow"}
+				], "link":""},
 			{"id":"administration", "title":"Administration", "childrens":[], "link":"/web/administration"},
 			{"id":"login", "title":"Login", "childrens":[], "link":"/web/login"}];
 
@@ -38,12 +42,6 @@ ly.element = function(){
 			$liparent = $('<li id="liparent"><a href="'+items.link+'">'+items.title+'</a></li>');
 			$liparent.appendTo($navbar);
 		}
-
-		$('#liparent ').on('click', function(event){
-			e.preventDefault();
-	        $('li').removeClass('active');
-	        $(this).addClass('active');
-		});
 
 	});
 

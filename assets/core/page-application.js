@@ -56,6 +56,7 @@ apl.filterValue = ko.observable('');
 apl.filterAplType = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
+apl.showSearchApplication = ko.observable(false);
 apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
@@ -414,7 +415,7 @@ apl.getApplications = function(c) {
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data = [];;
 		}
 
 		apl.applicationData(res.data);
@@ -432,7 +433,7 @@ apl.getLangEnv = function (c){
 			return;
 		}
 		if (res.data==null){
-			res.data="";
+			res.data = [];;
 		}
 		apl.langEnvData(res.data);
 		var grid = $(".grid-server").data("kendoGrid");
@@ -453,7 +454,7 @@ apl.getLanguage = function(c){
 
 		}
 		if (res.data==null){
-			res.data="";
+			res.data = [];;
 		}
 		
 		apl.dataLanguage(res.data);

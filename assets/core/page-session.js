@@ -40,7 +40,7 @@ ses.selectGridSession = function (e) {
 	// 		return;
 	// 	}
 	// 	if (res.data==null){
-	// 		res.data="";
+	// 		res.data = [];;
 	// 	}
 	// 	// console.log(res)
 	// 	ses.SessionData(res.data);
@@ -126,7 +126,7 @@ ses.GenerateGrid = function() {
 // 			return;
 // 		}
 // 		if (res.data==null){
-// 			res.data="";
+// 			res.data = [];;
 // 		}
 // 		ses.config._id(res.data._id);  
 // 		ses.config.Title(res.data.Title);  
