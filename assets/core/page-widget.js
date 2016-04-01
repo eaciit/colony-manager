@@ -7,6 +7,7 @@ wl.widgetListConfig = {
 	dataSourceId: [],
 	description:  "",
 	config: [],
+	url: "",
 };
 wl.widgetListdata = ko.observableArray([]);
 wl.widgetDataSource = ko.observableArray([]);
@@ -89,20 +90,9 @@ wl.openWidget = function(_id, mode) {
 	});
 };
 
-wl.writeContent = function (html) {
-	var baseURL = wg.configScrapper.grabconf.url().replace(/^((\w+:)?\/\/[^\/]+\/?).*$/, '$1');
-	html = html.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
-	
-	var contentDoc = $("#preview")[0].contentWindow.document;
-	contentDoc.open();
-	contentDoc.write(html);
-	contentDoc.close();
-	return contentDoc;
-};
-
-wl.previewWidget = function(_id) {
+wl.previewWidget = function(_id, dataSourceId) {
 	// $(".modal-widget-datasource").modal("hide");
-	app.ajaxPost("/widget/previewexample", {_id: _id}, function(res){
+	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: dataSourceId(), mode: "preview"}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -110,10 +100,11 @@ wl.previewWidget = function(_id) {
 			res.data = [];
 		}
 		wl.previewMode("preview");
-		var urlprev = "http://localhost:3000/res-widget/"
-		var baseURL = urlprev.replace(/^((\w+:)?\/\/[^\/]+\/?).*$/, '$1');
-		var html = res.data.container.replace(new RegExp("=\"/", 'g'), "=\"" + baseURL);
-		console.log(html);
+		var urlprev = "src=\"";
+		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
+		urlprev = "href=\"";
+		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
+		// console.log(html);
 
 		var contentDoc = $("#preview")[0].contentWindow.document;
 		contentDoc.open();
@@ -145,6 +136,21 @@ wl.closeModal = function() {
 	wl.previewMode("");
 	wl.configWidgetList.dataSourceId([]);
 };
+
+wl.saveAndCloseModal = function(_id, datasource) {
+	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: datasource(), mode: "save"}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		
+		$(".modal-widget-preview").modal("hide");
+		$(".modal-widget-datasource").modal("hide");
+		wl.configWidgetList.dataSourceId([]);
+	});
+}
 
 wl.addWidget = function() {
 	app.mode("editor");
@@ -209,6 +215,7 @@ wl.editWidget = function(_id, mode) {
 		current.description = res.data.description;
 		current.config = res.data.config;
 		current.dataSourceId = newData;
+		current.url = res.data.url;
 		
 		ko.mapping.fromJS(current, wl.configWidgetList);
 		if (mode == "editor") {
