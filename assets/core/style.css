@@ -291,7 +291,7 @@ table.table tr:hover td {
 .right {
   float: right; }
 
-.login-body {
+login-body {
   max-width: 100%;
   overflow-x: hidden;
   max-height: 100%;
@@ -300,6 +300,14 @@ table.table tr:hover td {
 
 .login-form-group .form-login-label {
   text-align: left; }
+
+.fh {
+  margin: auto;
+  padding: 25%; }
+
+.fh-reset {
+  margin: auto;
+  padding: 10%; }
 
 .login-form {
   z-index: 100; }
@@ -315,7 +323,22 @@ table.table tr:hover td {
   width: 99px;
   height: 90px;
   background-size: 99px 90px;
+  margin-bottom: 30px;
+  margin-left: 15%; }
+
+.login-logo-reset {
+  background: url("/res/img/logoeaciittrans.png") no-repeat center top;
+  width: 99px;
+  height: 90px;
+  background-size: 99px 90px;
   margin-bottom: 30px; }
+
+.head-reset {
+  padding-bottom: 20px; }
+
+.form-login-forgot {
+  margin-top: 10%;
+  text-align: center; }
 
 .bgcustom {
   padding: 10px 15px;

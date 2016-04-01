@@ -1,13 +1,11 @@
 package controller
 
 import (
-	"errors"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -52,8 +50,8 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, error) {
-	widgetData := &colonycore.Widget{}
+func (w *WidgetController) FetchDataSource(ids string) (toolkit.Ms, error) {
+	widgetData := toolkit.Ms{}
 	_ids := strings.Split(ids, ",")
 	for _, _id := range _ids {
 		getFunc := DataSourceController{}
@@ -77,36 +75,13 @@ func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, erro
 		if err != nil {
 			return nil, err
 		}
-		datasourcewidget := &colonycore.DataSourceWidget{}
-		datasourcewidget.ID = _id
-		datasourcewidget.Data = data
-		widgetData.DataSource = append(widgetData.DataSource, datasourcewidget)
+		datasourcewidget := toolkit.M{}
+		// datasourcewidget.ID = _id
+		datasourcewidget.Set("Data", data)
+		widgetData = append(widgetData, datasourcewidget)
 	}
 
 	return widgetData, nil
-}
-
-func GetPath(root string) (string, error) {
-	absRoot, err := filepath.Abs(root)
-	if err != nil {
-		return "", err
-	}
-	var _path string
-	walkFunc := func(path string, info os.FileInfo, err error) error {
-		if strings.Contains(path, "index.html") {
-			_path, _ = filepath.Split(path)
-			return errors.New("found")
-		}
-		return nil
-	}
-	if err = filepath.Walk(absRoot, walkFunc); err != nil {
-		if err.Error() == "found" {
-			return _path, nil
-		} else {
-			return "", err
-		}
-	}
-	return _path, nil
 }
 
 func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
@@ -123,27 +98,30 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	widget.ID = r.Request.FormValue("_id")
 	widget.Title = r.Request.FormValue("title")
 	datasource := r.Request.FormValue("dataSourceId")
-	// widget.DataSourceID = strings.Split(datasource, ",")
 	widget.Description = r.Request.FormValue("description")
 
-	widgetData, err := w.FetchDataSource(datasource)
+	widget.DataSourceId = strings.Split(datasource, ",")
+	widget.URL = w.Server.Address
 
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	widgetConfig := toolkit.Ms{}
+	if fileName != "" {
+		widgetConfig, err = widget.ExtractFile(compressedSource, fileName)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		widget.Config = widgetConfig
 	}
-	widget.DataSource = widgetData.DataSource
-	path, _ := GetPath(filepath.Join(compressedSource, widget.ID))
-	widget.Path = path
+
+	if r.Request.FormValue("mode") == "editor" && fileName == "" {
+		data := colonycore.Widget{}
+		data.ID = widget.ID
+		data.GetById()
+		widget.Config = data.Config
+	}
 
 	if err := widget.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	// if r.Request.FormValue("mode") == "editor" && fileName == "" {
-	if err := widget.ExtractFile(compressedSource, fileName); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	// }
 
 	return helper.CreateResult(true, widget, "")
 }
@@ -201,6 +179,22 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	} else {
 		contentstring = string(content)
 	}
-	// toolkit.Println(contentstring)
-	return helper.CreateResult(true, contentstring, "")
+
+	dataWidget := colonycore.Widget{}
+	dataWidget.ID = data.Get("_id", "").(string)
+	if err := dataWidget.GetById(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	dataSourceArry := strings.Join(dataWidget.DataSourceId, ",")
+	widgetData, err := w.FetchDataSource(dataSourceArry)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	previewData := toolkit.M{}
+	previewData.Set("container", contentstring)
+	previewData.Set("dataSource", widgetData)
+
+	return helper.CreateResult(true, previewData, "")
 }

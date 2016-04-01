@@ -43,12 +43,6 @@ ly.element = function(){
 			$liparent.appendTo($navbar);
 		}
 
-		$('#liparent ').on('click', function(event){
-			e.preventDefault();
-	        $('li').removeClass('active');
-	        $(this).addClass('active');
-		});
-
 	});
 
 }
