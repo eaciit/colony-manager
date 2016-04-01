@@ -5,13 +5,16 @@ wl.widgetListConfig = {
 	_id: "",
 	title: "",
 	dataSourceId: [],
-	description:  ""
+	description:  "",
+	config: [],
+	url: "",
 };
 wl.widgetListdata = ko.observableArray([]);
 wl.widgetDataSource = ko.observableArray([]);
 wl.configWidgetList = ko.mapping.fromJS(wl.widgetListConfig);
 wl.searchfield = ko.observable("");
 wl.scrapperMode = ko.observable("");
+wl.previewMode = ko.observable("");
 wl.WidgetColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -77,55 +80,13 @@ wl.getDataSource = function() {
 }
 
 wl.openWidget = function(_id, mode) {
+	wl.previewMode("");
 	var getId = (mode == "grid") ? _id : _id();
 	$(".modal-widget-preview").modal("hide");
 	wl.editWidget(getId, "preview")
 	$(".modal-widget-datasource").modal({
 		backdrop: 'static',
 		keyboard: true
-	});
-	$('#settingform').ecForm({
-		title: "",
-		widthPerColumn: 12,
-		metadata: [
-			{
-				"name": "area_color",
-				"title": "Area Color",
-				"type": "text",
-				"value": "#B3ECFF",		
-			},
-			{
-				"name": "title",
-				"title": "Title",
-				"type": "text",
-				"value": "Example Widget 1",		
-			},
-			{
-				"name": "title_align",
-				"title": "Title Align",
-				"type": "dropdown",
-				"data": "left,right",
-				"value": "right",		
-			},
-			{
-				"name": "pagesize",
-				"title": "Page Size",
-				"type": "number",
-				"value": "2",		
-			},
-			{
-				"name": "filterable",
-				"title": "Filter",
-				"type": "bool",
-				"value": true,		
-			},
-			{
-				"name": "columnMenu",
-				"title": "Column Menu",
-				"type": "bool",
-				"value": false,		
-			},
-		]
 	});
 };
 
@@ -138,19 +99,41 @@ wl.previewWidget = function(_id, dataSourceId) {
 		if (!res.data) {
 			res.data = [];
 		}
-		
-		console.log(res.data)
-		$("#preview").html(res.data.container); 
-		$(".modal-widget-preview").modal({
-			backdrop: 'static',
-			keyboard: true
+		wl.previewMode("preview");
+		var urlprev = "src=\"";
+		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
+		urlprev = "href=\"";
+		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
+		// console.log(html);
+
+		var contentDoc = $("#preview")[0].contentWindow.document;
+		contentDoc.open();
+		contentDoc.write(html);
+		contentDoc.close();
+		$("#preview").load(function(){
+			var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
+			document.getElementById("preview").contentWindow.Render(res.data.dataSource, setting, {});
 		});
+		// $("#preview").html(res.data); 
+		// $(".modal-widget-preview").modal({
+		// 	backdrop: 'static',
+		// 	keyboard: true
+		// });
 	});
 };
 
+wl.confertJsontoSetting = function(data){
+	var settingobj = {};
+	for (var i in data){
+		settingobj[data[i].name] = data[i].value;
+	}
+	return settingobj;
+}
+
 wl.closeModal = function() {
-	$(".modal-widget-preview").modal("hide");
+	// $(".modal-widget-preview").modal("hide");
 	$(".modal-widget-datasource").modal("hide");
+	wl.previewMode("");
 	wl.configWidgetList.dataSourceId([]);
 };
 
@@ -201,8 +184,6 @@ wl.saveWidget = function() {
 			return;
 		}
 		// console.log(res.data)
-		$('#files').wrap('<form>').closest('form').get(0).reset();
-    	$('#files').unwrap();
 		wl.backToFront();
 	});
 };
@@ -224,21 +205,29 @@ wl.editWidget = function(_id, mode) {
 			res.data = [];
 		}
 		
-		/*var current = {};
+		var current = {};
 		var newData = [];
-		$.each(res.data.dataSource, function(key, val) {
-			newData.push(val._id)
-			current.dataSourceId = newData
+		$.each(res.data.dataSourceId, function(key, val) {
+			newData.push(val)
 		});
-		current._id = res.data._id
-		current.title = res.data.title
-		current.description = res.data.description*/
+		current._id = res.data._id;
+		current.title = res.data.title;
+		current.description = res.data.description;
+		current.config = res.data.config;
+		current.dataSourceId = newData;
+		current.url = res.data.url;
 		
-		ko.mapping.fromJS(res.data, wl.configWidgetList);
+		ko.mapping.fromJS(current, wl.configWidgetList);
 		if (mode == "editor") {
 			app.mode("editor");
 			wl.scrapperMode("editor");
 		}
+
+		$('#settingform').ecForm({
+			title: "",
+			widthPerColumn: 12,
+			metadata: res.data.config
+		});
 	});
 };
 
