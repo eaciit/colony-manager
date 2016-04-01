@@ -406,7 +406,7 @@ srv.doTestConnection = function (_id) {
 	}
 
 	var payload = { };
-	if (_id == undefined) {
+	if (_id !== undefined) {
 		payload = Lazy(srv.ServerData()).find({ _id: _id });
 	} else {
 		payload = ko.mapping.toJS(srv.configServer);
