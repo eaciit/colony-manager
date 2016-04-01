@@ -1038,7 +1038,7 @@ func (a *ApplicationController) RunCommand(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := struct {
 		AppID    string
-		CMD      string
+		CMDName  string
 		ServerID string
 	}{}
 	err := r.GetPayload(&payload)
@@ -1055,19 +1055,17 @@ func (a *ApplicationController) RunCommand(r *knot.WebContext) interface{} {
 	cmdString := ""
 
 	for _, raw := range app.Command.([]interface{}) {
-		for key, val := range raw.(map[string]string) {
-			if key == payload.CMD {
-				cmdString = val
-				break
-			}
+		each := raw.(map[string]interface{})
+		if each["key"].(string) == payload.CMDName {
+			cmdString = each["value"].(string)
+			break
 		}
 	}
 
 	for _, raw := range app.Variable.([]interface{}) {
-		for key, val := range raw.(map[string]string) {
-			if strings.Contains(cmdString, key) {
-				cmdString = strings.Replace(cmdString, key, val, -1)
-			}
+		each := raw.(map[string]interface{})
+		if strings.Contains(cmdString, each["key"].(string)) {
+			cmdString = strings.Replace(cmdString, each["key"].(string), each["value"].(string), -1)
 		}
 	}
 
@@ -1086,11 +1084,10 @@ func (a *ApplicationController) RunCommand(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	fmt.Println("run command", cmdString)
-	_, err = setting.GetOutputCommandSsh(cmdString)
+	output, err := setting.RunCommandSshAsMap(cmdString)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, output[0].Output, "")
 }
