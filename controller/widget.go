@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"errors"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -13,6 +15,10 @@ import (
 type WidgetController struct {
 	App
 }
+
+var (
+	compressedSource = filepath.Join(EC_DATA_PATH, "widget")
+)
 
 func CreateWidgetController(s *knot.Server) *WidgetController {
 	var controller = new(WidgetController)
@@ -46,12 +52,67 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
+func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, error) {
+	widgetData := &colonycore.Widget{}
+	_ids := strings.Split(ids, ",")
+	for _, _id := range _ids {
+		getFunc := DataSourceController{}
+		dataDS, _, _, query, _, err := getFunc.ConnectToDataSource(_id)
+		if err != nil {
+			return nil, err
+		}
+		if len(dataDS.QueryInfo) == 0 {
+			continue
+		}
+
+		cursor, err := query.Cursor(nil)
+		if err != nil {
+			return nil, err
+		}
+		defer cursor.Close()
+
+		data := []toolkit.M{}
+
+		err = cursor.Fetch(&data, 0, false)
+		if err != nil {
+			return nil, err
+		}
+		datasourcewidget := &colonycore.DataSourceWidget{}
+		datasourcewidget.ID = _id
+		datasourcewidget.Data = data
+		widgetData.DataSource = append(widgetData.DataSource, datasourcewidget)
+	}
+
+	return widgetData, nil
+}
+
+func GetPath(root string) (string, error) {
+	absRoot, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	var _path string
+	walkFunc := func(path string, info os.FileInfo, err error) error {
+		if strings.Contains(path, "index.html") {
+			_path, _ = filepath.Split(path)
+			return errors.New("found")
+		}
+		return nil
+	}
+	if err = filepath.Walk(absRoot, walkFunc); err != nil {
+		if err.Error() == "found" {
+			return _path, nil
+		} else {
+			return "", err
+		}
+	}
+	return _path, nil
+}
+
 func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	compressedSource := filepath.Join(EC_DATA_PATH, "widget")
 
 	err, fileName := helper.UploadHandler(r, "userfile", compressedSource)
-
 	if r.Request.FormValue("mode") != "editor" {
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
@@ -62,16 +123,27 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	widget.ID = r.Request.FormValue("_id")
 	widget.Title = r.Request.FormValue("title")
 	datasource := r.Request.FormValue("dataSourceId")
-	widget.DataSourceID = strings.Split(datasource, ",")
+	// widget.DataSourceID = strings.Split(datasource, ",")
 	widget.Description = r.Request.FormValue("description")
+
+	widgetData, err := w.FetchDataSource(datasource)
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	widget.DataSource = widgetData.DataSource
+	path, _ := GetPath(filepath.Join(compressedSource, widget.ID))
+	widget.Path = path
 
 	if err := widget.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	// if r.Request.FormValue("mode") == "editor" && fileName == "" {
 	if err := widget.ExtractFile(compressedSource, fileName); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	// }
 
 	return helper.CreateResult(true, widget, "")
 }
@@ -103,7 +175,7 @@ func (w *WidgetController) RemoveWidget(r *knot.WebContext) interface{} {
 	for _, id := range idArray {
 		o := new(colonycore.Widget)
 		o.ID = id.(string)
-		if err := o.Delete(); err != nil {
+		if err := o.Delete(compressedSource); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}

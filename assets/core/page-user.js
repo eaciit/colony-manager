@@ -10,8 +10,8 @@ usr.templateUser = {
     Email: "",
     Password: "",
     confPass: "",
-    loginType : "",
-    loginConf : "",
+    LoginType : "",
+    LoginConf : "",
     Enable: ko.observable(false),
     Groups: ko.observableArray([]),
     Grants: [],
@@ -23,6 +23,13 @@ usr.templateFilter = {
     FullName: "",
     Email: "",
     Groups: ko.observableArray([]),
+};
+usr.templateLdap = { 
+    Address: "",
+    BaseDN: "",
+    Filter: "",
+    Username: "",
+    Password: "",
 };
 
 usr.templateAccessGrant = function() {
@@ -63,6 +70,7 @@ usr.templateAccessGrant2 = function() {
 };
 usr.Access = ko.observableArray([]);
 usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
+usr.ldap=ko.mapping.fromJS(usr.templateLdap);
 usr.LoginID = ko.observable("");
 usr.NewPassword = ko.observable("");
 usr.ConfirmPass = ko.observable("");
@@ -78,7 +86,11 @@ usr.config = ko.mapping.fromJS(usr.templateUser);
 usr.listGroup = ko.observableArray([]);
 usr.SelectedGroup = ko.observableArray([]);
 usr.modeLoad=ko.observable(true)
-
+usr.Logintype = ko.observableArray(["","Ldap","Google","Facebook"])
+usr.valueLogintype = ko.observable("");
+usr.ListAddress = ko.observableArray([]);
+usr.ListLdap = ko.observableArray([]);
+usr.selectedAddress = ko.observable("");
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
     width: 50
@@ -100,8 +112,15 @@ usr.UsersColumns = ko.observableArray([{
     } 
 ]);
 
-usr.selectGridUsers = function(e) {
-     
+usr.UsersColumnsldap = ko.observableArray([ {
+    field: "cn",
+    title: "Cn"
+    }, {
+    field: "givenName",
+    title: "Name"
+    }  
+]);
+usr.selectGridUsers = function() { 
     app.mode('edit')
     usr.Access.removeAll();
     usr.getAccess();
@@ -116,6 +135,14 @@ usr.selectGridUsers = function(e) {
         grp.selectedGroupsData.removeAll(); 
     });
 };
+usr.selectGridLdap = function() {    
+    app.wrapGridSelect("#grid-ldap", ".btn", function(d) {
+        usr.config.LoginID(d.cn)
+        usr.config.FullName(d.givenName)
+        $(".modal-checklogin").modal("hide");
+    });
+    
+};
  
 usr.GetFilter = function(){
     data = {
@@ -125,6 +152,17 @@ usr.GetFilter = function(){
     return data
 }
 
+usr.GetFilterLdap = function(){
+    data = {
+        Address : usr.ldap.Address(),
+        BaseDN : usr.ldap.BaseDN(),
+        Filter : usr.ldap.Filter(),
+        Username : usr.ldap.Username(),
+        Password : usr.ldap.Password(),
+    }
+
+    return data
+}
 usr.getUsers = function() {
     $("#grid-users").html("");
     $('#grid-users').kendoGrid({
@@ -147,13 +185,11 @@ usr.getUsers = function() {
             },
 
             pageSize: 10,
-            serverPaging: true, // enable server paging
+            serverPaging: true,   
             serverSorting: true,
         },
         resizable: true,
-        scrollable: true,
-        // sortable: true,
-        // filterable: true,
+        scrollable: true, 
         pageable: {
             refresh: false,
             pageSizes: 10,
@@ -168,29 +204,37 @@ usr.getUsers = function() {
     });
 
 }
-// usr.searchUser = function() {
-//     usr.UsersData([]);
-//     app.ajaxPost("/user/search", {
-//         search: usr.search()
-//     }, function(res) {
-//         if (!app.isFine(res)) {
-//             return;
-//         }
-//         if (res.data == null) {
-//             res.data = "";
-//         }
-//         usr.UsersData(res.data);
-//         var grid = $(".grid-access").data("kendoGrid");
-//         $(grid.tbody).on("mouseleave", "tr", function(e) {
-//             $(this).removeClass("k-state-hover");
-//         });
+ usr.getUsersLdap = function() {
+    $("#grid-ldap").html("");
+    $('#grid-ldap').kendoGrid({
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/user/testfinduserldap",
+                    dataType: "json",
+                    data: usr.GetFilterLdap(),
+                    type: "POST",
+                    success: function(data) { 
+                        $("#grid-ldap>.k-grid-content-locked").css("height", $("#grid-ldap").data("kendoGrid").table.height());
+                    }
+                }
+            },
+            schema: {
+                data: "data"
+            },
 
-//         if (typeof c == "function") {
-//             c(res);
-//         }
-//     });
-// };
-
+            pageSize: 5 
+        }, 
+        pageable: true,  
+        sortable: true,  
+        selectable: 'multiple, row', 
+        filterfable: true,
+        change: usr.selectGridLdap,
+        columns: usr.UsersColumnsldap(),
+        dataBound :usr.saveConfigLdap()
+    });
+    
+}
 usr.searchUser = function(event){
     if ((event != undefined) && (event.keyCode == 13)){
         $('#grid-users').data('kendoGrid').dataSource.read();
@@ -201,8 +245,8 @@ usr.editUser = function(c) {
     app.mode('edit')
     usr.modeLoad(true)
     var payload = ko.mapping.toJS(usr.filter._id(c));
-    var data = [];
-    var data2=[];
+    var data  = [];
+    var data2 = [];
     var data3 = []
     app.ajaxPost("/user/finduser", payload, function(res) {
         if (!app.isFine(res)) {
@@ -217,7 +261,15 @@ usr.editUser = function(c) {
         usr.config.Email(res.data.Email);
         usr.config.Password(res.data.Password);
         usr.config.Enable(res.data.Enable);
-       
+        if(res.data.LoginType==1){
+            usr.valueLogintype("Ldap")
+        }else if (res.data.LoginType==2){
+            usr.valueLogintype("Google")
+        }else if (res.data.LoginType==3){
+            usr.valueLogintype("Facebook")
+        }else{
+            usr.valueLogintype("")
+        }
         for (var i = 0; i < res.data.Groups.length; i++) {
             data.push({
                 text: res.data.Groups[i],
@@ -255,6 +307,15 @@ usr.editUser = function(c) {
             usr.config.Groups();
             usr.modeLoad(false);
         }, 1000);
+    });
+};
+
+usr.saveConfigLdap = function () { 
+    var payload = ko.mapping.toJS(usr.ldap); 
+    app.ajaxPost("/user/saveconfigldap", payload, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        } 
     });
 };
 
@@ -359,6 +420,7 @@ usr.createNewUser = function() {
     grp.listGroupsData.removeAll();
     grp.selectedGroupsData.removeAll();
     grp.getlistGroups();
+    usr.modeLoad(false);
 };
 
 
@@ -387,6 +449,7 @@ usr.getmultiplegroup = function() {
         usr.listGroup(data);
     });
 };
+
 $(function() {
     usr.getmultiplegroup();
     usr.getUsers();
@@ -479,6 +542,54 @@ usr.getGroup = function() {
         console.log(res.data);
     });
 };
+
+usr.GetConfigLdap = function() {
+    var param = ko.mapping.toJS(usr.filter);
+    usr.ListLdap.removeAll();
+    usr.ListAddress.removeAll();
+    var data = [];
+    app.ajaxPost("/user/getconfigldap", param, function(res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        if (res.data == null) {
+            res.data = "";
+        }
+        console.log(res.data.length)
+        for (var i = 0; i < res.data.length; i++) {
+            data.push({
+                Address  :res.data[i].Address,
+                BaseDN   :res.data[i].BaseDN,
+                Filter   :res.data[i].Filter,
+                Username :res.data[i].Username,
+                Password :res.data[i].Password
+            });
+
+            usr.ListAddress.push(res.data[i].Address);  
+        };
+        usr.ListLdap(data); 
+            $("#Address").kendoAutoComplete({
+                dataSource: usr.ListAddress(),
+                filter: "startswith",
+                change : usr.setLdap,
+                select: function (ev) {
+                    usr.ldap.Address(this.dataItem(ev.item.index())) 
+                }
+            }); 
+    });
+};
+usr.setLdap = function(){  
+    for (var i = 0; i < usr.ListLdap().length; i++) {
+        console.log(usr.ListLdap()[i].Address)
+        if(usr.ldap.Address()==usr.ListLdap()[i].Address){
+           usr.ldap.Address(usr.ListLdap()[i].Address)
+           usr.ldap.BaseDN(usr.ListLdap()[i].BaseDN)
+           usr.ldap.Filter(usr.ListLdap()[i].Filter)
+           usr.ldap.Username(usr.ListLdap()[i].Username)
+           usr.ldap.Password(usr.ListLdap()[i].Password)
+        }
+    };
+}
 usr.selectRow = function() {
 
     var checked = this.checked,
@@ -672,6 +783,19 @@ usr.showModalChPass = function() {
     $(".modal-chpass").modal("show");
 };
 
+usr.CheckLoginType =  function(){
+    usr.getUsersLdap();
+}
+
+usr.DisplayLdap =  function(){
+   if(usr.valueLogintype()=="Ldap"){
+        $(".modal-checklogin").modal("show");
+        usr.GetConfigLdap();
+        usr.config.LoginType("1");
+   }else{
+        usr.config.LoginType("0");
+   } 
+}
 usr.CheckPass = function() {
     if (usr.NewPassword() != "" && usr.ConfirmPass() != "" && usr.NewPassword() == usr.ConfirmPass()) {
         usr.confpass(true)

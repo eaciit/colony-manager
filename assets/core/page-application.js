@@ -43,7 +43,7 @@ apl.filterLangEnvTemplate = {
 	serverType: "node",
 	sshType: "",
 }
-
+apl.dataLanguage = ko.observableArray([]);
 apl.dataLanguageEnv = ko.observableArray([]);
 apl.checkServerLangEnv = ko.observableArray([]);
 apl.filterLangEnv = ko.mapping.fromJS(apl.filterLangEnvTemplate);
@@ -143,6 +143,29 @@ apl.langEnvColumns = ko.observableArray([
 	{field : "_id", title : "Server ID"},
 	{field : "os", title : "Server OS"},
 	{field : "host", title : "Host"},
+	/*{field: "go", headerTemplate:"<center>Go</center> ", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
+	}},
+	{field: "java", headerTemplate:"<center>Java</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
+	}},
+	{field: "scala", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
+	}}*/
+]);
+
+apl.datastatic = ko.observableArray([ 
+	{headerTemplate : "<center><input type='checkbox' class='langEnvCheckAll' onclick=\"apl.selectLangEnv(this,'CheckAll','all')\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
+		return [
+		"<input type='checkbox' class='langEnvCheck' idcheck='"+d._id+"' onclick=\"apl.selectLangEnv(this,'langEnv')\">"
+		].join(" ");
+	}}, 
+	{field : "_id", title : "Server ID"},
+	{field : "os", title : "Server OS"},
+	{field : "host", title : "Host"},
+	]);
+
+apl.datadinamis = ko.observableArray([
 	{field: "go", headerTemplate:"<center>Go</center> ", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}},
@@ -152,7 +175,7 @@ apl.langEnvColumns = ko.observableArray([
 	{field: "scala", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}}
-]);
+	]);
 
 apl.commandDataColumns = ko.observableArray([
 	{field: "AppID", title: "Application ID"},
@@ -411,16 +434,29 @@ apl.getLangEnv = function (c){
 		if (res.data==null){
 			res.data="";
 		}
-		
-		// var FilterDataLangEnv = Lazy(res.data).where({serverType:"node"}).toArray();
-		// apl.langEnvData(FilterDataLangEnv);
 		apl.langEnvData(res.data);
-		console.log(apl.langEnvData());
 		var grid = $(".grid-server").data("kendoGrid");
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
 		});
 
+		if (typeof c == "function") {
+			c(res);
+		}
+	});
+}
+
+apl.getLanguage = function(c){
+	app.ajaxPost("/langenvironment/getlanguage",{}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+
+		}
+		if (res.data==null){
+			res.data="";
+		}
+		
+		apl.dataLanguage(res.data);
 		if (typeof c == "function") {
 			c(res);
 		}
@@ -859,7 +895,7 @@ apl.doSetupLangEnv = function (){
 	});
 }
 
-apl.setupLangEnv = function (){
+/*apl.setupLangEnv = function (){
 	apl.dataLanguageEnv([]);
 	var $sel = $('.grid-LangEnv tbody');
 	$('.grid-LangEnv tbody tr').each(function(i){
@@ -907,7 +943,7 @@ apl.setupLangEnv = function (){
 	});
 	console.log(JSON.stringify(ko.mapping.toJS(apl.dataLanguageEnv)));
 	apl.doSetupLangEnv();
-}
+}*/
 
 apl.prepareTreeView = function () {
 	$("#treeview-left").kendoTreeView({
@@ -926,5 +962,7 @@ $(function () {
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 	apl.getLangEnv();
+	apl.getLanguage();
+	apl.languageGrid();
 });
 

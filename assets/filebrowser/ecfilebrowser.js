@@ -76,6 +76,7 @@ var methodsFB = {
 BuildFileExplorer:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
+		var serverId = "";
 
 		strcont = "<div class='col-md-12 fb-container'></div>";
 		$strcont = $(strcont);
@@ -106,9 +107,20 @@ BuildFileExplorer:function(elem,options){
 		
 		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='Tree View'><span class='glyphicon glyphicon-indent-left'></span></button>");
 		$strbtn.appendTo($strbtngrpMode);
+		$strbtn.click(function(){
+			$(elem).find(".fb-thumbview").hide();
+			$(elem).find(".fb-tree").show();
 
-		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='List View'><span class='glyphicon glyphicon-list'></span> </button>");
+		});
+
+		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='Thumbnail View'><span class='glyphicon glyphicon-th'></span> </button>");
 		$strbtn.appendTo($strbtngrpMode);
+		$strbtn.click(function(){
+			var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):null;
+			methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
+			$(elem).find(".fb-thumbview").show();
+			$(elem).find(".fb-tree").hide();
+		});
 
 		$strbtn = $("<button class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown' style='border-top-right-radius: 0px; border-bottom-right-radius: 0px;'><span class='glyphicon glyphicon-file'></span> New</button>");
 		$strul = $("<ul class='dropdown-menu'></ul>");
@@ -182,8 +194,10 @@ BuildFileExplorer:function(elem,options){
 			dataValueField:options.serverSource.dataValueField,
 			change: function(){
 					app.miniloader(true);
+					serverId = this.value();
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
+					methodsFB.ThumbnailView(elem,options,{serverId: this.value(), path:null});
 
 			}
 		});
@@ -195,6 +209,13 @@ BuildFileExplorer:function(elem,options){
 		$strtree = $(strtree);
 		$strtree.appendTo($strpretree);
 
+
+		$strprethumb = $("<div class='col-md-12'></div>");
+		$strprethumb.appendTo($strcont);
+
+		$strthumb = $("<div class='fb-thumbview col-md-12'></div>");
+		$strthumb.appendTo($strprethumb);
+
 		var ds = options.dataSource;
 		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var data = ds.callData;
@@ -203,6 +224,7 @@ BuildFileExplorer:function(elem,options){
 		if (options.dataSource.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
+
 
 		var datatree = new kendo.data.HierarchicalDataSource({
 	        transport: {
@@ -266,8 +288,8 @@ BuildFileExplorer:function(elem,options){
 			dataSource: datatree,
 			dataTextField: options.dataSource.nameField
 		});		
-
-		
+		$(elem).find(".fb-thumbview").hide();
+		methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:null});
 		methodsFB.BuildEditor(elem,options);
 		methodsFB.BuildPopUp(elem,options);
 	},
@@ -276,6 +298,96 @@ BuildFileExplorer:function(elem,options){
 		return $(elem).data("ecFileBrowser").dataSource.url;
 	},
 
+	ThumbnailView: function(elem,options,data){
+		var ds = options.dataSource;
+		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
+		var call = ds.call;
+
+		var dt = {
+			action : $(elem).data("ecFileBrowser").dataSource.GetDirAction,
+			search	: $($(elem).find(".fb-txt-search")).val(),
+			serverId : data.serverId,
+			path: data.path
+		}
+
+		$strthumb = $(elem).find(".fb-thumbview");
+		$breadcrumbs = $('<ol class="breadcrumb"></ol>');
+
+		$.ajax({
+	        url: url,
+			type: call,
+			dataType: 'json',
+			data: dt,
+			async:false,
+			success: function(res){
+				$strthumb.empty();
+				var results = res.data;
+
+				$breadcrumbs.appendTo($strthumb);
+		        $libreadcrumbs = $('<li><a href="#"><span class="glyphicon glyphicon-home" home></span></a></li>');
+		        $libreadcrumbs.appendTo($breadcrumbs);
+
+		        $strthumb.find("span[home]").click(function(e){
+		        	methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path:null});
+		        });
+
+		        if(data.path !== null){
+		        	newPathname = "";
+		        	pathData = [];
+		        	var pathArray = data.path.split( '/' );
+					for (i = 1; i < pathArray.length; i++) {
+					  newPathname += "/";
+  					  newPathname += pathArray[i];
+  					  pathData.push(newPathname);
+		        	  if(i === (pathArray.length - 1)){
+		        	  	 $libreadcrumbs = $('<li class="active">'+pathArray[i]+'</li>');
+		        	  	 $libreadcrumbs.appendTo($breadcrumbs);
+		        	  }else{
+		        	  	$libreadcrumbs = $('<li><a href="#" path="'+newPathname+'">'+pathArray[i]+'</a></li>');
+		        	  	$libreadcrumbs.appendTo($breadcrumbs);
+		        	  	$libreadcrumbs.click(function(){
+		        	  		var path = $(this).find("a").attr("path");
+							methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path: path});
+						});
+		        	  }
+					}
+					methodsFB.SetSelectedNode(elem,data.path,pathData);
+		        }
+
+		        if(results !== null){
+		            $.each(results, function(index) {
+		            	var id = $.now();
+		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">');
+			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 5) + "..." : results[index].name);
+			            $strprecont = $('<div class="col-xs-2 col-md-1">'+
+			            					'<a href="#" id="'+id+'-'+index+'" class="thumbnail tooltipster" title="'+results[index].name+'">'+
+			            						ico +
+			            						'<div class="caption" >'+
+			            							'<p align="center">'+shortName+'</p>'+
+			            						 '</div>'+
+			            					'</a>'+
+			            				'</div>');
+						$strprecont.appendTo($strthumb);
+
+						$strprecont.click(function(e){
+					       return false; // disable single click
+					    }).dblclick(function(e){
+					    	if(results[index].isdir == true){
+					    		methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path:results[index].path});
+					    	}else{
+					    		methodsFB.ActionRequest(elem,options,{action:"GetContent"},this);
+					    	}
+					       
+					    })
+
+					});
+		        }else{
+		        	$strprecont = $('<div class="alert alert-info" role="alert"> <strong>This folder is empty</strong></div>');
+					$strprecont.appendTo($strthumb);
+		        }
+			}
+	    });
+	},
 	BuildEditor:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
@@ -308,20 +420,6 @@ BuildFileExplorer:function(elem,options){
 		$conted = $($(elem).find("ul[data-role='editortoolbar']"));
 
 		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
-		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn tooltipster' unselectable='on' title='Save' aria-pressed='false'></a>");
-		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-floppy-disk'></span>");
-		$edlbl = $("<span class='k-tool-text'>Save</span>");
-
-		$edli.appendTo($conted);
-		$edhref.appendTo($edli);
-		$edspan.appendTo($edhref);
-		$edlbl.appendTo($edhref);
-
-		$edhref.click(function(){
-			methodsFB.ActionRequest(elem,options,{"action":"Edit"});
-		});
-
-		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
 		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end tooltipster fb-ed-btn-cancel' unselectable='on' title='Cancel' aria-pressed='false'></a>");
 		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-remove'></span>");
 		$edlbl = $("<span class='k-tool-text'>Cancel</span>");
@@ -335,6 +433,20 @@ BuildFileExplorer:function(elem,options){
 			methodsFB.ActionRequest(elem,options,{"action":"Cancel"});
 		});
 
+		$edli = $("<li class='k-tool-group k-button-group pull-right' role='presentation'></li>");
+		$edhref = $("<a href='' role='button' class='k-tool k-group-start k-group-end fb-ed-btn tooltipster' unselectable='on' title='Save' aria-pressed='false'></a>");
+		$edspan = $("<span unselectable='on' class='glyphicon glyphicon-floppy-disk'></span>");
+		$edlbl = $("<span class='k-tool-text'>Save</span>");
+
+		$edli.appendTo($conted);
+		$edhref.appendTo($edli);
+		$edspan.appendTo($edhref);
+		$edlbl.appendTo($edhref);
+
+		$edhref.click(function(){
+			methodsFB.ActionRequest(elem,options,{"action":"Edit"});
+		});
+
 		$edli = $("<li class='k-tool-group k-button-group' role='presentation'></li>");
 		$edtxt = $("<label class='fb-filename'></label>");
 
@@ -342,8 +454,10 @@ BuildFileExplorer:function(elem,options){
 		$edtxt.appendTo($edli);
 		app.prepareTooltipster();
 
-		// hei = screen.height*0.5;
-		// $($(elem).find(".k-editor")).attr("style","height:"+hei+"px");
+
+		$conted.find(".k-overflow-tools").attr("style","display:none");
+		hei = screen.height*0.7;
+		$($(elem).find(".k-editor")).attr("style","height:"+hei+"px");
 	},
 	BuildPermission:function(elemarr,permstr){
 		var idx = 0;
@@ -894,5 +1008,20 @@ BuildFileExplorer:function(elem,options){
 		var selectedUid = $($($($(elem).find(".k-state-selected")).parentsUntil("li")).parent()).attr("data-uid");
 		var dataItem = tree.dataItem(tree.findByUid(selectedUid));
 		return dataItem;
+	},
+	SetSelectedNode:function(elem,id,arrPath){
+		var treeViewName = $($(elem).find(".k-treeview"));
+	    var treeView = treeViewName.data("kendoTreeView");
+
+	    var nodeDataItem = treeView.dataSource.get(id);
+	    var nodeElement = treeView.findByUid(nodeDataItem.uid);
+
+	    treeView.collapse('.k-item');
+        treeView.collapsingOthers = true;
+
+	    treeView.select(nodeElement);
+	    treeView.expandPath(arrPath);
+	    console.log(id);
+	    console.log(arrPath);
 	}
 }

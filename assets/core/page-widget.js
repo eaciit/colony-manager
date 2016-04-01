@@ -34,7 +34,7 @@ wl.WidgetColumns = ko.observableArray([
 	{title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
 		return[
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Preview' onclick='wl.openWidget(\"" + d._id + "\",\"grid\")'><span class='fa fa-eye'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Setting' onclick=''><span class='fa fa-pencil'></span></button>",
+			// "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Setting' onclick=''><span class='fa fa-pencil'></span></button>",
 		].join(" ");
 	}}
 ]);
@@ -45,7 +45,10 @@ wl.selectCount = function(e) {
     console.log("event :: select (" + dataItem.text + " : " + dataItem.value + ")" );
 }
 
-wl.getWidgetList = function() {
+wl.getWidgetList = function(mode) {
+	if (mode == "refresh") {
+		wl.widgetDataSource([]);
+	}
 	app.ajaxPost("/widget/getwidget", {search: wl.searchfield()}, function(res){
 		if(!app.isFine(res)){
 			return;
@@ -80,6 +83,49 @@ wl.openWidget = function(_id, mode) {
 	$(".modal-widget-datasource").modal({
 		backdrop: 'static',
 		keyboard: true
+	});
+	$('#settingform').ecForm({
+		title: "",
+		widthPerColumn: 12,
+		metadata: [
+			{
+				"name": "area_color",
+				"title": "Area Color",
+				"type": "text",
+				"value": "#B3ECFF",		
+			},
+			{
+				"name": "title",
+				"title": "Title",
+				"type": "text",
+				"value": "Example Widget 1",		
+			},
+			{
+				"name": "title_align",
+				"title": "Title Align",
+				"type": "dropdown",
+				"data": "left,right",
+				"value": "right",		
+			},
+			{
+				"name": "pagesize",
+				"title": "Page Size",
+				"type": "number",
+				"value": "2",		
+			},
+			{
+				"name": "filterable",
+				"title": "Filter",
+				"type": "bool",
+				"value": true,		
+			},
+			{
+				"name": "columnMenu",
+				"title": "Column Menu",
+				"type": "bool",
+				"value": false,		
+			},
+		]
 	});
 };
 
@@ -136,9 +182,9 @@ wl.saveWidget = function() {
 
 	app.ajaxPost("/widget/savewidget", formData, function (res) {
 		if (!app.isFine(res)) {
-			console.log("error")
 			return;
 		}
+		// console.log(res.data)
 		wl.backToFront();
 	});
 };
@@ -159,8 +205,18 @@ wl.editWidget = function(_id, mode) {
 		if (!res.data) {
 			res.data = [];
 		}
-		// console.log(_id,res.data)
-		ko.mapping.fromJS(res.data, wl.configWidgetList);
+		
+		var current = {};
+		var newData = [];
+		$.each(res.data.dataSource, function(key, val) {
+			newData.push(val._id)
+			current.dataSourceId = newData
+		});
+		current._id = res.data._id
+		current.title = res.data.title
+		current.description = res.data.description
+		
+		ko.mapping.fromJS(current, wl.configWidgetList);
 		if (mode == "editor") {
 			app.mode("editor");
 			wl.scrapperMode("editor");
@@ -171,18 +227,67 @@ wl.editWidget = function(_id, mode) {
 wl.getFile = function() {
 	$('#files').change(function(){
 		var filename = $(this).val().replace(/^.*[\\\/]/, '');
-	     $("#filename").text(filename)
+	     $("#filename").text(filename);
 	 });
 };
+
+wl.selectAllWidget = function(){
+	$("#selectall").change(function () {
+		$("input:checkbox[name='select[]']").prop('checked', $(this).prop("checked"));
+	});
+}
+
+var vals = [];
+wl.removeWidget = function() {
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+		swal({
+		title: "",
+		text: 'You havent choose any widget to delete',
+		type: "warning",
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "OK",
+		closeOnConfirm: true
+		});
+	} else {
+		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+			return this.value;
+		}).get();
+
+		swal({
+		title: "Are you sure?",
+		text: 'Widget(s) with id "' + vals + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/widget/removewidget",{_id: vals}, function () {
+					if (!app.isFine) {
+						return;
+					}
+
+				 swal({title: "Selector successfully deleted", type: "success"});
+				 $("#selectall").prop('checked', false).trigger("change");
+				 wl.backToFront();
+				});
+			},1000);
+		});
+	}
+}
 
 wl.backToFront = function() {
 	app.mode("");
 	wl.scrapperMode("");
-	wl.getWidgetList();
+	wl.getWidgetList("");
 	wl.widgetDataSource([]);
+	$("#filename").text("");
 	ko.mapping.fromJS(wl.widgetListConfig, wl.configWidgetList);
 };
 
 $(function (){
-	wl.getWidgetList();
+	wl.getWidgetList("");
+	wl.selectAllWidget();
 });

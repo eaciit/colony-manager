@@ -4,24 +4,37 @@
 	}
 </style>
 
-<h1>Servers</h1>
+<ol class="breadcrumb bc-custom">
+	<li>Servers</li>
+	<li class="active">
+		<span data-bind="text: srv.breadcrumb"></span> Servers
+	</li>
+</ol>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-    <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.getServers">
-		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: srv.showSearchServer(), click: showSearchServer(false)">
+		<span class="glyphicon glyphicon-search"></span>					
 	</button>
-    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.createNewServer">
-		<span class="glyphicon glyphicon-plus"></span> Add
+	<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !srv.showSearchServer(), click: showSearchServer(true)">
+		<span class="glyphicon glyphicon-search"></span>					
 	</button>
-	<button class="btn btn-sm btn-danger navbar-btn" data-bind="click: srv.removeServer">
-		<span class="glyphicon glyphicon-remove"></span> Delete
-	</button>
-	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.popupWizard">
-		<span class="glyphicon glyphicon-send"></span> Add Wizard
-	</button>
+	<div class="btn-group" role="group">
+		<button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.getServers">
+    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+    	</button>
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.createNewServer">
+    		<span class="glyphicon glyphicon-plus"></span> Add Server
+    	</button>
+    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.popupWizard">
+    		<span class="glyphicon glyphicon-send"></span> Add Wizard
+    	</button>
+    	<button class="btn btn-sm btn-danger mgTop15" data-bind="click: srv.removeServer">
+    		<span class="glyphicon glyphicon-remove"></span> Delete
+    	</button>
+	</div>
 </nav>
 
-<nav class="navbar no-padding" data-bind="visible: (app.mode() == '')">
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: srv.showSearchServer()">
 	<div class="col-md-4">
 		<div class="form-group">
 			<label class="col-md-4 filter-label no-left-padding">
@@ -69,13 +82,10 @@
     </div>
 </nav>
 
-<div class="panel" data-bind="visible: (app.mode() == '')">
-    <div class="panel-heading">
-        <h1 class="panel-title">Servers</h1>
-    </div>
-    <div class="panel-body position-custom">
+<div class="" data-bind="visible: (app.mode() == '')">
+    <div class="pdCustom position-custom">
 		{{template "_miniloader.html"}}	
-		<div data-bind="visible: !app.miniLoader">
+		<div data-bind="visible: !app.miniloader()">
     		<div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div>
     	</div>
     </div>
@@ -102,191 +112,191 @@
 	<li data-bind="visible: (srv.ServerMode() != '')"><a href="#Applications-server"  data-toggle="tab">Applications</a></li>
 </ul>
 
-<div class="panel" data-bind="visible: (app.mode() == 'editor')">
-	<div class="panel-heading">
-        <h1 class="panel-title"><span data-bind="text: (srv.ServerMode() == '') ? 'Create New' : 'Edit'"></span>
-        </h1>
-    </div>
-    <div class="panel-body">
+<div data-bind="visible: (app.mode() == 'editor')">
+    <!-- <div class="panel-body"> -->
     	<div id="myTabContent" class="tab-content">
 			<div class="tab-pane fade in active" id="Form-server">
-		    	<form class="form-horizontal form-server" id="form-add-Server" data-bind="with: configServer" novalidate>
-		    		<div class="col-md-6">
-			    		<div class="form-group" data-bind="style: { visibility: (srv.isMultiServer() ? 'hidden' : 'visible') }">
-				    		<label class="col-md-3 filter-label">ID</label>
-				    		<div class="col-md-7">
-				    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
-								<span class="k-invalid-msg" data-for="ID"></span>					    			
+				<div class="panel" >
+			    	<div class="panel-body">
+				    	<form class="form-horizontal form-server" id="form-add-Server" data-bind="with: configServer" novalidate>
+				    		<div class="col-md-6">
+					    		<div class="form-group" data-bind="style: { visibility: (srv.isMultiServer() ? 'hidden' : 'visible') }">
+						    		<label class="col-md-3 filter-label">ID</label>
+						    		<div class="col-md-7">
+						    			<input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
+										<span class="k-invalid-msg" data-for="ID"></span>					    			
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-3 filter-label">Server Type</label>
+						    		<div class="col-md-7">
+						    			<select id="server-type" data-required-msg="Server type cannot be empty" name="server-type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeServer, dataValueField: 'value', dataTextField: 'text', value: serverType, change: srv.changeServerOS }">
+								        </select>
+								        <span class="k-invalid-msg" data-for="server-type"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-3 filter-label">Server OS</label>
+						    		<div class="col-md-7">
+						    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, enabled: srv.isServerTypeNode }">
+								        </select>
+					    				<p class="mgTop5">*) not yet tested</p>
+								        <div><span class="k-invalid-msg" data-for="os"></span></div>
+						    		</div>
+					    		</div>
 				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">Server Type</label>
-				    		<div class="col-md-7">
-				    			<select id="server-type" data-required-msg="Server type cannot be empty" name="server-type" data-placeholder="Select Type" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeServer, dataValueField: 'value', dataTextField: 'text', value: serverType, change: srv.changeServerOS }">
-						        </select>
-						        <span class="k-invalid-msg" data-for="server-type"></span>
+				    		<div class="col-md-6">
+					    		<div class="form-group" data-bind="visible: srv.isServerTypeNode">
+						    		<label class="col-md-3 filter-label">App Path</label>
+						    		<div class="col-md-9">
+						    			<input required type="text" class="form-control input-sm" name="apppath" placeholder="Example: /Users/test/app-path" data-bind="value: appPath">
+										<span class="k-invalid-msg" data-for="apppath"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group" data-bind="visible: srv.isServerTypeNode">
+						    		<label class="col-md-3 filter-label">Data Path</label>
+						    		<div class="col-md-9">
+						    			<input required type="text" class="form-control input-sm" name="datapath" placeholder="Example: /Users/test/data-path" data-bind="value: dataPath">
+										<span class="k-invalid-msg" data-for="datapath"></span>
+						    		</div>
+					    		</div>
+					    		<!-- <div class="form-group">
+						    		<label class="col-md-3 filter-label">Enable</label>
+						    		<div class="col-md-7">
+						    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
+						    		</div>
+					    		</div> -->
+					    		<!-- <span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
+								    <span class="glyphicon glyphicon-upload"></span> Upload <input id="uploadserver" name="uploadserver" type="file" accept=".zip"  data-bind="fileInput : sshfile">
+								</span> -->
 				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-3 filter-label">Server OS</label>
-				    		<div class="col-md-7">
-				    			<select id="os" data-required-msg="OS cannot be empty" name="os" class="col-100" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField: 'value', dataTextField: 'text', value: os, enabled: srv.isServerTypeNode }">
-						        </select>
-			    				<p class="mgTop5">*) not yet tested</p>
-						        <div><span class="k-invalid-msg" data-for="os"></span></div>
-				    		</div>
-			    		</div>
-		    		</div>
-		    		<div class="col-md-6">
-			    		<div class="form-group" data-bind="visible: srv.isServerTypeNode">
-				    		<label class="col-md-3 filter-label">App Path</label>
-				    		<div class="col-md-9">
-				    			<input required type="text" class="form-control input-sm" name="apppath" placeholder="Example: /Users/test/app-path" data-bind="value: appPath">
-								<span class="k-invalid-msg" data-for="apppath"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group" data-bind="visible: srv.isServerTypeNode">
-				    		<label class="col-md-3 filter-label">Data Path</label>
-				    		<div class="col-md-9">
-				    			<input required type="text" class="form-control input-sm" name="datapath" placeholder="Example: /Users/test/data-path" data-bind="value: dataPath">
-								<span class="k-invalid-msg" data-for="datapath"></span>
-				    		</div>
-			    		</div>
-			    		<!-- <div class="form-group">
-				    		<label class="col-md-3 filter-label">Enable</label>
-				    		<div class="col-md-7">
-				    			<input type="checkbox" id="Enable" data-bind="checked: enable" />
-				    		</div>
-			    		</div> -->
-			    		<!-- <span class="btn btn-sm btn-success btn-file btnsrvcustom col-md-offset-3">
-						    <span class="glyphicon glyphicon-upload"></span> Upload <input id="uploadserver" name="uploadserver" type="file" accept=".zip"  data-bind="fileInput : sshfile">
-						</span> -->
-		    		</div>
 
-		    		<div class="col-md-12 row">
-		    			<p class="pcustom">SSH Access</p>
-		    		</div>
+				    		<div class="col-md-12 row">
+				    			<p class="pcustom">SSH Access</p>
+				    		</div>
 
-		    		<div class="col-md-6">
-		    			<div class="form-group">
-					    	<label class="col-md-3 filter-label">Host</label>
-				    		<div class="col-md-7" data-bind="visible: !srv.isMultiServer()">
-				    			<input required type="text" class="form-control input-sm" name="host" placeholder="Type Host Here" data-bind="value: host">
-								<span class="k-invalid-msg" data-for="host"></span>
+				    		<div class="col-md-6">
+				    			<div class="form-group">
+							    	<label class="col-md-3 filter-label">Host</label>
+						    		<div class="col-md-7" data-bind="visible: !srv.isMultiServer()">
+						    			<input required type="text" class="form-control input-sm" name="host" placeholder="Type Host Here" data-bind="value: host">
+										<span class="k-invalid-msg" data-for="host"></span>
+						    		</div>
+						    		<div class="col-md-7" data-bind="visible: srv.isMultiServer()">
+						    			<textarea class="form-control multi-server" data-bind="value: srv.ipToRegisterAsString" disabled readonly></textarea>
+						    		</div>
+					    		</div>
+					    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
+						    		<label class="col-md-3 filter-label">User</label>
+						    		<div class="col-md-7">
+						    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the username Here" data-bind="value: sshuser">
+										<span class="k-invalid-msg" data-for="user"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group" data-bind="visible: sshtype() == 'File'">
+						    		<label class="col-md-3 filter-label">File</label>
+						    		<div class="col-md-7">
+						    			<div>
+						    				<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
+											    <span class="glyphicon glyphicon-upload"></span> Upload 
+											    <input required name="file" id="privatekey" type="file">
+											    <!-- srv.getServerFile -->
+											</span>
+										</div>
+										<div><span class="k-invalid-msg" data-for="file"></span></div>
+						    		</div>
+					    		</div>
 				    		</div>
-				    		<div class="col-md-7" data-bind="visible: srv.isMultiServer()">
-				    			<textarea class="form-control multi-server" data-bind="value: srv.ipToRegisterAsString" disabled readonly></textarea>
+				    		<div class="col-md-6">				    		
+						    	<div class="form-group">
+						    		<label class="col-md-3 filter-label">Type</label>
+						    		<div class="col-md-7">
+						    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype, enabled: srv.isServerTypeNode }">
+								        </select>
+								        <span class="k-invalid-msg" data-for="type-ssh"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
+						    		<label class="col-md-3 filter-label">Pass</label>
+						    		<div class="col-md-7">
+						    			<input type="password" class="form-control input-sm" name="password" placeholder="Type the password Here" data-bind="value: sshpass">
+										<span class="k-invalid-msg" data-for="password"></span>
+						    		</div>
+						    	</div>
 				    		</div>
-			    		</div>
-			    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
-				    		<label class="col-md-3 filter-label">User</label>
-				    		<div class="col-md-7">
-				    			<input required type="text" class="form-control input-sm" name="user" placeholder="Type the username Here" data-bind="value: sshuser">
-								<span class="k-invalid-msg" data-for="user"></span>
+				    		<div class="col-md-12 row" data-bind="visible: srv.isServerTypeNode">
+				    			<p class="pcustom">References</p>
 				    		</div>
-			    		</div>
-			    		<div class="form-group" data-bind="visible: sshtype() == 'File'">
-				    		<label class="col-md-3 filter-label">File</label>
-				    		<div class="col-md-7">
-				    			<div>
-				    				<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
-									    <span class="glyphicon glyphicon-upload"></span> Upload 
-									    <input required name="file" id="privatekey" type="file">
-									    <!-- srv.getServerFile -->
-									</span>
-								</div>
-								<div><span class="k-invalid-msg" data-for="file"></span></div>
-				    		</div>
-			    		</div>
-		    		</div>
-		    		<div class="col-md-6">				    		
-				    	<div class="form-group">
-				    		<label class="col-md-3 filter-label">Type</label>
-				    		<div class="col-md-7">
-				    			<select id="type-ssh" data-required-msg="Type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.templatetypeSSH, dataValueField: 'value', dataTextField: 'text', value: sshtype, enabled: srv.isServerTypeNode }">
-						        </select>
-						        <span class="k-invalid-msg" data-for="type-ssh"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group" data-bind="visible: sshtype() == 'Credentials'">
-				    		<label class="col-md-3 filter-label">Pass</label>
-				    		<div class="col-md-7">
-				    			<input type="password" class="form-control input-sm" name="password" placeholder="Type the password Here" data-bind="value: sshpass">
-								<span class="k-invalid-msg" data-for="password"></span>
-				    		</div>
-				    	</div>
-		    		</div>
-		    		<div class="col-md-12 row" data-bind="visible: srv.isServerTypeNode">
-		    			<p class="pcustom">References</p>
-		    		</div>
 
-		            <div class="col-md-12" data-bind="visible: !srv.isServerTypeNode()">
-		                <div class="form-group">
-		                    <label class="col-sm-2 filter-label">References</label>
-		                    <div class="col-sm-8">
-		                        <div class="nav">
-		                            <button  class="btn btn-success btn-sm" data-bind="click: srv.addHostAlias">
-		                                <span class="glyphicon glyphicon-plus"></span> Add
-		                            </button>
-		                        </div>
-		                        <table class="table" id="datasource-settings">
-		                            <thead>
-		                                <tr>
-		                                    <th>Host name</th>
-		                                    <th>IP address</th>
-		                                </tr>
-		                            </thead>
-		                            <tbody data-bind="foreach: srv.configServer.hostAlias" > 
-		                                <tr>
-		                                    <td>
-		                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type host name here" data-bind="value: hostName" />
-		                                    </td>
-		                                    <td>
-		                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type ip address here" data-bind="value: ip" /> 
-		                                    </td>
-		                                    <td>
-		                                        <button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: srv.removeHostAlias($data)">
-		                                            <span class="glyphicon glyphicon-remove"></span>
-		                                        </button>
-		                                    </td>
-		                                </tr>
-		                            </tbody>
-		                        </table>
-		                    </div>
-		                </div>
-		            </div>
+				            <div class="col-md-12" data-bind="visible: !srv.isServerTypeNode()">
+				                <div class="form-group">
+				                    <label class="col-sm-2 filter-label">References</label>
+				                    <div class="col-sm-8">
+				                        <div class="nav">
+				                            <button  class="btn btn-success btn-sm" data-bind="click: srv.addHostAlias">
+				                                <span class="glyphicon glyphicon-plus"></span> Add
+				                            </button>
+				                        </div>
+				                        <table class="table" id="datasource-settings">
+				                            <thead>
+				                                <tr>
+				                                    <th>Host name</th>
+				                                    <th>IP address</th>
+				                                </tr>
+				                            </thead>
+				                            <tbody data-bind="foreach: srv.configServer.hostAlias" > 
+				                                <tr>
+				                                    <td>
+				                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type host name here" data-bind="value: hostName" />
+				                                    </td>
+				                                    <td>
+				                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type ip address here" data-bind="value: ip" /> 
+				                                    </td>
+				                                    <td>
+				                                        <button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: srv.removeHostAlias($data)">
+				                                            <span class="glyphicon glyphicon-remove"></span>
+				                                        </button>
+				                                    </td>
+				                                </tr>
+				                            </tbody>
+				                        </table>
+				                    </div>
+				                </div>
+				            </div>
 
-			    	<div class="col-md-12" data-bind="visible: srv.isServerTypeNode">
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">Extract</label>
-				    		<div class="col-md-9">
-				    			<input type="text" class="form-control input-sm" name="extract" placeholder="Example: 7z e -o %1 -y %2" data-bind="value: cmdextract" required>
-								<span class="k-invalid-msg" data-for="extract"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">Make Directory</label>
-				    		<div class="col-md-9">
-				    			<input type="text" class="form-control input-sm" name="make-directory" placeholder="Example: mkdir" data-bind="value: cmdmkdir" required>
-								<span class="k-invalid-msg" data-for="make-directory"></span>
-				    		</div>
-			    		</div> 
-			    		<!-- <div class="form-group">
-				    		<label class="col-md-2 filter-label">Copy</label>
-				    		<div class="col-md-9">
-				    			<input type="text" class="form-control input-sm" name="copy" placeholder="Type Copy Here" data-bind="value: cmdcopy">
-								<span class="k-invalid-msg" data-for="copy"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-2 filter-label">New File</label>
-				    		<div class="col-md-9">
-				    			<input type="text" class="form-control input-sm" name="new-file" placeholder="Type New File Here" data-bind="value: cmdnewfile">
-								<span class="k-invalid-msg" data-for="new-file"></span>
-				    		</div>
-			    		</div> -->
-			    	</div>
-		    	</form>
+					    	<div class="col-md-12" data-bind="visible: srv.isServerTypeNode">
+					    		<div class="form-group">
+						    		<label class="col-md-2 filter-label">Extract</label>
+						    		<div class="col-md-9">
+						    			<input type="text" class="form-control input-sm" name="extract" placeholder="Example: 7z e -o %1 -y %2" data-bind="value: cmdextract" required>
+										<span class="k-invalid-msg" data-for="extract"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-2 filter-label">Make Directory</label>
+						    		<div class="col-md-9">
+						    			<input type="text" class="form-control input-sm" name="make-directory" placeholder="Example: mkdir" data-bind="value: cmdmkdir" required>
+										<span class="k-invalid-msg" data-for="make-directory"></span>
+						    		</div>
+					    		</div> 
+					    		<!-- <div class="form-group">
+						    		<label class="col-md-2 filter-label">Copy</label>
+						    		<div class="col-md-9">
+						    			<input type="text" class="form-control input-sm" name="copy" placeholder="Type Copy Here" data-bind="value: cmdcopy">
+										<span class="k-invalid-msg" data-for="copy"></span>
+						    		</div>
+					    		</div>
+					    		<div class="form-group">
+						    		<label class="col-md-2 filter-label">New File</label>
+						    		<div class="col-md-9">
+						    			<input type="text" class="form-control input-sm" name="new-file" placeholder="Type New File Here" data-bind="value: cmdnewfile">
+										<span class="k-invalid-msg" data-for="new-file"></span>
+						    		</div>
+					    		</div> -->
+					    	</div>
+				    	</form>
+				    </div>
+				</div>
     		</div>
     		<div class="tab-pane fade" id="Applications-server">
 		    	<div class="col-md-12">
@@ -294,7 +304,7 @@
 		        </div>
 		    </div>
     	</div>
-    </div>
+    <!-- </div> -->
 </div>
 <div class="modal fade modal-wizard" tabindex="-1" role="dialog">
 	<div class="modal-dialog modalcustom">

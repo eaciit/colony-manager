@@ -2,7 +2,56 @@
 <script src="/res/core/page-dataflow.js"></script>
 
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataflow">
-	<div class="col-md-12" data-bind="visible: (app.section() == '')">
+	<div class="col-md-1" data-bind="visible: (app.section() == '')">
+		  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;">
+              <div data-bind="css: Name,attr:{name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
+          </div>
+	</div>
+	<div class="col-md-11" data-bind="visible: (app.section() == '')">
 		<div class="diagram"></div>
 	</div>
 </div>
+<button style="display:none" title="asd" data-content="" id="popbtn"></button>
+
+<style>
+       #sortable-All {
+            min-height: 40px;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 15px;
+            border: 1px solid #dddddd;
+            border-radius: 4px;
+            float: left;
+            /*max-height: 400px;*/
+            /*min-width: 120px;*/
+            /*overflow-y: scroll;*/
+        }
+
+        .list-left {
+        	vertical-align: middle!important;
+            list-style-type: none;
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            line-height: 30px;
+            text-align: center;
+            background-color: #E8EFF7;
+            color: #000000;
+            border-radius: 3px;
+            cursor: move;
+            background-repeat: no-repeat;
+			background-size: 30px 30px;
+			background-position: 50% 50%;
+			border: 1px solid #CCC;
+        }
+
+       .placeholder {
+            border: 1px dashed #ccc;
+            background-color: #fff!important;
+            color: #333;
+        }
+
+          .hint {
+            opacity: 0.4;
+        }
+</style>

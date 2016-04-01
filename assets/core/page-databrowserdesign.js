@@ -338,6 +338,8 @@ db.designDataBrowser = function(_id) {
 
 		
 		br.pageVisible("editor");
+		br.breadcrumb('Edit');
+		br.showSearchDataBrowser(false);
 		app.mode('editor')
 		for(var i in res.data.MetaData) {
 			if (res.data.MetaData[i].Aggregate != "") {
@@ -593,6 +595,7 @@ db.headerCheckedAll = function() {
 
 db.backToFront = function() {
 	app.mode('');
+	br.breadcrumb('All');
 	br.pageVisible("");
 	ko.mapping.fromJS(db.templateConfig, db.configDataBrowser);
 	ko.mapping.fromJS(db.templateDboxData, db.configDboxData);
