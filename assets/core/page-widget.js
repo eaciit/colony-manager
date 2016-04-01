@@ -208,7 +208,7 @@ wl.editWidget = function(_id, mode) {
 			res.data = [];
 		}
 		
-		var current = {};
+		/*var current = {};
 		var newData = [];
 		$.each(res.data.dataSource, function(key, val) {
 			newData.push(val._id)
@@ -216,9 +216,9 @@ wl.editWidget = function(_id, mode) {
 		});
 		current._id = res.data._id
 		current.title = res.data.title
-		current.description = res.data.description
+		current.description = res.data.description*/
 		
-		ko.mapping.fromJS(current, wl.configWidgetList);
+		ko.mapping.fromJS(res.data, wl.configWidgetList);
 		if (mode == "editor") {
 			app.mode("editor");
 			wl.scrapperMode("editor");

@@ -50,7 +50,7 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, error) {
+/*func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, error) {
 	widgetData := &colonycore.Widget{}
 	_ids := strings.Split(ids, ",")
 	for _, _id := range _ids {
@@ -83,7 +83,7 @@ func (w *WidgetController) FetchDataSource(ids string) (*colonycore.Widget, erro
 
 	return widgetData, nil
 }
-
+*/
 func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -100,11 +100,11 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	datasource := r.Request.FormValue("dataSourceId")
 	widget.Description = r.Request.FormValue("description")
 
-	widgetData, err := w.FetchDataSource(datasource)
+	/*widgetData, err := w.FetchDataSource(datasource)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
-	}
-	widget.DataSource = widgetData.DataSource
+	}*/
+	widget.DataSourceId = strings.Split(datasource, ",")
 
 	widgetConfig := toolkit.Ms{}
 	if fileName != "" {
