@@ -43,7 +43,7 @@ apl.filterLangEnvTemplate = {
 	serverType: "node",
 	sshType: "",
 }
-
+apl.dataLanguage = ko.observableArray([]);
 apl.dataLanguageEnv = ko.observableArray([]);
 apl.checkServerLangEnv = ko.observableArray([]);
 apl.filterLangEnv = ko.mapping.fromJS(apl.filterLangEnvTemplate);
@@ -58,8 +58,6 @@ apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
 apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
-apl.breadcrumb = ko.observable('');
-apl.showSearchApplication = ko.observable(false);
 apl.applicationData = ko.observableArray([]);
 apl.langEnvData = ko.observable([]);
 apl.appTreeMode = ko.observable('');
@@ -145,6 +143,29 @@ apl.langEnvColumns = ko.observableArray([
 	{field : "_id", title : "Server ID"},
 	{field : "os", title : "Server OS"},
 	{field : "host", title : "Host"},
+	/*{field: "go", headerTemplate:"<center>Go</center> ", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
+	}},
+	{field: "java", headerTemplate:"<center>Java</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
+	}},
+	{field: "scala", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
+	}}*/
+]);
+
+apl.datastatic = ko.observableArray([ 
+	{headerTemplate : "<center><input type='checkbox' class='langEnvCheckAll' onclick=\"apl.selectLangEnv(this,'CheckAll','all')\"></center>", width:40, attributes:{style:"text-align: center"}, template: function (d){
+		return [
+		"<input type='checkbox' class='langEnvCheck' idcheck='"+d._id+"' onclick=\"apl.selectLangEnv(this,'langEnv')\">"
+		].join(" ");
+	}}, 
+	{field : "_id", title : "Server ID"},
+	{field : "os", title : "Server OS"},
+	{field : "host", title : "Host"},
+	]);
+
+apl.datadinamis = ko.observableArray([
 	{field: "go", headerTemplate:"<center>Go</center> ", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}},
@@ -154,18 +175,8 @@ apl.langEnvColumns = ko.observableArray([
 	{field: "scala", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
 	}}
-]);
-apl.deployThisApp = function (_id) {
-	var param = { _id: apl.appIDToDeploy(), Server: _id };
+	]);
 
-	app.ajaxPost("/application/deploy", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-
-		apl.getApplications();
-	});
-};
 apl.commandDataColumns = ko.observableArray([
 	{field: "AppID", title: "Application ID"},
 	{field: "SrvID", title: "Server ID"},
@@ -186,7 +197,7 @@ apl.showRunCommand = function (serverID) {
 	// $(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
 	// $(".modal-run-cmd").find(".modal-title span.server").html(serverID);
 
-	appMap.Command.forEach(function (cmd, i, d) {
+	appMap.Command.forEach(function (cmd, i) {
 		if (cmd.key == "" || cmd.value == "") {
 			return;
 		}
@@ -196,11 +207,10 @@ apl.showRunCommand = function (serverID) {
 			var appid = apl.applicationData()[i]._id;
 		}
 		
-		var srvid = apl.commandServerID();
 
 		apl.commandData.push({
 			AppID: appid,
-			SrvID: srvid,
+			// SrvID: srvid,
 			CmdName: cmd.key,
 			CmdValue: cmd.value
 		});
@@ -237,11 +247,8 @@ apl.srvapplicationColumns = ko.observableArray([
 	} },
 	{ field: "host", title: "Host" },
 	{ field: "sshtype", title: "SSH Type" },
-	{ title: "", width: 100, attributes: { class: 'align-center' }, template: function (d) {
-		return [
-			'<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-play"></span></button>',
-			'<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Deploy to this server" onclick="apl.deployThisApp(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>',
-		].join(" ");
+	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
 	} },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
@@ -393,7 +400,7 @@ apl.selectApps = function (e) {
 
 apl.getApplications = function(c) {
 	apl.applicationData([]);
-	// apl.appIDToDeploy('');
+	apl.appIDToDeploy('');
 
 	var ongrid = $(".grid-application").data("kendoGrid");
 	$(ongrid.tbody).on("mouseenter", "tr", function (e) {
@@ -427,11 +434,7 @@ apl.getLangEnv = function (c){
 		if (res.data==null){
 			res.data="";
 		}
-		
-		// var FilterDataLangEnv = Lazy(res.data).where({serverType:"node"}).toArray();
-		// apl.langEnvData(FilterDataLangEnv);
 		apl.langEnvData(res.data);
-		console.log(apl.langEnvData());
 		var grid = $(".grid-server").data("kendoGrid");
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
@@ -443,11 +446,27 @@ apl.getLangEnv = function (c){
 	});
 }
 
+apl.getLanguage = function(c){
+	app.ajaxPost("/langenvironment/getlanguage",{}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+
+		}
+		if (res.data==null){
+			res.data="";
+		}
+		
+		apl.dataLanguage(res.data);
+		if (typeof c == "function") {
+			c(res);
+		}
+	});
+}
+
 apl.editApplication = function(_id) {
 	apl.appIDToDeploy(_id);
 	apl.refreshGridModalDeploy();
-	apl.showSearchApplication(false);
-	app.miniloader(true);
+	app.miniloader(true);	
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
@@ -455,7 +474,6 @@ apl.editApplication = function(_id) {
 		}
 		apl.treeView(_id);
 		app.mode('editor');
-		apl.breadcrumb('Edit');
 		$('a[href="#Form"]').tab('show');
 		apl.applicationMode('edit');
 		ko.mapping.fromJS(res.data, apl.configApplication);
@@ -474,7 +492,6 @@ apl.createNewApplication = function () {
 	editor.setValue("");
 	editor.focus();
 	app.mode("editor");
-	apl.breadcrumb('Create New');
 	$("#searchDirectori").val("");
 	$('a[href="#Form"]').tab('show');
 	apl.appRecordsDir([])
@@ -491,11 +508,6 @@ apl.saveApplication = function() {
 		return;
 	}
 
-	if (apl.applicationMode() == "" && $("#files").val() == "") {
-		swal({title: "Archive file cannot be empty", type: "error", closeOnConfirm: true});
-		return;
-	}
-
 	var data = ko.mapping.toJS(apl.configApplication);
 	var formData = new FormData();
 	formData.append("Enable", data.Enable);
@@ -506,7 +518,6 @@ apl.saveApplication = function() {
 	formData.append("Port", data.Port);
 	formData.append("Command",JSON.stringify(data.Command));
 	formData.append("Variable", JSON.stringify(data.Variable));
-	formData.append("IsEdit", (apl.applicationMode() != ""));
 
 	app.ajaxPost("/application/saveapps", formData, function (res) {
 		if (!app.isFine(res)) {
@@ -532,13 +543,6 @@ apl.getUploadFile = function() {
 
 apl.backToFront = function () {
 	app.mode('');
-	apl.breadcrumb('All');
-	apl.getApplications();
-	apl.tempCheckIdServer([]);
-};
-
-apl.backToEdit = function () {
-	app.mode('editor');
 	apl.getApplications();
 	apl.tempCheckIdServer([]);
 };
@@ -891,7 +895,7 @@ apl.doSetupLangEnv = function (){
 	});
 }
 
-apl.setupLangEnv = function (){
+/*apl.setupLangEnv = function (){
 	apl.dataLanguageEnv([]);
 	var $sel = $('.grid-LangEnv tbody');
 	$('.grid-LangEnv tbody tr').each(function(i){
@@ -939,7 +943,7 @@ apl.setupLangEnv = function (){
 	});
 	console.log(JSON.stringify(ko.mapping.toJS(apl.dataLanguageEnv)));
 	apl.doSetupLangEnv();
-}
+}*/
 
 apl.prepareTreeView = function () {
 	$("#treeview-left").kendoTreeView({
@@ -951,14 +955,14 @@ apl.prepareTreeView = function () {
 }
 
 $(function () {
-	apl.showSearchApplication(false);
 	apl.getApplications();
 	apl.getUploadFile();
 	apl.codemirror();
 	apl.prepareTreeView();
-	apl.breadcrumb('All');
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 	apl.getLangEnv();
+	apl.getLanguage();
+	apl.languageGrid();
 });
 

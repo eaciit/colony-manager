@@ -76,6 +76,25 @@ func (l *LangenvironmentController) GetSampleDataForSetupLang() colonycore.Langu
 	return r
 }
 
+func (le *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	cursor, err := colonycore.Find(new(colonycore.LanguageEnviroment), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.LanguageEnviroment{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	fmt.Println(data)
+	defer cursor.Close()
+
+	return helper.CreateResult(true, data, "")
+}
+
 func (l *LangenvironmentController) Setup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := []*colonycore.LanguageEnvironmentPayload{}
@@ -287,16 +306,16 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 	return helper.CreateResult(true, payload, "")
 }
 
-func (l *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
+// func (l *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
+// 	r.Config.OutputType = knot.OutputJson
 
-	dsLang, err := new(colonycore.LanguangeEnvironment).Get("")
-	// dsLang := new(colonycore.LanguangeEnvironment)
-	// err := colonycore.Get(dsLang, "halo")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(dsLang)
+// 	dsLang, err := new(colonycore.LanguageEnviroment).Get("")
+// 	// dsLang := new(colonycore.LanguangeEnvironment)
+// 	// err := colonycore.Get(dsLang, "halo")
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	fmt.Println(dsLang)
 
-	return helper.CreateResult(true, dsLang, "")
-}
+// 	return helper.CreateResult(true, dsLang, "")
+// }
