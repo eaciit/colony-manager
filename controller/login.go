@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
@@ -9,18 +10,13 @@ import (
 	// _ "github.com/eaciit/dbox/dbc/csv"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	//"gopkg.in/gomail.v2"
+	"gopkg.in/gomail.v2"
 	_ "reflect"
 	_ "time"
 )
 
 type LoginController struct {
 	App
-	SenderEmail   string
-	HostEmail     string
-	PortEmail     int
-	UserEmail     string
-	PasswordEmail string
 }
 
 func (l *LoginController) prepareconnection() (conn dbox.IConnection, err error) {
@@ -47,52 +43,48 @@ func (l *LoginController) InitialSetDatabase() error {
 	return nil
 }
 
-func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
+func GetSession(r *knot.WebContext) interface{} {
 	sessionId := r.Session("sessionid", "")
-	fmt.Println(sessionId)
-	if sessionId != "" {
-
-		sesssion := new(acl.Session)
-		err := acl.FindByID(sesssion, sessionId)
-		if err != nil {
-			return helper.CreateResult(true, nil, err.Error())
-		}
-
-		user := new(acl.User)
-		err = acl.FindByID(user, sesssion.UserID)
-		if err != nil {
-			return helper.CreateResult(true, nil, err.Error())
-		}
-
-		results := make([]toolkit.M, 0, 0)
-		if len(user.Grants) > 0 {
-			for _, v := range user.Grants {
-				result := toolkit.M{}
-				menu := GetMenu(v.AccessID)
-				result.Set(v.AccessID, menu)
-
-				results = append(results, result)
-			}
-			// fmt.Println(result)
-			// return helper.CreateResult(true, result, "")
-		}
-		fmt.Println(results)
-		return helper.CreateResult(true, results, "")
-	}
-	return helper.CreateResult(false, nil, "Please Login !")
+	return sessionId
 }
-func GetMenu(accesId string) interface{} {
-	var query *dbox.Filter
-	query = dbox.Contains("_id", accesId)
-	cursor, err := colonycore.Find(new(colonycore.Menu), query)
-	data := []colonycore.Menu{}
-	err = cursor.Fetch(&data, 0, false)
+
+func GetAccess(r *knot.WebContext) interface{} {
+	sessionId := GetSession(r)
+	menu := []colonycore.Menu{}
+	cursor, err := colonycore.Find(new(colonycore.Menu), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	return data
+	cursor.Fetch(&menu, 0, false)
+	defer cursor.Close()
+	results := make([]toolkit.M, 0, 0)
+	if cursor.Count() > 0 {
+		result := toolkit.M{}
+		for _, m := range menu {
+			acces := acl.HasAccess(sessionId, acl.IDTypeSession, m.AccessId, acl.AccessRead)
+			if acces == true {
+				result, err = toolkit.ToM(m)
+				if err != nil {
+					return helper.CreateResult(false, nil, err.Error())
+				}
+				result.Set("detail", 7)
+				results = append(results, result)
+			}
+		}
+	}
+	return results
 }
+
+func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	sessionId := GetSession(r)
+	if sessionId != "" {
+		results := GetAccess(r)
+		return helper.CreateResult(true, results, "Success")
+	}
+	return helper.CreateResult(false, nil, "")
+}
+
 func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -115,49 +107,141 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, "", err.Error())
 	}
 	r.SetSession("sessionid", sessid)
-	return helper.CreateResult(true, toolkit.M{}.Set("sessionid", sessid), "Login Success")
+	dataAccess := GetAccess(r)
+	return helper.CreateResult(true, dataAccess, "Login Success")
 
 }
 
+func (l *LoginController) Logout(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	sessionId := toolkit.ToString(GetSession(r))
+	if sessionId == "" {
+		return helper.CreateResult(true, nil, "Active sessionid not found")
+	}
+
+	err := acl.Logout(sessionId)
+	if err != nil && (err.Error() == "Session id not found" || err.Error() == "Session id is expired") {
+		return helper.CreateResult(true, nil, "Active sessionid not found")
+	} else if err != nil {
+		return helper.CreateResult(true, nil, toolkit.Sprintf("Error found : %v", err.Error()))
+	}
+
+	return helper.CreateResult(true, nil, "Logout success")
+}
 func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
 	err := r.GetPayload(&payload)
 	if err != nil {
-		fmt.Println(err.Error())
+		return helper.CreateResult(false, nil, err.Error())
 	}
-	email := payload.Has("email")
-	url := payload.Has("url")
-	fmt.Println(email)
-	fmt.Println(url)
+	fmt.Println(payload.Has("email"))
+	fmt.Println(payload.Has("baseurl"))
+	if !payload.Has("email") || !payload.Has("baseurl") {
+		return helper.CreateResult(false, nil, "Data is not complete")
+	}
 
-	/*
-		l.SenderEmail = "admin.support@eaciit.com"
-		l.HostEmail = "smtp.office365.com"
-		l.PortEmail = 587
-		l.UserEmail = "admin.support@eaciit.com"
-		l.PasswordEmail = "******"
+	uname, tokenid, err := acl.ResetPassword(toolkit.ToString(payload["email"]))
+	fmt.Printf("%v, %v, %v \n\n", uname, tokenid, err)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-		m := gomail.NewMessage()
+	linkstr := fmt.Sprintf("<a href='%v/web/confirmreset?userid=%v&tokenid=%v'>Reset Password</a>", toolkit.ToString(payload["baseurl"]), uname, tokenid)
 
-		m.SetHeader("From", l.SenderEmail)
-		m.SetHeader("To", email)
+	mailmsg := fmt.Sprintf("Hi, <b>%v</b>, <br/><br/> .We received to request your password, <br/><br/>", uname)
+	mailmsg = fmt.Sprintf("%vFollow the link below to set a new password : <br/><br/> %v <br/><br/>", mailmsg, linkstr)
+	mailmsg = fmt.Sprintf("%vIf you don't want to change your password, you can ignore this email <br/><br/> Thanks,</body></html>", mailmsg)
 
-		m.SetHeader("Subject", "subject")
-		m.SetBody("text/html", "message")
+	m := gomail.NewMessage()
 
-		d := gomail.NewPlainDialer(l.HostEmail, l.PortEmail, l.UserEmail, l.PasswordEmail)
+	m.SetHeader("From", "admin.support@eaciit.com")
+	m.SetHeader("To", toolkit.ToString(payload["email"]))
+	m.SetHeader("To", "andri.hardiyanto@eaciit.com")
 
-		err := d.DialAndSend(m)
+	m.SetHeader("Subject", "[no-reply] Self password reset")
+	m.SetBody("text/html", mailmsg)
 
-		if err != "" {
-			return helper.CreateResult(false, nil, err.Error())
-		}
+	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "*****")
+	err = d.DialAndSend(m)
 
-	*/
-	return helper.CreateResult(false, nil, "ac")
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "reset password success")
 }
+
+func (l *LoginController) SavePassword(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if !payload.Has("newpassword") || !payload.Has("userid") {
+		return helper.CreateResult(false, nil, "Data is not complete")
+	}
+
+	switch {
+	case payload.Has("tokenid"):
+		err = acl.ChangePasswordToken(toolkit.ToString(payload["userid"]), toolkit.ToString(payload["newpassword"]), toolkit.ToString(payload["tokenid"]))
+	default:
+		// check sessionid first
+		savedsessionid := "" //change with get session
+		//=======================
+		userid, err := acl.FindUserBySessionID(savedsessionid)
+		if err == nil && userid == toolkit.ToString(payload["userid"]) {
+			err = acl.ChangePassword(toolkit.ToString(payload["userid"]), toolkit.ToString(payload["newpassword"]))
+		} else if err == nil {
+			err = errors.New("Userid is not match")
+		}
+	}
+
+	return helper.CreateResult(true, nil, "save password success")
+}
+
+func (l *LoginController) Authenticate(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	var iaccenum acl.AccessTypeEnum
+
+	payload := toolkit.M{}
+	result := toolkit.M{}
+	result.Set("hasaccess", false)
+
+	err := r.GetPayload(&payload)
+	switch {
+	case err != nil:
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	switch toolkit.TypeName(payload["accesscheck"]) {
+	case "[]interface {}":
+		for _, val := range payload["accesscheck"].([]interface{}) {
+			tacc := acl.GetAccessEnum(toolkit.ToString(val))
+			if !acl.Matchaccess(int(tacc), int(iaccenum)) {
+				iaccenum += tacc
+			}
+		}
+	default:
+		iaccenum = acl.GetAccessEnum(toolkit.ToString(payload["accesscheck"]))
+	}
+
+	found := acl.HasAccess(toolkit.ToString(payload["sessionid"]),
+		acl.IDTypeSession,
+		toolkit.ToString(payload["accessid"]),
+		iaccenum)
+
+	if found {
+		result.Set("hasaccess", found)
+	}
+
+	return helper.CreateResult(true, result, "")
+}
+
 func CreateLoginController(l *knot.Server) *LoginController {
 	var controller = new(LoginController)
 	controller.Server = l
