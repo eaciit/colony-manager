@@ -47,6 +47,28 @@ ly.element = function(){
 
 }
 
+ly.getLogout = function(){
+	//alert('masuk');
+	app.ajaxPost("/login/logout", {logout: true}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+
+	});
+}
+
+// this is for menu in ajax load
+// =========================================================================
+// ly.getLoadMenu = function(){
+// 	app.ajaxPost("/login/loadmenu", param, function(res){
+// 		if(!app.isFine(res)){
+// 			return;
+// 		}
+
+// 	});
+// }
+// ==========================================================================
+
 $(function (){
 	ly.element();
 });

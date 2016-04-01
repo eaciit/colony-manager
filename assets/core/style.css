@@ -291,7 +291,7 @@ table.table tr:hover td {
 .right {
   float: right; }
 
-login-body {
+.login-body {
   max-width: 100%;
   overflow-x: hidden;
   max-height: 100%;
@@ -312,6 +312,20 @@ login-body {
 .login-form {
   z-index: 100; }
 
+.nav-account > li > .logout {
+  margin-top: 3px;
+  margin-right: 4%;
+  border-top-left-radius: 1;
+  border-top-right-radius: 1; }
+
+.logout {
+  min-width: 132px;
+  border-radius: 0px; }
+
+#error-message {
+  color: red;
+  margin-bottom: 6%; }
+
 .login-bg {
   background: #007dba url("/res/img/bg_city.JPG") no-repeat center top;
   background-size: cover;
@@ -323,8 +337,7 @@ login-body {
   width: 99px;
   height: 90px;
   background-size: 99px 90px;
-  margin-bottom: 30px;
-  margin-left: 15%; }
+  margin-bottom: 30px; }
 
 .login-logo-reset {
   background: url("/res/img/logoeaciittrans.png") no-repeat center top;
