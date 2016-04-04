@@ -54,19 +54,20 @@ ly.getLogout = function(){
 			return;
 		}
 
+		window.location = "/web/login"
 	});
 }
 
 // this is for menu in ajax load
 // =========================================================================
-// ly.getLoadMenu = function(){
-// 	app.ajaxPost("/login/loadmenu", param, function(res){
-// 		if(!app.isFine(res)){
-// 			return;
-// 		}
+ly.getLoadMenu = function(){
+	app.ajaxPost("/login/loadmenu", param, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
 
-// 	});
-// }
+	});
+}
 // ==========================================================================
 
 $(function (){

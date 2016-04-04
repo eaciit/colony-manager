@@ -15,6 +15,7 @@
     		                <center>
                                 <div class="login-logo-reset"></div>
                                 <h4 class="head-reset">Reset Your Password</h4>
+                                <div data-bind="html: lg.ErrorMessage, visible:(lg.errorMessage != '')" id="error-message"></div>
                             </center>
     		                <div class="form-group login-form-group" id="confirm_form">
     		                    <label class="col-sm-12 form-login-label">New Password</label>
