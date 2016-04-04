@@ -822,7 +822,5 @@ $(function () {
 	apl.prepareTreeView();
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
-	lang.getLangEnv();
-	lang.getLanguage();
 });
 
