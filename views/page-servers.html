@@ -93,18 +93,20 @@
 </div>
 
 <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-	<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: srv.backToFront">
+	<button class="btn btn-sm btn-default mgTop15" data-bind="click: srv.backToFront">
 		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	</button>
-    <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: srv.saveServer">
-		<span class="glyphicon glyphicon-save"></span> Save
-	</button>
-    <button class="btn btn-sm btn-success navbar-btn" data-bind="click: srv.testConnection, visible: !srv.isMultiServer()">
-		<span class="fa fa-info-circle"></span> Test Connection
-	</button>
-	<button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
-		<span class="glyphicon glyphicon-remove"></span> Delete
-	</button>
+	<div class="btn-group">
+	    <button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.saveServer">
+			<span class="glyphicon glyphicon-save"></span> Save
+		</button>
+	    <button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.testConnection, visible: !srv.isMultiServer()">
+			<span class="fa fa-info-circle"></span> Test Connection
+		</button>
+		<button class="btn btn-sm btn-danger mgTop15" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
+			<span class="glyphicon glyphicon-remove"></span> Delete
+		</button>
+	</div>
 </nav>
 
 <ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
