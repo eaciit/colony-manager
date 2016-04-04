@@ -9,35 +9,37 @@
 
     		        <div class="login-form col-md-3 col-xs-12" id="loginForm">
                         <!-- create process loader here -->
+                        <form id="login-form">
                 
-    		            <div class="form form-horizontal fh">
+        		            <div class="form form-horizontal fh">
 
-    		                <div class="login-logo"></div>
+        		                <div class="login-logo"></div>
 
-    		                <div class="form-group login-form-group">
-    		                    <label class="col-sm-12 form-login-label">Login ID</label>
-    		                    <div class="col-sm-12">
-    		                        <input type="text" class="form-control input-sm full-width" id="username" name="username" placeholder="Login ID" data-bind="value: lg.configLogin.username"  required />
-    		                    </div>
-    		                </div>
-    		                <div class="form-group login-form-group">
-    		                    <label class="col-sm-12 form-login-label">Password</label>
-    		                    <div class="col-sm-12">
-    		                        <input type="password" class="form-control input-sm full-width" id="password" name="password" placeholder="Your Password" data-bind="value: lg.configLogin.password"  required />
-    		                    </div>
-    		                </div>
-    		                <div class="form-group login-form-group">
-    		                    <div class="col-sm-12">
-    		                        <button class="btn btn-sm btn-primary full-width" id="btnLogin" data-bind="click: lg.getLogin">Login</button>
-    		                        <div class="form-login-forgot">
-    		                            <a id="forgetPassword" data-bind="click: lg.showAccesReset">Can't access your account?</a>
-    		                        </div>
-    		                    </div>
-    		                </div>
-    		                <div class="form-group login-form-group">
-    		                    <label class="label label-danger form-login-label"></label>
-    		                </div>
-    		            </div>
+        		                <div class="form-group login-form-group">
+        		                    <label class="col-sm-12 form-login-label">Login ID</label>
+        		                    <div class="col-sm-12">
+        		                        <input type="text" class="form-control input-sm full-width" id="username" name="username" placeholder="Login ID" data-bind="value: lg.configLogin.username"  required />
+        		                    </div>
+        		                </div>
+        		                <div class="form-group login-form-group">
+        		                    <label class="col-sm-12 form-login-label">Password</label>
+        		                    <div class="col-sm-12">
+        		                        <input type="password" class="form-control input-sm full-width" id="password" name="password" placeholder="Your Password" data-bind="value: lg.configLogin.password"  required />
+        		                    </div>
+        		                </div>
+        		                <div class="form-group login-form-group">
+        		                    <div class="col-sm-12">
+        		                        <button class="btn btn-sm btn-primary full-width" id="btnLogin" data-bind="click: lg.getLogin">Login</button>
+        		                        <div class="form-login-forgot">
+        		                            <a id="forgetPassword" data-bind="click: lg.showAccesReset">Can't access your account?</a>
+        		                        </div>
+        		                    </div>
+        		                </div>
+        		                <div class="form-group login-form-group">
+        		                    <label class="label label-danger form-login-label"></label>
+        		                </div>
+        		            </div>
+                        </form>
     		        </div>
     		        <div class="login-bg col-md-9">
     		           &nbsp;
