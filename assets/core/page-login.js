@@ -29,12 +29,12 @@ lg.forgetLogin = ko.mapping.fromJS(lg.templateForgotLogin);
 lg.confirmReset = ko.mapping.fromJS(lg.templateConfirmReset);
 lg.ErrorMessage = ko.observable('');
 lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam);
-lg
 
 lg.getLogin = function(){
 	if (!app.isFormValid("#login-form")) {
-	return;
+		return;
 	}
+	
 	var param = ko.mapping.toJS(lg.configLogin);
 	app.ajaxPost("/login/processlogin", param, function(res){
 		if(!app.isFine(res)){

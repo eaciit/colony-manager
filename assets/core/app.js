@@ -131,7 +131,11 @@ app.resetValidation = function (selectorID) {
         $form = $(selectorID).data("kendoValidator");
     }
 
-    $form.hideMessages();
+    try {
+        $form.hideMessages();
+    } catch (err) {
+        
+    }
 };
 app.miniloader = ko.observable(false);
 app.fixKendoMultiSelect = function () {

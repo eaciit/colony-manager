@@ -108,6 +108,9 @@ table.table tr:hover td {
   font-size: 15px;
   font-weight: bold; }
 
+.gr-position {
+  margin-bottom: 1%; }
+
 .vv-padding-right {
   padding-right: 0px; }
 
@@ -232,6 +235,9 @@ table.table tr:hover td {
 
 .lbl {
   margin-left: -12%; }
+
+#Access {
+  padding: 2%; }
 
 .daemon-container {
   position: absolute;

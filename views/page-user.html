@@ -23,10 +23,12 @@
     </div>
 </nav>
 
-<div class="panel" data-bind="visible: (app.mode() == '')">
-    <!-- 
-    <div class="grid grid-users" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: usr.UsersData, selectable: 'multiple, row', change: usr.selectGridUsers, columns: usr.UsersColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-users')}"></div> -->
-    <div id="grid-users"></div>
+<div data-bind="visible: (app.mode() == '')">
+    <div class="gr-position">
+        <!-- 
+        <div class="grid grid-users" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: usr.UsersData, selectable: 'multiple, row', change: usr.selectGridUsers, columns: usr.UsersColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-users')}"></div> -->
+        <div id="grid-users"></div>
+    </div>
     <p class="bg-danger bgcustom">Please click row to edit!</p>
 </div>
 
