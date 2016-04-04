@@ -73,12 +73,14 @@
 	    	</button>
 		</nav> 
 		 
-		<div class="panel" data-bind="visible: (app.mode() == '')"> 
-		<div class="grid grid-access"></div>
-    <!--	<div class="grid grid-access" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: adm.AccessData, selectable: 'multiple, row', change: adm.selectGridAccess, columns: adm.AccessColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-access')}"></div> -->
-    <!-- </div> -->
-    <p class="bg-danger bgcustom">Please click row to edit!</p>
-</div>
+		<div data-bind="visible: (app.mode() == '')"> 
+			 <div class="gr-position">
+				<div class="grid grid-access"></div>
+			    <!--	<div class="grid grid-access" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: adm.AccessData, selectable: 'multiple, row', change: adm.selectGridAccess, columns: adm.AccessColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-access')}"></div> -->
+			    <!-- </div> -->
+			</div>
+		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+		</div>
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')" style="width: 1000px;">
 	<div class="panel-heading">
          <h1 class="panel-title"><span data-bind="text: (adm.access() == '') ? 'Create New' : 'Edit'"></span>

@@ -37,12 +37,12 @@
     </button>
 </nav>
 
-<div class="panel" data-bind="visible: (app.mode() == '')">
-   <div >
-        <!-- <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div> -->
-        <div id="grid-groups"></div>
-    </div>
-    <p class="bg-danger bgcustom">Please click row to edit!</p>
+<div data-bind="visible: (app.mode() == '')">
+        <div class="gr-position">
+            <!-- <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div> -->
+            <div id="grid-groups"></div>
+        </div>
+        <p class=" bg-danger bgcustom">Please click row to edit!</p>
 </div>
 
 <div class="panel" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')" style="width: 800px;">
