@@ -44,7 +44,29 @@
 		</div>
 	</div>
 </div>
--<button style="display:none" title="asd" data-content="" id="popbtn"></button>
+-<button style="display:none" title="asd" data-content="" id="popbtn">
+<div class="popover-content">
+    <table class="ct-custom" data-bind="">
+        <tbody>
+            <tr>
+                <td>Script</td>
+                <td>
+                    <input type="text" class="inp-custom" data-bind="" placeholder="Path to the script on HDFS.">
+                    <button class="btn pd-custom fileChooserBtn">..</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Hive XML</td>
+                <td>
+                    <input type="text" class="inp-custom" data-bind="" placeholder="Refer to a hive-site.xml for connecting to Hive">
+                    <button class="btn pd-custom fileChooserBtn">..</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <a class="btn btn-primary" data-bind="">Add</a>
+</div>    
+</button>
 
 <style>
        #sortable-All {
@@ -101,5 +123,15 @@
             stroke-width: 9px;
             height: 120%;
             width: 120%;
+        }
+        .ct-custom{
+            font-size: 12px;
+        }
+        .pd-custom{
+            padding: 1px 6px;
+            border-radius: 0px;
+        }
+        .inp-custom{
+            margin: 5px -2px 5px 5px;
         }
 </style>
