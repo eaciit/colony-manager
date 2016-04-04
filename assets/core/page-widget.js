@@ -81,17 +81,9 @@ wl.getDataSource = function() {
 
 wl.openWidget = function(_id, mode) {
 	wl.previewMode("");
-	var getId //= (mode == "grid") ? _id : _id();
-
-	if (mode == "grid") {
-		getId = _id;
-		wl.editWidget(getId, "preview");
-	}else{
-		getId = _id();
-	}
-
+	var getId = (mode == "grid") ? _id : _id();
 	$(".modal-widget-preview").modal("hide");
-	
+	wl.editWidget(getId, "preview")
 	$(".modal-widget-datasource").modal({
 		backdrop: 'static',
 		keyboard: true
@@ -107,8 +99,6 @@ wl.previewWidget = function(_id, dataSourceId) {
 		if (!res.data) {
 			res.data = [];
 		}
-		// console.log(res.data.container)
-
 		wl.previewMode("preview");
 		var urlprev = "src=\"";
 		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
@@ -144,12 +134,11 @@ wl.closeModal = function() {
 	// $(".modal-widget-preview").modal("hide");
 	$(".modal-widget-datasource").modal("hide");
 	wl.previewMode("");
-	// wl.configWidgetList.dataSourceId([]);
-	wl.backToFront();
+	wl.configWidgetList.dataSourceId([]);
 };
 
 wl.saveAndCloseModal = function(_id, datasource) {
-	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: datasource(), config: $('#settingform').ecForm("getData"), mode: "save"}, function(res){
+	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: datasource(), mode: "save"}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
