@@ -59,11 +59,11 @@ func (p *PageController) SavePage(r *knot.WebContext) interface{} {
 	}
 	page.ID = payload["_id"].(string)
 	page.ParentMenu = payload["parentMenu"].(string)
-	page.PanelID = payload["panelId"].([]*colonycore.PanelID)
+	page.Panel = payload["panel"].([]*colonycore.PanelPage)
 	page.Title = payload["title"].(string)
 	page.URL = payload["url"].(string)
 
-	p.SendFiles(page.PanelID, payload["serverId"].(string))
+	p.SendFiles(page.Panel, payload["serverId"].(string))
 
 	if err := page.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -249,12 +249,12 @@ func copyFileToServer(server *colonycore.Server, sourcePath string, destPath str
 	return nil
 }
 
-func (p *PageController) SendFiles(data []*colonycore.PanelID, serverid string) error {
+func (p *PageController) SendFiles(data []*colonycore.PanelPage, serverid string) error {
 	path := filepath.Join(EC_DATA_PATH, "widget", "log")
 	log, _ := toolkit.NewLog(false, true, path, "sendfile-%s", "20060102-1504")
 
 	for _, pvalue := range data {
-		for _, wValue := range pvalue.WidgetID {
+		for _, wValue := range pvalue.Widget {
 			appID := wValue.ID
 			log.AddLog("Get widget with ID: "+appID, "INFO")
 			widget := new(colonycore.Widget)
