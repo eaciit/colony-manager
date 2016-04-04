@@ -4,8 +4,10 @@
 <script src="/res/js/codemirror/xml.js"></script>
 <script src="/res/js/codemirror/active-line.js"></script>
 
+<script src="/res/core/page-languageenvironment.js"></script>
 <script src="/res/core/page-application.js"></script>
 <script src="/res/core/page-server.js"></script>
+
 
 <style type="text/css">
 	.modal-deploy .modal-footer {
@@ -43,7 +45,7 @@
 		<ul class="nav">
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'application') }, click: app.changeActiveSection('application')">Application<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
 			<li><a href="#" data-bind="css: { 'active': (app.section() == 'servers') }, click: app.changeActiveSection('servers')">Servers<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'langEnv') }, click: app.changeActiveSection('langEnv')">Language Enviroment<span class="fa-pull-right"><i class="fa fa-cog"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'languageEnviroment') }, click: app.changeActiveSection('languageEnviroment')">Language Enviroment<span class="fa-pull-right"><i class="fa fa-cog"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -108,15 +110,17 @@
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToFront">
+			<button class="btn btn-sm btn-default mgTop15" data-bind="click: apl.backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
-	    	<button class="btn btn-sm btn-primary" data-bind="click: apl.saveApplication" >
-	    		<span class="glyphicon glyphicon-save"></span> Save
-	    	</button>
-	    	<button class="btn btn-sm btn-danger" data-bind="visible: (apl.applicationMode() != ''), click : apl.OnRemove">
-	    		<span class="glyphicon glyphicon-remove"></span> Delete
-	    	</button>
+			<div class="btn-group">
+		    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: apl.saveApplication" >
+		    		<span class="glyphicon glyphicon-save"></span> Save
+		    	</button>
+		    	<button class="btn btn-sm btn-danger mgTop15" data-bind="visible: (apl.applicationMode() != ''), click : apl.OnRemove">
+		    		<span class="glyphicon glyphicon-remove"></span> Delete
+		    	</button>
+			</div>
 		</nav>
 
 		<ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
@@ -361,27 +365,29 @@
 		</div>
 
 	</div>
-	<div class="col-md-12" data-bind="visible: (app.section() == 'servers'), with: servers">
+	<div class="col-md-12" data-bind="with: servers, visible: (app.section() == 'servers')">
 		{{template "page-servers.html"}}
 	</div>
-	<div class="col-md-12" data-bind="visible: (app.section() == 'langEnv')">
-		<h1>Language Enviroment</h1>
-
-		<!-- <nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<div class="nav1">
-				<button class="btn btn-sm btn-primary" data-bind="click:apl.setupLangEnv">
-					<span class="glyphicon glyphicon-cog"></span> Setup
-				</button>
-			</div>
-		</nav> -->
-
+	<div class="col-md-12" data-bind="with: languageEnviroment, visible: (app.section() == 'languageEnviroment')">
+		<ol class="breadcrumb bc-custom">
+			<li>Language Enviroment</li>
+			<li class="active">
+		    	<span data-bind="text: lang.breadcrumb"></span> Language Enviroment
+	        </li>
+		</ol>
+	<nav class="navbar" data-bind="visible: (app.mode() == '')">
+		<button class="btn btn-sm btn btn-default mgTop15" data-bind="">
+    		<span class="glyphicon glyphicon-search"></span>					
+		</button>
+		<div class="btn-group" role="group">
+	    	<button class="btn btn-sm btn-primary mgTop15" data-bind="">
+	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+	    	</button>
+		</div>
+	</nav>	
 		<div class="panel" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-heading">
-		        <!-- <h1 class="panel-title">Language Enviroment</h1> -->
-		    </div>
-		    <div class="panel-body">
-		    	<div class="grid grid-LangEnv" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.langEnvData, selectable: 'multiple, row', columns: apl.langEnvColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-LangEnv')}"></div>
-		    </div>
+	    	<div class="grid grid-LangEnv" data-bind="kendoGrid:{ dataSource: { pageSize: 15 }, data: lang.langEnvData, selectable: 'multiple, row', columns: lang.datastatic().concat(lang.datadinamis()) , filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-LangEnv')}">
+	    	</div>
 		</div>
 	</div>
 	
