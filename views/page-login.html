@@ -10,20 +10,25 @@
     		        <div class="login-form col-md-3 col-xs-12" id="loginForm">
                         <!-- create process loader here -->
                 
-    		            <div class="form form-horizontal fh">
-
-    		                <div class="login-logo"></div>
+    		            <div>
+                        <form class="form form-horizontal fh" id="login-form" novalidate>
+                            <center id="head-top">
+                                <div class="login-logo"></div>
+                                <div data-bind="html: lg.ErrorMessage, visible:(lg.errorMessage != '')" id="error-message"></div>
+                             </center>
 
     		                <div class="form-group login-form-group">
     		                    <label class="col-sm-12 form-login-label">Login ID</label>
     		                    <div class="col-sm-12">
     		                        <input type="text" class="form-control input-sm full-width" id="username" name="username" placeholder="Login ID" data-bind="value: lg.configLogin.username"  required />
+                                    <span class="k-invalid-msg" data-for="username"></span>
     		                    </div>
     		                </div>
     		                <div class="form-group login-form-group">
     		                    <label class="col-sm-12 form-login-label">Password</label>
     		                    <div class="col-sm-12">
     		                        <input type="password" class="form-control input-sm full-width" id="password" name="password" placeholder="Your Password" data-bind="value: lg.configLogin.password"  required />
+                                    <span class="k-invalid-msg" data-for="password"></span>
     		                    </div>
     		                </div>
     		                <div class="form-group login-form-group">
@@ -37,6 +42,7 @@
     		                <div class="form-group login-form-group">
     		                    <label class="label label-danger form-login-label"></label>
     		                </div>
+                        </form>
     		            </div>
     		        </div>
     		        <div class="login-bg col-md-9">
@@ -62,11 +68,12 @@
                             <!-- Modal Body -->
                             <div class="modal-body">
                                 
-                                <form role="form" class="form-horizontal">
+                                <form role="form" class="form-horizontal" id="email-form">
                                   <div class="form-group">
                                     <label class="control-label col-sm-3">Email address</label>
                                     <div class="col-xs-8">
-                                      <input type="email" class="form-control input-sm" placeholder="Enter email" data-bind="value: lg.forgetLogin.email"  required/>
+                                      <input type="email" class="form-control input-sm" name="email" placeholder="Enter email" data-bind="value: lg.forgetLogin.email"  required/>
+                                      <span class="k-invalid-msg" data-for="email"></span>
                                     </div>
                                   </div>
                                 </form> 
@@ -76,7 +83,7 @@
                                         data-dismiss="modal">
                                             Close
                                 </button>
-                                <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal" data-bind="click: lg.getForgetLogin">
+                                <button type="button" class="btn btn-sm btn-primary" data-bind="click: lg.getForgetLogin">
                                     Send Email
                                 </button>
                             </div>
