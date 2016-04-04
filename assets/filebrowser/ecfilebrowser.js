@@ -117,7 +117,21 @@ BuildFileExplorer:function(elem,options){
 		$strbtn.appendTo($strbtngrpMode);
 		$strbtn.click(function(){
 			var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):null;
-			methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
+			if(SelectedPath != null){
+				var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+				var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
+
+				if(type == "folder"){
+					methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
+				}else{
+					var parentDir = SelectedPath.substring(SelectedPath.indexOf('/'), SelectedPath.lastIndexOf('/'));
+					methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:parentDir});
+				}
+			}else{
+				methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
+			}
+			
+			
 			$(elem).find(".fb-thumbview").show();
 			$(elem).find(".fb-tree").hide();
 		});
@@ -353,7 +367,6 @@ BuildFileExplorer:function(elem,options){
 		        	  }
 		        	  parrentId = "/"+ pathArray[1];
 					}
-					methodsFB.SetSelectedNode(elem,parrentId,pathData);
 		        }
 
 		        if(results !== null){
@@ -372,7 +385,7 @@ BuildFileExplorer:function(elem,options){
 						$strprecont.appendTo($strthumb);
 						
 						$strprecont.click(function(e){
-						   $strprecont.find("a").removeClass("thumb-selected");
+						   $strthumb.find("a").removeClass("thumb-selected");
 						   $(this).find("a").addClass("thumb-selected");
 					       return false; // disable single click
 					    }).dblclick(function(e){
@@ -660,9 +673,7 @@ BuildFileExplorer:function(elem,options){
 		});
 
 		$($(elem).find(".modal-fb")).modal("show");	
-		// $($(elem).find(".modal-fb")).on('hidden.bs.modal', '.modal', function () {
-	 //        $($(elem).find(".modal-fb")).modal('hide').remove();
-	 //    });
+
 	},
 	ActionRequest:function(elem,options,content,sender){
 		if(!$(elem).data("ecFileBrowser").isHold && (content.action=="Edit"||content.action=="Cancel")){
@@ -679,10 +690,10 @@ BuildFileExplorer:function(elem,options){
 			}
 		}
 
-		var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
-		//var SelectedTree = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
-		// var SelectedFile = $($(elem).find(".thumb-selected")).length > 0 ? $($(elem).find(".thumb-selected")).attr("path") : "";
-		// console.log(SelectedFile);
+		//var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
+		var SelectedTree = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):"";
+		var SelectedFile = $($(elem).find(".thumb-selected")).length > 0 ? $($(elem).find(".thumb-selected")).attr("path") : "";
+		var SelectedPath = (SelectedFile !== "" ? SelectedFile : SelectedTree);
 
 		var name = "";
 		var type = "";
@@ -693,13 +704,12 @@ BuildFileExplorer:function(elem,options){
 			return;
 		}
 
-		//var SelectedPath = (SelectedFile != "" ? SelectedFile : SelectedTree);
 
 		if(content.action!="Search"){
-			// name  = (SelectedFile !== '' ? $($(elem).find(".thumb-selected")).attr("name") : $($($(elem).find(".k-state-selected")).find("a")).attr("name"));
-			// permiss = (SelectedFile !== '' ? $($(elem).find(".thumb-selected")).attr("permission") : $($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
-			name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
-			permiss = $($($(elem).find(".k-state-selected")).find("a")).attr("permission");
+			name  = (SelectedFile !== "" ? $($(elem).find(".thumb-selected")).attr("name") : $($($(elem).find(".k-state-selected")).find("a")).attr("name"));
+			permiss = (SelectedFile !== "" ? $($(elem).find(".thumb-selected")).attr("permission") : $($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
+			// name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+			// permiss = $($($(elem).find(".k-state-selected")).find("a")).attr("permission");
 			
 			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 		}
@@ -1036,18 +1046,4 @@ BuildFileExplorer:function(elem,options){
 		var dataItem = tree.dataItem(tree.findByUid(selectedUid));
 		return dataItem;
 	},
-
-	SetSelectedNode:function(elem,parrentId,arrPath){
-		var treeViewName = $($(elem).find(".k-treeview"));
-	    var treeView = treeViewName.data("kendoTreeView");
-
-	    var nodeDataItem = treeView.dataSource.get(parrentId);
-	    var nodeElement = treeView.findByUid(nodeDataItem.uid);
-
-	    treeView.collapse('.k-item');
-        treeView.collapsingOthers = true;
-
-	    treeView.select(nodeElement);
-	    treeView.expandPath(arrPath);
-	}
 }

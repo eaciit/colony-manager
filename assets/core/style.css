@@ -236,6 +236,9 @@ table.table tr:hover td {
 .lbl {
   margin-left: -12%; }
 
+#Access {
+  padding: 2%; }
+
 .daemon-container {
   position: absolute;
   right: 16px;
