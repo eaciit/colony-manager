@@ -168,7 +168,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	if err := r.GetPayload(&data); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	widgetSource := filepath.Join(EC_DATA_PATH, "widget")
+	widgetSource := filepath.Join(EC_DATA_PATH, "widget", data.Get("_id", "").(string))
 
 	getFileIndex, err := colonycore.GetPath(widgetSource)
 	if err != nil {
@@ -200,12 +200,17 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	if data.Get("mode", "").(string) == "save" {
 		dataWidget := colonycore.Widget{}
 		dataWidget.ID = data.Get("_id", "").(string)
-		toolkit.Println(dataWidget)
 		if err := dataWidget.GetById(); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
-
 		dataWidget.DataSourceId = datasource
+
+		configs := toolkit.Ms{}
+		for _, val := range data.Get("config", "").([]interface{}) {
+			configs = append(configs, val.(map[string]interface{}))
+		}
+		dataWidget.Config = configs
+
 		if err := dataWidget.Save(); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
@@ -213,23 +218,3 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, previewData, "")
 }
-
-/*
-func (w *WidgetController) savePreviewConfig(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	dataConfig := toolkit.M{}
-	if err := r.GetPayload(&dataConfig); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	data := colonycore.Widget{}
-	if err := r.GetPayload(&data); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	if err := data.GetById(); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	return helper.CreateResult(true, data, "")
-}
-*/
