@@ -192,7 +192,7 @@ df.init = function () {
     var xmouse = 0;
     var ymouse = 0;
 
-      $("#sortable-All").kendoSortable({
+    $("#sortable-All").kendoSortable({
                          hint: function(element) {
                             return element.clone().addClass("hint");
                         },
