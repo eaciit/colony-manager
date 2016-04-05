@@ -121,6 +121,7 @@ func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) inter
 	defer cursorLangEnc.Close()
 
 	result := []colonycore.ServerLanguage{}
+	// result := []ServerLanguage{}
 
 	for _, each := range dataServer {
 		serverLang := colonycore.ServerLanguage{Server: each}
