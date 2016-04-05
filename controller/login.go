@@ -49,19 +49,24 @@ func GetSession(r *knot.WebContext) interface{} {
 }
 
 func GetAccess(r *knot.WebContext) interface{} {
-	sessionId := GetSession(r)
+	// sessionId := GetSession(r)
 	menu := []colonycore.Menu{}
 	cursor, err := colonycore.Find(new(colonycore.Menu), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	cursor.Fetch(&menu, 0, false)
+	err = cursor.Fetch(&menu, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	defer cursor.Close()
 	results := make([]toolkit.M, 0, 0)
 	if cursor.Count() > 0 {
 		result := toolkit.M{}
 		for _, m := range menu {
-			acces := acl.HasAccess(sessionId, acl.IDTypeSession, m.AccessId, acl.AccessRead)
+			// acces := acl.HasAccess(sessionId, acl.IDTypeSession, m.AccessId, acl.AccessRead)
+			acces := true // temporary hardcode
 			if acces == true {
 				result, err = toolkit.ToM(m)
 				if err != nil {
@@ -72,12 +77,15 @@ func GetAccess(r *knot.WebContext) interface{} {
 			}
 		}
 	}
+
 	return results
 }
 
 func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	sessionId := GetSession(r)
+	// sessionId := GetSession(r)
+	sessionId := "ok" // temporary hardcode
+
 	if sessionId != "" {
 		results := GetAccess(r)
 		return helper.CreateResult(true, results, "Success")
