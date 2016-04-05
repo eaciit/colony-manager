@@ -1,0 +1,28 @@
+<style>
+	.no-left-padding {
+		padding-left: 0px;
+	}
+</style>
+
+<ol class="breadcrumb bc-custom">
+	<li>Language Enviroment</li>
+	<li class="active">
+    	<span data-bind="text: lang.breadcrumb"></span> Language Enviroment
+    </li>
+</ol>
+
+<nav class="navbar" data-bind="visible: (app.mode() == '')">
+	<button class="btn btn-sm btn btn-default mgTop15" data-bind="">
+		<span class="glyphicon glyphicon-search"></span>					
+	</button>
+	<div class="btn-group" role="group">
+    	<button class="btn btn-sm btn-primary mgTop15" data-bind="">
+    		<span class="glyphicon glyphicon-refresh"></span> Refresh
+    	</button>
+	</div>
+</nav>	
+<div class="panel" data-bind="visible: (app.mode() == '')" style="margin-top: 15px;">
+	<div class="grid grid-LangEnv">
+		<table class="table table-bordered table-langEnvi"></table>
+	</div>
+</div>		
