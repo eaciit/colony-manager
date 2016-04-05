@@ -327,6 +327,8 @@ BuildFileExplorer:function(elem,options){
 		var ds = options.dataSource;
 		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var call = ds.call;
+		var serverId =  $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+		data.serverId = (data.serverId === '' ? serverId : data.serverId);
 
 		var dt = {
 			action : $(elem).data("ecFileBrowser").dataSource.GetDirAction,
@@ -383,9 +385,9 @@ BuildFileExplorer:function(elem,options){
 		        if(results !== null){
 		            $.each(results, function(index) {
 		            	var id = $.now();
-		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">');
-			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 5) + "..." : results[index].name);
-			            $strprecont = $('<div class="col-xs-2 col-md-1">'+
+		            	var ico = (results[index].isdir == true ? '<img class="thumb-icon" src="/res/img/folder.png">':'<img class="thumb-icon" src="/res/img/file.png">');
+			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 9) + ".." : results[index].name);
+			            $strprecont = $('<div class="col-xs-2 col-md-1 fb-thumb">'+
 			            					'<a href="#" id="'+id+'-'+index+'" name="'+results[index].name+'" permission="'+results[index].permissions+'" path="'+results[index].path+'" isdir='+results[index].isdir+' iseditable='+results[index].iseditable+' class="thumbnail tooltipster" title="'+results[index].name+'">'+
 			            						ico +
 			            						'<div class="caption" >'+
