@@ -95,6 +95,46 @@ func (le *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{}
 	return helper.CreateResult(true, data, "")
 }
 
+func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	cursorServer, err := colonycore.Find(new(colonycore.Server), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	dataServer := []colonycore.Server{}
+	err = cursorServer.Fetch(&dataServer, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursorServer.Close()
+
+	cursorLangEnc, err := colonycore.Find(new(colonycore.LanguageEnviroment), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	dataLangEnv := []colonycore.LanguageEnviroment{}
+	err = cursorLangEnc.Fetch(&dataLangEnv, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursorLangEnc.Close()
+
+	result := []colonycore.ServerLanguage{}
+
+	for _, each := range dataServer {
+		serverLang := colonycore.ServerLanguage{Server: each}
+
+		for _, eachLang := range dataLangEnv {
+			serverLang.Languages = append(serverLang.Languages, eachLang)
+		}
+
+		result = append(result, serverLang)
+	}
+
+	return helper.CreateResult(true, result, "")
+}
+
 func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := l.GetSampleDataForSetupLang()
