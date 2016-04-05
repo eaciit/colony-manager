@@ -20,8 +20,7 @@ type LoginController struct {
 }
 
 func (l *LoginController) prepareconnection() (conn dbox.IConnection, err error) {
-	conn, err = dbox.NewConnection("mongo",
-		&dbox.ConnectionInfo{"localhost:27017", "valegrab", "", "", toolkit.M{}.Set("timeout", 3)})
+	conn, err = colonycore.GetACLConnection()
 	if err != nil {
 		return
 	}
