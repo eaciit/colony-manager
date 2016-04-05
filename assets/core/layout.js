@@ -30,7 +30,6 @@ ly.element = function(data){
 	$parent = $('#nav-ul');
 	$navbar = $('<ul class="nav navbar-nav"></ul>');
 	$navbar.appendTo($parent);
-	console.log(data);
 	if(data.length == 0){
 		$liparent = $("<li class='dropdown' id='liparent'><a>You don't have any access</a></li>");
 		$liparent.appendTo($navbar);
@@ -79,7 +78,6 @@ ly.getLoadMenu = function(){
 					return;
 				}
 
-				console.log(res.data.username);
 				ly.username(" Hi' "+res.data.username);
 
 			});
@@ -92,10 +90,8 @@ ly.getLoadMenu = function(){
 
 
 		ly.element(res.data);
-		//console.log("======== :::: 2", res.data);
 
 	});
-	//console.log("======== :::: 2", ly.element);
 }
 
 
