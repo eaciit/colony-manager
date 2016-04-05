@@ -1,6 +1,6 @@
 	
 $(document).ready(function(){
-$("#FileBrowser").ecFileBrowser({
+    $("#FileBrowser").ecFileBrowser({
         dataSource:{
             url: '/filebrowser',
             call: 'POST',
