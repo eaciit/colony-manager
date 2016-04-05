@@ -165,14 +165,15 @@ df.init = function () {
             var diagram = kendo.dataviz.diagram;
             var Shape = diagram.Shape;
             var item = e.item;
-            console.log(item.dataItem.name)
             if(item instanceof Shape){
                 $("#popbtn").popover("show");
                 $(".popover-title").html(item.dataItem.name);
                 $(".popover").attr("style","display: block; top: " +(ymouse-70)+"px; left: "+(xmouse-30)+"px;");
                 $(".arrow").attr("style","left:30px");
             }
-        }
+        },
+        dragEnd: df.onDragEnd,
+        remove: df.onRemove,
     });
 
    $(".tooltipster").tooltipster({
@@ -217,7 +218,7 @@ df.init = function () {
                              });
                             }
 
-                        }
+                        },
        });
 
       $("body").mousemove(function(e) {
@@ -234,6 +235,137 @@ df.run = function () {
         
     });
 }
+
+df.counts = {};
+df.checkConnection = function(elem){
+    var diagram = $(elem).getKendoDiagram();
+    var conn = diagram.connections;
+    var shap = diagram.shapes;
+
+    //delete connection with one shape
+    for(var c in conn){
+        var co = conn[c];
+        if(co.from == null || co.to == null ||  co.from.shape ==undefined || co.to.shape == undefined){
+            diagram.remove(co);
+        }
+    }
+
+    df.counts = {};
+    conn = diagram.connections;
+
+    //delete invalid connection
+    for(var c in conn){
+        var co = conn[c];
+        var sh = co.from.shape;
+        var shto = co.to.shape;
+            df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
+            df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
+
+        if(sh.dataItem.name !="Fork" ){
+            df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
+            if(df.counts[sh.id+"-"] >1){
+                diagram.remove(co);
+                continue;
+            }
+        }   
+
+        if(shto.dataItem.name !="Fork"){
+            df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
+             if(df.counts["-"+shto.id] >1){
+                diagram.remove(co);
+                continue;
+            }
+        }
+
+        if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
+            diagram.remove(co);
+        }
+    }
+}
+
+df.checkFlow = function(elem){
+    var diagram = $(elem).getKendoDiagram();
+    var shap = diagram.shapes;
+    var conn = diagram.connections;
+    df.counts = {};
+
+    for(var c in conn){
+        var co = conn[c];
+        var sh = co.from.shape;
+        var shto = co.to.shape;
+
+        if(sh.dataItem.name !="Fork" ){
+            df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
+        }
+
+         if(shto.dataItem.name !="Fork"){
+            df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
+        }
+    }
+
+    //check for infiniteloop
+    var startfinish = 0;
+    var noconnshape = 0;
+    for(var c in shap){
+        if(shap[c].dataItem.name=="Fork")
+            continue;
+
+        var id = shap[c].id;
+
+        if(df.counts["-"+id] == undefined){
+            startfinish+=1;
+        }
+
+        if(df.counts[id+"-"] == undefined){
+            startfinish+=1;
+        }
+
+        var sc = shap[c].connectors;
+        var conn = 0
+        for(var i in sc){
+            if(sc[i].connections.length>0){
+                conn+=1;
+            }
+        }
+        noconnshape+= conn==0?1:0;
+    }
+
+    if(startfinish==0){
+        alert("Infinite Flow !");
+    }else if(noconnshape>0){
+        alert("Invalid Flow !")
+    }
+}
+
+df.onDragEnd = function(e){
+    if(df.draggedElementsTexts(e)=="connections"){
+        df.checkConnection($(".diagram"));
+    }
+}
+
+df.onRemove = function(e){
+    setTimeout(function(){
+            if(e.shape != undefined){
+            df.checkConnection($(".diagram"));
+        }
+    },500);
+}
+
+df.draggedElementsTexts = function(e) {
+            var text;
+            var elements;
+            if (e.shapes.length) {
+                text = "shapes";
+                elements = e.shapes;
+            } else {
+                text = "connections";
+                elements = e.connections;
+            }
+            // text += $.map(elements, function (element) {
+            //     return elementText(element);
+            // }).join(",");
+            return text;
+        }
 
 $(function () {
     df.init();
