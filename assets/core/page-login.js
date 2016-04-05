@@ -46,10 +46,12 @@ lg.getLogin = function(){
 		lg.ErrorMessage(res.message);
 		
 		if(res.message == "Login Success"){
-			window.location = "/web/index"
+			window.location = "/web/index";
+			
 		}
 
 	});
+	
 }
 
 lg.showAccesReset = function(){
@@ -104,7 +106,7 @@ lg.getConfirmReset = function(){
 				return;
 			}
 
-			window.location = "/web/login"
+			window.location = "/web/login";
 
 		});
 	}
