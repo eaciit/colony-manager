@@ -169,10 +169,71 @@ df.init = function () {
             if(item instanceof Shape){
                 $("#popbtn").popover("show");
                 $(".popover-title").html(item.dataItem.name);
-                // $(".popover-content").html();
-                $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
                 $(".arrow").attr("style","left:30px");
-
+                if (item.dataItem.name == "Spark") {
+                    $(".popover").attr("style","display: block; top: " +(ymouse-220)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").removeClass("hide");
+                    $(".popover-content #hdfs").addClass("hide");
+                    $(".popover-content #hive").addClass("hide");
+                    $(".popover-content #shell").addClass("hide");
+                    $(".popover-content #mapreduce").addClass("hide");
+                    $(".popover-content #java").addClass("hide");
+                    $(".popover-content #email").addClass("hide");
+                }else if(item.dataItem.name == "HDFS"){
+                    $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").addClass("hide");
+                    $(".popover-content #hdfs").removeClass("hide");
+                    $(".popover-content #hive").addClass("hide");
+                    $(".popover-content #shell").addClass("hide");
+                    $(".popover-content #mapreduce").addClass("hide");
+                    $(".popover-content #java").addClass("hide");
+                    $(".popover-content #email").addClass("hide");
+                }else if(item.dataItem.name == "Hive"){
+                    $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").addClass("hide");
+                    $(".popover-content #hdfs").addClass("hide");
+                    $(".popover-content #hive").removeClass("hide");
+                    $(".popover-content #shell").addClass("hide");
+                    $(".popover-content #mapreduce").addClass("hide");
+                    $(".popover-content #java").addClass("hide");
+                    $(".popover-content #email").addClass("hide");
+                }else if(item.dataItem.name == "Shell Script"){
+                    $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").addClass("hide");
+                    $(".popover-content #hdfs").addClass("hide");
+                    $(".popover-content #hive").addClass("hide");
+                    $(".popover-content #shell").removeClass("hide");
+                    $(".popover-content #mapreduce").addClass("hide");
+                    $(".popover-content #java").addClass("hide");
+                    $(".popover-content #email").addClass("hide");
+                }else if(item.dataItem.name == "Map Reduce"){
+                    $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").addClass("hide");
+                    $(".popover-content #hdfs").addClass("hide");
+                    $(".popover-content #hive").addClass("hide");
+                    $(".popover-content #shell").addClass("hide");
+                    $(".popover-content #mapreduce").removeClass("hide");
+                    $(".popover-content #java").addClass("hide");
+                    $(".popover-content #email").addClass("hide");
+                }else if(item.dataItem.name == "Java App"){
+                    $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").addClass("hide");
+                    $(".popover-content #hdfs").addClass("hide");
+                    $(".popover-content #hive").addClass("hide");
+                    $(".popover-content #shell").addClass("hide");
+                    $(".popover-content #mapreduce").addClass("hide");
+                    $(".popover-content #java").removeClass("hide");
+                    $(".popover-content #email").addClass("hide");
+                }else if(item.dataItem.name == "Email"){
+                    $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
+                    $(".popover-content #spark").addClass("hide");
+                    $(".popover-content #hdfs").addClass("hide");
+                    $(".popover-content #hive").addClass("hide");
+                    $(".popover-content #shell").addClass("hide");
+                    $(".popover-content #mapreduce").addClass("hide");
+                    $(".popover-content #java").addClass("hide");
+                    $(".popover-content #email").removeClass("hide");
+                };
             }
         },
         dragEnd: df.onDragEnd,
@@ -192,14 +253,16 @@ df.init = function () {
     $("#popbtn").popover({
         html : true,
         placement : 'top',
-        content: $(".popover-content").html()        
+        content: function() {
+          return $(".popover-content").html();
+        }        
     });
 
     var xmouse = 0;
     var ymouse = 0;
 
     $("#sortable-All").kendoSortable({
-                         hint: function(element) {
+                        hint: function(element) {
                             return element.clone().addClass("hint");
                         },
                         placeholder: function(element) {

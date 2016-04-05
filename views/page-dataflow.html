@@ -50,26 +50,155 @@
 </div>
 -<button style="display:none" title="asd" data-content="" id="popbtn">
 <div class="popover-content">
-    <table class="ct-custom" data-bind="">
-        <tbody>
-            <tr>
-                <td>Script</td>
-                <td>
-                    <input type="text" class="inp-custom" data-bind="" placeholder="Path to the script on HDFS.">
-                    <button class="btn pd-custom fileChooserBtn">..</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Hive XML</td>
-                <td>
-                    <input type="text" class="inp-custom" data-bind="" placeholder="Refer to a hive-site.xml for connecting to Hive">
-                    <button class="btn pd-custom fileChooserBtn">..</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <a class="btn btn-primary" data-bind="">Add</a>
-</div>    
+    <div id="spark" class="ct-custom hide">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>Spark Master</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Mode</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Jars/py files</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Comma separated list of jars or python HDFS files.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Main Class</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+    <div id="hdfs" class="ct-custom hide">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>HDFS Script</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="HDFS executable/script.">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+    <div id="hive" class="ct-custom hide">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>Script</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Path to the script on HDFS.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Hive XML</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Refer to a hive-site.xml for connecting to Hive.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+    <div id="shell" class="ct-custom hide">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>Shell Command</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Shell command to execute, e.g script.sh">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+    <div id="mapreduce" class="ct-custom hide">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>Mapper</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="The executable/script to be used as mapper.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Reducer</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="The executable/script to be used as reducer.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+    <div id="java" class="ct-custom hide ">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>Jar Name</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Path to the jar on HDFS.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Main Class</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Java class. e.g. org.apache.hadoop.examples.Grep">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+    <div id="email" class="ct-custom hide">
+        <table data-bind="">
+            <tbody>
+                <tr>
+                    <td>To Addresses</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Comma-separated values">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Subject</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="" placeholder="Plain-text">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Body</td>
+                    <td>
+                        <textarea class="inp-custom" data-bind=""></textarea>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="addbutton btn btn-primary" data-bind="">Add</a>
+    </div>
+</div>
 </button>
 
 <style>
@@ -144,5 +273,9 @@
         }
         .inp-custom{
             margin: 5px -2px 5px 5px;
+            width: 250px;
+        }
+        .popover{
+            max-width: none;
         }
 </style>
