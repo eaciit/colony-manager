@@ -105,15 +105,17 @@ BuildFileExplorer:function(elem,options){
 		$strbtngrp = $("<div class='btn-group' role='group'>");
 		$strbtngrp.appendTo($strtoolbar);
 		
-		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='Tree View'><span class='glyphicon glyphicon-indent-left'></span></button>");
+		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster btn-treeview' title='Tree View'><span class='glyphicon glyphicon-indent-left'></span></button>");
 		$strbtn.appendTo($strbtngrpMode);
 		$strbtn.click(function(){
 			$(elem).find(".fb-thumbview").hide();
 			$(elem).find(".fb-tree").show();
-
+			$(this).prop("disabled",true);
+			$(elem).find(".btn-thumbnail").prop("disabled",false);
+			$(this).tooltipster('hide');
 		});
 
-		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster' title='Thumbnail View'><span class='glyphicon glyphicon-th'></span> </button>");
+		$strbtn = $("<button class='btn btn-sm btn-primary tooltipster btn-thumbnail' title='Thumbnail View'><span class='glyphicon glyphicon-th'></span> </button>");
 		$strbtn.appendTo($strbtngrpMode);
 		$strbtn.click(function(){
 			var SelectedPath = $($(elem).find(".k-state-selected")).length > 0 ?  $($($(elem).find(".k-state-selected")).find("a")).attr("path"):null;
@@ -134,6 +136,9 @@ BuildFileExplorer:function(elem,options){
 			
 			$(elem).find(".fb-thumbview").show();
 			$(elem).find(".fb-tree").hide();
+			$(this).prop("disabled",true);
+			$(elem).find(".btn-treeview").prop("disabled",false);
+			$(this).tooltipster('hide');
 		});
 
 		$strbtn = $("<button class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown' style='border-top-right-radius: 0px; border-bottom-right-radius: 0px;'><span class='glyphicon glyphicon-file'></span> New</button>");
@@ -375,7 +380,7 @@ BuildFileExplorer:function(elem,options){
 		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">');
 			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 5) + "..." : results[index].name);
 			            $strprecont = $('<div class="col-xs-2 col-md-1">'+
-			            					'<a href="#" id="'+id+'-'+index+'" name="'+results[index].name+'" permission="'+results[index].permissions+'" path="'+results[index].path+'" class="thumbnail tooltipster" title="'+results[index].name+'">'+
+			            					'<a href="#" id="'+id+'-'+index+'" name="'+results[index].name+'" permission="'+results[index].permissions+'" path="'+results[index].path+'" isdir='+results[index].isdir+' iseditable='+results[index].iseditable+' class="thumbnail tooltipster" title="'+results[index].name+'">'+
 			            						ico +
 			            						'<div class="caption" >'+
 			            							'<p align="center">'+shortName+'</p>'+
@@ -526,7 +531,11 @@ BuildFileExplorer:function(elem,options){
 		$btn =	$($(elem).find(".fb-submit"));
 		$btn.unbind("click");
 		$body.html("");
-		var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+		if($($(elem).find(".thumb-selected")).length > 0){
+			var name = $($(elem).find(".thumb-selected")).attr("name");
+		}else{
+			var name = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
+		}
 		var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 
 		if(content.action=="NewFile"){
@@ -641,7 +650,13 @@ BuildFileExplorer:function(elem,options){
 					content.permission = strperm;
 					methodsFB.SendActionRequest(elem,content);
 			});	
-			methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
+
+			if($($(elem).find(".thumb-selected")).length > 0){
+				methodsFB.BuildPermission($($body.find(".col-md-3")),$($(elem).find(".thumb-selected")).attr("permission"));
+			}else{
+				methodsFB.BuildPermission($($body.find(".col-md-3")),$($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
+			}
+			
 		}else if (content.action=="Upload"){
 			if (type!="folder"){
                 swal("Warning!", "Please choose folder !", "warning");
@@ -708,16 +723,18 @@ BuildFileExplorer:function(elem,options){
 		if(content.action!="Search"){
 			name  = (SelectedFile !== "" ? $($(elem).find(".thumb-selected")).attr("name") : $($($(elem).find(".k-state-selected")).find("a")).attr("name"));
 			permiss = (SelectedFile !== "" ? $($(elem).find(".thumb-selected")).attr("permission") : $($($(elem).find(".k-state-selected")).find("a")).attr("permission"));
-			// name  = $($($(elem).find(".k-state-selected")).find("a")).attr("name");
-			// permiss = $($($(elem).find(".k-state-selected")).find("a")).attr("permission");
-			
 			type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 		}
 
 		if(content.action=="Rename"||content.action=="Delete"||content.action=="Permission"){
-			var dtitm = methodsFB.GetSelectedData(elem);
-			if(!dtitm.iseditable){
-   			 // swal("Warning!", "Action not permitted !", "warning");
+			if($($(elem).find(".thumb-selected")).length > 0){
+				var iseditable = JSON.parse($($(elem).find(".thumb-selected")).attr("iseditable"));
+			}else{
+				var dtitm = methodsFB.GetSelectedData(elem);
+				var iseditable = dtitm.iseditable
+			}
+			
+			if(!iseditable){
 				return;
 			}
 		}
@@ -781,7 +798,7 @@ BuildFileExplorer:function(elem,options){
 		}else if(content.action=="Download"){
 			content.path = SelectedPath;
 			if (type=="folder"){
-            swal("Warning!", "Please choose file !", "warning");
+            	swal("Warning!", "Please choose file !", "warning");
 				return;
 			}
 			methodsFB.SetUrl(elem,content.action);
@@ -801,7 +818,7 @@ BuildFileExplorer:function(elem,options){
 			  function(isConfirm){
 			    if (isConfirm) {
 					methodsFB.SendActionRequest(elem,content);
-					 } 
+				} 
 			  });
 		}else if(content.action == "GetContent"){
 			methodsFB.SendActionRequest(elem,content);
@@ -845,6 +862,7 @@ BuildFileExplorer:function(elem,options){
             app.miniloader(false);
             $(elem).find(".modal-fb").modal("hide");
             methodsFB.RefreshTreeView(elem,param);
+           methodsFB.ThumbnailView(elem, $(elem).data("ecFileBrowser"),{serverId: param.serverId, path:param.path});
 	        swal("Saved!", "Your request has been processed !", "success");
         }
         
@@ -873,6 +891,9 @@ BuildFileExplorer:function(elem,options){
 		var call = ds.call;
 		var contentType = "";
 		app.miniloader(true);
+
+		var parentDir = (param.path).substring((param.path).indexOf('/'), (param.path).lastIndexOf('/'));
+
 		if (param.action == "Download") {
 			var arr = [];
 			for (var k in param) {
@@ -890,6 +911,7 @@ BuildFileExplorer:function(elem,options){
 		if (ds.call.toLowerCase() == 'post'){
 			contentType = 'application/json; charset=utf-8';
 		}
+
 		 $.ajax({
                 url: url,
                 type: call,
@@ -914,7 +936,12 @@ BuildFileExplorer:function(elem,options){
                 		divtree.addClass("k-state-disabled");
 
                 	}else if(param.action!="Edit"){
-                		methodsFB.RefreshTreeView(elem,param);
+                		if($($(elem).find(".thumb-selected")).length > 0){
+                			methodsFB.ThumbnailView(elem, $(elem).data("ecFileBrowser"),{serverId: param.serverId, path:parentDir});
+                		}else{
+                			methodsFB.RefreshTreeView(elem,param);
+                		}
+                		                		
                 		if(param.action=="NewFile"){
 							$(elem).data("ecFileBrowser").isHold = true;
 							$(elem).data("ecFileBrowser").Content = param;	
@@ -922,10 +949,13 @@ BuildFileExplorer:function(elem,options){
                 	}else  if(param.action=="Edit") {
                 		$($(elem).find(".fb-filename")).html("");
 						$($(elem).find(".fb-editor")).data("kendoEditor").value("");
+
                 	}
 
                 	$(elem).find(".modal-fb").modal("hide");
-
+                	if(param.action=="Delete"){
+                		swal({title: "File / Folder successfully deleted", type: "success"});	
+                	}
                 	if(!$(elem).data("ecFileBrowser").isHold){
                 		swal("Saved!", "Your request has been processed !", "success");
                 		$(elem).find(".modal-fb-editor").modal("hide");
@@ -995,12 +1025,19 @@ BuildFileExplorer:function(elem,options){
 	},
 	DetectType:function(elem,name,elemmain){
 		name = name.toLowerCase();
-		var childcount = $(elem).prev("span").length
-		var tree = $($(elemmain).find(".k-treeview")).getKendoTreeView();
-		$li = $(elem).closest("li");
-		var isdir = tree.dataItem($li).isdir;
+		var isdir;
+		var childcount;
+		if($($(elemmain).find(".thumb-selected")).length > 0){
+			isdir = $($(elemmain).find(".thumb-selected")).attr("isdir");
+		}
+		else{
+			var childcount = $(elem).prev("span").length
+			var tree = $($(elemmain).find(".k-treeview")).getKendoTreeView();
+			$li = $(elem).closest("li");
+			isdir = tree.dataItem($li).isdir;
+		}
 
-		if (childcount > 0||isdir){
+		if (childcount > 0|| isdir == true || isdir == "true"){
 			return "folder"
 		}else if (name.indexOf(".pdf")>-1){
 			return "pdf"
