@@ -54,6 +54,7 @@ ly.getLogout = function(){
 			return;
 		}
 
+		window.location = "/web/login"
 	});
 }
 

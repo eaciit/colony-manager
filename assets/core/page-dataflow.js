@@ -165,11 +165,14 @@ df.init = function () {
             var diagram = kendo.dataviz.diagram;
             var Shape = diagram.Shape;
             var item = e.item;
+
             if(item instanceof Shape){
                 $("#popbtn").popover("show");
                 $(".popover-title").html(item.dataItem.name);
-                $(".popover").attr("style","display: block; top: " +(ymouse-70)+"px; left: "+(xmouse-30)+"px;");
+                // $(".popover-content").html();
+                $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
                 $(".arrow").attr("style","left:30px");
+
             }
         },
         dragEnd: df.onDragEnd,
@@ -187,7 +190,9 @@ df.init = function () {
     });
 
     $("#popbtn").popover({
-        placement : 'top'
+        html : true,
+        placement : 'top',
+        content: $(".popover-content").html()        
     });
 
     var xmouse = 0;

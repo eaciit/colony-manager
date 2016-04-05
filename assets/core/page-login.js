@@ -19,14 +19,15 @@ lg.templateConfirmReset ={
 
 lg.templateUrlParam = {
 	userid: "",
-	token: "",
-	password: ""
+	tokenid: "",
+	newpassword: ""
 	
 }
 
 lg.configLogin = ko.mapping.fromJS(lg.templateConfigLogin);
 lg.forgetLogin = ko.mapping.fromJS(lg.templateForgotLogin);
 lg.confirmReset = ko.mapping.fromJS(lg.templateConfirmReset);
+lg.dataMenu =ko.observableArray([]);
 lg.ErrorMessage = ko.observable('');
 lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam);
 
@@ -43,8 +44,10 @@ lg.getLogin = function(){
 
 		console.log(res.message);
 		lg.ErrorMessage(res.message);
-
-
+		
+		if(res.message == "Login Success"){
+			window.location = "/web/index"
+		}
 
 	});
 }
@@ -87,17 +90,25 @@ lg.getConfirmReset = function(){
 	if (!app.isFormValid("#form-reset")) {
 		return;
 	}
-	lg.getConfirReset.userid(lg.getUrlParam('1'));
-	lg.getConfirReset.token(lg.getUrlParam('2'));
-	lg.getConfirReset.password(lg.confirmReset.confirm_pass())
-	var param = ko.mapping.toJS(lg.getConfirReset);
-	//console.log(param);
-	app.ajaxPost("/login/savepassword", param, function(res){
-		if(!app.isFine(res)){
-			return;
-		}
 
-	});
+	if(lg.confirmReset.confirm_pass() != lg.confirmReset.new_pass()){
+		lg.ErrorMessage('Your confirm new password not match');
+	}else{
+		lg.getConfirReset.userid(lg.getUrlParam('1'));
+		lg.getConfirReset.tokenid(lg.getUrlParam('2'));
+		lg.getConfirReset.newpassword(lg.confirmReset.confirm_pass())
+		var param = ko.mapping.toJS(lg.getConfirReset);
+		//console.log(param);
+		app.ajaxPost("/login/savepassword", param, function(res){
+			if(!app.isFine(res)){
+				return;
+			}
+
+			window.location = "/web/login"
+
+		});
+	}
+	
 }
 
 

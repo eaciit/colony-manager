@@ -31,13 +31,13 @@ lang.getLangEnv = function (c){
 			res.data = [];
 		}
 		lang.langEnvData(res.data);
-		var grid = $(".grid-LangEnv").data("kendoGrid");
+		/*var grid = $(".grid-LangEnv").data("kendoGrid");
 		$(grid.tbody).on("mouseenter", "tr", function (e) {
 	    $(this).addClass("k-state-hover");
 		});
 		$(grid.tbody).on("mouseleave", "tr", function (e) {
 		    $(this).removeClass("k-state-hover");
-		});
+		});*/
 
 		if (typeof c == "function") {
 			c(res);
@@ -54,6 +54,7 @@ lang.getLanguage = function(c){
 			res.data = [];
 		}
 		lang.dataLanguage(res.data);
+		lang.tableLangEnvi(lang.dataLanguage(res.data));
 
 		if (typeof c == "function") {
 			c(res);
@@ -79,7 +80,45 @@ lang.datadinamis = ko.observableArray([
 	}}
 	]);
 
+lang.tableLangEnvi = function (data){
+	$('.table-langEnvi').replaceWith('<table class="table table-bordered table-langEnvi"></table>');
+	var $table = $('.table-langEnvi');
+	var index = 1; 
+
+	var header = [
+		'<thead>',
+			'<tr>',
+				'<th>Server ID</th>',
+				'<th>Server OS</th>',
+				'<th>Host</th>',
+			'</tr>',
+		'</thead>'
+	];
+
+	for (var i in lang.dataLanguage()){
+		header.splice((5+i), 0, "<th><center>"+lang.dataLanguage()[i].language+"</center></th>");
+	}
+	header.join('');
+	$table.append(header);
+
+	lang.langEnvData().forEach(function (item){
+	var contentTable = [	
+		'<tr>',
+			'<td>'+item._id+'</td>',
+			'<td>'+item.os+'</td>',
+			'<td>'+item.host+'</td>',
+		'</tr>'
+		];
+	for (var j in lang.dataLanguage()){
+		contentTable.splice((4+j), 0,"<td><center><button class='btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered' title='Setup' onclick=''><span class='fa fa-cog'></span></button></center></td>");
+	}
+	contentTable.join('');
+	$table.append(contentTable); 
+	});
+}
+
 $(function () {
 	lang.getLangEnv();
 	lang.getLanguage();
+	lang.tableLangEnvi();
 });

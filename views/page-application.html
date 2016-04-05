@@ -149,7 +149,7 @@
 							    			<input required class="form-control input-sm" id="name" name="name" type="text" data-bind="value: AppsName" placeholder="Type application name here" />
 							    			<span class="k-invalid-msg" data-for="name"></span>
 							    		</div>
-						    		</div>
+						    	</div>
 					    		</div>
 					    		<div class="col-md-6">
 						    		<div class="form-group">
@@ -363,34 +363,13 @@
 					<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div>		    	
 		    </div>
 		</div>
-
 	</div>
 	<div class="col-md-12" data-bind="with: servers, visible: (app.section() == 'servers')">
 		{{template "page-servers.html"}}
 	</div>
 	<div class="col-md-12" data-bind="with: languageEnviroment, visible: (app.section() == 'languageEnviroment')">
-		<ol class="breadcrumb bc-custom">
-			<li>Language Enviroment</li>
-			<li class="active">
-		    	<span data-bind="text: lang.breadcrumb"></span> Language Enviroment
-	        </li>
-		</ol>
-	<nav class="navbar" data-bind="visible: (app.mode() == '')">
-		<button class="btn btn-sm btn btn-default mgTop15" data-bind="">
-    		<span class="glyphicon glyphicon-search"></span>					
-		</button>
-		<div class="btn-group" role="group">
-	    	<button class="btn btn-sm btn-primary mgTop15" data-bind="">
-	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-	    	</button>
-		</div>
-	</nav>	
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-	    	<div class="grid grid-LangEnv" data-bind="kendoGrid:{ dataSource: { pageSize: 15 }, data: lang.langEnvData, selectable: 'multiple, row', columns: lang.datastatic().concat(lang.datadinamis()) , filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-LangEnv')}">
-	    	</div>
-		</div>
+		{{template "page-langenvi.html"}}
 	</div>
-	
 </div>
 
 <div class="modal fade modal-new-file" tabindex="-1" role="dialog">
