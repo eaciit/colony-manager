@@ -63,6 +63,13 @@ viewModel.dataflow = {
         "Type"  : "Fork",
         "Color" : "#CF29D8"
     },
+     {
+        "Name"  :"Stop",
+        "Id"    :"10",
+        "Image" : "icon_stop.png",
+        "Type"  : "Action",
+        "Color" : "#FF0000"
+    },
     ]
 }; 
 var df = viewModel.dataflow;
@@ -81,6 +88,16 @@ var df = viewModel.dataflow;
                         },
                         fill: "#e8eff7",
                         data:"M0.5,37.5 L37.5,0.5 L74.5,37.5 M0.5,37.5 L74.5,37.5 L37.5,74.5 z"
+                    }));
+                }else if(dataItem.name == "Stop"){
+                     g.append(new dataviz.diagram.Path({
+                        data:"M74.5,37.5 C74.5,57.91 57.91,74.5 37.5,74.5 C17,74.5 0.5,57.91 0.5,37.5 C0.5,17 17,0.5 37.5,0.5 C57.91,0.5 74.5,17 74.5,37.5 z",
+                        width: 75,
+                        height: 75,
+                        stroke: {
+                            width: 0
+                        },
+                        fill: "#e8eff7"
                     }));
                 }else{
                     g.append(new dataviz.diagram.Rectangle({
@@ -162,22 +179,38 @@ df.init = function () {
         },
         autoBind: true,
         click:function(e){
+            console.log(e);
+            console.log(this);
             var diagram = kendo.dataviz.diagram;
             var Shape = diagram.Shape;
             var item = e.item;
 
             if(item instanceof Shape){
-                $("#popbtn").popover("show");
-                $(".popover-title").html(item.dataItem.name);
-                // $(".popover-content").html();
-                $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                $(".arrow").attr("style","left:30px");
+                //double click checking
+                  clickonshape++;
+                  if (clickonshape == 1) {
+
+                    setTimeout(function(){
+                      if(clickonshape == 2) {
+                        $("#poptitle").popover("hide");
+                        $("#popbtn").popover("show");
+                        $(".popover-title").html(item.dataItem.name);
+                        // $(".popover-content").html();
+                        $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
+                        $(".arrow").attr("style","left:30px");
+                      }
+                      clickonshape = 0;
+                    }, 300);
+
+                  }  
 
             }
         },
         dragEnd: df.onDragEnd,
         remove: df.onRemove,
     });
+
+    var clickonshape = 0;
 
    $(".tooltipster").tooltipster({
         theme: 'tooltipster-val',
@@ -189,11 +222,63 @@ df.init = function () {
         position: "right"
     });
 
+    $(".btn-tooltip").tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "top"
+    });
+
     $("#popbtn").popover({
         html : true,
         placement : 'top',
         content: $(".popover-content").html()        
     });
+
+    $("#poptitle").popover({
+        html : true,
+        placement : 'right',
+        content: $(".poptitle-content").html()        
+    });
+
+    $(".pTitle").dblclick(function(e){
+        $("#popbtn").popover("hide");
+        $("#poptitle").popover("show");
+        $(".popover-title").removeAttr("style");
+        $(".popover-title").html("Edit Title");
+        $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
+        $(".arrow").attr("style","top:46%");
+
+        $(".poptitle-close").click(function(e){
+            $("#poptitle").popover("hide");
+        });
+
+        $(".poptitle-save").click(function(e){
+            $("#poptitle").popover("hide");
+        });
+    });
+
+    $(".pDesc").dblclick(function(e){
+        $("#popbtn").popover("hide");
+        $("#poptitle").popover("show");
+        $(".popover-title").removeAttr("style");
+        $(".popover-title").html("Edit Desciption");
+        $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
+        $(".arrow").attr("style","top:46%");
+
+        $(".poptitle-close").click(function(e){
+            $("#poptitle").popover("hide");
+        });
+
+        $(".poptitle-save").click(function(e){
+            $("#poptitle").popover("hide");
+        });
+    });
+
+  
 
     var xmouse = 0;
     var ymouse = 0;
@@ -371,6 +456,73 @@ df.draggedElementsTexts = function(e) {
             // }).join(",");
             return text;
         }
+
+df.getShapeData = function(elem){
+    var diagram = $(elem).getKendoDiagram();
+    var shap = diagram.shapes;
+    var conn = diagram.connections;
+    var dtshap = [];
+    var dtconn = [];
+
+    for(var c in shap){
+        var sh = shap[c];
+        var dt ={};
+        dt["dataItem"] = sh.dataItem;
+        dt["x"] = sh.options.x;
+        dt["y"] = sh.options.y;
+        dt["id"] = sh.id;
+        dtshap.push(dt);
+    }
+
+    for(var c in conn){
+        var co = conn[c];
+        var dt ={};
+        dt["fromId"] = co.from.shape.id;
+        dt["toId"] = co.to.shape.id;
+        dtconn.push(dt);
+    }
+
+    return {shapes:dtshap,connections:dtconn}
+}
+
+df.renderDiagram = function(elem,data){
+    var diagram = $(elem).getKendoDiagram();
+    var shapes = data.shapes;
+    var conn = data.connections;
+
+    for(var c in shapes){
+        var sh = shapes[c];
+        diagram.addShape(sh);
+    }
+
+    diagram = $(elem).getKendoDiagram();
+
+    for(var c in conn){
+        var co = conn[c];
+        var shfrom = diagram.getShapeById(co.fromId);
+        var shto = diagram.getShapeById(co.toId);
+        
+        var connection = new kendo.dataviz.diagram.Connection(shfrom, shto,{
+            stroke: {
+                color: "#979797",
+                width: 1
+            },
+            type: "polyline",
+            startCap: "FilledCircle",
+            endCap: "ArrowEnd"
+        });
+
+        diagram.addConnection(connection);
+    }
+}
+
+df.clearDiagram = function(elem){
+  $(".diagram").getKendoDiagram().clear();
+}
+
+df.closePopover = function(elem){
+    $(elem).popover("hide");
+}
 
 $(function () {
     df.init();
