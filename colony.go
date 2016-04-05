@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/controller"
+	"github.com/eaciit/colony-manager/installation"
 	"github.com/eaciit/knot/knot.v1"
 	"net/http"
 	"path"
@@ -16,6 +18,8 @@ var (
 )
 
 func main() {
+	isSetupACL := *flag.Bool("setupacl", false, "")
+
 	if controller.EC_APP_PATH == "" || controller.EC_DATA_PATH == "" {
 		fmt.Println("Please set the EC_APP_PATH and EC_DATA_PATH variable")
 		return
@@ -45,6 +49,14 @@ func main() {
 	server.Register(controller.CreateSessionController(server), "")
 	server.Register(controller.CreateWidgetController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
+
+	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL {
+		if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil {
+			fmt.Println("Seems like ACL DB is not yet configured")
+		}
+
+		setup.ACL()
+	}
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		http.Redirect(r.Writer, r.Request, "/web/index", 301)
