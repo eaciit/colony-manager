@@ -82,9 +82,15 @@ BuildFileExplorer:function(elem,options){
 		$strcont = $(strcont);
 		$strcont.appendTo($ox);
 
+		$strscroller_anchor = $("<div class='scroller_anchor'></div>");
+		$strscroller_anchor.appendTo($strcont);
+
+		$strscroller = $("<div class='scroller'></div>");
+		$strscroller.appendTo($strcont);
+
 		strpreserv = "<div class='col-md-3 fb-pre'></div>";
 		$strpreserv = $(strpreserv);
-		$strpreserv.appendTo($strcont);
+		$strpreserv.appendTo($strscroller);
 
 		strserv = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label'>Server</label></div><div class='col-md-9'><input class='fb-server'></input></div></div>";
 		$strserv = $(strserv);
@@ -92,7 +98,7 @@ BuildFileExplorer:function(elem,options){
 
 		strprebtn = "<div class='col-md-6 fb-pre'></div>";
 		$strprebtn = $(strprebtn);
-		$strprebtn.appendTo($strcont);
+		$strprebtn.appendTo($strscroller);
 
 		$strcontbtn = $("<div class='col-md-12 btn-cont'></div>");
 
@@ -196,7 +202,7 @@ BuildFileExplorer:function(elem,options){
 
 		strpresearch = "<div class='col-md-3 fb-pre'></div>";
 		$strpresearch = $(strpresearch);
-		$strpresearch.appendTo($strcont);
+		$strpresearch.appendTo($strscroller);
 
 		strsearch = "<div class='col-md-12'><label class='col-md-3'>Search</label><div class='col-md-8'><input class='form-control input-sm fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-sm btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
 		$strsearch = $(strsearch);
@@ -310,7 +316,7 @@ BuildFileExplorer:function(elem,options){
 		$(elem).find(".fb-thumbview").hide();
 		methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:null});
 		methodsFB.BuildEditor(elem,options);
-		methodsFB.BuildPopUp(elem,options);
+		methodsFB.BuildPopUp(elem,options);		
 	},
 	SetUrl:function(elem,action){
 		$(elem).data("ecFileBrowser").dataSource.url = $(elem).data("ecFileBrowser").dataSource.originUrl + "/"+action.toLowerCase();
