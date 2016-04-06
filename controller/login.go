@@ -42,54 +42,102 @@ func (l *LoginController) InitialSetDatabase() error {
 	return nil
 }
 
-func GetSession(r *knot.WebContext) interface{} {
+func (l *LoginController) GetSession(r *knot.WebContext) interface{} {
+
+	r.Config.OutputType = knot.OutputJson
 	sessionId := r.Session("sessionid", "")
-	return sessionId
+
+	return helper.CreateResult(true, toolkit.M{}.Set("sessionid", sessionId), "")
 }
 
-func GetAccess(r *knot.WebContext) interface{} {
-	// sessionId := GetSession(r)
-	menu := []colonycore.Menu{}
+func (l *LoginController) GetUserName(r *knot.WebContext) interface{} {
+
+	r.Config.OutputType = knot.OutputJson
+	sessionId := r.Session("sessionid", "")
+	if toolkit.ToString(sessionId) == "" {
+		return helper.CreateResult(true, "", "Sessionid is not found")
+	}
+
+	userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
+	if err != nil {
+		return helper.CreateResult(false, "", "Get username failed")
+	}
+
+	tUser := new(acl.User)
+	err = acl.FindByID(tUser, userid)
+	if err != nil {
+		return helper.CreateResult(false, "", "Get username failed")
+	}
+
+	return helper.CreateResult(true, toolkit.M{}.Set("username", tUser.LoginID), "")
+}
+
+// func GetAccess(r *knot.WebContext) interface{} {
+// 	sessionId := GetSession(r)
+// 	menu := []colonycore.Menu{}
+// 	cursor, err := colonycore.Find(new(colonycore.Menu), nil)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+// 	cursor.Fetch(&menu, 0, false)
+// 	defer cursor.Close()
+// 	results := make([]toolkit.M, 0, 0)
+// 	if cursor.Count() > 0 {
+// 		result := toolkit.M{}
+// 		for _, m := range menu {
+// 			acces := acl.HasAccess(sessionId, acl.IDTypeSession, m.AccessId, acl.AccessRead)
+// 			if acces == true {
+// 				result, err = toolkit.ToM(m)
+// 				if err != nil {
+// 					return helper.CreateResult(false, nil, err.Error())
+// 				}
+// 				result.Set("detail", 7)
+// 				results = append(results, result)
+// 			}
+// 		}
+// 	}
+// 	return results
+// }
+
+func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	sessionId := r.Session("sessionid", "")
+
+	// if sessionId == "" {
+	// 	return helper.CreateResult(false, nil, "Sessionid not found")
+	// }
+
 	cursor, err := colonycore.Find(new(colonycore.Menu), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	err = cursor.Fetch(&menu, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
 	defer cursor.Close()
+
+	menus := []colonycore.Menu{}
 	results := make([]toolkit.M, 0, 0)
+
+	cursor.Fetch(&menus, 0, false)
+	fmt.Println("DEBUG 121, : ", menus)
 	if cursor.Count() > 0 {
-		result := toolkit.M{}
-		for _, m := range menu {
-			// acces := acl.HasAccess(sessionId, acl.IDTypeSession, m.AccessId, acl.AccessRead)
-			acces := true // temporary hardcode
-			if acces == true {
-				result, err = toolkit.ToM(m)
-				if err != nil {
-					return helper.CreateResult(false, nil, err.Error())
-				}
-				result.Set("detail", 7)
+		for _, m := range menus {
+			result := toolkit.M{}
+			acc := acl.HasAccess(toolkit.ToString(sessionId), acl.IDTypeSession, m.AccessId, acl.AccessRead)
+
+			result, err = toolkit.ToM(m)
+			if err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+			result.Set("detail", 7)
+
+			if acc {
+				results = append(results, result)
+			} else if toolkit.ToString(sessionId) == "" && m.AccessId != "COLONY.DASHBOARD" { //will be change after stable, just for devel
 				results = append(results, result)
 			}
 		}
 	}
 
-	return results
-}
-
-func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	// sessionId := GetSession(r)
-	sessionId := "ok" // temporary hardcode
-
-	if sessionId != "" {
-		results := GetAccess(r)
-		return helper.CreateResult(true, results, "Success")
-	}
-	return helper.CreateResult(false, nil, "")
+	return helper.CreateResult(true, results, "Success")
 }
 
 func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
@@ -114,15 +162,15 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, "", err.Error())
 	}
 	r.SetSession("sessionid", sessid)
-	dataAccess := GetAccess(r)
-	return helper.CreateResult(true, dataAccess, "Login Success")
+	// dataAccess := GetAccess(r)
+	return helper.CreateResult(true, toolkit.M{}.Set("status", true), "Login Success")
 
 }
 
 func (l *LoginController) Logout(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	sessionId := toolkit.ToString(GetSession(r))
-	if sessionId == "" {
+	sessionId := toolkit.ToString(r.Session("sessionid", ""))
+	if toolkit.ToString(sessionId) == "" {
 		return helper.CreateResult(true, nil, "Active sessionid not found")
 	}
 
@@ -133,8 +181,11 @@ func (l *LoginController) Logout(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, nil, toolkit.Sprintf("Error found : %v", err.Error()))
 	}
 
+	r.SetSession("sessionid", "")
+
 	return helper.CreateResult(true, nil, "Logout success")
 }
+
 func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -155,9 +206,9 @@ func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	linkstr := fmt.Sprintf("<a href='%v/web/confirmreset?userid=%v&tokenid=%v'>Reset Password</a>", toolkit.ToString(payload["baseurl"]), uname, tokenid)
+	linkstr := fmt.Sprintf("<a href='%v/web/confirmreset?1=%v&2=%v'>Click</a>", toolkit.ToString(payload["baseurl"]), uname, tokenid)
 
-	mailmsg := fmt.Sprintf("Hi, <b>%v</b>, <br/><br/> .We received to request your password, <br/><br/>", uname)
+	mailmsg := fmt.Sprintf("Hi, <br/><br/> We received a request to reset your password, <br/><br/>")
 	mailmsg = fmt.Sprintf("%vFollow the link below to set a new password : <br/><br/> %v <br/><br/>", mailmsg, linkstr)
 	mailmsg = fmt.Sprintf("%vIf you don't want to change your password, you can ignore this email <br/><br/> Thanks,</body></html>", mailmsg)
 
@@ -165,12 +216,11 @@ func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 
 	m.SetHeader("From", "admin.support@eaciit.com")
 	m.SetHeader("To", toolkit.ToString(payload["email"]))
-	m.SetHeader("To", "andri.hardiyanto@eaciit.com")
 
 	m.SetHeader("Subject", "[no-reply] Self password reset")
 	m.SetBody("text/html", mailmsg)
 
-	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "*****")
+	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "B920Support")
 	err = d.DialAndSend(m)
 
 	if err != nil {
