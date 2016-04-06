@@ -19,6 +19,52 @@ func CreatePageController(s *knot.Server) *PageController {
 	return controller
 }
 
+func (p *PageController) GetFieldsFromDS(_id string) ([]string, error) {
+	dataFetch, err := new(WidgetController).FetchDataFromDS(_id, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	var fields []string
+	for _, val := range dataFetch {
+		for field, _ := range val {
+			fields = append(fields, field)
+		}
+	}
+	return fields, nil
+}
+
+func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {
+	widgetData := toolkit.Ms{}
+	for _, _id := range ids {
+		data, err := new(WidgetController).FetchDataFromDS(_id, 0)
+		if err != nil {
+			return nil, err
+		}
+		datasourcewidget := toolkit.M{}
+		datasourcewidget.Set("Data", data)
+		widgetData = append(widgetData, datasourcewidget)
+	}
+
+	return widgetData, nil
+}
+
+func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]string{}
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data, err := p.GetFieldsFromDS(payload["_id"])
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
+
 func (p *PageController) GetDataSource(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
