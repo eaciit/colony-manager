@@ -23,10 +23,10 @@
 			</li>
 		</ol>
 		<div data-bind="visible: (br.pageVisible() == '')">
-			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: br.showSearchDataBrowser(), click: function () { showSearchDataBrowser(false); }">
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false); }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
-			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !br.showSearchDataBrowser(), click: function () { showSearchDataBrowser(true); }">
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true); }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
 			<div class="btn-group" role="group">
@@ -40,7 +40,7 @@
 		    		<span class="glyphicon glyphicon-remove"></span> Delete
 		    	</button>
 			</div>
-			<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: br.showSearchDataBrowser()">
+			<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
 				<div class="col-md-4">
 					<label class="col-md-3 filter-label no-left-padding">
 						Search

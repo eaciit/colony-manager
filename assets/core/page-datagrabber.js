@@ -55,7 +55,6 @@ dg.visibleSync2 = ko.observable('');
 dg.filterDgIntervalunit = ko.observable('');
 dg.valDataGrabberFilter = ko.observable('');
 dg.configScrapper = ko.mapping.fromJS(dg.templateConfigScrapper);
-dg.showSearchDataGrabber = ko.observable(false);
 dg.showDataGrabber = ko.observable(true);
 dg.breadcrumb = ko.observable('');
 dg.scrapperMode = ko.observable('');
@@ -414,7 +413,7 @@ dg.selectGridDataGrabber = function (e) {
 };
 dg.editScrapper = function (_id) {
 	dg.scrapperMode('edit');
-	dg.showSearchDataGrabber(false);
+	app.showfilter(false);
 	ko.mapping.fromJS(dg.templateConfigScrapper, dg.configScrapper);
 
 	app.ajaxPost("/datagrabber/selectdatagrabber", { _id: _id }, function (res) {
@@ -944,7 +943,7 @@ dg.checkDeleteDataGrabber = function(elem, e){
 }
 
 $(function () {
-	dg.showSearchDataGrabber(false);
+	app.showfilter(false);
 	dg.breadcrumb('All');
 	dg.getScrapperData();
 	dg.getDataSourceData();

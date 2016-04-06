@@ -2,6 +2,8 @@ viewModel.app = {}; var app = viewModel.app;
 
 app.section = ko.observable('');
 app.mode = ko.observable('');
+app.showfilter = ko.observable(false);
+
 app.applyNavigationActive = function () {
 	var currentURL = document.URL.split("/").slice(3).join("/");
 	var $a = $("a[href='/" + currentURL + "']");
@@ -166,6 +168,7 @@ app.fixKendoMultiSelect = function () {
 };
 app.changeActiveSection = function (section) {
     return function (self, e) {
+        app.showfilter(false);
         $(e.currentTarget).parent().siblings().removeClass("active");
         app.section(section);
         app.mode('');
@@ -193,7 +196,8 @@ app.registerSearchKeyup = function ($selector, callback) {
             callback();
         }
     });
-}
+};
+
 
 $(function () {
 	app.applyNavigationActive();

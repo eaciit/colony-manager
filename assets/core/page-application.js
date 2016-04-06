@@ -46,7 +46,6 @@ apl.filterValue = ko.observable('');
 apl.filterAplType = ko.observable('');
 apl.dataDropDown = ko.observableArray(['folder', 'file']);
 apl.configApplication = ko.mapping.fromJS(apl.templateConfigApplication);
-apl.showSearchApplication = ko.observable(false);
 apl.filter = ko.mapping.fromJS(apl.templateFilter);
 apl.applicationMode = ko.observable('');
 apl.applicationData = ko.observableArray([]);
@@ -820,6 +819,7 @@ $(function () {
 	apl.getUploadFile();
 	apl.codemirror();
 	apl.prepareTreeView();
+	app.showfilter(false);
 	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });

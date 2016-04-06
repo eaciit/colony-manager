@@ -11,7 +11,6 @@ br.templateConfigDataBrowser= {
 br.dataBrowser 	= ko.observableArray([]);
 br.dataBrowserDesc = ko.observableArray([]);
 br.dataBrowserDescColumns = ko.observableArray([]);
-br.showSearchDataBrowser = ko.observable(false);
 br.breadcrumb = ko.observable('');
 br.searchfield 	= ko.observable("");
 br.pageVisible	= ko.observable("");
@@ -130,7 +129,7 @@ br.ViewBrowserName = function(id){
 			res.data = [];
 		}
 
-		br.showSearchDataBrowser(false);
+		app.showfilter(false);
 		br.breadcrumb('View');
 		br.pageVisible("view");
 		br.onVisible("simple");
@@ -190,7 +189,7 @@ br.filterDataBrowser = function(){
 }
 
 $(function (){
-	br.showSearchDataBrowser(false);
+	app.showfilter(false);
 	br.breadcrumb('All');
 	br.getDataBrowser();
 	br.getAllbrowser();
