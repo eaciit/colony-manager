@@ -124,11 +124,6 @@ wl.previewWidget = function(_id, dataSourceId) {
 			var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
 			document.getElementById("preview").contentWindow.Render(res.data.dataSource, setting, {});
 		});
-		// $("#preview").html(res.data); 
-		// $(".modal-widget-preview").modal({
-		// 	backdrop: 'static',
-		// 	keyboard: true
-		// });
 	});
 };
 
@@ -140,11 +135,9 @@ wl.confertJsontoSetting = function(data){
 	return settingobj;
 }
 
-wl.closeModal = function() {
-	// $(".modal-widget-preview").modal("hide");
+wl.closeModal = function() {]
 	$(".modal-widget-datasource").modal("hide");
 	wl.previewMode("");
-	// wl.configWidgetList.dataSourceId([]);
 	wl.backToFront();
 };
 
