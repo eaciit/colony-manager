@@ -15,13 +15,13 @@
 	padding-top: 20px;
 }
 </style>
-
+<div data-bind="visible:df.Mode()!='Grid'">
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataflow">
 	<div class="col-md-12" data-bind="visible: (app.section() == '')">
 		<ol class="breadcrumb bc-custom">
 			<li>Data Flow Designer</li>
 			<div class="pull-right">
-				<button class="btn mgRight btn-tooltip" title="Cancel"><span class="glyphicon glyphicon-arrow-left"></span></button>
+				<button class="btn mgRight btn-tooltip" title="Cancel" onclick="df.backToGrid();"><span class="glyphicon glyphicon-arrow-left"></span></button>
 				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
 				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
 				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
@@ -206,7 +206,7 @@
 
 <div class="divTitleDF" data-bind="with:df">
 &nbsp;
-	<p class="pTitle" data-bind="text:Title"></p>
+	<p class="pTitle" data-bind="text:Name"></p>
 	<p class="pDesc" data-bind="text:Description"></p>
 </div>
 
@@ -222,6 +222,16 @@
 	</div> 
 </div> 
 </button>
+</div>
+
+
+<div class="col-md-12" data-bind="visible:df.Mode()=='Grid'">
+	<ol class="breadcrumb bc-custom">
+			<li>Data Flow</li>
+		</ol>
+		<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
+</div>
+
 <style>	
 		.popover{
 			max-width: 500px!important;

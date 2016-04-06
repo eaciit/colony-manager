@@ -71,13 +71,136 @@ viewModel.dataflow = {
         "Color" : "#FF0000"
     },
     ],
-    Title: ko.observable("Add Title"),
+    Name: ko.observable("Add Title"),
     Description: ko.observable("Add Description"),
-    DataItems:ko.observableArray([]),
-    DataShape:ko.observable({})
+    Actions:ko.observableArray([]),
+    DataShape:ko.observable({}),
+    Mode: ko.observable("Grid")
 }; 
 
+viewModel.dataFlowList = [
+{
+    Id :"S1",
+    Name:"Sample 1",
+    Description:"Sample 1 Desc",
+    CreatedDate:(new Date()).toJSON(),
+    CreatedBy:"Om Jin",
+    Actions:[],
+    DataShape:{
+               "shapes":[
+                  {
+                     "dataItem":{
+                        "name":"Spark",
+                        "image":"icon_spark.png",
+                        "color":"#F17B48"
+                     },
+                     "x":172.671875,
+                     "y":74,
+                     "id":"CP1G1NYep5"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Hive",
+                        "image":"icon_hive.png",
+                        "color":"#CEBF00"
+                     },
+                     "x":173.671875,
+                     "y":207,
+                     "id":"hCkqTIVOdg"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Map Reduce",
+                        "image":"icon_mapreduce.png",
+                        "color":"#00B3B3"
+                     },
+                     "x":595.671875,
+                     "y":207,
+                     "id":"KuLngJOuXW"
+                  }
+               ],
+               "connections":[
+                  {
+                     "fromId":"CP1G1NYep5",
+                     "toId":"hCkqTIVOdg"
+                  },
+                  {
+                     "fromId":"hCkqTIVOdg",
+                     "toId":"KuLngJOuXW"
+                  }
+               ]
+        }
+},{
+    Id :"S2",
+    Name:"Sample 2",
+    Description:"Sample 2 Desc",
+    CreatedDate:(new Date()).toJSON(),
+    CreatedBy:"Lebah Ganteng",
+    Actions:[],
+    DataShape:{
+               "shapes":[
+                  {
+                     "dataItem":{
+                        "name":"Hive",
+                        "image":"icon_hive.png",
+                        "color":"#CEBF00"
+                     },
+                     "x":276.671875,
+                     "y":97,
+                     "id":"nRFHIJMn0K"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Fork",
+                        "image":"icon_fork.png",
+                        "color":"#CF29D8"
+                     },
+                     "x":311.671875,
+                     "y":205,
+                     "id":"inBm7NAwQG"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Email",
+                        "image":"icon_email.png",
+                        "color":"#017932"
+                     },
+                     "x":266.671875,
+                     "y":333,
+                     "id":"fhINCccKdN"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Kafka",
+                        "image":"icon_kafka.png",
+                        "color":"#C1C1C1"
+                     },
+                     "x":34.671875,
+                     "y":224,
+                     "id":"B6eTbLUEBa"
+                  }
+               ],
+               "connections":[
+                  {
+                     "fromId":"nRFHIJMn0K",
+                     "toId":"inBm7NAwQG"
+                  },
+                  {
+                     "fromId":"inBm7NAwQG",
+                     "toId":"fhINCccKdN"
+                  },
+                  {
+                     "fromId":"inBm7NAwQG",
+                     "toId":"B6eTbLUEBa"
+                  }
+               ]
+            }
+    }
+];
+
 var df = viewModel.dataflow;
+var dfl = viewModel.dataFlowList;
+
 
 function visualTemplate(options) {
             var dataviz = kendo.dataviz;
@@ -137,6 +260,8 @@ function visualTemplate(options) {
 
 
 df.init = function () {
+    df.createGrid();
+
     var dataSource = new kendo.data.HierarchicalDataSource({
         data: [],
         schema: {
@@ -322,14 +447,14 @@ df.init = function () {
         $(".popover-title").html("Edit Title");
         $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
         $(".arrow").attr("style","top:46%");
-        $(".pop-txt").val(df.Title());
+        $(".pop-txt").val(df.Name());
 
         $(".poptitle-close").click(function(e){
             $("#poptitle").popover("hide");
         });
 
         $(".poptitle-save").click(function(e){
-            df.Title($(".pop-txt:visible").val());
+            df.Name($(".pop-txt:visible").val());
             $("#poptitle").popover("hide");
         });
     });
@@ -620,11 +745,47 @@ df.closePopover = function(elem){
 }
 
 df.popTitleSave = function(val){
-    df.Title = val;
+    df.Name = val;
 }
 
 df.popDescSave = function(val){
     df.Desciption = val  
+}
+
+df.createGrid = function(){
+      $("#dataFlowGrid").kendoGrid({
+        dataSource:{
+            data:dfl,
+        },
+        columns:[
+             {field:"Name",title:"Name"},
+             {field:"Description"},
+             {field:"CreatedDate",title:"Created Date" ,template:"#:moment(Date.parse(CreatedDate)).format('DD-MMM-YYYY')#"},
+             {field:"CreatedBy",title:"Created By"},
+             {template:"<button class='btn btn-primary btn-sm' onclick='df.goToDesigner(\"#:Id#\")' >design</button>"}
+        ]
+    })
+}
+
+df.goToDesigner = function(Id){
+    // alert(Id)
+    var selected = {};
+    for(var c in  dfl){
+        var sdfl = dfl[c];
+        if(sdfl.Id==Id){
+            selected = sdfl;
+            break;
+        }
+    }
+    df.Mode("Designer");
+    df.DataShape(selected.DataShape);
+    df.Name(selected.Name);
+    df.Description(selected.Description);
+    df.Reload();
+}
+
+df.backToGrid = function(){
+    df.Mode("Grid");
 }
 
 $(function () {
