@@ -122,6 +122,7 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	if cursor.Count() > 0 {
 		for _, m := range menus {
 			result := toolkit.M{}
+
 			acc := acl.HasAccess(toolkit.ToString(sessionId), acl.IDTypeSession, m.AccessId, acl.AccessRead)
 
 			result, err = toolkit.ToM(m)
@@ -129,8 +130,12 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 			result.Set("detail", 7)
-
+			result.Set("childrens", "")
 			if acc {
+				if len(m.Childrens) > 0 {
+					childs := GetChildMenu(r, m.Childrens)
+					result.Set("childrens", childs)
+				}
 				results = append(results, result)
 			} else if toolkit.ToString(sessionId) == "" && m.AccessId != "COLONY.DASHBOARD" { //will be change after stable, just for devel
 				results = append(results, result)
@@ -139,6 +144,28 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, results, "Success")
+}
+
+func GetChildMenu(r *knot.WebContext, childMenu []colonycore.Menu) interface{} {
+	sessionId := r.Session("sessionid", "")
+	results := make([]toolkit.M, 0, 0)
+	for _, m := range childMenu {
+		result := toolkit.M{}
+		acc := acl.HasAccess(toolkit.ToString(sessionId), acl.IDTypeSession, m.AccessId, acl.AccessRead)
+		result, err := toolkit.ToM(m)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if acc {
+			if len(m.Childrens) > 0 {
+				childs := GetChildMenu(r, m.Childrens)
+				result.Set("childrens", childs)
+			}
+			result.Set("detail", 7)
+			results = append(results, result)
+		}
+	}
+	return results
 }
 
 func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
