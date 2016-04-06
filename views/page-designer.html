@@ -1,5 +1,10 @@
 <!-- core -->
 <script src="/res/core/page-designer.js"></script>
+<script>
+	pg.pageID = "{{.pageID}}";
+	// pg.title = "{{.title}}";
+	// pg.href = "{{.href}}";
+</script>
 
 <div class="col-xs-6 col-sm-2" id="sidebar">
 	<div class="row">
@@ -16,12 +21,56 @@
 	<div class="col-md-12" data-bind="visible: (app.section() == 'pagedesigner')">
 		<h1>Page Designer</h1>
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-success navbar-btn">
+            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: configPage">
 	    		<span class="glyphicon glyphicon-refresh"></span> Configuration
 	    	</button>
             <button class="btn btn-sm btn-primary navbar-btn">
 	    		<span class="glyphicon glyphicon-plus"></span> Pop up Widget
 	    	</button>
 		</nav>
+
+		<nav class="navbar" data-bind="visible: (app.mode() == 'configpage')">
+			<button class="btn btn-sm btn-info navbar-btn" data-bind="click: backToConfig">
+				<span class="glyphicon glyphicon-chevron-left"></span> Back
+			</button>
+			<button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveConfig">
+				<span class="glyphicon glyphicon-save"></span> Save
+			</button>
+		</nav>
+		<div class="panel" data-bind="visible: (app.mode() == 'configpage')">
+			<div class="panel-heading">
+		        <h1 class="panel-title">
+		        	Data Source
+	        	</h1>
+		    </div>
+		    <div class="clearfix">&nbsp;</div>
+			<div class="panel-body">
+				<form class="form-horizontal form-widgetDesigner" data-bind="with: configPageDesigner" novalidate>
+			    	<div class="col-md-12">
+			    		<div class="col-md-12">
+							<!-- <label class="col-md-3 databrowser-label"></label> -->
+				    		<div class="col-md-7">
+					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSourceId }" name="datasource" id="datasource">
+					    		</select>
+					    		<span class="k-invalid-msg" data-for="datasource"></span>
+				    		</div>
+						</div>
+			    		<!-- <div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Title</label>
+				    		<div class="col-md-7">
+					    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: title">
+								<span class="k-invalid-msg" data-for="title"></span>
+				    		</div>
+			    		</div>
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">URL</label>
+				    		<div class="col-md-7">
+					    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+				    		</div>
+			    		</div> -->
+			    	</div>
+			    </form>
+			</div>
+		</div>
 	</div>
 </div>
