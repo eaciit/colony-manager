@@ -135,7 +135,7 @@ wl.confertJsontoSetting = function(data){
 	return settingobj;
 }
 
-wl.closeModal = function() {]
+wl.closeModal = function() {
 	$(".modal-widget-datasource").modal("hide");
 	wl.previewMode("");
 	wl.backToFront();
