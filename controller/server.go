@@ -579,6 +579,44 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
+func (s *ServerController) PingServer(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.Server)
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = colonycore.Get(payload, payload.ID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if payload.ServerType == "node" {
+		status, err := payload.Ping()
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		return helper.CreateResult(true, status, "")
+	} else {
+		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(payload.Host, payload.SSHPass))
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		_, err = hadeepes.List("/")
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		return helper.CreateResult(true, true, "")
+	}
+
+	return helper.CreateResult(false, nil, "")
+}
+
 func (s *ServerController) ToggleSedotanService(op string, id string) (bool, error) {
 	data := new(colonycore.Server)
 	cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", id))

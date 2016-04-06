@@ -100,6 +100,7 @@ srv.ServerColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
 		].join(" ");
 	} },
+	{ title: "Status", width: 80, attributes: { class:'status on-off' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
 	// { field: "appPath", title: "App Path" },
 	// { field: "dataPath", title: "Data Path" },
 	// { field: "enable", title: "Enable" },
@@ -656,8 +657,53 @@ srv.finishButton = function () {
 	srv.isMultiServer(true);
 };
 
+srv.ping = function () {
+	var ajaxes = [];
+
+	srv.ServerData().forEach(function (s) {
+		var $grid = $(".grid-server").data("kendoGrid");
+		var row = Lazy($grid.dataSource.data()).find({ _id: s._id });
+
+		var ajax = app.ajaxPost("/server/pingserver", { _id: s._id }, function (res) {
+			if (row != undefined) {
+				var $tr = $(".grid-server").find("tr[data-uid='" + row.uid + "']");
+
+				if (res.success) {
+					if (res.data) {
+						$tr.addClass("started");
+					} else {
+						$tr.removeClass("started");
+					}
+				} else {
+					$tr.removeClass("started");
+				}
+			}
+		}, function () {
+			if (row != undefined) {
+				var $tr = $(".grid-server").find("tr[data-uid='" + row.uid + "']");
+				$tr.removeClass("started");
+			}
+		}, { 
+			timeout: 8000, 
+			withLoader: false 
+		});
+
+		ajaxes.push(ajax);
+	});
+
+	$.when.apply(undefined, ajaxes).always(function () {
+		setTimeout(srv.ping, 10 * 1000);
+	}, function () {
+		setTimeout(srv.ping, 10 * 1000);
+	});
+};
+
 $(function () {
-    srv.getServers();
+    srv.getServers(function () {
+		setTimeout(function () {
+			srv.ping();
+		}, 1000);
+    });
 	srv.breadcrumb('All');
 	app.showfilter(false);
 	app.registerSearchKeyup($(".searchsrv"), srv.getServers);
