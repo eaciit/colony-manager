@@ -158,7 +158,7 @@ func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err := new(colonycore.Page).Save(payload, filepath.Join(EC_DATA_PATH, "widget"), true); err != nil {
+	if err := new(colonycore.Page).Save(payload, true); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
