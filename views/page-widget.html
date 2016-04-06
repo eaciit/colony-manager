@@ -32,17 +32,20 @@
 			</nav>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-body">
-		    	<div class="grid grid-widget" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { 
-					model: { 
-			    		id: 'Field', 
-		    			fields: { 
-		    				title: { editable: false }, 
-		    				description: { editable: false }
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniloader()">
+			    	<div class="grid grid-widget" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { 
+						model: { 
+				    		id: 'Field', 
+			    			fields: { 
+			    				title: { editable: false }, 
+			    				description: { editable: false }
+							} 
 						} 
-					} 
-				} }, data: wl.widgetListdata, change: wl.selectWidget,selectable: 'row', columns: wl.WidgetColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-widget') }"></div>
+					} }, data: wl.widgetListdata, change: wl.selectWidget,selectable: 'row', columns: wl.WidgetColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-widget') }"></div>
+				    <p class="bg-danger bgcustom">Please click row to edit!</p>
+			    </div>
 		    </div>
-		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">

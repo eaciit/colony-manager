@@ -104,9 +104,9 @@
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniloader()">
 		    		<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, selectable: 'multiple, row', change: apl.selectApps, columns: apl.applicationColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-application') }"></div>
+				    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		    	</div>
 		    </div>
-		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
