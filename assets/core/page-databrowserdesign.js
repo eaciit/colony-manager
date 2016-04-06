@@ -341,7 +341,7 @@ db.designDataBrowser = function(_id) {
 		
 		br.pageVisible("editor");
 		br.breadcrumb('Design');
-		br.showSearchDataBrowser(false);
+		app.showfilter(false);
 		app.mode('editor')
 		for(var i in res.data.MetaData) {
 			if (res.data.MetaData[i].Aggregate != "") {

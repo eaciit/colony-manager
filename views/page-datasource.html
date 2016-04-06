@@ -48,8 +48,8 @@ body {
 <div class="col-xs-6 col-sm-2" id="sidebar" data-bind="with: datasource">
 	<div class="row">
 		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'connection-list') }, click: app.changeActiveSection('connection-list')">Connection List<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'data-source') }, click: app.changeActiveSection('data-source')">Data Source<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'connection-list') }, click: app.changeActiveSection('connection-list');">Connection List<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'data-source') }, click: app.changeActiveSection('data-source'); app.showFilter(false);">Data Source<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -65,10 +65,10 @@ body {
 		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: ds.showSearchConnection(), click: function () { showSearchConnection(false) }">
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
-			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !ds.showSearchConnection(), click: function () { showSearchConnection(true) }">
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
 			<div class="btn-group" role="group">
@@ -84,7 +84,7 @@ body {
 			</div>
 		</nav>
 
-		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: ds.showSearchConnection()">
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
 		    <div class="col-md-4">
 		    	<label class="col-md-4 filter-label">
 		    		Search
@@ -224,10 +224,10 @@ body {
 		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: ds.showSearchDataSource(), click: function () { showSearchDataSource(false); }">
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false); }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
-			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !ds.showSearchDataSource(), click: function () { showSearchDataSource(true); }">
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true); }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
 			<div class="btn-group" role="group">
@@ -243,7 +243,7 @@ body {
 			</div>
 		</nav>
 
-		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: ds.showSearchDataSource()">
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
 		    <div class="col-md-4">
 		    	<label class="col-md-4 filter-label">
 		    		Search

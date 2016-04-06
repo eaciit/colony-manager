@@ -12,7 +12,6 @@ lang.dataLanguage = ko.observableArray([]);
 lang.langEnvData = ko.observable([]);
 lang.breadcrumb = ko.observable('');
 lang.serverlanguage = ko.observableArray([]);
-lang.showSearchLangEnv = ko.observable(false);
 
 lang.getserverlanguage = function (c){
 	var param = ko.mapping.toJS(lang.filter);
@@ -82,4 +81,5 @@ lang.setGrid = function(data){
 
 $(function () {
 	lang.getserverlanguage();
+	app.showfilter(false);
 });
