@@ -561,6 +561,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	}
 
+	data.DetectInstalledLang()
+
 	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
 	err = colonycore.Save(data)
 	if err != nil {
