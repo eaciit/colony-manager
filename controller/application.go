@@ -290,7 +290,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 
 	log.AddLog(fmt.Sprintf("Connect to server %v", server), "INFO")
-	sshSetting, sshClient, err := new(ServerController).SSHConnect(server)
+	sshSetting, sshClient, err := server.Connect()
 	defer sshClient.Close()
 
 	if server.OS == "windows" {
@@ -1079,7 +1079,7 @@ func (a *ApplicationController) RunCommand(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	setting, _, err := new(ServerController).SSHConnect(server)
+	setting, _, err := server.Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

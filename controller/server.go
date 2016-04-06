@@ -35,9 +35,7 @@ import (
 	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
-	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
-	"golang.org/x/crypto/ssh"
 )
 
 type ServerController struct {
@@ -191,7 +189,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	}
 
 	log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
-	sshSetting, client, err := s.SSHConnect(data)
+	sshSetting, client, err := data.Connect()
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
@@ -598,7 +596,7 @@ func (s *ServerController) ToggleSedotanService(op string, id string) (bool, err
 
 	data = &dataAll[0]
 
-	sshSetting, client, err := s.SSHConnect(data)
+	sshSetting, client, err := data.Connect()
 	if err != nil {
 		return false, err
 	}
@@ -692,24 +690,6 @@ func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (s *ServerController) SSHConnect(payload *colonycore.Server) (sshclient.SshSetting, *ssh.Client, error) {
-	client := sshclient.SshSetting{}
-	client.SSHHost = payload.Host
-
-	if payload.SSHType == "File" {
-		client.SSHAuthType = sshclient.SSHAuthType_Certificate
-		client.SSHKeyLocation = payload.SSHFile
-	} else {
-		client.SSHAuthType = sshclient.SSHAuthType_Password
-		client.SSHUser = payload.SSHUser
-		client.SSHPassword = payload.SSHPass
-	}
-
-	theClient, err := client.Connect()
-
-	return client, theClient, err
-}
-
 func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -738,7 +718,7 @@ func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	a, b, err := s.SSHConnect(payload)
+	a, b, err := payload.Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
