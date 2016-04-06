@@ -48,6 +48,7 @@ func main() {
 	server.Register(controller.CreateAclController(server), "")
 	server.Register(controller.CreateSessionController(server), "")
 	server.Register(controller.CreateWidgetController(server), "")
+	server.Register(controller.CreatePageController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
 
 	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL == "true" {

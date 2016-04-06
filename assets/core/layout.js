@@ -15,7 +15,7 @@ ly.varMenu = [{"id":"dasboard", "title":"Dashboard", "childrens":[], "link":"/we
 				], "link":""},
 			{"id":"widget", "title":"Widget", "childrens":[
 				{"id":"widget", "title":"Widget List", "childrens":[], "link":"/web/widget"},
-				{"id":"widgetsetting", "title":"Widget Setting", "childrens":[], "link":"/web/widgetsetting"}
+				{"id":"widgetsetting", "title":"Widget Page", "childrens":[], "link":"/web/widgetpage"}
 				], "link":""},
 			{"id":"application", "title":"Application", "childrens":[], "link":"/web/application"},
 			{"id":"process", "title":"Process", "childrens":[], "link":"/web/process"},
