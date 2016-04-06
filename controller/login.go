@@ -20,7 +20,8 @@ type LoginController struct {
 }
 
 func (l *LoginController) prepareconnection() (conn dbox.IConnection, err error) {
-	conn, err = colonycore.GetACLConnection()
+	driver, ci := new(colonycore.Login).GetACLConnectionInfo()
+	conn, err = dbox.NewConnection(driver, ci)
 	if err != nil {
 		return
 	}

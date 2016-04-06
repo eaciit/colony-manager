@@ -121,14 +121,37 @@ func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) inter
 	}
 	defer cursorLangEnc.Close()
 
-	result := []colonycore.ServerLanguage{}
+	result := []*colonycore.ServerLanguage{}
 	// result := []ServerLanguage{}
 
 	for _, each := range dataServer {
-		serverLang := colonycore.ServerLanguage{Server: each}
+		serverLang := new(colonycore.ServerLanguage)
+		serverLang.ServerID = each.ID
+		serverLang.ServerOS = each.OS
+		serverLang.ServerHost = each.Host
+		serverLang.Languages = []*colonycore.InstalledLang{}
+
+		if each.InstalledLang == nil {
+			each.InstalledLang = []*colonycore.InstalledLang{}
+		}
 
 		for _, eachLang := range dataLangEnv {
-			serverLang.Languages = append(serverLang.Languages, eachLang)
+			var lang *colonycore.InstalledLang = nil
+			for _, eachInstalledLang := range each.InstalledLang {
+				if eachInstalledLang.Lang == eachLang.Language {
+					lang = eachInstalledLang
+					break
+				}
+			}
+
+			if lang == nil {
+				lang = new(colonycore.InstalledLang)
+				lang.Lang = eachLang.Language
+				lang.Version = ""
+				lang.IsInstalled = false
+			}
+
+			serverLang.Languages = append(serverLang.Languages, lang)
 		}
 
 		result = append(result, serverLang)
@@ -148,7 +171,7 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 	}
 	serverPathSeparator := CreateApplicationController(l.Server).GetServerPathSeparator(dataServers)
 
-	sshSetting, sshClient, err := CreateServerController(l.Server).SSHConnect(dataServers)
+	sshSetting, sshClient, err := dataServers.Connect()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

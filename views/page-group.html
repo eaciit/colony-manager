@@ -38,11 +38,14 @@
 </nav>
 
 <div data-bind="visible: (app.mode() == '')">
-        <div class="gr-position">
+    <div class="gr-position">
+        {{template "_miniloader.html"}} 
+        <div data-bind="visible: !app.miniloader()">
             <!-- <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div> -->
             <div id="grid-groups"></div>
+            <p class=" bg-danger bgcustom">Please click row to edit!</p>
         </div>
-        <p class=" bg-danger bgcustom">Please click row to edit!</p>
+    </div>
 </div>
 
 <div class="panel" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')" style="width: 800px;">

@@ -85,14 +85,17 @@ BuildFileExplorer:function(elem,options){
 		$strscroller_anchor = $("<div class='scroller_anchor'></div>");
 		$strscroller_anchor.appendTo($strcont);
 
+		$strprecont  = $("<div class='col-md-12'></div>");
+		$strprecont.appendTo($strcont);
+
 		$strscroller = $("<div class='scroller'></div>");
-		$strscroller.appendTo($strcont);
+		$strscroller.appendTo($strprecont);
 
 		strpreserv = "<div class='col-md-3 fb-pre'></div>";
 		$strpreserv = $(strpreserv);
 		$strpreserv.appendTo($strscroller);
 
-		strserv = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label'>Server</label></div><div class='col-md-9'><input class='fb-server'></input></div></div>";
+		strserv = "<div class='col-md-12'><label class='col-md-4 label-title'>Server</label><div class='col-md-8'><input class='fb-server'></input></div></div>";
 		$strserv = $(strserv);
 		$strserv.appendTo($strpreserv);
 
@@ -204,8 +207,8 @@ BuildFileExplorer:function(elem,options){
 		$strpresearch = $(strpresearch);
 		$strpresearch.appendTo($strscroller);
 
-		strsearch = "<div class='col-md-12'><label class='col-md-3'>Search</label><div class='col-md-8'><input class='form-control input-sm fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-sm btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
-		$strsearch = $(strsearch);
+		strsearch = "<div class='col-md-12'><label class='col-md-3 label-title'>Search</label><div class='col-md-8'><input class='form-control input-sm fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-sm btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
+		$strsearch = $(strsearch); 
 		$strsearch.appendTo($strpresearch);
 
 		$($strsearch.find("button")).click(function(){
@@ -802,6 +805,7 @@ BuildFileExplorer:function(elem,options){
 			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
             $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
+			methodsFB.ThumbnailView(elem, options,{serverId: $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value(), path:null});
 			return;
 		}else if(content.action=="Download"){
 			content.path = SelectedPath;
