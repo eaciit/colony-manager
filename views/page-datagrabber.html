@@ -23,10 +23,10 @@
 		</ol>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: dg.showSearchDataGrabber(), click: showSearchDataGrabber(false)">
+			<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: dg.showSearchDataGrabber(), click: function () { showSearchDataGrabber(false) }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
-			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !dg.showSearchDataGrabber(), click: showSearchDataGrabber(true)">
+			<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !dg.showSearchDataGrabber(), click: function () { showSearchDataGrabber(true) }">
 	    		<span class="glyphicon glyphicon-search"></span>					
 			</button>
 			<div class="btn-group" role="group">
@@ -66,9 +66,12 @@
 
 		<div class="" data-bind="visible: (app.mode() == '')">
 		    <div class="pdCustom">
-		    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
+				{{template "_miniloader.html"}}	
+				<div data-bind="visible: !app.miniloader()">
+			    	<div class="grid grid-data-grabber grid-service" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: dg.scrapperData,  selectable: 'multiple, row', change: dg.selectGridDataGrabber, columns: dg.scrapperColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-data-grabber') }"></div>
+			    	<p class="bg-danger bgcustom">Please click row to edit!</p>
+		    	</div>
 		    </div>
-		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
