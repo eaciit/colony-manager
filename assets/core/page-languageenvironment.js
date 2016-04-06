@@ -2,123 +2,84 @@ app.section('languageEnviroment');
 
 viewModel.languageEnviroment = {}; var lang = viewModel.languageEnviroment;
 
-lang.filterLangEnvTemplate = {
+lang.templateFilter = {
 	search: "",
-	serverOS: "",
-	serverType: "node",
-	sshType: "",
-}
+	os: "",
+};
 
-lang.langEnvColumns = ko.observableArray([ 
-	{field : "_id", title : "Server ID"},
-	{field : "os", title : "Server OS"},
-	{field : "host", title : "Host"},
-]);
-
+lang.filter = ko.mapping.fromJS(lang.templateFilter);
 lang.dataLanguage = ko.observableArray([]);
-lang.filterLangEnv = ko.mapping.fromJS(lang.filterLangEnvTemplate);
 lang.langEnvData = ko.observable([]);
 lang.breadcrumb = ko.observable('');
+lang.serverlanguage = ko.observableArray([]);
+lang.showSearchLangEnv = ko.observable(false);
 
-lang.getLangEnv = function (c){
-	lang.langEnvData([]);
-	var param = ko.mapping.toJS(lang.filterLangEnv);
-	app.ajaxPost("/server/getservers",param, function (res) {
-		if (!app.isFine(res)) {
-			return;
+lang.getserverlanguage = function (c){
+	var param = ko.mapping.toJS(lang.filter);
+	var data;
+	app.ajaxPost("/langenvironment/getserverlanguage",{}, function (res){
+		if (!app.isFine(res)){
+			return
 		}
-		if (res.data==null){
+		if (res.data == null){
 			res.data = [];
 		}
-		lang.langEnvData(res.data);
-		/*var grid = $(".grid-LangEnv").data("kendoGrid");
-		$(grid.tbody).on("mouseenter", "tr", function (e) {
-	    $(this).addClass("k-state-hover");
-		});
-		$(grid.tbody).on("mouseleave", "tr", function (e) {
-		    $(this).removeClass("k-state-hover");
-		});*/
-
-		if (typeof c == "function") {
-			c(res);
+		lang.dataLanguage(res.data)
+		if (param.search != '' || param.os != ''){
+			if (param.search != ''){
+				data = Lazy(lang.dataLanguage()).find({ _id:param.search })
+				lang.setGrid(data)
+			}
+			if (param.os != ''){
+				data = Lazy(lang.dataLanguage()).find({ _id:param.os })
+				lang.setGrid(data)
+			}	
+		}else {
+			lang.setGrid(lang.dataLanguage())	
 		}
-	});
+	});	
 }
 
-lang.getLanguage = function(c){
-	app.ajaxPost("/langenvironment/getlanguage",{}, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		if (res.data==null){
-			res.data = [];
-		}
-		lang.dataLanguage(res.data);
-		lang.tableLangEnvi(lang.dataLanguage(res.data));
-
-		if (typeof c == "function") {
-			c(res);
-		}
-	});
-}
-
-lang.datastatic = ko.observableArray([  
-	{field : "_id", title : "Server ID"},
-	{field : 'os', title : 'Server OS'},
-	{field : "host", title : "Host"},
-	]);
-
-lang.datadinamis = ko.observableArray([
-	{field: "go", headerTemplate:"<center>Go</center> ", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
-	}},
-	{field: "java", headerTemplate:"<center>Java</center>", width:"100px", attributes : {style: "text-align:center"}, template: function (d){
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
-	}},
-	{field: "scala", headerTemplate:"<center>Scala</center>",width:"100px", attributes : {style: "text-align:center"}, template: function (d){
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick=""><span class="fa fa-cog"></span></button>';
-	}}
-	]);
-
-lang.tableLangEnvi = function (data){
-	$('.table-langEnvi').replaceWith('<table class="table table-bordered table-langEnvi"></table>');
-	var $table = $('.table-langEnvi');
-	var index = 1; 
-
-	var header = [
-		'<thead>',
-			'<tr>',
-				'<th>Server ID</th>',
-				'<th>Server OS</th>',
-				'<th>Host</th>',
-			'</tr>',
-		'</thead>'
+lang.setGrid = function(data){
+	if (data == undefined ){
+		return
+	}
+	var columnGrid = [
+		{field : "_id", title : "Server ID"},
+		{field : 'os', title : 'Server OS'},
+		{field : "host", title : "Host"},
 	];
 
-	for (var i in lang.dataLanguage()){
-		header.splice((5+i), 0, "<th><center>"+lang.dataLanguage()[i].language+"</center></th>");
-	}
-	header.join('');
-	$table.append(header);
+	var dataGrid = [];
+	data.forEach(function(d, i){
+		var each = {
+			_id:d._id,
+			os:d.os,
+			host:d.host
+		}
+		d.Languages.forEach(function(e){
+			each[e.language] = e.language;
+			if (i == 0){
+				columnGrid.push({
+					width:"100px",
+					title:"<center>"+e.language+"</center>",
+					template: function (f){
+					return '<center><button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Setup" onclick="" language ="'+e.language+'" ><span class="fa fa-cog"></span></button></center>'
+					}
+				});
+			}
+		});
+		dataGrid.push(each)
+	});
 
-	lang.langEnvData().forEach(function (item){
-	var contentTable = [	
-		'<tr>',
-			'<td>'+item._id+'</td>',
-			'<td>'+item.os+'</td>',
-			'<td>'+item.host+'</td>',
-		'</tr>'
-		];
-	for (var j in lang.dataLanguage()){
-		contentTable.splice((4+j), 0,"<td><center><button class='btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered' title='Setup' onclick=''><span class='fa fa-cog'></span></button></center></td>");
-	}
-	contentTable.join('');
-	$table.append(contentTable); 
+	$('.grid-langEnvi').kendoGrid({
+		dataSource: {data:dataGrid, pageSize:15},
+		columns:columnGrid,
+		pageable: true,
+		filterfable: false,
 	});
 }
 
 $(function () {
-	lang.getLangEnv();
-	lang.getLanguage();
-	lang.tableLangEnvi();
+	lang.getserverlanguage();
 });
