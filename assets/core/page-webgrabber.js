@@ -21,7 +21,6 @@ wg.requestType = ko.observable();
 wg.sourceType = ko.observable();
 wg.connectionListData = ko.observableArray([]);
 wg.collectionInput = ko.observable();
-wg.showSearchWebGrabber = ko.observable(false);
 wg.showWebGrabber = ko.observable(true);
 wg.breadcrumb = ko.observable('');
 wg.tempCheckIdWebGrabber = ko.observableArray([]);
@@ -337,7 +336,7 @@ wg.toggleDaemon = function (to) {
 };
 wg.editScrapper = function (_id) {
 	app.miniloader(true);
-	wg.showSearchWebGrabber(false);
+	app.showfilter(false);
 	wg.scrapperMode('edit');
 	ko.mapping.fromJS(wg.templateConfigScrapper, wg.configScrapper);
 
@@ -471,7 +470,7 @@ wg.getScrapperData = function () {
 };
 wg.createNewScrapper = function () {
 	wg.breadcrumb('Create New');
-	wg.showSearchWebGrabber(false);
+	app.showfilter(false);
 	app.mode("editor");
 	ko.mapping.fromJS(wg.templateConfigSelector, wg.configScrapper);
 	ko.mapping.fromJS(wg.templateCron, wg.configCron);
@@ -1356,7 +1355,7 @@ wg.isJson = function(str) {
 }
 $(function () {
 	wg.breadcrumb('All');
-	wg.showSearchWebGrabber(false);
+	app.showfilter(false);
 	wg.getConnection();
 	wg.getScrapperData();
 	app.registerSearchKeyup($(".search"), wg.getScrapperData);

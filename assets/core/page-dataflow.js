@@ -201,6 +201,8 @@ viewModel.dataFlowList = [
 var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 
+df.popoverMode = ko.observable('');
+
 
 function visualTemplate(options) {
             var dataviz = kendo.dataviz;
@@ -309,14 +311,13 @@ df.init = function () {
         },
         autoBind: true,
         click:function(e){
-            console.log(e);
-            console.log(this);
+            // console.log(e);
+            // console.log(this);
             var diagram = kendo.dataviz.diagram;
             var Shape = diagram.Shape;
             var item = e.item;
 
             if(item instanceof Shape){
-
                 //double click checking
                   clickonshape++;
                   if (clickonshape == 1) {
@@ -325,79 +326,40 @@ df.init = function () {
                       if(clickonshape == 2) {
                         df.closePopover("#poptitle");
                         $("#popbtn").popover("show");
+                        setTimeout(function () {
+                            ko.cleanNode($(".popover-content:last")[0]);
+                            ko.applyBindings(viewModel, $(".popover-content:last")[0]);
+                        }, 10);
                         $(".popover-title").html(item.dataItem.name);
                         $(".arrow").attr("style","left:30px");
                         if (item.dataItem.name == "Spark") {
                             $(".popover").attr("style","display: block; top: " +(ymouse-220)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").removeClass("hide");
-                            $(".popover-content #hdfs").addClass("hide");
-                            $(".popover-content #hive").addClass("hide");
-                            $(".popover-content #shell").addClass("hide");
-                            $(".popover-content #mapreduce").addClass("hide");
-                            $(".popover-content #java").addClass("hide");
-                            $(".popover-content #email").addClass("hide");
+                            df.popoverMode('spark');
                         }else if(item.dataItem.name == "HDFS"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").addClass("hide");
-                            $(".popover-content #hdfs").removeClass("hide");
-                            $(".popover-content #hive").addClass("hide");
-                            $(".popover-content #shell").addClass("hide");
-                            $(".popover-content #mapreduce").addClass("hide");
-                            $(".popover-content #java").addClass("hide");
-                            $(".popover-content #email").addClass("hide");
+                            df.popoverMode('hdfs');                            
                         }else if(item.dataItem.name == "Hive"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").addClass("hide");
-                            $(".popover-content #hdfs").addClass("hide");
-                            $(".popover-content #hive").removeClass("hide");
-                            $(".popover-content #shell").addClass("hide");
-                            $(".popover-content #mapreduce").addClass("hide");
-                            $(".popover-content #java").addClass("hide");
-                            $(".popover-content #email").addClass("hide");
+                            df.popoverMode('hive');
                         }else if(item.dataItem.name == "Shell Script"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").addClass("hide");
-                            $(".popover-content #hdfs").addClass("hide");
-                            $(".popover-content #hive").addClass("hide");
-                            $(".popover-content #shell").removeClass("hide");
-                            $(".popover-content #mapreduce").addClass("hide");
-                            $(".popover-content #java").addClass("hide");
-                            $(".popover-content #email").addClass("hide");
+                            df.popoverMode('shell');
                         }else if(item.dataItem.name == "Map Reduce"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").addClass("hide");
-                            $(".popover-content #hdfs").addClass("hide");
-                            $(".popover-content #hive").addClass("hide");
-                            $(".popover-content #shell").addClass("hide");
-                            $(".popover-content #mapreduce").removeClass("hide");
-                            $(".popover-content #java").addClass("hide");
-                            $(".popover-content #email").addClass("hide");
+                            df.popoverMode('mapreduce');
                         }else if(item.dataItem.name == "Java App"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").addClass("hide");
-                            $(".popover-content #hdfs").addClass("hide");
-                            $(".popover-content #hive").addClass("hide");
-                            $(".popover-content #shell").addClass("hide");
-                            $(".popover-content #mapreduce").addClass("hide");
-                            $(".popover-content #java").removeClass("hide");
-                            $(".popover-content #email").addClass("hide");
+                            df.popoverMode('java');
                         }else if(item.dataItem.name == "Email"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                            $(".popover-content #spark").addClass("hide");
-                            $(".popover-content #hdfs").addClass("hide");
-                            $(".popover-content #hive").addClass("hide");
-                            $(".popover-content #shell").addClass("hide");
-                            $(".popover-content #mapreduce").addClass("hide");
-                            $(".popover-content #java").addClass("hide");
-                            $(".popover-content #email").removeClass("hide");
+                            df.popoverMode('email');
                         };
 
                       }
                       clickonshape = 0;
                     }, 300);
 
-                  }  
-              
+                }
             }
         },
         dragEnd: df.onDragEnd,
@@ -429,9 +391,7 @@ df.init = function () {
     $("#popbtn").popover({
         html : true,
         placement : 'top',
-        content: function() {
-          return $(".popover-content").html();
-        }        
+        content: $("#popover-content-template").html()        
     });
 
     $("#poptitle").popover({
@@ -485,7 +445,7 @@ df.init = function () {
     var ymouse = 0;
 
     $("#sortable-All").kendoSortable({
-                        hint: function(element) {
+                         hint: function(element) {
                             return element.clone().addClass("hint");
                         },
                         placeholder: function(element) {
@@ -557,7 +517,6 @@ df.checkConnection = function(elem){
         if(sh.dataItem.name !="Fork" ){
             df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
             if(df.counts[sh.id+"-"] >1){
-                console.log(df.counts)
                 diagram.remove(co);
                 continue;
             }
@@ -566,14 +525,12 @@ df.checkConnection = function(elem){
         if(shto.dataItem.name !="Fork"){
             df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
              if(df.counts["-"+shto.id] >1){
-                console.log(df.counts)
                 diagram.remove(co);
                 continue;
             }
         }
 
         if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
-            console.log(df.counts)
             diagram.remove(co);
         }
     }

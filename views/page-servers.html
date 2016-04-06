@@ -12,10 +12,10 @@
 </ol>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-	<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: srv.showSearchServer(), click: function () { showSearchServer(false); }">
+	<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false); }">
 		<span class="glyphicon glyphicon-search"></span>					
 	</button>
-	<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !srv.showSearchServer(), click: function () { showSearchServer(true); }">
+	<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true); }">
 		<span class="glyphicon glyphicon-search"></span>					
 	</button>
 	<div class="btn-group" role="group">
@@ -34,7 +34,7 @@
 	</div>
 </nav>
 
-<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: srv.showSearchServer()">
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
 	<div class="col-md-4">
 		<div class="form-group">
 			<label class="col-md-4 filter-label no-left-padding">
