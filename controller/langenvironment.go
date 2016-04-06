@@ -66,7 +66,7 @@ func CreateLangenvironmentController(l *knot.Server) *LangenvironmentController 
 
 func (l *LangenvironmentController) GetSampleDataForSetupLang() colonycore.LanguageEnvironmentPayload {
 	// s := `[{ "ServerId": "vagrant-test1", "Lang": [ "go" ] }, { "ServerId": "vagrant-test2", "Lang": [ "go", "java" ] }]`
-	s := `{ "ServerId": "test", "Lang": "java" }`
+	s := `{ "ServerId": "test", "Lang": "go" }`
 
 	r := colonycore.LanguageEnvironmentPayload{}
 	err := json.Unmarshal([]byte(s), &r)
@@ -163,9 +163,7 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 	defer cursor.Close()
 	fmt.Println(dataLanguage)
 	if cursor.Count() > 0 {
-		fmt.Println("dsds")
 		for _, eachLang := range dataLanguage {
-			fmt.Println(" :: ", eachLang.Installer)
 			for _, dataInstaller := range eachLang.Installer {
 				var sourcePath string
 				var destinationPath string
@@ -174,7 +172,6 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 				var installShPath string
 
 				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
-					fmt.Println("data servers : ", leSourcePath)
 					if eachLang.Language == LANG_GO {
 						// pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_GO}
 						pathstring = append(pathstring, LANG_GO)
@@ -219,14 +216,14 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 					}
 
 					// // sh install.sh installFilePath DESTINSTALL_PATH projectpath
-					cmdShCli := fmt.Sprintf("bash %s %s %s %s", installShdestPath, installFilePath, DESTINSTALL_PATH, "goproject")
+					cmdShCli := fmt.Sprintf("bash %s %s %s", installShdestPath, installFilePath, DESTINSTALL_PATH)
 					// fmt.Println("sh command :: ", cmdShCli)
-					outputCmd, err := sshSetting.GetOutputCommandSsh(cmdShCli)
+					_, err := sshSetting.GetOutputCommandSsh(cmdShCli)
 					if err != nil {
 						return helper.CreateResult(false, nil, err.Error())
 					}
 
-					fmt.Println(" --- > ", outputCmd)
+					// fmt.Println(" --- > ", outputCmd)
 				}
 			}
 		}
