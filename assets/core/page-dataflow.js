@@ -70,11 +70,16 @@ viewModel.dataflow = {
         "Type"  : "Action",
         "Color" : "#FF0000"
     },
-    ]
+    ],
+    Title: ko.observable("Add Title"),
+    Description: ko.observable("Add Description"),
+    DataItems:ko.observableArray([]),
+    DataShape:ko.observable({})
 }; 
+
 var df = viewModel.dataflow;
 
- function visualTemplate(options) {
+function visualTemplate(options) {
             var dataviz = kendo.dataviz;
             var g = new dataviz.diagram.Group();
             var dataItem = options.dataItem;
@@ -193,7 +198,7 @@ df.init = function () {
 
                     setTimeout(function(){
                       if(clickonshape == 2) {
-
+                        df.closePopover("#poptitle");
                         $("#popbtn").popover("show");
                         $(".popover-title").html(item.dataItem.name);
                         $(".arrow").attr("style","left:30px");
@@ -317,12 +322,14 @@ df.init = function () {
         $(".popover-title").html("Edit Title");
         $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
         $(".arrow").attr("style","top:46%");
+        $(".pop-txt").val(df.Title());
 
         $(".poptitle-close").click(function(e){
             $("#poptitle").popover("hide");
         });
 
         $(".poptitle-save").click(function(e){
+            df.Title($(".pop-txt:visible").val());
             $("#poptitle").popover("hide");
         });
     });
@@ -334,12 +341,15 @@ df.init = function () {
         $(".popover-title").html("Edit Desciption");
         $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
         $(".arrow").attr("style","top:46%");
+        $(".pop-txt").val(df.Description());
+   
 
         $(".poptitle-close").click(function(e){
             $("#poptitle").popover("hide");
         });
 
         $(".poptitle-save").click(function(e){
+            df.Description($(".pop-txt:visible").val());
             $("#poptitle").popover("hide");
         });
     });
@@ -401,7 +411,9 @@ df.checkConnection = function(elem){
     //delete connection with one shape
     for(var c in conn){
         var co = conn[c];
-        if(co.from == null || co.to == null ||  co.from.shape ==undefined || co.to.shape == undefined){
+        var sh = co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to.shape == undefined ?co.to:co.to.shape;
+        if(co.from == null || co.to == null ||  sh ==undefined || shto == undefined){
             diagram.remove(co);
         }
     }
@@ -412,14 +424,15 @@ df.checkConnection = function(elem){
     //delete invalid connection
     for(var c in conn){
         var co = conn[c];
-        var sh = co.from.shape;
-        var shto = co.to.shape;
+        var sh = co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to.shape == undefined ?co.to:co.to.shape;
             df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
             df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
 
         if(sh.dataItem.name !="Fork" ){
             df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
             if(df.counts[sh.id+"-"] >1){
+                console.log(df.counts)
                 diagram.remove(co);
                 continue;
             }
@@ -428,12 +441,14 @@ df.checkConnection = function(elem){
         if(shto.dataItem.name !="Fork"){
             df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
              if(df.counts["-"+shto.id] >1){
+                console.log(df.counts)
                 diagram.remove(co);
                 continue;
             }
         }
 
         if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
+            console.log(df.counts)
             diagram.remove(co);
         }
     }
@@ -447,8 +462,8 @@ df.checkFlow = function(elem){
 
     for(var c in conn){
         var co = conn[c];
-        var sh = co.from.shape;
-        var shto = co.to.shape;
+        var sh = co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to.shape == undefined ?co.to:co.to.shape;
 
         if(sh.dataItem.name !="Fork" ){
             df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
@@ -488,9 +503,12 @@ df.checkFlow = function(elem){
 
     if(startfinish==0){
         alert("Infinite Flow !");
+        return  false;
     }else if(noconnshape>0){
         alert("Invalid Flow !")
+        return  false;
     }
+    return  true;
 }
 
 df.onDragEnd = function(e){
@@ -517,9 +535,6 @@ df.draggedElementsTexts = function(e) {
                 text = "connections";
                 elements = e.connections;
             }
-            // text += $.map(elements, function (element) {
-            //     return elementText(element);
-            // }).join(",");
             return text;
         }
 
@@ -543,8 +558,8 @@ df.getShapeData = function(elem){
     for(var c in conn){
         var co = conn[c];
         var dt ={};
-        dt["fromId"] = co.from.shape.id;
-        dt["toId"] = co.to.shape.id;
+        dt["fromId"] = co.from.shape == undefined ? co.from.id : co.from.shape.id;
+        dt["toId"] = co.to.shape == undefined ?co.to.id : co.to.shape.id;
         dtconn.push(dt);
     }
 
@@ -582,12 +597,34 @@ df.renderDiagram = function(elem,data){
     }
 }
 
-df.clearDiagram = function(elem){
-  $(".diagram").getKendoDiagram().clear();
+df.Reload = function(){
+    df.clearDiagram();  
+    df.renderDiagram(".diagram",df.DataShape());
+}
+
+df.Save = function(){
+    var ch = df.checkFlow(".diagram");
+    if(ch){
+        df.DataShape(df.getShapeData(".diagram"));
+    }    
+}
+
+df.clearDiagram = function(){
+    df.closePopover("#popbtn");
+    df.closePopover("#poptitle");
+    $(".diagram").getKendoDiagram().clear();
 }
 
 df.closePopover = function(elem){
     $(elem).popover("hide");
+}
+
+df.popTitleSave = function(val){
+    df.Title = val;
+}
+
+df.popDescSave = function(val){
+    df.Desciption = val  
 }
 
 $(function () {
