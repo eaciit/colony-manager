@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 )
 
 type WebController struct {
@@ -156,4 +157,14 @@ func (w *WebController) WidgetPage(r *knot.WebContext) interface{} {
 	r.Config.ViewName = "views/page-widgetpage.html"
 
 	return true
+}
+
+func (w *WebController) WidgetDesigner(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = "views/page-designer.html"
+	payload := map[string]string{}
+
+	return toolkit.M{"href": "/widgetdesigner", "pageID": payload["id"]}
 }
