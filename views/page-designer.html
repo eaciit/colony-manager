@@ -1,0 +1,27 @@
+<!-- core -->
+<script src="/res/core/page-designer.js"></script>
+
+<div class="col-xs-6 col-sm-2" id="sidebar">
+	<div class="row">
+		<ul class="nav">
+			<li><a href="#">Widget 1<span class="fa-pull-right"></span></a></li>
+			<li><a href="#">Widget 2<span class="fa-pull-right"></span></a></li>
+			<li><a href="#">Widget 3<span class="fa-pull-right"></span></a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- main area -->
+<div class="col-xs-12 col-sm-10" id="content" data-bind="with: PageDesigner">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'pagedesigner')">
+		<h1>Page Designer</h1>
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+            <button class="btn btn-sm btn-success navbar-btn">
+	    		<span class="glyphicon glyphicon-refresh"></span> Configuration
+	    	</button>
+            <button class="btn btn-sm btn-primary navbar-btn">
+	    		<span class="glyphicon glyphicon-plus"></span> Pop up Widget
+	    	</button>
+		</nav>
+	</div>
+</div>
