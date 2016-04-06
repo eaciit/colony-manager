@@ -799,6 +799,43 @@ body
 		border: 1px solid whitesmoke
 		min-height: 500px
 
+.k-grid
+	tr
+		td
+			&.status
+				background-color: #D9534F
+				position: relative
+
+				span:after
+					position: absolute
+					top: 10px
+					right: 0
+					bottom: 0
+					left: 0
+					text-align: center
+					color: white
+
+				&.start-stop
+					span:after
+						content: "STOPPED"
+
+				&.on-off
+					span:after
+						content: "OFF"
+
+		&.started
+			td
+				&.status
+					background-color: #5CB85C
+
+					&.start-stop
+						span:after
+							content: "STARTED"
+
+					&.on-off
+						span:after
+							content: "ON"
+
 .loader-container
 	position: relative
 	width: 100%
