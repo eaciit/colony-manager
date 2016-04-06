@@ -51,15 +51,25 @@ func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {
 
 func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	var err error
 
-	payload := map[string]string{}
+	type DSMap struct {
+		ID     string   `json:"_id"`
+		Fields []string `json:"fields"`
+	}
+	payload := []map[string]string{}
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	data, err := p.GetFieldsFromDS(payload["_id"])
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	var data = []DSMap{}
+	var _data = DSMap{}
+	for _, ds := range payload {
+		_data.ID = ds["dsWidget"]
+		_data.Fields, err = p.GetFieldsFromDS(ds["dsColony"])
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		data = append(data, _data)
 	}
 
 	return helper.CreateResult(true, data, "")
@@ -79,12 +89,11 @@ func (p *PageController) GetDataSource(r *knot.WebContext) interface{} {
 func (p *PageController) GetPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
+	payload := map[string]string{}
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	search := payload["search"].(string)
-	data, err := new(colonycore.Page).Get(search)
+	data, err := new(colonycore.MapPage).Get(payload["search"])
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -94,49 +103,23 @@ func (p *PageController) GetPage(r *knot.WebContext) interface{} {
 func (p *PageController) SavePage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	page := new(colonycore.Page)
-	err := r.GetPayload(&page)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	if err := page.Save(); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, page, "")
-}
-
-func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	page := new(colonycore.Page)
 	payload := map[string]interface{}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	page.ID = payload["_id"].(string)
-	page.DataSources = payload["dataSources"].([]string)
-	page.ParentMenu = payload["parentMenu"].(string)
-	page.Widget = payload["widget"].([]*colonycore.WidgetPage)
-	page.Title = payload["title"].(string)
-	page.URL = payload["url"].(string)
-	page.ThemeColor = payload["themeColor"].(string)
 
-	page.SendFiles(EC_DATA_PATH, payload["serverId"].(string))
-
-	if err := page.Save(); err != nil {
+	if err := new(colonycore.MapPage).Save(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, page, "")
+	return helper.CreateResult(true, payload, "")
 }
 
 func (p *PageController) EditPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	data := colonycore.Page{}
+	data := colonycore.MapPage{}
 	if err := r.GetPayload(&data); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -154,18 +137,32 @@ func (p *PageController) RemovePage(r *knot.WebContext) interface{} {
 	if err := r.GetPayload(&payload); !helper.HandleError(err) {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
 	idArray := payload["_id"].([]interface{})
 
 	for _, id := range idArray {
-		o := new(colonycore.Page)
+		o := new(colonycore.MapPage)
 		o.ID = id.(string)
-		if err := o.Delete(); err != nil {
+		if err := o.Delete(filepath.Join(EC_APP_PATH, "config", "pages")); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}
 
 	return helper.CreateResult(true, nil, "")
+}
+
+func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if err := new(colonycore.Page).Save(payload, filepath.Join(EC_DATA_PATH, "widget"), true); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, payload, "")
 }
 
 func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
