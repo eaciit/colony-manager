@@ -78,7 +78,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 
 		if server.ServerType == SERVER_NODE {
 			if payload.Search != "" {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
@@ -135,7 +135,7 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				result = append(result, appFolder)
 				result = append(result, dataFolder)
 			} else {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
@@ -284,7 +284,7 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 		if payload.Path != "" {
 			path := payload.Path
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -327,7 +327,7 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 	if server.RecordID() != nil {
 		if payload.Path != "" && payload.Contents != "" && payload.Permission != "" {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -370,7 +370,7 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 	if server.RecordID() != nil {
 		if payload.Path != "" {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -430,7 +430,7 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 	if server.RecordID() != nil {
 		if payload.Path != "" {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -470,7 +470,7 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 	if server.RecordID() != nil {
 		if payload.Path != "" {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -513,7 +513,7 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 	if server.RecordID() != nil {
 		if payload.Path != "" && payload.Permission != "" {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
@@ -612,7 +612,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 		if payload.Path != "" && payload.File != nil {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
@@ -670,7 +670,7 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 	if server.RecordID() != nil {
 		if payload.Path != "" {
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
@@ -724,7 +724,7 @@ func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
 			newPath := payload.Path[:strings.LastIndex(payload.Path, DELIMITER)+1] + payload.NewName
 
 			if server.ServerType == SERVER_NODE {
-				setting, err := sshConnect(&server)
+				setting, _, err := (&server).Connect()
 
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
@@ -787,24 +787,6 @@ func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload
 	}
 
 	return
-}
-
-func sshConnect(payload *colonycore.Server) (sshclient.SshSetting, error) {
-	client := sshclient.SshSetting{}
-	client.SSHHost = payload.Host
-
-	if payload.SSHType == "File" {
-		client.SSHAuthType = sshclient.SSHAuthType_Certificate
-		client.SSHKeyLocation = payload.SSHFile
-	} else {
-		client.SSHAuthType = sshclient.SSHAuthType_Password
-		client.SSHUser = payload.SSHUser
-		client.SSHPassword = payload.SSHPass
-	}
-
-	_, err := client.Connect()
-
-	return client, err
 }
 
 func setHDFSConnection(Server, User string) *WebHdfs {

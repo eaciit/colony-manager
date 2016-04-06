@@ -828,14 +828,14 @@ func (w *WebGrabberController) GetFetchedData(r *knot.WebContext) interface{} {
 	}
 	SshClient := *client
 
-	payload.RecFile = strings.Replace(payload.RecFile,EC_DATA_PATH,server.DataPath,-1)
+	payload.RecFile = strings.Replace(payload.RecFile, EC_DATA_PATH, server.DataPath, -1)
 
 	apppath := ""
 	if server.OS == "linux" {
 		apppath = server.AppPath + `/cli/sedotanread`
 		arrcmd = append(arrcmd, apppath)
 		arrcmd = append(arrcmd, `-readtype="rechistory"`)
-		arrcmd = append(arrcmd, `-pathfile="`+strings.Replace(payload.RecFile,`\`,`/`,-1)+`"`)
+		arrcmd = append(arrcmd, `-pathfile="`+strings.Replace(payload.RecFile, `\`, `/`, -1)+`"`)
 	} else {
 		apppath = server.AppPath + `\bin\sedotanread.exe`
 		arrcmd = append(arrcmd, apppath)
@@ -1005,7 +1005,6 @@ func (w *WebGrabberController) RemoveMultipleWebGrabber(r *knot.WebContext) inte
 
 func (d *WebGrabberController) SyncConfig() error {
 	all := []colonycore.Server{}
-	serverC := &ServerController{}
 	configName := fmt.Sprintf("%s.json", new(colonycore.WebGrabber).TableName())
 	srcOriginal := f.Join(EC_APP_PATH, "config", configName)
 
@@ -1047,7 +1046,7 @@ func (d *WebGrabberController) SyncConfig() error {
 	errs := []error{}
 
 	for _, each := range all {
-		setting, _, err := serverC.SSHConnect(&each)
+		setting, _, err := (&each).Connect()
 		if err != nil {
 			errs = append(errs, err)
 			continue
