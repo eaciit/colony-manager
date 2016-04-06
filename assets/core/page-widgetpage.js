@@ -29,10 +29,62 @@ wp.PageColumns = ko.observableArray([
 ]);
 
 wp.selectPage = function(){
-
+	app.wrapGridSelect(".grid-page", ".btn", function (d) {
+		wp.editPage(d._id, "editor");
+	});
+};
+wp.editPage = function(_id){
+	ko.mapping.fromJS(wp.pageListConfig, wp.configPageList);
+	app.ajaxPost("/page/editpage", {_id: _id}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		app.mode("editor");
+		wp.scrapperMode("editor");
+		ko.mapping.fromJS(res.data, wp.configPageList);
+	});
 };
 wp.removePage = function(){
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false) {
+		swal({
+		title: "",
+		text: 'You havent choose any widget to delete',
+		type: "warning",
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "OK",
+		closeOnConfirm: true
+		});
+	} else {
+		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
+			return this.value;
+		}).get();
 
+		swal({
+		title: "Are you sure?",
+		text: 'Widget(s) with id "' + vals + '" will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+		},
+		function() {
+			setTimeout(function () {
+				app.ajaxPost("/page/removepage",{_id: vals}, function () {
+					if (!app.isFine) {
+						return;
+					}
+
+				 swal({title: "Selector successfully deleted", type: "success"});
+				 $("#selectall").prop('checked', false).trigger("change");
+				 wp.backToFront();
+				});
+			},1000);
+		});
+	}
 };
 wp.backToFront = function(){
 	app.mode("");
@@ -45,11 +97,11 @@ wp.savePage = function(){
 		return;
 	}
 	var param = ko.mapping.toJS(wp.configPageList);
-	app.ajaxPost("#", param, function (res) {
+	app.ajaxPost("/page/savepage", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		wg.backToFront();
+		wp.backToFront();
 	});
 };
 wp.addPage = function(){
@@ -57,7 +109,7 @@ wp.addPage = function(){
 	wp.scrapperMode("");
 };
 wp.getPageList = function(){
-	app.ajaxPost("#", {search: wp.searchfield()}, function(res){
+	app.ajaxPost("/page/getpage", {search: wp.searchfield()}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
