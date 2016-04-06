@@ -110,6 +110,24 @@ accessid:""
 };
 
 app.ajaxPost("/acl/authenticate", payload)
+
+=============================================
+var payload = {
+accesscheck:["create","read","create"],
+accessid:"COLONY.DASHBOARD"
+};
+
+var payload = {
+accesscheck:7,
+accessid:"COLONY.DASHBOARD"
+};
+
+var payload = {
+accesscheck:[1,2,4],
+accessid:"COLONY.DASHBOARD"
+};
+
+app.ajaxPost("/acl/authenticate", payload)
 ============================================= */
 func (a *AclController) Authenticate(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
@@ -137,7 +155,7 @@ func (a *AclController) Authenticate(r *knot.WebContext) interface{} {
 		iaccenum = acl.GetAccessEnum(toolkit.ToString(payload["accesscheck"]))
 	}
 	// toolkit.Println("Type name : ", toolkit.TypeName(payload["accesscheck"]))
-
+	toolkit.Printf("Nilai enum : %v \n", iaccenum)
 	found := acl.HasAccess(toolkit.ToString(payload["sessionid"]),
 		acl.IDTypeSession,
 		toolkit.ToString(payload["accessid"]),
