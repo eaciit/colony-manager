@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
@@ -50,33 +51,40 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (w *WidgetController) FetchDataSource(ids string) (toolkit.Ms, error) {
+func (w *WidgetController) FetchDataFromDS(_id string, fetch int) (toolkit.Ms, error) {
+	dsController := DataSourceController{}
+	dataDS, _, _, query, _, err := dsController.ConnectToDataSource(_id)
+	if err != nil {
+		return nil, err
+	}
+	if len(dataDS.QueryInfo) == 0 {
+		return nil, errors.New("data source has no query info")
+	}
+
+	cursor, err := query.Cursor(nil)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close()
+
+	data := toolkit.Ms{}
+
+	err = cursor.Fetch(&data, fetch, false)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (w *WidgetController) FetchDataSources(ids string) (toolkit.Ms, error) {
 	widgetData := toolkit.Ms{}
 	_ids := strings.Split(ids, ",")
 	for _, _id := range _ids {
-		getFunc := DataSourceController{}
-		dataDS, _, _, query, _, err := getFunc.ConnectToDataSource(_id)
-		if err != nil {
-			return nil, err
-		}
-		if len(dataDS.QueryInfo) == 0 {
-			continue
-		}
-
-		cursor, err := query.Cursor(nil)
-		if err != nil {
-			return nil, err
-		}
-		defer cursor.Close()
-
-		data := []toolkit.M{}
-
-		err = cursor.Fetch(&data, 0, false)
+		data, err := w.FetchDataFromDS(_id, 0)
 		if err != nil {
 			return nil, err
 		}
 		datasourcewidget := toolkit.M{}
-		// datasourcewidget.ID = _id
 		datasourcewidget.Set("Data", data)
 		widgetData = append(widgetData, datasourcewidget)
 	}
@@ -188,7 +196,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	}
 
 	dataSourceArry := strings.Join(datasource, ",")
-	widgetData, err := w.FetchDataSource(dataSourceArry)
+	widgetData, err := w.FetchDataSources(dataSourceArry)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

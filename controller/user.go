@@ -309,7 +309,7 @@ func (a *UserController) TestFindUserLdap(r *knot.WebContext) interface{} {
 	param.Set("password", toolkit.ToString(payload["Password"])) //Password.1
 	param.Set("attributes", []string{"cn", "givenName"})
 
-	arrtkm, err := acl.FindUserLdap(addr, basedn, filter, param)
+	arrtkm, err := acl.FindDataLdap(addr, basedn, filter, param)
 	fmt.Println(addr)
 	if err != nil {
 		return helper.CreateResult(true, err, "error")

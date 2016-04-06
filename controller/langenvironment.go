@@ -35,7 +35,8 @@ const (
 	LANG_JAVA  = "java"
 	LANG_SCALA = "scala"
 
-	INSTALLER_LINUX_GO = "go1.6.linux-x86_64.tar.gz"
+	// INSTALLER_LINUX_GO   = "go1.6.linux-x86_64.tar.gz"
+	// INSTALLER_LINUX_JAVA = "jdk-8u77-linux-x86_64.tar.gz"
 )
 
 type LangenvironmentController struct {
@@ -65,7 +66,7 @@ func CreateLangenvironmentController(l *knot.Server) *LangenvironmentController 
 
 func (l *LangenvironmentController) GetSampleDataForSetupLang() colonycore.LanguageEnvironmentPayload {
 	// s := `[{ "ServerId": "vagrant-test1", "Lang": [ "go" ] }, { "ServerId": "vagrant-test2", "Lang": [ "go", "java" ] }]`
-	s := `{ "ServerId": "test", "Lang": "go" }`
+	s := `{ "ServerId": "test", "Lang": "java" }`
 
 	r := colonycore.LanguageEnvironmentPayload{}
 	err := json.Unmarshal([]byte(s), &r)
@@ -95,6 +96,47 @@ func (le *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{}
 	return helper.CreateResult(true, data, "")
 }
 
+func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	cursorServer, err := colonycore.Find(new(colonycore.Server), dbox.Eq("serverType", "node"))
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	dataServer := []colonycore.Server{}
+	err = cursorServer.Fetch(&dataServer, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursorServer.Close()
+
+	cursorLangEnc, err := colonycore.Find(new(colonycore.LanguageEnviroment), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	dataLangEnv := []colonycore.LanguageEnviroment{}
+	err = cursorLangEnc.Fetch(&dataLangEnv, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer cursorLangEnc.Close()
+
+	result := []colonycore.ServerLanguage{}
+	// result := []ServerLanguage{}
+
+	for _, each := range dataServer {
+		serverLang := colonycore.ServerLanguage{Server: each}
+
+		for _, eachLang := range dataLangEnv {
+			serverLang.Languages = append(serverLang.Languages, eachLang)
+		}
+
+		result = append(result, serverLang)
+	}
+
+	return helper.CreateResult(true, result, "")
+}
+
 func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := l.GetSampleDataForSetupLang()
@@ -121,61 +163,72 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 	defer cursor.Close()
 	fmt.Println(dataLanguage)
 	if cursor.Count() > 0 {
+		fmt.Println("dsds")
 		for _, eachLang := range dataLanguage {
-			var sourcePath string
-			var destinationPath string
-			var pathstring []string
+			fmt.Println(" :: ", eachLang.Installer)
+			for _, dataInstaller := range eachLang.Installer {
+				var sourcePath string
+				var destinationPath string
+				pathstring := []string{dataServers.DataPath, "langenvironment", "installer"}
 
-			if eachLang.Language == LANG_GO {
-				pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_GO}
+				var installShPath string
 
-				sourcePath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, INSTALLER_LINUX_GO)
-				destinationPath = strings.Join(append(pathstring, dataServers.OS), serverPathSeparator)
+				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
+					fmt.Println("data servers : ", leSourcePath)
+					if eachLang.Language == LANG_GO {
+						// pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_GO}
+						pathstring = append(pathstring, LANG_GO)
+						pathstring = append(pathstring, dataServers.OS)
+						sourcePath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, dataInstaller.InstallerSource)
+						destinationPath = strings.Join(pathstring, serverPathSeparator)
+						installShPath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "install.sh")
+					} else if eachLang.Language == LANG_JAVA {
+						// pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_JAVA}
+						pathstring = append(pathstring, LANG_JAVA)
+						pathstring = append(pathstring, dataServers.OS)
+						sourcePath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, dataInstaller.InstallerSource)
+						destinationPath = strings.Join(pathstring, serverPathSeparator)
+						installShPath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, "install.sh")
+					}
+
+					installShdestPath := strings.Join(append(pathstring, "install.sh"), serverPathSeparator)
+					installFilePath := strings.Join(append(pathstring, dataInstaller.InstallerSource), serverPathSeparator)
+
+					err = sshSetting.SshCopyByPath(sourcePath, destinationPath)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+
+					err = sshSetting.SshCopyByPath(installShPath, destinationPath)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+
+					//sed -i 's/^M//' install.sh
+					cmdSedInstall := fmt.Sprintf("sed -i 's/\r//g' %s", installShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdSedInstall)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+
+					// // chmod +x install.sh
+					cmdChmodCli := fmt.Sprintf("chmod -x %s", installShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdChmodCli)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+
+					// // sh install.sh installFilePath DESTINSTALL_PATH projectpath
+					cmdShCli := fmt.Sprintf("bash %s %s %s %s", installShdestPath, installFilePath, DESTINSTALL_PATH, "goproject")
+					// fmt.Println("sh command :: ", cmdShCli)
+					outputCmd, err := sshSetting.GetOutputCommandSsh(cmdShCli)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+
+					fmt.Println(" --- > ", outputCmd)
+				}
 			}
-			installShPath := filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "install.sh")
-
-			pathstring = append(pathstring, dataServers.OS)
-			installShdestPath := strings.Join(append(pathstring, "install.sh"), serverPathSeparator)
-			installFilePath := strings.Join(append(pathstring, INSTALLER_LINUX_GO), serverPathSeparator)
-
-			// compressPath := filepath.Join(leSourcePath)
-			// err = toolkit.TarCompress(compressPath, filepath.Join(compressPath, fmt.Sprintf("%s.tar", dataServers.OS)))
-			// if err != nil {
-			// 	fmt.Println(err)
-			// }
-
-			err = sshSetting.SshCopyByPath(sourcePath, destinationPath)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			err = sshSetting.SshCopyByPath(installShPath, destinationPath)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			//sed -i 's/^M//' install.sh
-			cmdSedInstall := fmt.Sprintf("sed -i 's/\r//g' %s", installShdestPath)
-			_, err = sshSetting.GetOutputCommandSsh(cmdSedInstall)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			// // chmod +x install.sh
-			cmdChmodCli := fmt.Sprintf("chmod -x %s", installShdestPath)
-			_, err = sshSetting.GetOutputCommandSsh(cmdChmodCli)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			// // sh install.sh installFilePath DESTINSTALL_PATH projectpath
-			cmdShCli := fmt.Sprintf("bash %s %s %s %s", installShdestPath, installFilePath, DESTINSTALL_PATH, "goproject")
-			fmt.Println("sh command :: ", cmdShCli)
-			_, err = sshSetting.GetOutputCommandSsh(cmdShCli)
-			if err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
 		}
 	}
 

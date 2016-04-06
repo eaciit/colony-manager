@@ -82,9 +82,15 @@ BuildFileExplorer:function(elem,options){
 		$strcont = $(strcont);
 		$strcont.appendTo($ox);
 
+		$strscroller_anchor = $("<div class='scroller_anchor'></div>");
+		$strscroller_anchor.appendTo($strcont);
+
+		$strscroller = $("<div class='scroller'></div>");
+		$strscroller.appendTo($strcont);
+
 		strpreserv = "<div class='col-md-3 fb-pre'></div>";
 		$strpreserv = $(strpreserv);
-		$strpreserv.appendTo($strcont);
+		$strpreserv.appendTo($strscroller);
 
 		strserv = "<div class='col-md-12'><div class='col-md-3'><label class='filter-label'>Server</label></div><div class='col-md-9'><input class='fb-server'></input></div></div>";
 		$strserv = $(strserv);
@@ -92,7 +98,7 @@ BuildFileExplorer:function(elem,options){
 
 		strprebtn = "<div class='col-md-6 fb-pre'></div>";
 		$strprebtn = $(strprebtn);
-		$strprebtn.appendTo($strcont);
+		$strprebtn.appendTo($strscroller);
 
 		$strcontbtn = $("<div class='col-md-12 btn-cont'></div>");
 
@@ -196,7 +202,7 @@ BuildFileExplorer:function(elem,options){
 
 		strpresearch = "<div class='col-md-3 fb-pre'></div>";
 		$strpresearch = $(strpresearch);
-		$strpresearch.appendTo($strcont);
+		$strpresearch.appendTo($strscroller);
 
 		strsearch = "<div class='col-md-12'><label class='col-md-3'>Search</label><div class='col-md-8'><input class='form-control input-sm fb-txt-search' placeholder='folder,file name, etc..'></input></div><div class='col-md-1'><button class='btn btn-sm btn-primary fb-search'><span unselectable='on' class='glyphicon glyphicon-search'></span></button></div></div>"
 		$strsearch = $(strsearch);
@@ -310,7 +316,7 @@ BuildFileExplorer:function(elem,options){
 		$(elem).find(".fb-thumbview").hide();
 		methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:null});
 		methodsFB.BuildEditor(elem,options);
-		methodsFB.BuildPopUp(elem,options);
+		methodsFB.BuildPopUp(elem,options);		
 	},
 	SetUrl:function(elem,action){
 		$(elem).data("ecFileBrowser").dataSource.url = $(elem).data("ecFileBrowser").dataSource.originUrl + "/"+action.toLowerCase();
@@ -321,6 +327,8 @@ BuildFileExplorer:function(elem,options){
 		var ds = options.dataSource;
 		var url = methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction);
 		var call = ds.call;
+		var serverId =  $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+		data.serverId = (data.serverId === '' ? serverId : data.serverId);
 
 		var dt = {
 			action : $(elem).data("ecFileBrowser").dataSource.GetDirAction,
@@ -377,9 +385,9 @@ BuildFileExplorer:function(elem,options){
 		        if(results !== null){
 		            $.each(results, function(index) {
 		            	var id = $.now();
-		            	var ico = (results[index].isdir == true ? '<img src="/res/img/folder.png">':'<img src="/res/img/file.png">');
-			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 5) + "..." : results[index].name);
-			            $strprecont = $('<div class="col-xs-2 col-md-1">'+
+		            	var ico = (results[index].isdir == true ? '<img class="thumb-icon" src="/res/img/folder.png">':'<img class="thumb-icon" src="/res/img/file.png">');
+			            var shortName = (results[index].name.length > 5 ? $.trim(results[index].name).substring(0, 9) + ".." : results[index].name);
+			            $strprecont = $('<div class="col-xs-2 col-md-1 fb-thumb">'+
 			            					'<a href="#" id="'+id+'-'+index+'" name="'+results[index].name+'" permission="'+results[index].permissions+'" path="'+results[index].path+'" isdir='+results[index].isdir+' iseditable='+results[index].iseditable+' class="thumbnail tooltipster" title="'+results[index].name+'">'+
 			            						ico +
 			            						'<div class="caption" >'+

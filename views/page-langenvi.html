@@ -12,17 +12,39 @@
 </ol>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-	<button class="btn btn-sm btn btn-default mgTop15" data-bind="">
+	<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !lang.showSearchLangEnv(), click:function(){ lang.showSearchLangEnv(true) }">
 		<span class="glyphicon glyphicon-search"></span>					
 	</button>
+	<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: lang.showSearchLangEnv(), click: function () { lang.showSearchLangEnv(false) }">
+	    		<span class="glyphicon glyphicon-search"></span>					
+	</button>
 	<div class="btn-group" role="group">
-    	<button class="btn btn-sm btn-primary mgTop15" data-bind="">
+    	<button class="btn btn-sm btn-primary mgTop15" data-bind="click:lang.getserverlanguage()">
     		<span class="glyphicon glyphicon-refresh"></span> Refresh
     	</button>
 	</div>
-</nav>	
-<div class="panel" data-bind="visible: (app.mode() == '')" style="margin-top: 15px;">
-	<div class="grid grid-LangEnv">
-		<table class="table table-bordered table-langEnvi"></table>
+</nav>
+
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: lang.showSearchLangEnv()">
+	<div class="col-md-4">
+		<label class="col-md-4 filter-label" >
+			Search
+		</label>
+		<div class="col-md-8">
+			<input class="form-control full-width input-sm search" name="search" type="text" placeholder="Type Keyword here" data-bind="value:lang.filter.search">
+		</div>
 	</div>
+	<div class="col-md-4">
+		<label class="col-md-4 filter-label">
+			Server OS
+		</label>
+		<div class="col-md-8">
+			<select name="os" class="full-width" data-bind="kendoDropDownList: { data: srv.templateOS, dataValueField:'value', dataTextField:'text', optionLabel: 'Select One', value:lang.filter.os}"></select>
+		</div>
+		<div class="clearfix"></div>
+	</div>
+</nav>	
+
+<div class="panel" data-bind="visible: (app.mode() == '')" style="margin-top: 15px;">
+	<div class="grid grid-langEnvi"></div>
 </div>		
