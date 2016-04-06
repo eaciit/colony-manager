@@ -28,7 +28,7 @@ $(document).ready(function(){
                 $('.scroller').css({
                     'position': 'fixed',
                     'top': '86px',
-                    'width' : '95%',
+                    'width' : '94%',
                 });
                 // Changing the height of the scroller anchor to that of scroller so that there is no change in the overall height of the page.
                 $('.scroller_anchor').css('height', '50px');
