@@ -514,6 +514,11 @@ table.table
 	padding: 13px 15px
 	color: #5F5F5F
 
+.grid-stack
+	min-height: 500px
+	.grid-stack-item-content
+		background-color: #94D5EB
+
 /** structured stylesheet */
 
 body
@@ -568,6 +573,15 @@ body
 					&.active
 						background-color: #eee
 						text-decoration: none
+	.nav>li a
+		position: relative
+		display: block
+		padding: 10px 15px
+		text-decoration: none
+
+	.nav>li.grid-stack-item
+		&:hover
+			background-color: #eee
 
 	#content
 		padding: 0px
