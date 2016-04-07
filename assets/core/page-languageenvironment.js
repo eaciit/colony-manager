@@ -49,7 +49,12 @@ lang.setupLangEnviroment = function (param){
 	console.log(param);
 	$('.btn-language').prop('disabled', true);
 	app.ajaxPost("/langenvironment/setupfromsh", param, function (res) {
-		$('.btn-language').prop('disabled', false);
+		if (!res.success) {
+			sweetAlert("Oops...", res.message, "error");
+			return lang.getserverlanguage();
+		}
+		swal({title: param.Lang+" language successfully setup", type: "success", closeOnConfirm: true});
+		return lang.getserverlanguage();
 	});
 }
 
@@ -57,13 +62,10 @@ function getAttr(serverid,language){
 	var param = ko.mapping.toJS(lang.SetupLangEnv);
 	param.ServerId = serverid; 
 	param.Lang = language;
-	lang.setupLangEnviroment(JSON.stringify(param));
+	lang.setupLangEnviroment(param);
 } 
 
 lang.setGrid = function(data){
-	if (data == undefined ){
-		return
-	}
 	var columnGrid = [
 		{field : "_id", title : "Server ID"},
 		{field : 'os', title : 'Server OS'},
@@ -87,9 +89,9 @@ lang.setGrid = function(data){
 					var checkDisable = '';
 					checkDisable = f[e.Lang];
 					if (checkDisable == true){
-						return "<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered btn-language\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" disabled ><span class=\"fa fa-cog\"></span></button></center>";	
+						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" disabled ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						} else {
-						return "<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered btn-language\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>";	
+						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						}
 					}
 				});
@@ -103,6 +105,7 @@ lang.setGrid = function(data){
 		columns:columnGrid,
 		pageable: true,
 		filterfable: false,
+		dataBound:app.gridBoundTooltipster('.grid-langEnvi')
 	});
 }
 
