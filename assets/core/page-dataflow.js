@@ -496,9 +496,9 @@ df.checkConnection = function(elem){
     //delete connection with one shape
     for(var c in conn){
         var co = conn[c];
-        var sh = co.from.shape == undefined ?co.from: co.from.shape;
-        var shto = co.to.shape == undefined ?co.to:co.to.shape;
-        if(co.from == null || co.to == null ||  sh ==undefined || shto == undefined){
+        var sh = co.from == null?co.from : co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to == null?co.to: co.to.shape == undefined ?co.to:co.to.shape;
+        if(sh == null || shto == null ||  sh ==undefined || shto == undefined){
             diagram.remove(co);
         }
     }
