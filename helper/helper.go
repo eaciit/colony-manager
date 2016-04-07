@@ -377,26 +377,3 @@ func RunCommandWithTimeout(sshSetting *sshclient.SshSetting, cmd string, timeout
 
 	return nil
 }
-
-func GetDataSourceQuery() ([]colonycore.DataSource, error) {
-	var query *dbox.Filter
-	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
-	if err != nil {
-		return nil, err
-	}
-
-	data := []colonycore.DataSource{}
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return nil, err
-	}
-	newdata := []colonycore.DataSource{}
-	for _, val := range data {
-		if val.QueryInfo.Has("select") {
-			newdata = append(newdata, val)
-		}
-	}
-	defer cursor.Close()
-
-	return newdata, nil
-}
