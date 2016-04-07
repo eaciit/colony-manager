@@ -18,8 +18,22 @@ grp.AccessGrantGroup = {
     AccessID: "",
     AccessValue: [],
 };
+grp.DataTypeTemplate = {
+    address: "",
+    baseDn: "",
+    filter: "",
+    username: "",
+    password: "",
+    attribute: [],
+}
+grp.dataType = ko.observable("Basic");
+grp.dataSearch = ko.observable('');
+grp.dataTypeConfig = ko.mapping.fromJS(grp.DataTypeTemplate);
 grp.Access = ko.mapping.fromJS(grp.AccessGrantGroup);
 grp.ListAccess = ko.observableArray([]);
+grp.attribute = ko.observableArray([]);
+grp.listAddress = ko.observableArray([]);
+grp.listLdap = ko.observableArray([]);
 grp.GroupsColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxgroup' class='ckcGrid' value='#: _id #' />",
     width: 50
@@ -413,9 +427,71 @@ grp.backToFront = function() {
     app.section('group');
 };
 
+grp.showModalType = function(){
+    $('#modalForgot').modal({show: 'true'});
+    $('#attribute').tokenfield({});
+    grp.autoDataAddress();
+    grp.dataTypeConfig.address('');
+    grp.dataTypeConfig.baseDn('');
+    grp.dataTypeConfig.filter('');
+    grp.dataTypeConfig.username('');
+    grp.dataTypeConfig.password('');
+    grp.dataTypeConfig.attribute([]);
+
+}
+
+grp.autoDataAddress = function(){
+    var data = [];
+    app.ajaxPost("/group/getldapdataaddress", {}, function(res){
+        if(!app.isFine(res)){
+            return;
+        }
+
+        for(var i=0; i< res.data.length; i++){
+            grp.listAddress.push(res.data[i].Address);
+            data.push({
+                address  :res.data[i].Address,
+                baseDN   :res.data[i].BaseDN,
+                Filter   :res.data[i].Filter,
+                username :res.data[i].Username,
+                password :res.data[i].Password
+
+            });
+        }
+
+        grp.listLdap(data);
+
+        console.log(grp.listLdap());
+
+        $('#address').kendoAutoComplete({
+            dataSource: grp.listAddress(),
+            filter: "startswith",
+            change: grp.setDataType,
+            select: function(e) {
+                grp.dataTypeConfig.address(this.dataItem(e.item.index()))
+            }
+        });
+
+    });
+}
+
+grp.setDataType = function(){
+    for(var i=0; i< grp.listLdap().length; i++){
+        if(grp.dataTypeConfig.address() == grp.listLdap()[i].address){
+            console.log(grp.listLdap()[i].address);
+            grp.dataTypeConfig.address(grp.listLdap()[i].address);
+            grp.dataTypeConfig.baseDn(grp.listLdap()[i].baseDN);
+            //grp.dataTypeConfig.filter(grp.listLdap()[i].filter);
+            grp.dataTypeConfig.username(grp.listLdap()[i].username);
+            grp.dataTypeConfig.password(grp.listLdap()[i].password);
+        }
+    }
+}
+
 grp.OnRemove = function(_id) {};
 $(function() {
     grp.getGroups();
 
      $('[data-toggle="tooltip"]').tooltip();   
+
 });

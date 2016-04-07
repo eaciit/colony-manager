@@ -307,6 +307,12 @@ table.table tr:hover td {
 .login-form-group .form-login-label {
   text-align: left; }
 
+#add_type {
+  margin-top: -1%; }
+
+.get-tipe {
+  margin-left: 11%; }
+
 .fh {
   margin: auto;
   padding: 25%; }
