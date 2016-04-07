@@ -7,6 +7,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 )
 
 type PageController struct {
@@ -19,25 +20,10 @@ func CreatePageController(s *knot.Server) *PageController {
 	return controller
 }
 
-func (p *PageController) GetFieldsFromDS(_id string) ([]string, error) {
-	dataFetch, err := new(WidgetController).FetchDataFromDS(_id, 1)
-	if err != nil {
-		return nil, err
-	}
-
-	var fields []string
-	for _, val := range dataFetch {
-		for field, _ := range val {
-			fields = append(fields, field)
-		}
-	}
-	return fields, nil
-}
-
 func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {
 	widgetData := toolkit.Ms{}
 	for _, _id := range ids {
-		data, err := new(WidgetController).FetchDataFromDS(_id, 0)
+		data, err := helper.FetchDataFromDS(_id, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -51,28 +37,52 @@ func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {
 
 func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	var err error
-
 	type DSMap struct {
 		ID     string   `json:"_id"`
 		Fields []string `json:"fields"`
 	}
-	payload := []map[string]string{}
+	payload := toolkit.M{}
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	var data = []DSMap{}
 	var _data = DSMap{}
-	for _, ds := range payload {
-		_data.ID = ds["dsWidget"]
-		_data.Fields, err = p.GetFieldsFromDS(ds["dsColony"])
+	for _, ds := range payload.Get("datasource", "").([]interface{}) {
+		tm, err := toolkit.ToM(ds)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		toolkit.Println()
+		_data.ID = tm.Get("dsWidget", "").(string)
+		_data.Fields, err = helper.GetFieldsFromDS(tm.Get("dsColony", "").(string))
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 		data = append(data, _data)
 	}
-
-	return helper.CreateResult(true, data, "")
+	widgetSource := filepath.Join(EC_DATA_PATH, "widget", payload.Get("widgetId", "").(string))
+	getFileIndex, err := colonycore.GetPath(widgetSource)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	widgetPath := filepath.Join(getFileIndex, "config-widget.html")
+	content, err := ioutil.ReadFile(widgetPath)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	contentstring := string(content)
+	/*get widget data*/
+	dataWidget := new(colonycore.Widget)
+	dataWidget.ID = payload.Get("widgetId", "").(string)
+	err = dataWidget.GetById()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	newData := toolkit.M{}
+	newData.Set("datasource", data)
+	newData.Set("container", contentstring)
+	newData.Set("url", dataWidget.URL)
+	return helper.CreateResult(true, newData, "")
 }
 
 func (p *PageController) GetDataSource(r *knot.WebContext) interface{} {
@@ -165,6 +175,20 @@ func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
+func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := colonycore.Page{}
+	if err := r.GetPayload(&data); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if err := data.GetById(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
+
 func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -172,16 +196,53 @@ func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
 	if err := r.GetPayload(&data); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	widgetSource := filepath.Join(EC_DATA_PATH, "widget")
-	widgetPath := filepath.Join(widgetSource, data.Get("_id", "").(string), "index.html")
+	widgetSource := filepath.Join(EC_DATA_PATH, "widget", data.Get("_id", "").(string))
 
-	contentstring := ""
+	getFileIndex, err := colonycore.GetPath(widgetSource)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	widgetPath := filepath.Join(getFileIndex, "index.html")
+
 	content, err := ioutil.ReadFile(widgetPath)
 	if err != nil {
-		toolkit.Println("Error : ", err)
-		contentstring = ""
-	} else {
-		contentstring = string(content)
+		return helper.CreateResult(false, nil, err.Error())
 	}
-	return helper.CreateResult(true, contentstring, "")
+	contentstring := string(content)
+
+	var datasource []string
+	for _, val := range data.Get("dataSource").([]interface{}) {
+		datasource = append(datasource, val.(string))
+	}
+
+	dataSourceArry := strings.Join(datasource, ",")
+	widgetData, err := new(WidgetController).FetchDataSources(dataSourceArry)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	previewData := toolkit.M{}
+	previewData.Set("container", contentstring)
+	previewData.Set("dataSource", widgetData)
+
+	if data.Get("mode", "").(string) == "save" {
+		dataWidget := colonycore.Widget{}
+		dataWidget.ID = data.Get("_id", "").(string)
+		if err := dataWidget.GetById(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		dataWidget.DataSourceId = datasource
+
+		configs := toolkit.Ms{}
+		for _, val := range data.Get("config", "").([]interface{}) {
+			configs = append(configs, val.(map[string]interface{}))
+		}
+		dataWidget.Config = configs
+
+		if err := dataWidget.Save(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, previewData, "")
 }
