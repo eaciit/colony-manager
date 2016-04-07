@@ -658,9 +658,7 @@ srv.finishButton = function () {
 };
 
 srv.ping = function () {
-	var ajaxes = [];
-
-	srv.ServerData().forEach(function (s) {
+	var doPing = function (s) {
 		var $grid = $(".grid-server").data("kendoGrid");
 		var row = Lazy($grid.dataSource.data()).find({ _id: s._id });
 
@@ -688,13 +686,18 @@ srv.ping = function () {
 			withLoader: false 
 		});
 
+		return ajax;
+	};
+
+	var ajaxes = [];
+
+	srv.ServerData().forEach(function (s) {
+		var ajax = doPing(s);
 		ajaxes.push(ajax);
 	});
 
 	$.when.apply(undefined, ajaxes).always(function () {
-		setTimeout(srv.ping, 10 * 1000);
-	}, function () {
-		setTimeout(srv.ping, 10 * 1000);
+		setTimeout(srv.ping, 20 * 1000);
 	});
 };
 
