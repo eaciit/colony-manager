@@ -24,7 +24,7 @@
             <button class="btn btn-sm btn-success navbar-btn" data-bind="click: configPage">
 	    		<span class="glyphicon glyphicon-refresh"></span> Configuration
 	    	</button>
-            <button class="btn btn-sm btn-primary navbar-btn">
+            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(e) {pg.widgetSetting('wp1459947140191', 'modal')}">
 	    		<span class="glyphicon glyphicon-plus"></span> Pop up Widget
 	    	</button>
 		</nav>
@@ -50,26 +50,77 @@
 			    		<div class="col-md-12">
 							<!-- <label class="col-md-3 databrowser-label"></label> -->
 				    		<div class="col-md-7">
-					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSourceId }" name="datasource" id="datasource">
+					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSources }" name="datasource" id="datasource">
 					    		</select>
 					    		<span class="k-invalid-msg" data-for="datasource"></span>
 				    		</div>
 						</div>
-			    		<!-- <div class="form-group">
-				    		<label class="col-md-3 databrowser-label">Title</label>
-				    		<div class="col-md-7">
-					    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: title">
-								<span class="k-invalid-msg" data-for="title"></span>
-				    		</div>
-			    		</div>
-			    		<div class="form-group">
-				    		<label class="col-md-3 databrowser-label">URL</label>
-				    		<div class="col-md-7">
-					    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
-				    		</div>
-			    		</div> -->
 			    	</div>
 			    </form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal DataSource -->
+	<div class="modal fade modal-widgetsetting" tabindex="-1" role="dialog">
+		<div class="modal-dialog" style="width: 50%">
+			<div class="modal-content" data-bind="with: dsMapping">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: pg.closeWidgetSetting">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" data-bind="text: pg.previewMode() == '' ? 'Data Source' : 'Widget Setting'">
+					</h4>
+				</div>
+
+				<div class="modal-body">
+				    <div class="form-group" data-bind="visible: (app.mode() == 'datasourceMapping')">
+				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;" id="dsWidget">
+				    		<label class="col-md-3"></label>
+				        	<div class="col-md-9 form-inline" data-bind="foreach: pg.dsMapping.field">
+				        		<div class="form-group" style="padding-left:45px; margin-bottom:15px;">
+								    <input type="text" class="form-control" id="ds1" data-bind="value: $data.dsWidget,enable: false">
+							  	</div>
+							  	<div class="form-group"  style="padding-left:45px; margin-bottom:15px;">
+								    <select required id="ds" data-bind="kendoDropDownList: { data: pg.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
+								    <span class="k-invalid-msg" data-for="ds" data-bind="attr: { 'data-for': 'ds' + $index() }"></span> 
+							  	</div>
+				        	</div>
+			        	</div>
+			        	<div class="clearfix"></div>
+		        	</div>
+
+		        	<div class="form-group" data-bind="visible: (app.mode() == 'fieldMapping')">
+				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;">
+				    		<!-- <label class="col-md-3 databrowser-label">Widget Setting</label> -->
+				    		<iframe class="full-width" id="formSetting" width="300" height="300" frameBorder="0"></iframe>
+			        	</div>
+			        	<div class="clearfix"></div>
+		        	</div>
+	        	</div>
+
+				<div class="modal-footer">
+					<div data-bind="visible: (app.mode() == 'datasourceMapping')">
+						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
+							<span class="glyphicon glyphicon-remove"></span> Cancel
+						</button>
+						<button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">
+							Next <span class="glyphicon glyphicon-chevron-right"></span>
+						</button>
+					</div>
+
+					<div data-bind="visible: (app.mode() == 'fieldMapping')">
+						<button type="button" class="btn btn-sm btn-default" data-bind="click: function(e) {pg.widgetSetting('wp1459947140191', 'back')}">
+							<span class="glyphicon glyphicon-chevron-left"></span> Back
+						</button>
+						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
+							<span class="glyphicon glyphicon-remove"></span> Cancel
+						</button>
+						<button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">
+							<span class="glyphicon glyphicon-save"></span> Save
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
