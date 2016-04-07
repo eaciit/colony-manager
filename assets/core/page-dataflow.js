@@ -330,29 +330,53 @@ df.init = function () {
                             ko.cleanNode($(".popover-content:last")[0]);
                             ko.applyBindings(viewModel, $(".popover-content:last")[0]);
                         }, 10);
-                        $(".popover-title").html(item.dataItem.name);
-                        $(".arrow").attr("style","left:30px");
                         if (item.dataItem.name == "Spark") {
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-220)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('spark');
                         }else if(item.dataItem.name == "HDFS"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('hdfs');                            
                         }else if(item.dataItem.name == "Hive"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('hive');
                         }else if(item.dataItem.name == "Shell Script"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('shell');
                         }else if(item.dataItem.name == "Map Reduce"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('mapreduce');
                         }else if(item.dataItem.name == "Java App"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('java');
                         }else if(item.dataItem.name == "Email"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('email');
+                        }else if(item.dataItem.name == "Fork"){
+                            var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
+                            for (i = 0; i <= cl; i++) {
+                                var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
+                                // console.log(no);
+                                if(no !== 0){
+                                    $(".popover-title").html(item.dataItem.name);
+                                    $(".arrow").attr("style","left:30px");
+                                    $(".popover").attr("style","display: block; top: " +(ymouse-80)+"px; left: "+(xmouse-30)+"px;");
+                                    df.popoverMode('fork');
+                                };
+                            }
                         };
 
                       }
