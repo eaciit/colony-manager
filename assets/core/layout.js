@@ -27,6 +27,7 @@ ly.varMenu = [{"id":"dasboard", "title":"Dashboard", "childrens":[], "link":"/we
 			{"id":"login", "title":"Login", "childrens":[], "link":"/web/login"}];
 
 ly.element = function(data){
+	console.log(data.length);
 	$parent = $('#nav-ul');
 	$navbar = $('<ul class="nav navbar-nav"></ul>');
 	$navbar.appendTo($parent);
@@ -88,9 +89,10 @@ ly.getLoadMenu = function(){
 			return;
 		}
 
-
 		ly.element(res.data);
 
+	}, function (res) {
+		//ly.element(res.data);
 	});
 }
 
