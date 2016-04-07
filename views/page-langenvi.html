@@ -45,6 +45,11 @@
 	</div>
 </nav>	
 
-<div class="panel" data-bind="visible: (app.mode() == '')" style="margin-top: 15px;">
-	<div class="grid grid-langEnvi"></div>
+<div class="" data-bind="visible: (app.mode() == '')">
+	<div class="pdCustom position-custom">
+		{{template "_miniloader.html"}}	
+		<div data-bind="visible: !app.miniloader()">
+			<div class="grid grid-langEnvi"></div>
+		</div>	
+	</div>	
 </div>		
