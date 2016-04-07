@@ -953,11 +953,7 @@ BuildFileExplorer:function(elem,options){
                 		}else{
                 			methodsFB.RefreshTreeView(elem,param);
                 		}
-                		                		
-                		if(param.action=="NewFile"){
-							$(elem).data("ecFileBrowser").isHold = true;
-							$(elem).data("ecFileBrowser").Content = param;	
-	                	}
+
                 	}else  if(param.action=="Edit") {
                 		$($(elem).find(".fb-filename")).html("");
 						$($(elem).find(".fb-editor")).data("kendoEditor").value("");
@@ -968,6 +964,13 @@ BuildFileExplorer:function(elem,options){
                 	if(param.action=="Delete"){
                 		swal({title: "File / Folder successfully deleted", type: "success"});	
                 	}
+
+                	if(param.action=="NewFile"){
+						$(elem).data("ecFileBrowser").Content = param;
+						methodsFB.ActionRequest(elem,$(elem).data("ecFileBrowser"),{action:"GetContent",path:param.path});
+						return;
+	               	}
+	               	
                 	if(!$(elem).data("ecFileBrowser").isHold){
                 		swal("Saved!", "Your request has been processed !", "success");
                 		$(elem).find(".modal-fb-editor").modal("hide");
