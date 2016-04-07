@@ -4,7 +4,7 @@ import (
 	// "archive/zip"
 	"encoding/json"
 	"fmt"
-	// "github.com/eaciit/colony-core/v0"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
@@ -227,3 +227,50 @@ func (a *GroupController) InitialSetDatabase() error {
 	}
 	return nil
 }
+
+func (a *GroupController) GetLdapdataAddress(r *knot.WebContext) interface{}{
+	r.Config.OutputType = knot.OutputJson
+
+	autoFilters := []*dbox.Filter{}
+
+	var query *dbox.Filter
+
+	if len(autoFilters) > 0{
+		query = dbox.And(autoFilters...)
+	}
+
+	cursor, err := colonycore.Find(new(colonycore.Ldap), query)
+	if err != nil{
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.Ldap{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil{
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	defer cursor.Close()
+
+	// var onfilter *dbox.Filter
+
+	// payload := map[string]interface{}{}
+
+	// err := r.GetForms(&payload)
+	// if err != nil{
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	// if strings.Contains(toolkit.TypeName(payload["address"]), "float") {
+	// 	payload["search"] = toolkit.ToInt(payload["address"], toolkit.RoundingAuto)
+	// }
+
+	// if search := toolkit.ToString(payload["address"]); search != ""{
+
+	// }
+
+
+
+	return helper.CreateResult(true, data, "")
+}
+
