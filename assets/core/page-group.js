@@ -19,12 +19,12 @@ grp.AccessGrantGroup = {
     AccessValue: [],
 };
 grp.DataTypeTemplate = {
-    address: "",
-    baseDn: "",
-    filter: "",
-    username: "",
-    password: "",
-    attribute: [],
+    Address: "",
+    BaseDN: "",
+    Filter: "",
+    Username: "",
+    Password: "",
+    Attribute: [],
 }
 grp.dataType = ko.observable("Basic");
 grp.dataSearch = ko.observable('');
@@ -431,16 +431,18 @@ grp.showModalType = function(){
     $('#modalForgot').modal({show: 'true'});
     $('#attribute').tokenfield({});
     grp.autoDataAddress();
-    grp.dataTypeConfig.address('');
-    grp.dataTypeConfig.baseDn('');
-    grp.dataTypeConfig.filter('');
-    grp.dataTypeConfig.username('');
-    grp.dataTypeConfig.password('');
-    grp.dataTypeConfig.attribute([]);
+    grp.dataTypeConfig.Address('');
+    grp.dataTypeConfig.BaseDN('');
+    grp.dataTypeConfig.Filter('');
+    grp.dataTypeConfig.Username('');
+    grp.dataTypeConfig.Password('');
+    grp.dataTypeConfig.Attribute([]);
 
 }
 
 grp.autoDataAddress = function(){
+    grp.listLdap.removeAll();
+    grp.listAddress.removeAll();
     var data = [];
     app.ajaxPost("/group/getldapdataaddress", {}, function(res){
         if(!app.isFine(res)){
@@ -450,25 +452,22 @@ grp.autoDataAddress = function(){
         for(var i=0; i< res.data.length; i++){
             grp.listAddress.push(res.data[i].Address);
             data.push({
-                address  :res.data[i].Address,
-                baseDN   :res.data[i].BaseDN,
+                Address  :res.data[i].Address,
+                BaseDN   :res.data[i].BaseDN,
                 Filter   :res.data[i].Filter,
-                username :res.data[i].Username,
-                password :res.data[i].Password
+                Username :res.data[i].Username,
+                Password :res.data[i].Password,
 
             });
         }
 
         grp.listLdap(data);
-
-        console.log(grp.listLdap());
-
         $('#address').kendoAutoComplete({
             dataSource: grp.listAddress(),
             filter: "startswith",
             change: grp.setDataType,
             select: function(e) {
-                grp.dataTypeConfig.address(this.dataItem(e.item.index()))
+                grp.dataTypeConfig.Address(this.dataItem(e.item.index()))
             }
         });
 
@@ -477,15 +476,24 @@ grp.autoDataAddress = function(){
 
 grp.setDataType = function(){
     for(var i=0; i< grp.listLdap().length; i++){
-        if(grp.dataTypeConfig.address() == grp.listLdap()[i].address){
-            console.log(grp.listLdap()[i].address);
-            grp.dataTypeConfig.address(grp.listLdap()[i].address);
-            grp.dataTypeConfig.baseDn(grp.listLdap()[i].baseDN);
-            //grp.dataTypeConfig.filter(grp.listLdap()[i].filter);
-            grp.dataTypeConfig.username(grp.listLdap()[i].username);
-            grp.dataTypeConfig.password(grp.listLdap()[i].password);
+        if(grp.dataTypeConfig.Address() == grp.listLdap()[i].Address){
+            console.log(grp.listLdap()[i].Address);
+            grp.dataTypeConfig.Address(grp.listLdap()[i].Address);
+            grp.dataTypeConfig.BaseDN(grp.listLdap()[i].BaseDN);
+            //grp.dataTypeConfig.Filter(grp.listLdap()[i].Filter);
+            grp.dataTypeConfig.Username(grp.listLdap()[i].Username);
+            grp.dataTypeConfig.Password(grp.listLdap()[i].Password);
         }
     }
+}
+
+grp.getDataUserLdap = function(){
+    var param = ko.mapping.toJS(grp.dataTypeConfig); 
+    app.ajaxPost("/group/finduserldap", param, function(res){
+        if(!app.isFine(res)){
+            return;
+        }
+    });
 }
 
 grp.OnRemove = function(_id) {};

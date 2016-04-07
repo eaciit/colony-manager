@@ -1,3 +1,9 @@
+<!-- css token input -->
+<script src="/res/bootstrap/js/bootstrap-tokenfield.js"></script>
+<link rel="stylesheet" href="/res/bootstrap/css/tokenfield-typeahead.css" />
+<link rel="stylesheet" href="/res/bootstrap/css/bootstrap-tokenfield.css" />
+<!-- css token input -->
+
 <style>
     .no-left-padding {
         padding-left: 0px;
@@ -38,14 +44,11 @@
 </nav>
 
 <div data-bind="visible: (app.mode() == '')">
-    <div class="gr-position">
-        {{template "_miniloader.html"}} 
-        <div data-bind="visible: !app.miniloader()">
+        <div class="gr-position">
             <!-- <div class="grid grid-groups" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: grp.GroupsData, selectable: 'multiple, row', change: grp.selectGridGroups, columns: grp.GroupsColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-groups')}"></div> -->
             <div id="grid-groups"></div>
-            <p class=" bg-danger bgcustom">Please click row to edit!</p>
         </div>
-    </div>
+        <p class=" bg-danger bgcustom">Please click row to edit!</p>
 </div>
 
 <div class="panel" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')" style="width: 800px;">
@@ -56,6 +59,14 @@
     <div class="panel-body">
         <form class="form-horizontal form-server" id="form-add-Server" novalidate>
             <div class="col-md-6">
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Add Type</label>
+                    <div class="col-md-7" id="add_type">
+                        <label class="radio-inline"><input type="radio" name="addType" value="Ldap" data-bind="checked: grp.dataType">ldap</label>
+                        <label class="radio-inline"><input type="radio" name="addType" value="Basic" data-bind="checked: grp.dataType">basic</label>
+                        <span class="k-invalid-msg" data-for="ID"></span>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="col-md-3 filter-label">ID</label>
                     <div class="col-md-7">
@@ -73,17 +84,24 @@
 
             </div>
             <div class="col-md-6">
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Enable</label>
-                    <div class="col-md-7">
-                        <input type="checkbox" name="Enable" data-bind="checked:grp.config.Enable">
-                    </div>
+                 <div class="form-group" data-bind="visible: (grp.dataType()== 'Ldap')">
+                    <button class="btn btn-success btn-sm get-tipe" data-bind="click: grp.showModalType">
+                        <span class="glyphicon glyphicon-plus"></span> Group
+                    </button>
                 </div>
                 <div class="form-group">
                     <label class="col-md-3 filter-label">Owner</label>
                     <div class="col-md-7">
                         <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Owner" type="text" class="form-control input-sm" name="Owner" placeholder="Type the Owner Here" data-bind="value: grp.config.Owner">
                         <span class="k-invalid-msg" data-for="Owner"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="col-md-3 filter-label">Enable</label>
+                    <div class="col-md-7">
+                        <input type="checkbox" name="Enable" data-bind="checked:grp.config.Enable">
                     </div>
                 </div>
             </div>
@@ -154,3 +172,87 @@
         </form>
     </div>
 </div>
+<!-- modal grup add type -->
+<div class="modal fade" id="modalForgot" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modalcustom">
+        <div class="modal-content">
+            <div class="modal-1" id="modal-1">
+                <div class="modal-header">
+                    <h4 class="modal-title" data-bind="html: grp.dataType()">
+                    </h4>
+                </div>
+                <div  >      
+                   <div class="col-md-12" style="margin-top:20px;">
+                    <form class="form-horizontal" id="#" novalidate > 
+                        <div class="col-md-6" >
+                        <div class="form-group"  >
+                            <label class="col-md-3 filter-label" >Address</label>
+                            <div class="col-md-8"  >
+                               <!--  <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Address" type="text" class="form-control input-sm" name="Address" placeholder="Type the Address Here" data-bind="value: usr.ldap.Address"> -->
+                                <!-- <select class="form-control input-sm" data-bind="options: usr.ListAddress, selectedOptions: usr.selectedAddress , event:{ change: usr.setLdap}" ></select> -->
+                                <input  class="form-control input-sm full-width" data-bind="value: grp.dataTypeConfig.Address" id="address" />
+                                <span class="k-invalid-msg" data-for="Address"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 filter-label">Base DN</label>
+                            <div class="col-md-8">
+                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for BaseDN" type="text" class="form-control input-sm" name="BaseDN" placeholder="Type the BaseDN Here" data-bind="value: grp.dataTypeConfig.BaseDN">
+                                <span class="k-invalid-msg" data-for="BaseDN"></span>
+                            </div>
+                        </div> 
+                        <div class="form-group">
+                            <label class="col-md-3 filter-label">Filter</label>
+                            <div class="col-md-8">
+                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Filter" type="text" class="form-control input-sm" name="Filter" placeholder="Type the Filter Here" data-bind="value: grp.dataTypeConfig.Filter">
+                                <span class="k-invalid-msg" data-for="Filter"></span>
+                            </div>
+                        </div> 
+                    </div>
+                    <div class="col-md-6" >
+                         <div class="form-group"  >
+                            <label class="col-md-3 filter-label">Username</label>
+                            <div class="col-md-8" >
+                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Username" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Username Here" data-bind="value: grp.dataTypeConfig.Username">
+                                <span class="k-invalid-msg" data-for="Username"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 filter-label">Password</label>
+                            <div class="col-md-8">
+                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: grp.dataTypeConfig.Password">
+                                <span class="k-invalid-msg" data-for="Password"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 filter-label">Attribute</label>
+                            <div class="col-md-8">
+                                <input type="text" id="attribute" class="form-control input-sm" data-bind="value: grp.dataTypeConfig.Attribute">
+                                <span class="k-invalid-msg" data-for="attribute"></span>
+                            </div>
+                        </div> 
+                    </div>
+                    </form>    
+                    <div class="col-md-12" >    
+                    <div class="form-group">
+                       <!--  <div id="grid-ldap"></div> -->
+                    </div>
+                    </div>
+                    <!-- <div class="clearfix"></div>  -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div style="margin-right:45px;">
+                        <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
+                            <span class="glyphicon glyphicon-remove"></span> Cancel
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary" data-bind="click: grp.getDataUserLdap">
+                            <span class="glyphicon glyphicon-refresh"></span> Search
+                        </button> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end modal grup add type -->
