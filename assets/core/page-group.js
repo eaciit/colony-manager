@@ -24,14 +24,14 @@ grp.DataTypeTemplate = {
     Filter: "",
     Username: "",
     Password: "",
-    Attribute: [],
+    Attribute: ko.observableArray([]),
 }
 grp.dataType = ko.observable("Basic");
 grp.dataSearch = ko.observable('');
 grp.dataTypeConfig = ko.mapping.fromJS(grp.DataTypeTemplate);
 grp.Access = ko.mapping.fromJS(grp.AccessGrantGroup);
 grp.ListAccess = ko.observableArray([]);
-grp.attribute = ko.observableArray([]);
+grp.attribute = ko.observable("");
 grp.listAddress = ko.observableArray([]);
 grp.listLdap = ko.observableArray([]);
 grp.GroupsColumns = ko.observableArray([{
@@ -430,13 +430,17 @@ grp.backToFront = function() {
 grp.showModalType = function(){
     $('#modalForgot').modal({show: 'true'});
     $('#attribute').tokenfield({});
+    grp.attribute('');
+    //$('#tokenfield').data('bs.tokenfield').$input;
     grp.autoDataAddress();
     grp.dataTypeConfig.Address('');
     grp.dataTypeConfig.BaseDN('');
     grp.dataTypeConfig.Filter('');
     grp.dataTypeConfig.Username('');
     grp.dataTypeConfig.Password('');
-    grp.dataTypeConfig.Attribute([]);
+    //$('#modalForgot').tokenfield('destroy');
+    console.log(grp.attribute());
+    $('form').Reset();
 
 }
 
@@ -488,11 +492,58 @@ grp.setDataType = function(){
 }
 
 grp.getDataUserLdap = function(){
-    var param = ko.mapping.toJS(grp.dataTypeConfig); 
+    // var param = {
+    //     Address: grp.dataTypeConfig.Address(),
+    //     BaseDN: grp.dataTypeConfig.BaseDN(),
+    //     Filter : grp.dataTypeConfig.Filter(),
+    //     Username : grp.dataTypeConfig.Username(),
+    //     Password : grp.dataTypeConfig.Password(),
+    //     Attribute : grp.dataTypeConfig.Attribute(),
+    // } 
+    var array = grp.attribute().split(",");
+    $.each(array, function(i){
+        grp.dataTypeConfig.Attribute.push(array[i]);
+    })
+    var param = ko.mapping.toJS(grp.dataTypeConfig);
     app.ajaxPost("/group/finduserldap", param, function(res){
         if(!app.isFine(res)){
             return;
         }
+        console.log(param);
+        $("#grid-ldap-group").html("");
+        $('#grid-ldap-group').kendoGrid({
+            dataSource: res.data,
+            pageSize: 5, 
+            pageable: true,  
+            sortable: true,  
+            selectable: 'multiple, row', 
+            filterfable: true,
+            change: grp.selectLdapGroup,
+            // columns: usr.UsersColumnsldap(),
+            dataBound :grp.saveGroupLdap()
+        });
+    });
+   
+    //grp.dataTypeConfig.Attribute.push(grp.coba());
+    
+}
+
+grp.saveGroupLdap = function(){
+    var param = ko.mapping.toJS(grp.dataTypeConfig);
+    app.ajaxPost("/group/savegroupconfigldap", param, function(res){
+        if(!app.isFine(res)){
+            return;
+        }
+
+    });
+}
+
+grp.selectLdapGroup = function(){
+    app.wrapGridSelect("#grid-ldap-group", ".btn", function(d) {
+        grp.config._id(d.cn);
+        grp.config.Title(d.name);
+        grp.config.Owner(d.usncreated);
+       $('#modalForgot').modal("hide");
     });
 }
 
