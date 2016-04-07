@@ -4,8 +4,8 @@ import (
 	// "archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/acl"
+	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	// _ "github.com/eaciit/dbox/dbc/jsons"
@@ -228,49 +228,86 @@ func (a *GroupController) InitialSetDatabase() error {
 	return nil
 }
 
-func (a *GroupController) GetLdapdataAddress(r *knot.WebContext) interface{}{
+func (a *GroupController) GetLdapdataAddress(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	autoFilters := []*dbox.Filter{}
 
 	var query *dbox.Filter
 
-	if len(autoFilters) > 0{
+	if len(autoFilters) > 0 {
 		query = dbox.And(autoFilters...)
 	}
 
 	cursor, err := colonycore.Find(new(colonycore.Ldap), query)
-	if err != nil{
+	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	data := []colonycore.Ldap{}
 	err = cursor.Fetch(&data, 0, false)
-	if err != nil{
+	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	defer cursor.Close()
 
-	// var onfilter *dbox.Filter
-
-	// payload := map[string]interface{}{}
-
-	// err := r.GetForms(&payload)
-	// if err != nil{
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
-
-	// if strings.Contains(toolkit.TypeName(payload["address"]), "float") {
-	// 	payload["search"] = toolkit.ToInt(payload["address"], toolkit.RoundingAuto)
-	// }
-
-	// if search := toolkit.ToString(payload["address"]); search != ""{
-
-	// }
-
-
-
 	return helper.CreateResult(true, data, "")
 }
+func (a *GroupController) SaveGroupConfigLdap(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	fmt.Println(payload)
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
+	o := new(colonycore.Ldap)
+	o.ID = payload["Address"].(string)
+	o.Address = payload["Address"].(string)
+	o.BaseDN = payload["BaseDN"].(string)
+	o.FilterGroup = payload["Filter"].(string)
+	o.Username = payload["Username"].(string)
+	o.Password = payload["Password"].(string)
+	err = toolkit.Serde(payload["Attribute"], &o.AttributesGroup, "json")
+
+	err = colonycore.Save(o)
+	if err != nil {
+		return helper.CreateResult(false, o, err.Error())
+	}
+
+	return helper.CreateResult(true, o, "")
+}
+func (a *GroupController) FindUserLdap(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	fmt.Println(payload)
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	addr := payload["Address"].(string)
+	basedn := payload["BaseDN"].(string)
+	filter := payload["Filter"].(string)
+	username := payload["Username"].(string)
+	password := payload["Password"].(string)
+	var attr []string
+
+	err = toolkit.Serde(payload["Attribute"], &attr, "json")
+
+	param := toolkit.M{}
+
+	param.Set("username", username)
+	param.Set("password", password)
+	param.Set("attributes", attr)
+
+	arrm, err := acl.FindDataLdap(addr, basedn, filter, param)
+	if err != nil {
+		fmt.Println("Error")
+		return helper.CreateResult(true, err, "error")
+	}
+
+	return helper.CreateResult(true, arrm, "success")
+}
