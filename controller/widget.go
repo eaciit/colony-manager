@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
@@ -51,36 +50,11 @@ func (w *WidgetController) GetWidget(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (w *WidgetController) FetchDataFromDS(_id string, fetch int) (toolkit.Ms, error) {
-	dsController := DataSourceController{}
-	dataDS, _, _, query, _, err := dsController.ConnectToDataSource(_id)
-	if err != nil {
-		return nil, err
-	}
-	if len(dataDS.QueryInfo) == 0 {
-		return nil, errors.New("data source has no query info")
-	}
-
-	cursor, err := query.Cursor(nil)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close()
-
-	data := toolkit.Ms{}
-
-	err = cursor.Fetch(&data, fetch, false)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
 func (w *WidgetController) FetchDataSources(ids string) (toolkit.Ms, error) {
 	widgetData := toolkit.Ms{}
 	_ids := strings.Split(ids, ",")
 	for _, _id := range _ids {
-		data, err := w.FetchDataFromDS(_id, 0)
+		data, err := helper.FetchDataFromDS(_id, 0)
 		if err != nil {
 			return nil, err
 		}
