@@ -15,18 +15,19 @@
 	padding-top: 20px;
 }
 </style>
-
+<div data-bind="visible:df.Mode()!='Grid'">
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: dataflow">
 	<div class="col-md-12" data-bind="visible: (app.section() == '')">
 		<ol class="breadcrumb bc-custom">
 			<li>Data Flow Designer</li>
 			<div class="pull-right">
-				<button class="btn mgRight btn-tooltip" title="Cancel"><span class="glyphicon glyphicon-arrow-left"></span></button>
-				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram($('.diagram'));"><span class="glyphicon glyphicon-remove"></span></button>
-				<button class="btn btn-primary btn-tooltip" title="Save"><span class="glyphicon glyphicon-floppy-disk"></span></button>
+				<button class="btn mgRight btn-tooltip" title="Cancel" onclick="df.backToGrid();"><span class="glyphicon glyphicon-arrow-left"></span></button>
+				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
+				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
+				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
 				<button class="btn btn-success mgLeft btn-tooltip" title="Run" data-bind="click: df.run">
 			    		<span class="glyphicon glyphicon-play"></span>
-			    	</button>
+			    </button>
 			</div>
 		</ol>
 
@@ -185,25 +186,34 @@
     <div style="clear:both;"></div>
 </script>
 
-<div class="divTitleDF">
+<div class="divTitleDF" data-bind="with:df">
 &nbsp;
-	<p class="pTitle">Add Title</p>
-	<p class="pDesc">Add Desciption</p>
+	<p class="pTitle" data-bind="text:Name"></p>
+	<p class="pDesc" data-bind="text:Description"></p>
 </div>
 
 <button style="display:none" data-content="" id="poptitle">
 <div class="poptitle-content">
-<div class="col-md-8">
- 	<input type="text" class="form-control" data-bind="" placeholder="Type something..">
-</div>
-              
-<div class="col-md-4 mgBottom">
-	<a class="btn btn-sm btn-primary pull-right poptitle-save" data-bind=""><span class="glyphicon glyphicon-floppy-disk"></span></a>
-	<a class="btn btn-sm btn-danger pull-left poptitle-close" data-bind=""><span class="glyphicon glyphicon-remove"></span></a>
-</div>
-   
+	<div class="col-md-8">
+	 	<input type="text" class="form-control pop-txt" placeholder="Type something..">
+	</div>
+	              
+	<div class="col-md-4 mgBottom">
+		<a class="btn btn-sm btn-primary pull-right poptitle-save" data-bind=""><span class="glyphicon glyphicon-floppy-disk"></span></a>
+		<a class="btn btn-sm btn-danger pull-left poptitle-close" data-bind=""><span class="glyphicon glyphicon-remove"></span></a>
+	</div> 
 </div> 
 </button>
+</div>
+
+
+<div class="col-md-12" data-bind="visible:df.Mode()=='Grid'">
+	<ol class="breadcrumb bc-custom">
+			<li>Data Flow</li>
+		</ol>
+		<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
+</div>
+
 <style>	
 		.popover{
 			max-width: 500px!important;
@@ -219,14 +229,14 @@
 		}
 
 		.divTitleDF{
-		    position: absolute;
-		    top: 24% !important;
-		    left: 8.4%;
-		    text-align: center;
-		    width: 90.6%;
-		    height: 10%;
-		    opacity: 0.6;
-		    cursor: pointer;
+	    	position: absolute;
+	    	top: 156px !important;
+	    	left: 37.4%;
+	    	text-align: center;
+	    	width: 30.6%;
+	    	height: 10%;
+	    	opacity: 0.6;
+	    	cursor: pointer;
 		}
 
 		.pTitle{

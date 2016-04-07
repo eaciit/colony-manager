@@ -70,12 +70,141 @@ viewModel.dataflow = {
         "Type"  : "Action",
         "Color" : "#FF0000"
     },
-    ]
-};
+    ],
+    Name: ko.observable("Add Title"),
+    Description: ko.observable("Add Description"),
+    Actions:ko.observableArray([]),
+    DataShape:ko.observable({}),
+    Mode: ko.observable("Grid")
+}; 
+
+viewModel.dataFlowList = [
+{
+    Id :"S1",
+    Name:"Sample 1",
+    Description:"Sample 1 Desc",
+    CreatedDate:(new Date()).toJSON(),
+    CreatedBy:"Om Jin",
+    Actions:[],
+    DataShape:{
+               "shapes":[
+                  {
+                     "dataItem":{
+                        "name":"Spark",
+                        "image":"icon_spark.png",
+                        "color":"#F17B48"
+                     },
+                     "x":172.671875,
+                     "y":74,
+                     "id":"CP1G1NYep5"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Hive",
+                        "image":"icon_hive.png",
+                        "color":"#CEBF00"
+                     },
+                     "x":173.671875,
+                     "y":207,
+                     "id":"hCkqTIVOdg"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Map Reduce",
+                        "image":"icon_mapreduce.png",
+                        "color":"#00B3B3"
+                     },
+                     "x":595.671875,
+                     "y":207,
+                     "id":"KuLngJOuXW"
+                  }
+               ],
+               "connections":[
+                  {
+                     "fromId":"CP1G1NYep5",
+                     "toId":"hCkqTIVOdg"
+                  },
+                  {
+                     "fromId":"hCkqTIVOdg",
+                     "toId":"KuLngJOuXW"
+                  }
+               ]
+        }
+},{
+    Id :"S2",
+    Name:"Sample 2",
+    Description:"Sample 2 Desc",
+    CreatedDate:(new Date()).toJSON(),
+    CreatedBy:"Lebah Ganteng",
+    Actions:[],
+    DataShape:{
+               "shapes":[
+                  {
+                     "dataItem":{
+                        "name":"Hive",
+                        "image":"icon_hive.png",
+                        "color":"#CEBF00"
+                     },
+                     "x":276.671875,
+                     "y":97,
+                     "id":"nRFHIJMn0K"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Fork",
+                        "image":"icon_fork.png",
+                        "color":"#CF29D8"
+                     },
+                     "x":311.671875,
+                     "y":205,
+                     "id":"inBm7NAwQG"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Email",
+                        "image":"icon_email.png",
+                        "color":"#017932"
+                     },
+                     "x":266.671875,
+                     "y":333,
+                     "id":"fhINCccKdN"
+                  },
+                  {
+                     "dataItem":{
+                        "name":"Kafka",
+                        "image":"icon_kafka.png",
+                        "color":"#C1C1C1"
+                     },
+                     "x":34.671875,
+                     "y":224,
+                     "id":"B6eTbLUEBa"
+                  }
+               ],
+               "connections":[
+                  {
+                     "fromId":"nRFHIJMn0K",
+                     "toId":"inBm7NAwQG"
+                  },
+                  {
+                     "fromId":"inBm7NAwQG",
+                     "toId":"fhINCccKdN"
+                  },
+                  {
+                     "fromId":"inBm7NAwQG",
+                     "toId":"B6eTbLUEBa"
+                  }
+               ]
+            }
+    }
+];
+
 var df = viewModel.dataflow;
+var dfl = viewModel.dataFlowList;
+
 df.popoverMode = ko.observable('');
 
- function visualTemplate(options) {
+
+function visualTemplate(options) {
             var dataviz = kendo.dataviz;
             var g = new dataviz.diagram.Group();
             var dataItem = options.dataItem;
@@ -133,6 +262,8 @@ df.popoverMode = ko.observable('');
 
 
 df.init = function () {
+    df.createGrid();
+
     var dataSource = new kendo.data.HierarchicalDataSource({
         data: [],
         schema: {
@@ -180,8 +311,8 @@ df.init = function () {
         },
         autoBind: true,
         click:function(e){
-            console.log(e);
-            console.log(this);
+            // console.log(e);
+            // console.log(this);
             var diagram = kendo.dataviz.diagram;
             var Shape = diagram.Shape;
             var item = e.item;
@@ -193,8 +324,7 @@ df.init = function () {
 
                     setTimeout(function(){
                       if(clickonshape == 2) {
-
-
+                        df.closePopover("#poptitle");
                         $("#popbtn").popover("show");
                         setTimeout(function () {
                             ko.cleanNode($(".popover-content:last")[0]);
@@ -277,12 +407,14 @@ df.init = function () {
         $(".popover-title").html("Edit Title");
         $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
         $(".arrow").attr("style","top:46%");
+        $(".pop-txt").val(df.Name());
 
         $(".poptitle-close").click(function(e){
             $("#poptitle").popover("hide");
         });
 
         $(".poptitle-save").click(function(e){
+            df.Name($(".pop-txt:visible").val());
             $("#poptitle").popover("hide");
         });
     });
@@ -294,12 +426,15 @@ df.init = function () {
         $(".popover-title").html("Edit Desciption");
         $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
         $(".arrow").attr("style","top:46%");
+        $(".pop-txt").val(df.Description());
+   
 
         $(".poptitle-close").click(function(e){
             $("#poptitle").popover("hide");
         });
 
         $(".poptitle-save").click(function(e){
+            df.Description($(".pop-txt:visible").val());
             $("#poptitle").popover("hide");
         });
     });
@@ -361,7 +496,9 @@ df.checkConnection = function(elem){
     //delete connection with one shape
     for(var c in conn){
         var co = conn[c];
-        if(co.from == null || co.to == null ||  co.from.shape ==undefined || co.to.shape == undefined){
+        var sh = co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to.shape == undefined ?co.to:co.to.shape;
+        if(co.from == null || co.to == null ||  sh ==undefined || shto == undefined){
             diagram.remove(co);
         }
     }
@@ -372,8 +509,8 @@ df.checkConnection = function(elem){
     //delete invalid connection
     for(var c in conn){
         var co = conn[c];
-        var sh = co.from.shape;
-        var shto = co.to.shape;
+        var sh = co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to.shape == undefined ?co.to:co.to.shape;
             df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
             df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
 
@@ -407,8 +544,8 @@ df.checkFlow = function(elem){
 
     for(var c in conn){
         var co = conn[c];
-        var sh = co.from.shape;
-        var shto = co.to.shape;
+        var sh = co.from.shape == undefined ?co.from: co.from.shape;
+        var shto = co.to.shape == undefined ?co.to:co.to.shape;
 
         if(sh.dataItem.name !="Fork" ){
             df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
@@ -448,9 +585,12 @@ df.checkFlow = function(elem){
 
     if(startfinish==0){
         alert("Infinite Flow !");
+        return  false;
     }else if(noconnshape>0){
         alert("Invalid Flow !")
+        return  false;
     }
+    return  true;
 }
 
 df.onDragEnd = function(e){
@@ -477,9 +617,6 @@ df.draggedElementsTexts = function(e) {
                 text = "connections";
                 elements = e.connections;
             }
-            // text += $.map(elements, function (element) {
-            //     return elementText(element);
-            // }).join(",");
             return text;
         }
 
@@ -503,8 +640,8 @@ df.getShapeData = function(elem){
     for(var c in conn){
         var co = conn[c];
         var dt ={};
-        dt["fromId"] = co.from.shape.id;
-        dt["toId"] = co.to.shape.id;
+        dt["fromId"] = co.from.shape == undefined ? co.from.id : co.from.shape.id;
+        dt["toId"] = co.to.shape == undefined ?co.to.id : co.to.shape.id;
         dtconn.push(dt);
     }
 
@@ -542,12 +679,70 @@ df.renderDiagram = function(elem,data){
     }
 }
 
-df.clearDiagram = function(elem){
-  $(".diagram").getKendoDiagram().clear();
+df.Reload = function(){
+    df.clearDiagram();  
+    df.renderDiagram(".diagram",df.DataShape());
+}
+
+df.Save = function(){
+    var ch = df.checkFlow(".diagram");
+    if(ch){
+        df.DataShape(df.getShapeData(".diagram"));
+    }    
+}
+
+df.clearDiagram = function(){
+    df.closePopover("#popbtn");
+    df.closePopover("#poptitle");
+    $(".diagram").getKendoDiagram().clear();
 }
 
 df.closePopover = function(elem){
     $(elem).popover("hide");
+}
+
+df.popTitleSave = function(val){
+    df.Name = val;
+}
+
+df.popDescSave = function(val){
+    df.Desciption = val  
+}
+
+df.createGrid = function(){
+      $("#dataFlowGrid").kendoGrid({
+        dataSource:{
+            data:dfl,
+        },
+        columns:[
+             {field:"Name",title:"Name"},
+             {field:"Description"},
+             {field:"CreatedDate",title:"Created Date" ,template:"#:moment(Date.parse(CreatedDate)).format('DD-MMM-YYYY')#"},
+             {field:"CreatedBy",title:"Created By"},
+             {template:"<button class='btn btn-primary btn-sm' onclick='df.goToDesigner(\"#:Id#\")' >design</button>"}
+        ]
+    })
+}
+
+df.goToDesigner = function(Id){
+    // alert(Id)
+    var selected = {};
+    for(var c in  dfl){
+        var sdfl = dfl[c];
+        if(sdfl.Id==Id){
+            selected = sdfl;
+            break;
+        }
+    }
+    df.Mode("Designer");
+    df.DataShape(selected.DataShape);
+    df.Name(selected.Name);
+    df.Description(selected.Description);
+    df.Reload();
+}
+
+df.backToGrid = function(){
+    df.Mode("Grid");
 }
 
 $(function () {
