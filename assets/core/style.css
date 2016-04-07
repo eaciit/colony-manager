@@ -494,6 +494,11 @@ table.table tr:hover td {
   padding: 13px 15px;
   color: #5F5F5F; }
 
+.grid-stack {
+  min-height: 500px; }
+  .grid-stack .grid-stack-item-content {
+    background-color: #94D5EB; }
+
 /** structured stylesheet */
 body {
   padding-top: 86px;
@@ -531,6 +536,13 @@ body {
       body #sidebar .nav li a.active {
         background-color: #eee;
         text-decoration: none; }
+  body .nav > li a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none; }
+  body .nav > li.grid-stack-item:hover {
+    background-color: #eee; }
   body #content {
     padding: 0px; }
     body #content > .col-md-12 > h1 {
