@@ -431,7 +431,7 @@ grp.showModalType = function(){
     $('#modalForgot').modal({show: 'true'});
     $('#attribute').tokenfield({});
     grp.attribute('');
-    //$('#tokenfield').data('bs.tokenfield').$input;
+    $('#attribute').tokenfield('setTokens', []);
     grp.autoDataAddress();
     grp.dataTypeConfig.Address('');
     grp.dataTypeConfig.BaseDN('');
