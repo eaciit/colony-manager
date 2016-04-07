@@ -329,7 +329,7 @@ func (a *UserController) SaveConfigLdap(r *knot.WebContext) interface{} {
 	o.ID = payload["Address"].(string)
 	o.Address = payload["Address"].(string)
 	o.BaseDN = payload["BaseDN"].(string)
-	o.Filter = payload["Filter"].(string)
+	o.FilterUser = payload["Filter"].(string)
 	o.Username = payload["Username"].(string)
 	o.Password = payload["Password"].(string)
 
