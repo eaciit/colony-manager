@@ -60,18 +60,27 @@ apl.searchfield = ko.observable('');
 apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
 	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' onclick=\" apl.checkDelData(this, 'aplAll', 'all') \"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>"
-		].join(" ");
+		if (d.IsInternalApp) {
+			return "";
+		}
+
+		return "<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>";
 	}},
 	{ field: "_id", title: "ID" },
 	{ field: "AppsName", title: "Name" },
-	{ field: "Type", title: "Type" },
-	{ field: "Port", title: "Running Port" },
+	{ title: "Type", template: function (d) {
+		if (d.Type == "web") {
+			return d.Type + " (port: " + d.Port + ")";
+		}
+
+		return d.Type;
+	} },
+	{ title: "Internal App", width: 90, template: function (d) {
+		return (d.IsInternalApp ? "<center>YES</center>" : "<center>NO</center>");
+	} },
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deployment information' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
-		].join(" ");
+		// var isDisabled = (d.IsInternalApp ? "disabled style='pointer-events: none;'" : "");
+		return "<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' ><span class='fa fa-plane'></span></button>";
 	} },
 ]);
 apl.ServerColumns = ko.observableArray([
@@ -102,26 +111,44 @@ apl.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
-	{ field: "status", width: 100, headerTemplate: "<center>status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
-		if (app == undefined) {
-			return "";
-		}
-
-		var deployedTo = app.DeployedTo;
-
-		if (deployedTo == null) {
-			deployedTo = [];
-		}
-
-		if (deployedTo.indexOf(d._id) != -1) {
+	{ width: 100, headerTemplate: "<center>App Status</center>",  attributes: { class: "align-center" }, template: function (d) {
+		return apl.isDeployed(d, function (app) {
 			var target = [d.host.split(":")[0], app.Port].join(":");
 			return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
-		}
+		}, function (app) {
+			return "UNDEPLOYED";
+		});
+	} },
+	{ headerTemplate: "<center>Run App</center>", width: 80, attributes: { "class": "align-center" }, template: function (d) {
+		var isDeployed = apl.isDeployed(d, function (app) {
+			return true;
+		}, function (app) {
+			return false;
+		});
 
-		return "UNDEPLOYED";
+		var attr = (isDeployed ? "" : "disabled style='pointer-events: none; opacity: 0.7;'");
+		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' " + attr + "><span class='fa fa-play'></span></button>";
 	} }
 ]);
+
+apl.isDeployed = function (d, yes, no) {
+	var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
+	if (app == undefined) {
+		return "";
+	}
+
+	var deployedTo = app.DeployedTo;
+
+	if (deployedTo == null) {
+		deployedTo = [];
+	}
+
+	if (deployedTo.indexOf(d._id) != -1) {
+		return yes(app);
+	}
+
+	return no(app);
+};
 
 apl.commandDataColumns = ko.observableArray([
 	{field: "AppID", title: "Application ID"},

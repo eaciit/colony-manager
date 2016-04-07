@@ -697,7 +697,7 @@ srv.ping = function () {
 	});
 
 	$.when.apply(undefined, ajaxes).always(function () {
-		setTimeout(srv.ping, 20 * 1000);
+		setTimeout(srv.ping, 100 * 1000);
 	});
 };
 
