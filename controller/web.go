@@ -166,7 +166,6 @@ func (w *WebController) WidgetDesigner(r *knot.WebContext) interface{} {
 	r.Config.ViewName = "views/page-designer.html"
 	payload := map[string]string{}
 	r.GetForms(&payload)
-	toolkit.Println(payload)
 
 	return toolkit.M{"href": "/widgetdesigner", "pageID": payload["id"]}
 }
