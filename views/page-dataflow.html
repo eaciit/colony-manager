@@ -21,7 +21,7 @@
 		<ol class="breadcrumb bc-custom">
 			<li>Data Flow Designer</li>
 			<div class="pull-right">
-				<button class="btn mgRight btn-tooltip" title="Cancel" onclick="df.backToGrid();"><span class="glyphicon glyphicon-arrow-left"></span></button>
+				<button class="btn mgRight btn-tooltip" title="Back" onclick="df.backToGrid();"><span class="glyphicon glyphicon-arrow-left"></span></button>
 				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
 				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
 				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
@@ -211,10 +211,34 @@
 	<ol class="breadcrumb bc-custom">
 			<li>Data Flow</li>
 		</ol>
+        <div class="col-md-12 mgTop15">
+            <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search name, description, create by ..."></input>
+            <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
+        </div>
 		<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
 </div>
 
 <style>	
+        .search-txt{
+            border-radius: 1px;
+            min-height: 29px;
+            min-width: 300px;
+            padding: 0 8px;
+            border-top: 1px solid #c0c0c0;
+            -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+            -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+
+            padding-right: 14px;
+            padding-right: 4px \9;
+            padding-left: 14px;
+            padding-left: 4px \9;
+            margin-bottom: 0;
+            -webkit-border-radius: 15px;
+            -moz-border-radius: 15px;
+            border-radius: 15px;
+        }
+
 		.popover{
 			max-width: 500px!important;
 		}
@@ -251,6 +275,10 @@
 		.mgRight{
 			margin-right: 25px;
 		}
+
+        .mgRight10{
+            margin-right: 10px;
+        }
 
 		.mgBottom{
 			margin-bottom: 10px;
