@@ -60,18 +60,27 @@ apl.searchfield = ko.observable('');
 apl.search2field = ko.observable('');
 apl.applicationColumns = ko.observableArray([
 	{headerTemplate: "<center><input type='checkbox' class='aplCheckAll' onclick=\" apl.checkDelData(this, 'aplAll', 'all') \"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>"
-		].join(" ");
+		if (d.IsInternalApp) {
+			return "";
+		}
+		
+		return "<input type='checkbox' class='aplCheck' idcheck='"+ d._id +"' onclick=\" apl.checkDelData(this, 'apl')\"/>";
 	}},
 	{ field: "_id", title: "ID" },
 	{ field: "AppsName", title: "Name" },
-	{ field: "Type", title: "Type" },
-	{ field: "Port", title: "Running Port" },
+	{ title: "Type", template: function (d) {
+		if (d.Type == "web") {
+			return d.Type + " (port: " + d.Port + ")";
+		}
+
+		return d.Type;
+	} },
+	{ title: "Internal App", width: 90, template: function (d) {
+		return (d.IsInternalApp ? "<center>YES</center>" : "<center>NO</center>");
+	} },
 	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deployment information' onclick='apl.showModalDeploy(\"" + d._id + "\")()'><span class='fa fa-plane'></span></button>",
-		].join(" ");
+		// var isDisabled = (d.IsInternalApp ? "disabled style='pointer-events: none;'" : "");
+		return "<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' ><span class='fa fa-plane'></span></button>";
 	} },
 ]);
 apl.ServerColumns = ko.observableArray([
