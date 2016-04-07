@@ -11,7 +11,7 @@ lang.templateSetupLangEnv = {
 	ServerId:"",
 	Lang:""
 }
-lang.coba = ko.observable("Idap");
+
 lang.filter = ko.mapping.fromJS(lang.templateFilter);
 lang.SetupLangEnv = ko.mapping.fromJS(lang.templateSetupLangEnv); 
 lang.dataLanguage = ko.observableArray([]);
@@ -61,7 +61,6 @@ function getAttr(serverid,language){
 } 
 
 lang.setGrid = function(data){
-	console.log(data);
 	if (data == undefined ){
 		return
 	}
@@ -79,13 +78,19 @@ lang.setGrid = function(data){
 			host:d.ServerHost
 		}
 		d.Languages.forEach(function(e){
-			each[e.language] = e.language;
+			each[e.Lang] = e.IsInstalled;
 			if (i == 0){
 				columnGrid.push({
 					width:"100px",
 					title:"<center>"+e.Lang+"</center>",
 					template: function (f){
-					return "<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered btn-language\" title=\"Setup\" id = \""+f._id+"\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" serverId = \""+f._id+"\" IsInstalled =\""+e.IsInstalled+"\" ><span class=\"fa fa-cog\"></span></button></center>";
+					var checkDisable = '';
+					checkDisable = f[e.Lang];
+					if (checkDisable == true){
+						return "<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered btn-language\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" disabled ><span class=\"fa fa-cog\"></span></button></center>";	
+						} else {
+						return "<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered btn-language\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>";	
+						}
 					}
 				});
 			}
@@ -99,16 +104,6 @@ lang.setGrid = function(data){
 		pageable: true,
 		filterfable: false,
 	});
-
-	data.forEach (function(d, i){
-		d.Languages.forEach(function (e,h){
-			var cekSetup = $('.grid-langEnvi tbody tr:eq("'+i+'") td:gt(2) button').attr("isinstalled");
-			console.log("baris ke",i);
-			if (cekSetup != "false"){
-				$('.grid-langEnvi tbody tr:eq("'+i+'") td:gt(2) button').prop('disabled', true);
-			}
-		})
-	})
 }
 
 $(function () {
