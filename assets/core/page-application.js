@@ -132,6 +132,13 @@ apl.ServerColumns = ko.observableArray([
 	} }
 ]);
 
+apl.changeActiveSection = function (section) {
+	if (section == "servers") {
+		setTimeout(srv.ping, 200);
+	}
+	return app.changeActiveSection(section);
+}
+
 apl.isDeployed = function (d, yes, no) {
 	var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
 	if (app == undefined) {
@@ -342,6 +349,7 @@ apl.showModalDeploy = function (_id) {
 
 			$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
 				$(e).find("td:eq(4)").html();
+				$(e).find("td:eq(0) input:checkbox").hide();
 			});
 
 			res.data.forEach(function (each) {
@@ -357,22 +365,23 @@ apl.showModalDeploy = function (_id) {
 
 					if (row != undefined) {
 						var $row = $(".grid-server-deploy .k-grid-content tr[data-uid='" + row.uid + "']");
-						var $td = $row.find("td:eq(4)");
-
-						console.log(resStatus.data, $td);
+						var $checkbox = $row.find("td:eq(0) input:checkbox");
+						var $tdStatus = $row.find("td:eq(4)");
 
 						if (resStatus.data) {
-							$td.css("background-color", "#5cb85c");
-							$td.css("color", "white");
+							$checkbox.hide();
+							$tdStatus.css("background-color", "#5cb85c");
+							$tdStatus.css("color", "white");
 
 							var appData = Lazy(apl.applicationData()).find({ _id: _id });
 							var target = [each.host.split(":")[0], appData.Port].join(":");
 							var el = "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
-							$td.empty().append($(el));
+							$tdStatus.empty().append($(el));
 						} else {
-							$td.css("background-color", "#d9534f");
-							$td.css("color", "white");
-							$td.html("UNDEPLOYED");
+							$checkbox.show();
+							$tdStatus.css("background-color", "#d9534f");
+							$tdStatus.css("color", "white");
+							$tdStatus.html("UNDEPLOYED");
 						}
 					}
 				});

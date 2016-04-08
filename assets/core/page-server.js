@@ -219,7 +219,7 @@ srv.getServers = function(c) {
 			c(res);
 		};
 
-		setTimeout(srv.ping, 500);
+		setTimeout(srv.ping, 200);
 	});
 };
 
