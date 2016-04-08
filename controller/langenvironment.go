@@ -199,8 +199,14 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 
 				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
 					targetLang := new(colonycore.InstalledLang)
-					targetLang.IsInstalled = true
 					targetLang.Lang = eachLang.Language
+
+					for _, eachLang := range dataServers.InstalledLang {
+						if eachLang.Lang == targetLang.Lang {
+							targetLang = eachLang
+							break
+						}
+					}
 
 					if eachLang.Language == LANG_GO {
 						pathstring = append(pathstring, LANG_GO)
@@ -258,6 +264,7 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 					// fmt.Println("go run : ", outputCmd[0].CMD)
 					fmt.Println(" :: : ", outputCmd[0].Output)
 
+					targetLang.IsInstalled = true
 					dataServers.InstalledLang = append(dataServers.InstalledLang, targetLang)
 					colonycore.Save(dataServers)
 				}
