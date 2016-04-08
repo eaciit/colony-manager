@@ -848,7 +848,6 @@ $(function () {
 	apl.codemirror();
 	apl.prepareTreeView();
 	app.showfilter(false);
-	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
 
