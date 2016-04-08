@@ -84,6 +84,7 @@ ly.getLoadMenu = function(){
 			});
 		}
 	});
+	
 	app.ajaxPost("/login/getaccessmenu", {}, function(res){
 		if(!app.isFine(res)){
 			return;

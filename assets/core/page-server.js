@@ -327,6 +327,7 @@ srv.doSaveServer = function (c) {
 				closeOnConfirm: true
 			});
 			srv.backToFront();
+			srv.ping();
 		};
 
 		$.when.apply(undefined, ajaxes).then(callback, callback);
@@ -345,6 +346,7 @@ srv.doSaveServer = function (c) {
 			if (typeof c == "function") {
 				c();
 			}
+			srv.ping();
 		});
 	}
 
@@ -665,6 +667,10 @@ srv.finishButton = function () {
 
 srv.ping = function () {
 	var doPing = function (s) {
+		if (app.miniloader()) {
+			return;
+		}
+
 		var $grid = $(".grid-server").data("kendoGrid");
 		var row = Lazy($grid.dataSource.data()).find({ _id: s._id });
 
