@@ -31,12 +31,16 @@ lang.getserverlanguage = function (c){
 		}
 		lang.dataLanguage(res.data)
 		if (param.search != '' || param.os != ''){
+			if (param.search != '' && param.os){
+				data = Lazy(lang.dataLanguage()).filter({ServerID:param.search},{ServerOS:param.os} ).toArray();
+				lang.setGrid(data)
+			}
 			if (param.search != ''){
-				data = JSON.stringify(Lazy(lang.dataLanguage()).where({_id:param._id}).toArray())
+				data = Lazy(lang.dataLanguage()).filter({ServerID:param.search}).toArray();
 				lang.setGrid(data)
 			}
 			if (param.os != ''){
-				data = JSON.stringify(Lazy(lang.dataLanguage()).where({os:param.os}).toArray())
+				data = Lazy(lang.dataLanguage()).filter({ServerOS:param.os}).toArray();
 				lang.setGrid(data)
 			}	
 		}else {
@@ -111,5 +115,5 @@ lang.setGrid = function(data){
 
 $(function () {
 	lang.getserverlanguage();
-	app.showfilter(false);
+	app.registerSearchKeyup($('.searchLangEnv'), lang.getserverlanguage);
 });
