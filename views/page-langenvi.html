@@ -31,7 +31,7 @@
 			Search
 		</label>
 		<div class="col-md-8">
-			<input class="form-control full-width input-sm search" name="search" type="text" placeholder="Type Keyword here" data-bind="value:lang.filter.search">
+			<input class="form-control full-width input-sm searchLangEnv" name="search" type="text" placeholder="Type Keyword here" data-bind="value:lang.filter.search">
 		</div>
 	</div>
 	<div class="col-md-4">
@@ -45,8 +45,8 @@
 	</div>
 </nav>	
 
-<div class="" data-bind="visible: (app.mode() == '')">
-	<div class="pdCustom position-custom">
+<div class="" data-bind="visible: (app.mode() == ''),">
+	<div class="pdCustom position-custom loaderlangEnv">
 		{{template "_miniloader.html"}}	
 		<div data-bind="visible: !app.miniloader()">
 			<div class="grid grid-langEnvi"></div>
