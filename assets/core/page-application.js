@@ -375,6 +375,10 @@ apl.deploy = function () {
 
 apl.selectApps = function (e) {
 	app.wrapGridSelect(".grid-application", ".btn", function (d) {
+		if (d.IsInternalApp) {
+			return;
+		}
+		
 		apl.editApplication(d._id);
 		apl.tempCheckIdServer.push(d._id);
 	});
