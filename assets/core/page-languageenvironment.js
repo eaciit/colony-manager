@@ -95,7 +95,7 @@ lang.setGrid = function(data){
 					if (checkDisable == true){
 						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" disabled ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						} else {
-						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
+						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"'), miniloader()\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						}
 					}
 				});
@@ -111,6 +111,12 @@ lang.setGrid = function(data){
 		filterfable: false,
 		dataBound:app.gridBoundTooltipster('.grid-langEnvi')
 	});
+}
+
+function miniloader() {
+	$('.pleasewait').remove();
+	$('.loaderlangEnv').find('.loader').after("<div class='pleasewait'></div>");
+	$('.loaderlangEnv').find('.loader').next().append("<br><br><br><center><h3 style='margin-left: -40px;'>Please Wait</h3></center>");
 }
 
 $(function () {
