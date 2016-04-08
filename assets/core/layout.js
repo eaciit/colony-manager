@@ -91,8 +91,8 @@ ly.getLoadMenu = function(){
 
 		ly.element(res.data);
 
-	}, function (res) {
-		//ly.element(res.data);
+	}, function () {
+		ly.element([]);
 	});
 }
 
