@@ -62,8 +62,8 @@
                 <div class="form-group">
                     <label class="col-md-3 filter-label">Add Type</label>
                     <div class="col-md-7" id="add_type">
-                        <label class="radio-inline"><input type="radio" name="addType" value="Ldap" data-bind="checked: grp.dataType">ldap</label>
-                        <label class="radio-inline"><input type="radio" name="addType" value="Basic" data-bind="checked: grp.dataType">basic</label>
+                        <label class="radio-inline"><input type="radio" name="addType" value="1" data-bind="checked: grp.dataType">ldap</label>
+                        <label class="radio-inline"><input type="radio" name="addType" value="0" data-bind="checked: grp.dataType">basic</label>
                         <span class="k-invalid-msg" data-for="ID"></span>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
 
             </div>
             <div class="col-md-6">
-                 <div class="form-group" data-bind="visible: (grp.dataType()== 'Ldap')">
+                 <div class="form-group" data-bind="visible: (grp.dataType()== '1')">
                     <button class="btn btn-success btn-sm get-tipe" data-bind="click: grp.showModalType">
                         <span class="glyphicon glyphicon-plus"></span> Group
                     </button>
@@ -132,7 +132,7 @@
                                 <tr>
                                     <td>
                                         <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access, click: usr.click"></select>
+                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access"></select>
                                     </td>
                                     <td>
                                         <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
@@ -178,7 +178,8 @@
         <div class="modal-content">
             <div class="modal-1" id="modal-1">
                 <div class="modal-header">
-                    <h4 class="modal-title" data-bind="html: grp.dataType()">
+                    <h4 class="modal-title">
+                        Ldap
                     </h4>
                 </div>
                 <div  >      
@@ -235,7 +236,7 @@
                     </form>    
                     <div class="col-md-12" >    
                     <div class="form-group">
-                        <div id="grid-ldap-group"></div>
+                        <div id="grid-ldap-group" data-bind="visible: (grp.GrupModalgrid() == 'show')"></div>
                     </div>
                     </div>
                     <!-- <div class="clearfix"></div>  -->
@@ -256,3 +257,52 @@
     </div>
 </div>
 <!-- end modal grup add type -->
+<!-- modal refresh group -->
+<div class="modal fade" id="modalRefresh" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content grp-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button type="button" class="close" 
+                   data-dismiss="modal">
+                       <span aria-hidden="true">&times;</span>
+                       <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    Enter Your Access
+                </h4>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                
+                <form role="form" class="form-horizontal" id="email-form">
+                  <div class="form-group">
+                    <label class="control-label col-sm-3">Username</label>
+                    <div class="col-xs-8">
+                      <input type="text" class="form-control input-sm" name="username" placeholder="Enter Username" data-bind="value: grp.configLdapAuht.username"  required/>
+                      <span class="k-invalid-msg" data-for="email"></span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-3">Password</label>
+                    <div class="col-xs-8">
+                      <input type="password" class="form-control input-sm" name="username" placeholder="Enter Password" data-bind="value: grp.configLdapAuht.password"   required/>
+                      <span class="k-invalid-msg" data-for="email"></span>
+                    </div>
+                  </div>
+                </form> 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-default"
+                        data-dismiss="modal">
+                            Close
+                </button>
+                <button type="button" class="btn btn-sm btn-primary grp-refresh" data-bind="click: grp.getRefresh">
+                    Get Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End modal refresh group -->

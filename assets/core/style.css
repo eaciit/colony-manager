@@ -198,6 +198,9 @@ table.table tr:hover td {
   margin: 15px 0;
   resize: none; }
 
+.grp-refresh {
+  margin-right: 9%; }
+
 .inputcustom {
   height: 18px;
   margin-top: 10px;
