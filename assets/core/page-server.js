@@ -294,14 +294,15 @@ srv.doSaveServer = function (c) {
 			eachData._id = ["server", d, moment(new Date()).format("x")].join("-");
 
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
+				app.miniloader(true);
 				if (!res.success) {
 					failedHosts.push(d);
 					return;
 				}
 			}, function (a) {
 				failedHosts.push(d);
-			}, {
-				timeout: 5000
+			},{
+				timeout : 10000
 			});
 
 			ajaxes.push(ajax);
@@ -335,6 +336,7 @@ srv.doSaveServer = function (c) {
         }
         
 		app.ajaxPost("/server/saveservers", data, function (res) {
+			app.miniloader(true);
 			if (!app.isFine(res)) {
 				return;
 			}
@@ -345,6 +347,10 @@ srv.doSaveServer = function (c) {
 			}
 		});
 	}
+
+	$(document).ajaxStop(function() {
+		  app.miniloader(false);
+	});
 }
 srv.isServerTypeNode = ko.computed(function () {
 	return srv.configServer.serverType() == "node";
