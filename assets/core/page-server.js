@@ -212,6 +212,8 @@ srv.getServers = function(c) {
 		if (typeof c == "function") {
 			c(res);
 		};
+
+		srv.ping();
 	});
 };
 
