@@ -93,7 +93,7 @@ lang.setGrid = function(data){
 					var checkDisable = '';
 					checkDisable = f[e.Lang];
 					if (checkDisable == true){
-						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" disabled ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
+						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered disabled\" title=\"Installed\"><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						} else {
 						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						}
