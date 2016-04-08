@@ -34,9 +34,6 @@ const (
 	LANG_GO    = "go"
 	LANG_JAVA  = "java"
 	LANG_SCALA = "scala"
-
-	// INSTALLER_LINUX_GO   = "go1.6.linux-x86_64.tar.gz"
-	// INSTALLER_LINUX_JAVA = "jdk-8u77-linux-x86_64.tar.gz"
 )
 
 type LangenvironmentController struct {
@@ -66,7 +63,7 @@ func CreateLangenvironmentController(l *knot.Server) *LangenvironmentController 
 
 func (l *LangenvironmentController) GetSampleDataForSetupLang() colonycore.LanguageEnvironmentPayload {
 	// s := `[{ "ServerId": "vagrant-test1", "Lang": [ "go" ] }, { "ServerId": "vagrant-test2", "Lang": [ "go", "java" ] }]`
-	s := `{ "ServerId": "test", "Lang": "go" }`
+	s := `{ "ServerId": "localhost", "Lang": "go" }`
 
 	r := colonycore.LanguageEnvironmentPayload{}
 	err := json.Unmarshal([]byte(s), &r)
@@ -162,14 +159,21 @@ func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) inter
 
 func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	payload := l.GetSampleDataForSetupLang()
+	// payload := l.GetSampleDataForSetupLang()
+
+	payload := new(colonycore.LanguageEnvironmentPayload)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	dataServers := new(colonycore.Server)
-	err := colonycore.Get(dataServers, payload.ServerId)
+	err = colonycore.Get(dataServers, payload.ServerId)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	serverPathSeparator := CreateApplicationController(l.Server).GetServerPathSeparator(dataServers)
+	// fmt.Println(" ::: ", dataServers)
 
 	sshSetting, sshClient, err := dataServers.Connect()
 	if err != nil {
@@ -196,21 +200,24 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 
 				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
 					if eachLang.Language == LANG_GO {
-						// pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_GO}
 						pathstring = append(pathstring, LANG_GO)
 						pathstring = append(pathstring, dataServers.OS)
 						sourcePath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, dataInstaller.InstallerSource)
 						destinationPath = strings.Join(pathstring, serverPathSeparator)
 						installShPath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "install.sh")
 					} else if eachLang.Language == LANG_JAVA {
-						// pathstring = []string{dataServers.DataPath, "langenvironment", "installer", LANG_JAVA}
 						pathstring = append(pathstring, LANG_JAVA)
 						pathstring = append(pathstring, dataServers.OS)
 						sourcePath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, dataInstaller.InstallerSource)
 						destinationPath = strings.Join(pathstring, serverPathSeparator)
 						installShPath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, "install.sh")
+					} else if eachLang.Language == LANG_SCALA {
+						pathstring = append(pathstring, LANG_SCALA)
+						pathstring = append(pathstring, dataServers.OS)
+						sourcePath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, dataInstaller.InstallerSource)
+						destinationPath = strings.Join(pathstring, serverPathSeparator)
+						installShPath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, "install.sh")
 					}
-
 					installShdestPath := strings.Join(append(pathstring, "install.sh"), serverPathSeparator)
 					installFilePath := strings.Join(append(pathstring, dataInstaller.InstallerSource), serverPathSeparator)
 
@@ -240,13 +247,13 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 
 					// // sh install.sh installFilePath DESTINSTALL_PATH projectpath
 					cmdShCli := fmt.Sprintf("bash %s %s %s", installShdestPath, installFilePath, DESTINSTALL_PATH)
-					// fmt.Println("sh command :: ", cmdShCli)
-					_, err := sshSetting.GetOutputCommandSsh(cmdShCli)
+					outputCmd, err := sshSetting.RunCommandSshAsMap(cmdShCli)
 					if err != nil {
 						return helper.CreateResult(false, nil, err.Error())
 					}
-
 					// fmt.Println(" --- > ", outputCmd)
+					// fmt.Println("go run : ", outputCmd[0].CMD)
+					fmt.Println(" :: : ", outputCmd[0].Output)
 				}
 			}
 		}
