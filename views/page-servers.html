@@ -125,8 +125,8 @@
 
 <div data-bind="visible: (app.mode() == 'editor')">
 	{{template "_miniloader.html"}}	
-    <!-- <div class="panel-body"> -->
-    	<div id="myTabContent" class="tab-content">
+ 	<div class="pdCustom position-custom">
+    	<div id="myTabContent" class="tab-content" data-bind="visible: !app.miniloader()">
 			<div class="tab-pane fade in active" id="Form-server">
 				<div class="panel" >
 			    	<div class="panel-body">
@@ -316,7 +316,7 @@
 		        </div>
 		    </div>
     	</div>
-    <!-- </div> -->
+    </div>
 </div>
 <div class="modal fade modal-wizard" tabindex="-1" role="dialog">
 	<div class="modal-dialog modalcustom">
@@ -387,7 +387,6 @@
 					<button type="button" class="btn btn-sm btn-primary" data-bind="click: srv.finishButton">
 						<span class="glyphicon glyphicon-ok"></span> Register IPs
 					</button>
-							{{template "_miniloader.html"}}
 				</div>
 			</div>
 		</div>

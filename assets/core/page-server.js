@@ -268,6 +268,8 @@ srv.doSaveServer = function (c) {
 		}
 	}
 
+	app.miniloader(true);
+
 	if (!srv.validateHost()) {
 		return;
 	}
@@ -294,9 +296,7 @@ srv.doSaveServer = function (c) {
 			var eachData = $.extend(true, data, { });
 			eachData.host = d;
 			eachData._id = ["server", d, moment(new Date()).format("x")].join("-");
-
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
-				app.miniloader(true);
 				if (!res.success) {
 					failedHosts.push(d);
 					return;
@@ -304,7 +304,7 @@ srv.doSaveServer = function (c) {
 			}, function (a) {
 				failedHosts.push(d);
 			},{
-				timeout : 10000
+				timeout : 120000
 			});
 
 			ajaxes.push(ajax);
@@ -339,7 +339,6 @@ srv.doSaveServer = function (c) {
         }
         
 		app.ajaxPost("/server/saveservers", data, function (res) {
-			app.miniloader(true);
 			if (!app.isFine(res)) {
 				return;
 			}
@@ -353,7 +352,7 @@ srv.doSaveServer = function (c) {
 	}
 
 	$(document).ajaxStop(function() {
-		  app.miniloader(false);
+		 app.miniloader(false);
 	});
 }
 srv.isServerTypeNode = ko.computed(function () {
