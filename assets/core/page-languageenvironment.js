@@ -55,10 +55,10 @@ lang.setupLangEnviroment = function (param){
 	app.ajaxPost("/langenvironment/setupfromsh", param, function (res) {
 		if (!res.success) {
 			sweetAlert("Oops...", res.message, "error");
-			return lang.getserverlanguage();
+			lang.getserverlanguage();
 		}
 		swal({title: param.Lang+" language successfully setup", type: "success", closeOnConfirm: true});
-		return lang.getserverlanguage();
+		lang.getserverlanguage();
 	});
 }
 
