@@ -84,7 +84,9 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	{ field: "serverType", title: "Server Type" },
+	{ field: "serverType", title: "Server Type", template: function (d) { 
+		return "<b style='text-transform: uppercase;'>" + d.serverType + "</b>";
+	} },
 	{ field: "os", title: "Server OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
 		if (row != undefined) {
@@ -138,6 +140,10 @@ srv.appserverColumns = ko.observableArray([
 			return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
 	} }
 ]);
+
+srv.ServerAppData = ko.computed(function () {
+	return Lazy(srv.ServerData()).filter({ serverType: "node" }).toArray();
+}, srv);
 
 srv.showRunCommand = function (appID) {
 	apl.commandData([]);
@@ -213,7 +219,7 @@ srv.getServers = function(c) {
 			c(res);
 		};
 
-		srv.ping();
+		setTimeout(srv.ping, 500);
 	});
 };
 
@@ -379,8 +385,15 @@ srv.saveServer = function(){
 srv.selectGridServer = function (e) {
 	srv.isNew(false);
 	app.wrapGridSelect(".grid-server", ".btn", function (d) {
+		if (d.serverType == "node") {
+			$('ul#myTab a[href="#Applications-server"]').parent().show();
+		} else {
+			$('ul#myTab a[href="#Applications-server"]').parent().hide();
+		}
+
 		srv.editServer(d._id);
 		srv.showServer(true);
+		$('#myTab a[href="#Form-server"]').tab('show');
 	});
 };
 
