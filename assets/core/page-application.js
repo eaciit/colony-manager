@@ -162,7 +162,8 @@ apl.commandDataColumns = ko.observableArray([
 apl.commandData = ko.observableArray([]);
 apl.commandServerID = ko.observable('');
 apl.showRunCommand = function (serverID) {
-	app.mode('runcommand');	
+	//app.mode('runcommand');
+	$(".modal-run-cmd").modal("show");	
 	apl.commandServerID(serverID);
 	apl.commandData([]);
 	var appMap = ko.mapping.toJS(apl.configApplication);

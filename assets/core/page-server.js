@@ -111,9 +111,9 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
 	{ field: "Port", title: "Running Port" },
-	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
-	} },
+	// { title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+	// 	return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	// } },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var yo = 0;
 		for (i in apl.applicationData()){
