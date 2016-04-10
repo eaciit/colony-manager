@@ -111,6 +111,12 @@ table.table tr:hover td {
 .gr-position {
   margin-bottom: 1%; }
 
+.hr-mapp {
+  margin-left: 6%; }
+
+#fy {
+  margin-top: 0%; }
+
 .vv-padding-right {
   padding-right: 0px; }
 
@@ -313,8 +319,11 @@ table.table tr:hover td {
 #add_type {
   margin-top: -1%; }
 
+#tipe-group {
+  margin-left: -17%; }
+
 .get-tipe {
-  margin-left: 11%; }
+  margin-left: 31%; }
 
 .fh {
   margin: auto;

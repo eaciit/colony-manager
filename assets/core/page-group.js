@@ -482,17 +482,11 @@ grp.backToFront = function() {
 
 grp.showModalType = function(){
     $('#modalForgot').modal({show: 'true'});
-    $('#attribute').tokenfield({});
+    $('#attribute-group').tokenfield({});
     grp.GrupModalgrid('hide');
-    $('#attribute').tokenfield('setTokens', []);
+    
     grp.attribute('');
     grp.autoDataAddress();
-    grp.dataTypeConfig.Address('');
-    grp.dataTypeConfig.BaseDN('');
-    grp.dataTypeConfig.Filter('');
-    grp.dataTypeConfig.Username('');
-    grp.dataTypeConfig.Password('');
-    grp.dataTypeConfig.Attribute([]);
     grp.tempDataGrup([]);
 }
 
@@ -510,9 +504,10 @@ grp.autoDataAddress = function(){
             data.push({
                 Address  :res.data[i].Address,
                 BaseDN   :res.data[i].BaseDN,
-                Filter   :res.data[i].Filter,
+                Filter   :res.data[i].FilterGroup,
                 Username :res.data[i].Username,
                 Password :res.data[i].Password,
+                Attribute :res.data[i].AttributesGroup,
 
             });
         }
@@ -536,9 +531,10 @@ grp.setDataType = function(){
             console.log(grp.listLdap()[i].Address);
             grp.dataTypeConfig.Address(grp.listLdap()[i].Address);
             grp.dataTypeConfig.BaseDN(grp.listLdap()[i].BaseDN);
-            //grp.dataTypeConfig.Filter(grp.listLdap()[i].Filter);
+            grp.dataTypeConfig.Filter(grp.listLdap()[i].Filter);
             grp.dataTypeConfig.Username(grp.listLdap()[i].Username);
             grp.dataTypeConfig.Password(grp.listLdap()[i].Password);
+            $('#attribute-group').tokenfield('setTokens', grp.listLdap()[i].Attribute);
         }
     }
 }
