@@ -5,7 +5,7 @@ var grp = viewModel.group;
 grp.templateGroup = {
     _id: "",
     Title: "",
-    Enable: false,
+    Enable: ko.observable(false),
     Owner: "",
     GroupType: "",
     Grants: ko.observableArray([]),
@@ -33,8 +33,11 @@ grp.DataTypeTemplate = {
 }
 grp.templateLdapAuth={
     username: "",
-    password: ""
+    password: "",
+    groupid: "",
 }
+grp.groupID = ko.observableArray("");
+grp.ArrayDataID = ko.observableArray([]);
 grp.generateFilter = ko.observable("");
 grp.configLdapAuht = ko.mapping.fromJS(grp.templateLdapAuth);
 grp.dataType = ko.observable("0");
@@ -66,6 +69,8 @@ grp.GroupsColumns = ko.observableArray([{
     title: "<center>Action</center>",
     width: 70,
     template: function(d){
+        grp.configLdapAuht.groupid(d._id);
+        grp.configLdapAuht.username(d.memberconf.username);
         if(d.grouptype == "1"){
              return "<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Refresh Ldap Group\" onclick=\"grp.refreshGroupLdap()\"><span class=\"glyphicon glyphicon-refresh\"></span></button></center>"
          }else{
@@ -105,7 +110,7 @@ grp.selectGridGroups = function(e) {
     });
 };
 grp.temp=ko.observableArray([]);
-grp.selectlistGridGroups = function(e) {
+grp.selectlistGridGroups = function(e) {    
     usr.Access.removeAll();
     usr.getAccess();
     grp.isNew(false);
@@ -143,7 +148,7 @@ grp.refreshGroupLdap = function(){
     // });
 
     $('#modalRefresh').modal({show: 'true'});
-    grp.configLdapAuht.username(grp.dataTypeConfig.Username());
+    
 }
 grp.getRefresh = function(){
     var param = ko.mapping.toJS(grp.configLdapAuht);
@@ -311,9 +316,10 @@ grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
 
 grp.savegroup = function() {
-    if (!app.isFormValid("#form-add-Group")) {
-        return;
-    }
+    alert('masuk');
+    // if (!app.isFormValid("#form-add-Group")) {
+    //     return;
+    // }
     var data = ko.mapping.toJS(usr.config.Grants);
     var AccessGrants = [];
     for (var i = 0; i < data.length; i++) {
@@ -558,13 +564,13 @@ grp.getDataUserLdap = function(){
     if (!app.isFormValid("#form-modal-group")) {
         return;
     }
-    var array = grp.attribute().replace(/\s/g, '').split(",");
-    console.log("------- 551 ",array.length);
-    if(array.length != 3){
-        array = [];
+    grp.ArrayDataID(grp.attribute().replace(/\s/g, '').split(","));
+    console.log("------- 551 ",grp.ArrayDataID().length);
+    if(grp.ArrayDataID().length != 3){
+        grp.ArrayDataID([])
     }else{
-        $.each(array, function(i){
-            grp.dataTypeConfig.Attribute.push(array[i]);
+        $.each(grp.ArrayDataID(), function(i){
+            grp.dataTypeConfig.Attribute.push(grp.ArrayDataID()[i]);
         });
     }
     var param = ko.mapping.toJS(grp.dataTypeConfig);
@@ -585,9 +591,9 @@ grp.getDataUserLdap = function(){
             filterfable: true,
             change: grp.selectLdapGroup,
             columns: [
-                {title: "ID", field: array[0]},
-                {title: "Name", field: array[1]},
-                {title: "Owner", field: array[2]},
+                {title: "ID", field: grp.ArrayDataID()[0]},
+                {title: "Name", field: grp.ArrayDataID()[1]},
+                {title: "Owner", field: grp.ArrayDataID()[2]},
             ],
             dataBound :grp.saveGroupLdap()
         });
@@ -607,12 +613,17 @@ grp.saveGroupLdap = function(){
 
 grp.selectLdapGroup = function(){
     app.wrapGridSelect("#grid-ldap-group", ".btn", function(d) {
-        console.log("-------- 593 ",d);
-        grp.config._id(d.cn);
-        grp.config.Title(d.name);
-        grp.config.Owner(d.usncreated);
+        var id = grp.ArrayDataID()[0];
+        var name = grp.ArrayDataID()[1];
+        var owner = grp.ArrayDataID()[2];
+        console.log(d);
+        console.log(d[id]);
+        grp.config._id(d[id]);
+        grp.config.Title(d[name]);
+        grp.config.Owner(d[owner]);
         $('#modalForgot').modal("hide");
         grp.config.Filter("memberOf=CN="+d.cn+",CN=Users,"+grp.dataTypeConfig.BaseDN());
+        
 
     });
 }
