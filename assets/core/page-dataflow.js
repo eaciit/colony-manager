@@ -550,7 +550,7 @@ df.init = function () {
                             var posdiag = $(".diagram")[0].getBoundingClientRect();
                             var xpos = (xmouse - posdiag.left);
                             var ypos = (ymouse - posdiag.top);
-
+                            ypos = (screen.height - 200)<ypos?(ypos - 200):ypos; 
                             if(xpos>0&&ypos>0){
                              var diagram = $(".diagram").data("kendoDiagram");
                              diagram.addShape({ 
