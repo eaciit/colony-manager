@@ -2,8 +2,9 @@ package controller
 
 import (
 	"github.com/eaciit/acl"
+	// "github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/dbox"
+	// "github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -12,22 +13,25 @@ type AclController struct {
 	App
 }
 
-func init() {
-	conn, err := dbox.NewConnection("mongo",
-		&dbox.ConnectionInfo{"localhost:27017", "valegrab", "", "", toolkit.M{}.Set("timeout", 3)})
-	if err != nil {
-		return
-	}
-	err = conn.Connect()
-	if err != nil {
-		return
-	}
+// func init() {
+// 	driver, ci := new(colonycore.Login).GetACLConnectionInfo()
+// 	conn, err := dbox.NewConnection(driver, ci)
 
-	err = acl.SetDb(conn)
-	if err != nil {
-		return
-	}
-}
+// 	// conn, err := dbox.NewConnection("mongo",
+// 	// 	&dbox.ConnectionInfo{"localhost:27017", "valegrab", "", "", toolkit.M{}.Set("timeout", 3)})
+// 	if err != nil {
+// 		return
+// 	}
+// 	err = conn.Connect()
+// 	if err != nil {
+// 		return
+// 	}
+
+// 	err = acl.SetDb(conn)
+// 	if err != nil {
+// 		return
+// 	}
+// }
 
 func CreateAclController(s *knot.Server) *AclController {
 	var controller = new(AclController)
