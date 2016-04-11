@@ -69,10 +69,10 @@ grp.GroupsColumns = ko.observableArray([{
     title: "<center>Action</center>",
     width: 70,
     template: function(d){
-        grp.configLdapAuht.groupid(d._id);
-        grp.configLdapAuht.username(d.memberconf.username);
         if(d.grouptype == "1"){
-             return "<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Refresh Ldap Group\" onclick=\"grp.refreshGroupLdap()\"><span class=\"glyphicon glyphicon-refresh\"></span></button></center>"
+            grp.configLdapAuht.groupid(d._id);
+            grp.configLdapAuht.username(d.memberconf.username);
+            return "<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Refresh Ldap Group\" onclick=\"grp.refreshGroupLdap()\"><span class=\"glyphicon glyphicon-refresh\"></span></button></center>"
          }else{
             return "";
          }
