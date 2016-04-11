@@ -20,7 +20,8 @@ var (
 )
 
 func main() {
-	isSetupACL := *flag.String("setupacl", "false", "")
+	var isSetupACL bool
+	flag.BoolVar(&isSetupACL, "setupacl", false, "")
 	flag.Parse()
 
 	if controller.EC_APP_PATH == "" || controller.EC_DATA_PATH == "" {
@@ -55,7 +56,7 @@ func main() {
 	server.Register(controller.CreatePageController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
 
-	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL == "true" {
+	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL {
 		if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil {
 			fmt.Println("Seems like ACL DB is not yet configured")
 		}
