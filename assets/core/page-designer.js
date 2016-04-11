@@ -163,7 +163,7 @@ pg.fieldMapping = function() {
 	if (!app.isFormValid("#dsWidget")) {
 		return;
 	}
-	
+	$( "#formSetting" ).empty();
 	var prop = ko.mapping.toJS(pg.widgetSettings)
 	var param = {
 		pageId: pg.pageID,
@@ -193,15 +193,15 @@ pg.fieldMapping = function() {
 		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+res.data.url);
 		urlprev = "href=\"";
 		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+res.data.url);
+		$("#formSetting").off("load").on("load", function(){
+			window.frames[0].frameElement.contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
+		});
 		var contentDoc = $("#formSetting")[0].contentWindow.document;
-		contentDoc.open();
+		contentDoc.open('text/html', 'replace');
 		contentDoc.write(html);
 		contentDoc.close();
-		$("#formSetting").load(function(){
-			// var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
-			document.getElementById("formSetting").contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
-		});
-		// console.log(res.data)
+		// console.log($("#formSetting")[0].contentWindow.document, prop)
+		// $("#formSetting")[0].contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
 	});
 }
 pg.closeWidgetSetting = function() {
