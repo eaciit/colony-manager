@@ -107,9 +107,15 @@
          <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'SSH Script')">
             <tbody>
                 <tr>
+                    <td>User and Host</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="user@host.com">
+                    </td>
+                </tr>
+                <tr>
                     <td>SSH Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="SSH script.">
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="SSH script..">
                     </td>
                 </tr>
             </tbody>

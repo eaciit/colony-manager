@@ -160,12 +160,14 @@ df.newHsModel = function(){
 //model same with hdfs UI not yet
 df.sshModel = ko.observable({
  //just in UI
- script:ko.observable("")
+ script:ko.observable(""),
+ userandhost:ko.observable("")
 });
 
 df.newSshModel = function(){
   return {
-     script:ko.observable("")
+     script:ko.observable(""),
+     userandhost:ko.observable("")
   }
 }
 
@@ -425,7 +427,7 @@ df.init = function () {
                         }else if(item.dataItem.name == "Shell Script"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "SSH Script"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
+                            $(".popover").attr("style","display: block; top: " +(ymouse-170)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "Map Reduce"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "Java App"){
