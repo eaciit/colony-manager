@@ -119,7 +119,7 @@
                             <div class="form-group">
                                 <label class="col-md-2 filter-label">Filter</label>
                                 <div class="col-md-9">
-                                    <input required type="text" class="form-control input-sm">
+                                    <input required type="text" class="form-control input-sm" data-bind="value: grp.config.Filter">
                                 </div>
                                   
                             </div>
@@ -130,27 +130,27 @@
                         </div>
                         <div class="form-group">
                             <div class="col-md-10">
-                                <label class="col-md-3 filter-label">Map Attr</label>
+                                <label class="col-md-3 filter-label">Login ID</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm">
+                                    <input required type="text" class="form-control input-sm" data-bind="value: grp.config.LoginID">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-md-10">
                                  
-                                <label class="col-md-3 filter-label">Map Attr</label>
+                                <label class="col-md-3 filter-label">Fullname</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm">
+                                    <input required type="text" class="form-control input-sm" data-bind=" value: grp.config.Fullname">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-md-10">
                                  
-                                <label class="col-md-3 filter-label">Map Attr</label>
+                                <label class="col-md-3 filter-label">Email</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm">
+                                    <input required type="email" class="form-control input-sm" data-bind="value: grp.config.Email">
                                 </div>
                             </div>
                         </div>
@@ -186,6 +186,9 @@
                                                 <td>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access, optionsCaption: 'Choose...'"></select>
+                                                    <!-- <div data-bind="visible: (app.mode() == 'new')">
+                                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),kendoDropDownList:{ dataSource: usr.Access(), value: usr.templateAccessGrant()[$index()].AccessID(), optionLabel:'select your Access'}"></select>
+                                                    </div> -->
                                                 </td>
                                                 <td>
                                                     <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />

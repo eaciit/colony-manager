@@ -69,7 +69,10 @@ usr.templateAccessGrant2 = function() {
     }
     return self;
 };
+usr.this = this;
 usr.tempDataGrup = ko.observableArray([]);
+usr.tapNum = ko.observable(0);
+usr.tapAccess = ko.observableArray([]);
 usr.attribute = ko.observableArray("");
 usr.Access = ko.observableArray([]);
 usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
@@ -537,7 +540,12 @@ usr.getAccess = function() {
         };
         usr.createGridPrivilege(res.data);
         usr.dropdownAccess(res.data)
+        $.each(usr.Access(), function(i){
+            usr.tapAccess().push(usr.Access()[i]);
+        });
+        console.log("masuk sini");
     });
+
 };
 
 usr.getGroup = function() {
@@ -570,9 +578,10 @@ usr.GetConfigLdap = function() {
             data.push({
                 Address  :res.data[i].Address,
                 BaseDN   :res.data[i].BaseDN,
-                Filter   :res.data[i].Filter,
+                Filter :res.data[i].FilterUser,
                 Username :res.data[i].Username,
-                Password :res.data[i].Password
+                Password :res.data[i].Password,
+                Attribute :res.data[i].AttributesUser,
             });
 
             usr.ListAddress.push(res.data[i].Address);   
@@ -592,11 +601,12 @@ usr.setLdap = function(){
     for (var i = 0; i < usr.ListLdap().length; i++) {
         console.log(usr.ListLdap()[i].Address)
         if(usr.ldap.Address()==usr.ListLdap()[i].Address){
-           usr.ldap.Address(usr.ListLdap()[i].Address)
-           usr.ldap.BaseDN(usr.ListLdap()[i].BaseDN)
-           usr.ldap.Filter(usr.ListLdap()[i].Filter)
-           usr.ldap.Username(usr.ListLdap()[i].Username)
-           usr.ldap.Password(usr.ListLdap()[i].Password)
+           usr.ldap.Address(usr.ListLdap()[i].Address);
+           usr.ldap.BaseDN(usr.ListLdap()[i].BaseDN);
+           usr.ldap.Filter(usr.ListLdap()[i].Filter);
+           usr.ldap.Username(usr.ListLdap()[i].Username);
+           //usr.ldap.Password(usr.ListLdap()[i].Password);
+           $('#usr-attribute').tokenfield('setTokens', usr.ListLdap()[i].Attribute);
         }
     };
 }
@@ -614,10 +624,28 @@ usr.selectRow = function() {
     }
 }
 usr.addFromPrivilage = function() {
+    //usr.tapNum(usr.tapNum()+1);
     app.mode('new'); 
-        var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
-        usr.config.Grants.push(new usr.templateAccessGrant()); 
-        //console.log(usr.config.Grants()[0].AccessID());
+    var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
+    usr.config.Grants.push(new usr.templateAccessGrant());
+    // // if(usr.Access != 0){
+    // //     if(usr.tapNum() >=1){
+    // //         var ind = usr.Access().indexOf(usr.config.Grants()[0].AccessID())
+    // //         delete usr.Access()[ind]; 
+    // //     }
+        
+    // // }
+    // if(usr.tapNum() >1){
+    //     var ind = usr.tapAccess().indexOf(usr.config.Grants()[0].AccessID())
+    //     usr.tapAccess().splice(ind, 1);
+    //     //alert(usr.tapAccess()) 
+    //      //usr.Access([]);
+    //     $.each(usr.tapAccess(), function(i){
+    //         usr.Access().push(usr.tapAccess()[i]);
+    //     });
+    // }
+    // console.log(usr.tapAccess());
+
 };
 usr.displayAccess = function(e) { 
     app.ajaxPost("/group/getaccessgroup", { 
@@ -802,7 +830,6 @@ usr.DisplayLdap =  function(){
    if(usr.valueLogintype()=="Ldap"){
         $(".modal-checklogin").modal("show");
         $('#usr-attribute').tokenfield({});
-        $('#usr-attribute').tokenfield('setTokens', []);
         usr.ldap.Attribute([]);
         usr.attribute('');
 
@@ -852,4 +879,12 @@ usr.ChangePass = function() {
         });
     }
 };
- 
+
+// $(function() { 
+//     if(usr.tapNum() >1){
+//         var ind = usr.Access().indexOf(usr.config.Grants()[0].AccessID())
+//         usr.Access().splice(ind,1); 
+//     }
+//     alert('lalala');
+// });
+//  
