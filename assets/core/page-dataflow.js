@@ -83,6 +83,7 @@ viewModel.dataFlowList = ko.observableArray([]);
 
 var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
+df.arrayconn = ko.observableArray([]);
 
 df.popoverMode = ko.observable('');
 
@@ -415,15 +416,23 @@ df.init = function () {
                             df.popoverMode('email');
                         }else if(item.dataItem.name == "Fork"){
                             var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
+                            df.arrayconn([]);
                             for (i = 0; i <= cl; i++) {
                                 var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
                                 df.popoverMode('fork');
-                                // console.log(no);
                                 if(no !== 0){
                                     $(".popover-title").html(item.dataItem.name);
                                     $(".arrow").attr("style","left:30px");
-                                    $("#fork").append($("#fork-row").html());
-                                    $(".popover").attr("style","display: block; top: " +(ymouse-100)+"px; left: "+(xmouse-30)+"px;");
+                                    $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
+                                    var fromid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].from.shape.id;
+                                    var shapeid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.id;
+                                    var shapename = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.dataItem.name;
+                                    var thisid = $(".diagram").getKendoDiagram().select()[0].id;
+
+                                    if (fromid == thisid) {
+                                        df.arrayconn.push({name:shapename+" - "+shapeid})
+                                    }
+
                                 };
                             }
                         };
@@ -1015,6 +1024,19 @@ df.saveActionData = function(){
         break;
     }
 }
+
+// df.checkForkId = function(){
+//     var  si= $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
+//     for (i = 0; i <= si; i++) {
+//         var shapeid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].from.shape.id;
+//         var shapename = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.dataItem.name;
+//         var thisid = $(".diagram").getKendoDiagram().select()[0].id;
+
+//         if (shapeid == thisid) {
+//             $( ".inp-right" ).val( shapename +"-"+ shapeid );
+//         }
+//     };
+// }
 
 $(function () {
     df.init();
