@@ -178,6 +178,11 @@ func (a *UserController) SaveUser(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	user := payload["user"].(map[string]interface{})
+	config := payload["userConfig"].(map[string]interface{})
+
+	delete(config, "Username")
+	delete(config, "Password")
+
 	groups := user["Groups"]
 	var group []string
 	for _, v := range groups.([]interface{}) {
@@ -197,6 +202,8 @@ func (a *UserController) SaveUser(r *knot.WebContext) interface{} {
 	initUser.Password = user["Password"].(string)
 	initUser.Enable = user["Enable"].(bool)
 	initUser.Groups = group
+	initUser.LoginConf = config
+
 	if user["LoginType"].(string) == "1" {
 		initUser.LoginType = acl.LogTypeLdap
 	} else if user["LoginType"].(string) == "0" {
@@ -294,7 +301,7 @@ func (a *UserController) InitialSetDatabase() error {
 func (a *UserController) TestFindUserLdap(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := map[string]interface{}{}
-	err := r.GetForms(&payload)
+	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -302,15 +309,21 @@ func (a *UserController) TestFindUserLdap(r *knot.WebContext) interface{} {
 	addr := toolkit.ToString(payload["Address"])  //192.168.0.200:389
 	basedn := toolkit.ToString(payload["BaseDN"]) //DC=eaciit,DC=local
 	filter := toolkit.ToString(payload["Filter"]) //(&(objectclass=person)(objectclass=organizationalPerson)(cn=*))
+	var attr []string
+
+	err = toolkit.Serde(payload["Attribute"], &attr, "json")
+	if err != nil {
+		return helper.CreateResult(true, err, "error")
+	}
 
 	param := toolkit.M{}
 
 	param.Set("username", toolkit.ToString(payload["Username"])) //Alip Sidik
 	param.Set("password", toolkit.ToString(payload["Password"])) //Password.1
-	param.Set("attributes", []string{"cn", "givenName"})
+	// param.Set("attributes", []string{"cn", "givenName"})
+	param.Set("attributes", attr)
 
 	arrtkm, err := acl.FindDataLdap(addr, basedn, filter, param)
-	fmt.Println(addr)
 	if err != nil {
 		return helper.CreateResult(true, err, "error")
 	}
@@ -331,7 +344,11 @@ func (a *UserController) SaveConfigLdap(r *knot.WebContext) interface{} {
 	o.BaseDN = payload["BaseDN"].(string)
 	o.FilterUser = payload["Filter"].(string)
 	o.Username = payload["Username"].(string)
-	o.Password = payload["Password"].(string)
+	// o.Password = payload["Password"].(string)
+	err = toolkit.Serde(payload["Attribute"], &o.AttributesUser, "json")
+	if err != nil {
+		return helper.CreateResult(false, err.Error(), "error")
+	}
 
 	err = colonycore.Save(o)
 	if err != nil {

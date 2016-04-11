@@ -86,6 +86,171 @@ var dfl = viewModel.dataFlowList;
 
 df.popoverMode = ko.observable('');
 
+df.sparkModel = ko.observable({
+  //UI not yet
+  type : ko.observable(""),
+  args:ko.observableArray([]),
+
+  appname:ko.observable(""),
+  master : ko.observable(""),
+  mode:ko.observable(""),
+
+  //back end not yet
+  mainclass:ko.observable(""),
+  appfiles:ko.observable("")
+});
+
+df.newSparkModel = function(){
+    return {
+    //UI not yet
+    type : ko.observable(""),
+    args:ko.observableArray([]),
+
+    appname:ko.observable(""),
+    master : ko.observable(""),
+    mode:ko.observable(""),
+
+    //back end not yet
+    mainclass:ko.observable(""),
+    appfiles:ko.observable("")
+  }
+}
+
+//need discuss with all team
+df.hdfsModel = ko.observable({
+//it must be array
+
+//beta in UI
+script : ko.observable("")
+});
+
+df.newHdfsModel = function(){
+  return {
+    script : ko.observable("")
+  }
+}
+
+df.hsModel = ko.observable({
+  mapper : ko.observable(""),
+  reducer : ko.observable(""),
+  files : ko.observableArray([]),
+  //UI not yet
+  input : ko.observable(""),
+  output:ko.observable("")
+});
+
+df.newHsModel = function(){
+  return {
+  mapper : ko.observable(""),
+  reducer : ko.observable(""),
+  files : ko.observableArray([]),
+  //UI not yet
+  input : ko.observable(""),
+  output:ko.observable("")
+}
+}
+
+//model same with hdfs UI not yet
+df.sshModel = ko.observable({
+
+});
+
+df.newSshModel = function(){
+  return {
+
+  }
+}
+
+//back end not yet
+df.emailModel = ko.observable({
+  to:ko.observable(""),
+  subject:ko.observable(""),
+  body:ko.observable("")
+});
+
+df.newEmailModel = function(){
+  return {
+  to:ko.observable(""),
+  subject:ko.observable(""),
+  body:ko.observable("")
+}
+}
+
+df.hiveModel = ko.observable({
+  scriptpath: ko.observable(""),
+  //UI not yet
+  param:ko.observableArray([]),
+  //back end not yet
+  hivexml:ko.observable("")
+});
+
+df.newHiveModel = function(){
+  return {
+  scriptpath: ko.observable(""),
+  //UI not yet
+  param:ko.observableArray([]),
+  //back end not yet
+  hivexml:ko.observable("")
+}
+}
+
+//back end not yet
+df.shModel = ko.observable({
+  script : ko.observable("")
+});
+
+df.newShModel = function(){
+  return {
+    script : ko.observable("")
+  }
+}
+
+//back end not yet
+df.javaAppModel = ko.observable({
+  jar : ko.observable(""),
+  mainclass : ko.observable("")
+});
+
+df.newJavaAppModel = function(){
+    return {
+    jar : ko.observable(""),
+    mainclass : ko.observable("")
+  }
+}
+
+//back end and UI not yet
+df.stopModel = ko.observable({
+  message: ko.observable("")
+});
+
+df.newStopModel = function(){
+    return {
+    message: ko.observable("")
+  }
+}
+
+//need discuss with all team
+df.forkModel = ko.observable({
+
+});
+
+df.newForkModel = function(){
+  return{
+
+  }
+}
+
+//need discuss with all team
+df.kafkaModel = ko.observable({
+
+});
+
+df.newKafkaModel = function(){
+  return{
+
+  }
+}
+
 
 function visualTemplate(options) {
             var dataviz = kendo.dataviz;
@@ -252,16 +417,17 @@ df.init = function () {
                             var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
                             for (i = 0; i <= cl; i++) {
                                 var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
+                                df.popoverMode('fork');
                                 // console.log(no);
                                 if(no !== 0){
                                     $(".popover-title").html(item.dataItem.name);
                                     $(".arrow").attr("style","left:30px");
-                                    $(".popover").attr("style","display: block; top: " +(ymouse-80)+"px; left: "+(xmouse-30)+"px;");
-                                    df.popoverMode('fork');
+                                    $("#fork").append($("#fork-row").html());
+                                    $(".popover").attr("style","display: block; top: " +(ymouse-100)+"px; left: "+(xmouse-30)+"px;");
                                 };
                             }
                         };
-
+                      df.renderActionData();
                       }
                       clickonshape = 0;
                     }, 300);
@@ -384,7 +550,7 @@ df.init = function () {
             ymouse = e.pageY;
         });
 };
-
+df.dataRow = ko.observableArray([]);
 df.run = function () {
     app.ajaxPost("/dataflow/start", {}, function (res) {
         if (!app.isFine(res)) {
@@ -751,6 +917,7 @@ df.delete = function(Id){
         });
 }
 
+
 var SearchTimeOut = setTimeout(function(){
                 },500);
 
@@ -759,6 +926,94 @@ df.Search = function(){
       SearchTimeOut = setTimeout(function(){
           df.createGrid($(".search-txt").val());
       },500);
+}
+
+df.renderActionData = function(){
+    var diagram = $(".diagram").getKendoDiagram().select()[0];
+    var dataItem = diagram.dataItem;
+   
+    var action = df.popoverMode()
+    switch(action){
+      case "spark":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
+          df.sparkModel(dataItem.DataAction);
+      break;
+      case "hdfs":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newHdfsModel():dataItem.DataAction;
+          df.hdfsModel(dataItem.DataAction);
+      break;
+      case "hive":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newHiveModel():dataItem.DataAction;
+          df.hiveModel(dataItem.DataAction);
+      break;
+      case "shell":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newShModel():dataItem.DataAction;
+          df.shModel(dataItem.DataAction);
+      break;
+      case "kafka":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newKafkaModel():dataItem.DataAction;
+          df.kafkaModel(dataItem.DataAction);
+      break;
+      case "mapreduce":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newHsModel():dataItem.DataAction;
+          df.hsModel(dataItem.DataAction);
+      break;
+      case "java":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newJavaAppModel():dataItem.DataAction;
+          df.javaAppModel(dataItem.DataAction);
+      break;
+      case "email":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newEmailModel():dataItem.DataAction;
+          df.emailModel(dataItem.DataAction);
+      break;
+      case "fork":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newForkModel():dataItem.DataAction;
+          df.forkModel(dataItem.DataAction);
+      break;
+      case "stop":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():dataItem.DataAction;
+          df.stopModel(dataItem.DataAction);
+      break;
+    }
+}
+
+df.saveActionData = function(){
+    var diagram = $(".diagram").getKendoDiagram().select()[0];
+    var dataItem = diagram.dataItem;
+    var action = df.popoverMode();
+    $("#popbtn").popover("hide");
+    switch(action){
+        case "spark":
+            diagram.dataItem["DataAction"]=df.sparkModel();
+        break;
+        case "hdfs":
+            diagram.dataItem["DataAction"]=df.hdfsModel();
+        break;
+        case "hive":
+            diagram.dataItem["DataAction"]=df.hiveModel();
+        break;
+        case "shell":
+            diagram.dataItem["DataAction"]=df.shModel();
+        break;
+        case "kafka":
+            diagram.dataItem["DataAction"]=df.kafkaModel();
+        break;
+        case "mapreduce":
+            diagram.dataItem["DataAction"]=df.hsModel();
+        break;
+        case "java":
+            diagram.dataItem["DataAction"]=df.javaAppModel();
+        break;
+        case "email":
+            diagram.dataItem["DataAction"]=df.emailModel();          
+        break;
+        case "fork":
+            diagram.dataItem["DataAction"]=df.forkModel();
+        break;
+        case "stop":
+            diagram.dataItem["DataAction"]=df.stopModel();
+        break;
+    }
 }
 
 $(function () {

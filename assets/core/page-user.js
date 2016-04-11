@@ -30,6 +30,7 @@ usr.templateLdap = {
     Filter: "",
     Username: "",
     Password: "",
+    Attribute: ko.observableArray([])
 };
 
 usr.templateAccessGrant = function() {
@@ -68,6 +69,11 @@ usr.templateAccessGrant2 = function() {
     }
     return self;
 };
+usr.this = this;
+usr.tempDataGrup = ko.observableArray([]);
+usr.tapNum = ko.observable(0);
+usr.tapAccess = ko.observableArray([]);
+usr.attribute = ko.observableArray("");
 usr.Access = ko.observableArray([]);
 usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
 usr.ldap=ko.mapping.fromJS(usr.templateLdap);
@@ -109,7 +115,7 @@ usr.UsersColumns = ko.observableArray([{
     }, {
     field: "enable",
     title: "Enable"
-    } 
+    }
 ]);
 
 usr.UsersColumnsldap = ko.observableArray([ {
@@ -205,33 +211,33 @@ usr.getUsers = function() {
 
 }
  usr.getUsersLdap = function() {
-    $("#grid-ldap").html("");
-    $('#grid-ldap').kendoGrid({
-        dataSource: {
-            transport: {
-                read: {
-                    url: "/user/testfinduserldap",
-                    dataType: "json",
-                    data: usr.GetFilterLdap(),
-                    type: "POST",
-                    success: function(data) { 
-                        $("#grid-ldap>.k-grid-content-locked").css("height", $("#grid-ldap").data("kendoGrid").table.height());
-                    }
-                }
+    var array = usr.attribute().replace(/\s/g, '').split(",");
+    $.each(array, function(i){
+        usr.ldap.Attribute.push(array[i]);
+    });
+    var param = ko.mapping.toJS(usr.ldap);
+    usr.tempDataGrup.push(param);
+    app.ajaxPost("/user/testfinduserldap", param, function(res){
+        if(!app.isFine(res)){
+            return;
+        }
+        grp.GrupModalgrid('show')
+        $('#grid-ldap').kendoGrid({
+            dataSource: {
+                data: res.data,
+                pageSize: 5
             },
-            schema: {
-                data: "data"
-            },
-
-            pageSize: 5 
-        }, 
-        pageable: true,  
-        sortable: true,  
-        selectable: 'multiple, row', 
-        filterfable: true,
-        change: usr.selectGridLdap,
-        columns: usr.UsersColumnsldap(),
-        dataBound :usr.saveConfigLdap()
+            pageable: true,  
+            sortable: true,  
+            selectable: 'multiple, row', 
+            filterfable: true,
+            change: usr.selectGridLdap,
+            columns: [
+                {title: "ID", field: array[0]},
+                {title: "Name", field: array[1]},
+            ],
+            dataBound :usr.saveConfigLdap()
+        });
     });
     
 }
@@ -362,11 +368,20 @@ usr.saveuser = function() {
         AccessGrants.push(ko.mapping.toJSON(grp.Access))
         grp.Access.AccessValue.removeAll()
     };
+    var userModal = {
+        Address:  usr.tempDataGrup()[0].Address,
+        BaseDN:  usr.tempDataGrup()[0].BaseDN,
+        Filter:  usr.tempDataGrup()[0].Filter,
+        Username:  usr.tempDataGrup()[0].Username,
+        Password:  usr.tempDataGrup()[0].Password,
+        Attribute:  usr.tempDataGrup()[0].Attribute,
+    };
     console.log(AccessGrants);
     //====== 
     app.ajaxPost("/user/saveuser", {
         user: user,
-        grants: AccessGrants
+        grants: AccessGrants,
+        userConfig: userModal
     }, function(res) {
         if (!app.isFine(res)) {
             return;
@@ -516,7 +531,6 @@ usr.getAccess = function() {
         if (res.data == null) {
             res.data = "";
         }
-        console.log(res.data);
         for (var i in res.data) {
             usr.Access.push(res.data[i]._id);
             data.push({
@@ -526,7 +540,12 @@ usr.getAccess = function() {
         };
         usr.createGridPrivilege(res.data);
         usr.dropdownAccess(res.data)
+        $.each(usr.Access(), function(i){
+            usr.tapAccess().push(usr.Access()[i]);
+        });
+        console.log("masuk sini");
     });
+
 };
 
 usr.getGroup = function() {
@@ -539,7 +558,7 @@ usr.getGroup = function() {
             res.data = "";
         }
         // usr.getmultiplegroup(res.data)
-        console.log(res.data);
+
     });
 };
 
@@ -555,17 +574,17 @@ usr.GetConfigLdap = function() {
         if (res.data == null) {
             res.data = "";
         }
-        console.log(res.data.length)
         for (var i = 0; i < res.data.length; i++) {
             data.push({
                 Address  :res.data[i].Address,
                 BaseDN   :res.data[i].BaseDN,
-                Filter   :res.data[i].Filter,
+                Filter :res.data[i].FilterUser,
                 Username :res.data[i].Username,
-                Password :res.data[i].Password
+                Password :res.data[i].Password,
+                Attribute :res.data[i].AttributesUser,
             });
 
-            usr.ListAddress.push(res.data[i].Address);  
+            usr.ListAddress.push(res.data[i].Address);   
         };
         usr.ListLdap(data); 
             $("#Address").kendoAutoComplete({
@@ -582,11 +601,12 @@ usr.setLdap = function(){
     for (var i = 0; i < usr.ListLdap().length; i++) {
         console.log(usr.ListLdap()[i].Address)
         if(usr.ldap.Address()==usr.ListLdap()[i].Address){
-           usr.ldap.Address(usr.ListLdap()[i].Address)
-           usr.ldap.BaseDN(usr.ListLdap()[i].BaseDN)
-           usr.ldap.Filter(usr.ListLdap()[i].Filter)
-           usr.ldap.Username(usr.ListLdap()[i].Username)
-           usr.ldap.Password(usr.ListLdap()[i].Password)
+           usr.ldap.Address(usr.ListLdap()[i].Address);
+           usr.ldap.BaseDN(usr.ListLdap()[i].BaseDN);
+           usr.ldap.Filter(usr.ListLdap()[i].Filter);
+           usr.ldap.Username(usr.ListLdap()[i].Username);
+           //usr.ldap.Password(usr.ListLdap()[i].Password);
+           $('#usr-attribute').tokenfield('setTokens', usr.ListLdap()[i].Attribute);
         }
     };
 }
@@ -604,9 +624,28 @@ usr.selectRow = function() {
     }
 }
 usr.addFromPrivilage = function() {
+    //usr.tapNum(usr.tapNum()+1);
     app.mode('new'); 
-        var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
-        usr.config.Grants.push(new usr.templateAccessGrant()); 
+    var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
+    usr.config.Grants.push(new usr.templateAccessGrant());
+    // // if(usr.Access != 0){
+    // //     if(usr.tapNum() >=1){
+    // //         var ind = usr.Access().indexOf(usr.config.Grants()[0].AccessID())
+    // //         delete usr.Access()[ind]; 
+    // //     }
+        
+    // // }
+    // if(usr.tapNum() >1){
+    //     var ind = usr.tapAccess().indexOf(usr.config.Grants()[0].AccessID())
+    //     usr.tapAccess().splice(ind, 1);
+    //     //alert(usr.tapAccess()) 
+    //      //usr.Access([]);
+    //     $.each(usr.tapAccess(), function(i){
+    //         usr.Access().push(usr.tapAccess()[i]);
+    //     });
+    // }
+    // console.log(usr.tapAccess());
+
 };
 usr.displayAccess = function(e) { 
     app.ajaxPost("/group/getaccessgroup", { 
@@ -790,6 +829,10 @@ usr.CheckLoginType =  function(){
 usr.DisplayLdap =  function(){
    if(usr.valueLogintype()=="Ldap"){
         $(".modal-checklogin").modal("show");
+        $('#usr-attribute').tokenfield({});
+        usr.ldap.Attribute([]);
+        usr.attribute('');
+
         usr.GetConfigLdap();
         usr.config.LoginType("1");
    }else{
@@ -809,6 +852,10 @@ usr.CheckPass = function() {
         usr.confloginid(false)
     }
 };
+
+// usr.click = function(){
+//     alert(usr.config.Grants()[0].AccessID());
+// }
 
 usr.ChangePass = function() {
     usr.CheckPass();
@@ -832,4 +879,12 @@ usr.ChangePass = function() {
         });
     }
 };
- 
+
+// $(function() { 
+//     if(usr.tapNum() >1){
+//         var ind = usr.Access().indexOf(usr.config.Grants()[0].AccessID())
+//         usr.Access().splice(ind,1); 
+//     }
+//     alert('lalala');
+// });
+//  

@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/colony-manager/installation"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"net/http"
 	"path"
@@ -18,7 +20,9 @@ var (
 )
 
 func main() {
-	isSetupACL := *flag.String("setupacl", "false", "")
+	var isSetupACL bool
+	flag.BoolVar(&isSetupACL, "setupacl", false, "")
+	flag.Parse()
 
 	if controller.EC_APP_PATH == "" || controller.EC_DATA_PATH == "" {
 		fmt.Println("Please set the EC_APP_PATH and EC_DATA_PATH variable")
@@ -52,12 +56,18 @@ func main() {
 	server.Register(controller.CreatePageController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
 
-	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL == "true" {
+	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL {
 		if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil {
 			fmt.Println("Seems like ACL DB is not yet configured")
 		}
 
 		setup.ACL()
+	}
+
+	err := setAclDatabase()
+	if err != nil {
+		fmt.Println("Warning!", "Colony Manager will running without ACL")
+		fmt.Println("ACL Error", err.Error())
 	}
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
@@ -71,4 +81,21 @@ func main() {
 		return true
 	})
 	server.Listen()
+}
+
+func setAclDatabase() (err error) {
+	driver, ci := new(colonycore.Login).GetACLConnectionInfo()
+	conn, err := dbox.NewConnection(driver, ci)
+
+	if err != nil {
+		return
+	}
+
+	err = conn.Connect()
+	if err != nil {
+		return
+	}
+
+	err = acl.SetDb(conn)
+	return
 }

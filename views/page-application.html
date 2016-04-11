@@ -43,9 +43,9 @@
 <div class="col-xs-6 col-sm-2" id="sidebar">
 	<div class="row">
 		<ul class="nav">
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'application') }, click: app.changeActiveSection('application')">Application<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'servers') }, click: app.changeActiveSection('servers')">Servers<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
-			<li><a href="#" data-bind="css: { 'active': (app.section() == 'languageEnviroment') }, click: app.changeActiveSection('languageEnviroment')">Language Enviroment<span class="fa-pull-right"><i class="fa fa-cog"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'application') }, click: apl.changeActiveSection('application')">Application<span class="fa-pull-right"><i class="fa fa-server"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'servers') }, click: apl.changeActiveSection('servers')">Servers<span class="fa-pull-right"><i class="fa fa-database"></i></span></a></li>
+			<li><a href="#" data-bind="css: { 'active': (app.section() == 'languageEnviroment') }, click: apl.changeActiveSection('languageEnviroment')">Language Enviroment<span class="fa-pull-right"><i class="fa fa-cog"></i></span></a></li>
 		</ul>
 	</div>
 </div>
@@ -72,7 +72,7 @@
 		    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 		    	</button>
 	            <button class="btn btn-sm btn-primary mgTop15" data-bind="click: apl.createNewApplication">
-		    		<span class="glyphicon glyphicon-plus"></span> Create New Connection
+		    		<span class="glyphicon glyphicon-plus"></span> Create New Application
 		    	</button>
 		    	<button class="btn btn-sm btn-danger mgTop15" data-bind="click: apl.OnRemove">
 		    		<span class="glyphicon glyphicon-remove"></span> Delete
@@ -344,24 +344,10 @@
 			    </div>
 			    <div class="tab-pane fade" id="Servers-app">
 			    	<div class="col-md-12">
-	    				<div class="grid grid-srvapplication" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, columns: apl.srvapplicationColumns, filterfable: false, pageable: true, dataBound: function(e) {apl.gridStatusCheck();apl.gridStatusColor();app.gridBoundTooltipster('.grid-srvapplication')()} }"></div>
+	    				<div class="grid grid-srvapplication" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerAppData, columns: apl.srvapplicationColumns, filterfable: false, pageable: true, dataBound: function(e) {apl.gridStatusCheck();apl.gridStatusColor();app.gridBoundTooltipster('.grid-srvapplication')()} }"></div>
 			        </div>
 			    </div>
 			</div>
-		</div>
-
-		<nav class="navbar" data-bind="visible: (app.mode() == 'runcommand')">
-			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: apl.backToEdit">
-	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
-	    	</button>
-	    </nav>
-		<div class="panel" data-bind="visible: (app.mode() == 'runcommand')" style="width: 100%;">
-			<div class="panel-heading">
-				<h1>Run Command on of Application <span class="app"></span> in Server <span class="server"></span></h1>
-		    </div>
-		    <div class="panel-body">
-					<div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div>		    	
-		    </div>
 		</div>
 	</div>
 	<div class="col-md-12" data-bind="with: servers, visible: (app.section() == 'servers')">
@@ -448,7 +434,6 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					{{template "_miniloader.html"}}	
 					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
 						<span class="glyphicon glyphicon-remove"></span> Cancel
 					</button>
@@ -467,19 +452,18 @@
 			<div class="modal-1" id="modal-1">
 				<div class="modal-header">
 					<h4 class="modal-title">
-						Run Command Modal Popup
+						Run Command Application <b><span class="app"></span></b> in Server <b><span class="server"></span></b>
 					</h4>
 				</div>
 				<div class="modal-body">
-					<!-- <div class="grid grid-application" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true }"></div> -->
+					{{template "_miniloader.html"}}	
+					<div data-bind="visible: !app.miniloader()">
+						<div class="grid grid-command" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.commandData, selectable: 'multiple, row', columns: apl.commandDataColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-command') }"></div>	
+					</div>
 				</div>
 				<div class="modal-footer">
-					{{template "_miniloader.html"}}	
-					<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
+					<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal">
 						<span class="glyphicon glyphicon-remove"></span> Cancel
-					</button>
-					<button type="button" class="btn btn-sm btn-primary" data-bind="click: apl.runCmd">
-						<span class="glyphicon glyphicon-ok"></span> Run
 					</button>
 				</div>
 			</div>
