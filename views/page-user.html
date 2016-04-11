@@ -1,4 +1,10 @@
-    <style>
+<!-- css token input -->
+<script src="/res/bootstrap/js/bootstrap-tokenfield.js"></script>
+<link rel="stylesheet" href="/res/bootstrap/css/tokenfield-typeahead.css" />
+<link rel="stylesheet" href="/res/bootstrap/css/bootstrap-tokenfield.css" />
+<!-- css token input -->
+
+<style>
     .no-left-padding {
         padding-left: 0px;
     }
@@ -323,8 +329,15 @@
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Password</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="text" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: usr.ldap.Password">
+                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: usr.ldap.Password">
                                 <span class="k-invalid-msg" data-for="Password"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 filter-label">Attribute</label>
+                            <div class="col-md-8">
+                                <input type="text" id="usr-attribute" class="form-control input-sm" data-bind="value: usr.attribute">
+                                <span class="k-invalid-msg" data-for="attribute"></span>
                             </div>
                         </div>
                         <div class="form-group"> 
