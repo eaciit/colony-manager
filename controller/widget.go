@@ -101,7 +101,8 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 		widget.Config = data.Config
 	}
 
-	if err := widget.Save(); err != nil {
+	extractDest := filepath.Join(compressedSource, widget.ID)
+	if err := widget.Save(extractDest); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -152,7 +153,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	}
 	widgetSource := filepath.Join(EC_DATA_PATH, "widget", data.Get("_id", "").(string))
 
-	getFileIndex, err := colonycore.GetPath(widgetSource)
+	getFileIndex, err := colonycore.GetWidgetPath(widgetSource)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -192,8 +193,10 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 			configs = append(configs, val.(map[string]interface{}))
 		}
 		dataWidget.Config = configs
+		dataWidget.URL = w.Server.Address
 
-		if err := dataWidget.Save(); err != nil {
+		extractDest := filepath.Join(compressedSource, dataWidget.ID)
+		if err := dataWidget.Save(extractDest); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}

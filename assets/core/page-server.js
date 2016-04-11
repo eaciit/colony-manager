@@ -84,7 +84,9 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	{ field: "serverType", title: "Server Type" },
+	{ field: "serverType", title: "Server Type", template: function (d) { 
+		return "<b style='text-transform: uppercase;'>" + d.serverType + "</b>";
+	} },
 	{ field: "os", title: "Server OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
 		if (row != undefined) {
@@ -111,9 +113,9 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
 	{ field: "Port", title: "Running Port" },
-	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
-	} },
+	// { title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
+	// 	return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
+	// } },
 	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var yo = 0;
 		for (i in apl.applicationData()){
@@ -138,6 +140,10 @@ srv.appserverColumns = ko.observableArray([
 			return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
 	} }
 ]);
+
+srv.ServerAppData = ko.computed(function () {
+	return Lazy(srv.ServerData()).filter({ serverType: "node" }).toArray();
+}, srv);
 
 srv.showRunCommand = function (appID) {
 	apl.commandData([]);
@@ -212,6 +218,8 @@ srv.getServers = function(c) {
 		if (typeof c == "function") {
 			c(res);
 		};
+
+		setTimeout(srv.ping, 200);
 	});
 };
 
@@ -266,6 +274,8 @@ srv.doSaveServer = function (c) {
 		}
 	}
 
+	app.miniloader(true);
+
 	if (!srv.validateHost()) {
 		return;
 	}
@@ -292,7 +302,6 @@ srv.doSaveServer = function (c) {
 			var eachData = $.extend(true, data, { });
 			eachData.host = d;
 			eachData._id = ["server", d, moment(new Date()).format("x")].join("-");
-
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
 				if (!res.success) {
 					failedHosts.push(d);
@@ -300,8 +309,8 @@ srv.doSaveServer = function (c) {
 				}
 			}, function (a) {
 				failedHosts.push(d);
-			}, {
-				timeout: 5000
+			},{
+				timeout : 120000
 			});
 
 			ajaxes.push(ajax);
@@ -326,6 +335,7 @@ srv.doSaveServer = function (c) {
 				closeOnConfirm: true
 			});
 			srv.backToFront();
+			srv.ping();
 		};
 
 		$.when.apply(undefined, ajaxes).then(callback, callback);
@@ -343,8 +353,13 @@ srv.doSaveServer = function (c) {
 			if (typeof c == "function") {
 				c();
 			}
+			srv.ping();
 		});
 	}
+
+	$(document).ajaxStop(function() {
+		 app.miniloader(false);
+	});
 }
 srv.isServerTypeNode = ko.computed(function () {
 	return srv.configServer.serverType() == "node";
@@ -370,8 +385,15 @@ srv.saveServer = function(){
 srv.selectGridServer = function (e) {
 	srv.isNew(false);
 	app.wrapGridSelect(".grid-server", ".btn", function (d) {
+		if (d.serverType == "node") {
+			$('ul#myTab a[href="#Applications-server"]').parent().show();
+		} else {
+			$('ul#myTab a[href="#Applications-server"]').parent().hide();
+		}
+
 		srv.editServer(d._id);
 		srv.showServer(true);
+		$('#myTab a[href="#Form-server"]').tab('show');
 	});
 };
 
@@ -659,6 +681,10 @@ srv.finishButton = function () {
 
 srv.ping = function () {
 	var doPing = function (s) {
+		if (app.miniloader()) {
+			return;
+		}
+
 		var $grid = $(".grid-server").data("kendoGrid");
 		var row = Lazy($grid.dataSource.data()).find({ _id: s._id });
 

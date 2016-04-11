@@ -535,7 +535,7 @@
                 handle: (opts.handleClass ? '.' + opts.handleClass : (opts.handle ? opts.handle : '')) ||
                     '.grid-stack-item-content',
                 scroll: false,
-                appendTo: 'body'
+                appendTo: 'body',
             }),
             disableDrag: opts.disableDrag || false,
             disableResize: opts.disableResize || false,
@@ -782,7 +782,16 @@
                     node._grid = self;
                     var el = $(ui.draggable).clone(false);
                     el.data('_gridstack_node', node);
-                    $(ui.draggable).remove();
+                    // if ($(ui.draggable).attr("boolRemove") != "false")
+                    console.log($(ui.draggable));
+                    var $datagrag = $(ui.draggable).draggable("destroy");
+                    $(ui.draggable).remove(); 
+                    $("#sidebar ul.nav").append($datagrag.draggable({
+                        handle: '.grid-stack-item-content',
+                        helper: "clone",
+                        scroll: true,
+                        appendTo: 'body'
+                    }));
                     node.el = el;
                     self.placeholder.hide();
                     el

@@ -2,9 +2,12 @@
 	.no-left-padding {
 		padding-left: 0px;
 	}
-	.grid-langEnvi .btn-start[disabled] {
-		pointer-events: none;
+	.grid-langEnvi .btn-start.disabled {
 		opacity: 0.7;
+		background-color: #DCDCDC;
+    	border-color: #D0D0D0;
+	}
+	.grid-langEnvi .btn-start.disabled:hover {
 		background-color: #DCDCDC;
     	border-color: #D0D0D0;
 	}
@@ -29,7 +32,7 @@
     		<span class="glyphicon glyphicon-refresh"></span> Refresh
     	</button>
         <button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.createNewServer">
-    		<span class="glyphicon glyphicon-plus"></span> Add Server
+    		<span class="glyphicon glyphicon-plus"></span> Create New Server
     	</button>
     	<button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.popupWizard">
     		<span class="glyphicon glyphicon-send"></span> Add Wizard
@@ -121,8 +124,9 @@
 </ul>
 
 <div data-bind="visible: (app.mode() == 'editor')">
-    <!-- <div class="panel-body"> -->
-    	<div id="myTabContent" class="tab-content">
+	{{template "_miniloader.html"}}	
+ 	<div class="pdCustom position-custom">
+    	<div id="myTabContent" class="tab-content" data-bind="visible: !app.miniloader()">
 			<div class="tab-pane fade in active" id="Form-server">
 				<div class="panel" >
 			    	<div class="panel-body">
@@ -312,7 +316,7 @@
 		        </div>
 		    </div>
     	</div>
-    <!-- </div> -->
+    </div>
 </div>
 <div class="modal fade modal-wizard" tabindex="-1" role="dialog">
 	<div class="modal-dialog modalcustom">
@@ -383,7 +387,6 @@
 					<button type="button" class="btn btn-sm btn-primary" data-bind="click: srv.finishButton">
 						<span class="glyphicon glyphicon-ok"></span> Register IPs
 					</button>
-							{{template "_miniloader.html"}}
 				</div>
 			</div>
 		</div>

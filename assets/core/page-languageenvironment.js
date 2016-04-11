@@ -31,12 +31,16 @@ lang.getserverlanguage = function (c){
 		}
 		lang.dataLanguage(res.data)
 		if (param.search != '' || param.os != ''){
+			if (param.search != '' && param.os){
+				data = Lazy(lang.dataLanguage()).filter({ServerID:param.search},{ServerOS:param.os} ).toArray();
+				lang.setGrid(data)
+			}
 			if (param.search != ''){
-				data = JSON.stringify(Lazy(lang.dataLanguage()).where({_id:param._id}).toArray())
+				data = Lazy(lang.dataLanguage()).filter({ServerID:param.search}).toArray();
 				lang.setGrid(data)
 			}
 			if (param.os != ''){
-				data = JSON.stringify(Lazy(lang.dataLanguage()).where({os:param.os}).toArray())
+				data = Lazy(lang.dataLanguage()).filter({ServerOS:param.os}).toArray();
 				lang.setGrid(data)
 			}	
 		}else {
@@ -51,10 +55,10 @@ lang.setupLangEnviroment = function (param){
 	app.ajaxPost("/langenvironment/setupfromsh", param, function (res) {
 		if (!res.success) {
 			sweetAlert("Oops...", res.message, "error");
-			return lang.getserverlanguage();
+			lang.getserverlanguage();
 		}
 		swal({title: param.Lang+" language successfully setup", type: "success", closeOnConfirm: true});
-		return lang.getserverlanguage();
+		lang.getserverlanguage();
 	});
 }
 
@@ -89,9 +93,9 @@ lang.setGrid = function(data){
 					var checkDisable = '';
 					checkDisable = f[e.Lang];
 					if (checkDisable == true){
-						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" disabled ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
+						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered disabled\" title=\"Installed\"><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						} else {
-						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"')\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
+						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"'), miniloader()\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
 						}
 					}
 				});
@@ -109,7 +113,13 @@ lang.setGrid = function(data){
 	});
 }
 
+function miniloader() {
+	$('.pleasewait').remove();
+	$('.loaderlangEnv').find('.loader').after("<div class='pleasewait'></div>");
+	$('.loaderlangEnv').find('.loader').next().append("<br><br><br><center><h3 style='margin-left: -40px;'>Please Wait</h3></center>");
+}
+
 $(function () {
 	lang.getserverlanguage();
-	app.showfilter(false);
+	app.registerSearchKeyup($('.searchLangEnv'), lang.getserverlanguage);
 });

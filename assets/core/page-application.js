@@ -112,12 +112,13 @@ apl.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ width: 100, headerTemplate: "<center>App Status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		return apl.isDeployed(d, function (app) {
-			var target = [d.host.split(":")[0], app.Port].join(":");
-			return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
-		}, function (app) {
-			return "UNDEPLOYED";
-		});
+		// return apl.isDeployed(d, function (app) {
+		// 	var target = [d.host.split(":")[0], app.Port].join(":");
+		// 	return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
+		// }, function (app) {
+		// 	return "UNDEPLOYED";
+		// });
+		return "UNDEPLOYED";
 	} },
 	{ headerTemplate: "<center>Run App</center>", width: 80, attributes: { "class": "align-center" }, template: function (d) {
 		var isDeployed = apl.isDeployed(d, function (app) {
@@ -130,6 +131,13 @@ apl.ServerColumns = ko.observableArray([
 		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' " + attr + "><span class='fa fa-play'></span></button>";
 	} }
 ]);
+
+apl.changeActiveSection = function (section) {
+	if (section == "servers") {
+		setTimeout(srv.ping, 200);
+	}
+	return app.changeActiveSection(section);
+}
 
 apl.isDeployed = function (d, yes, no) {
 	var app = Lazy(apl.applicationData()).find({ _id: apl.appIDToDeploy() });
@@ -156,19 +164,20 @@ apl.commandDataColumns = ko.observableArray([
 	{field: "CmdName", title: "Command Key"},
 	{field: "CmdValue", title: "Command"},
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.doRunCommand(\'' + d.CmdName + '\')"><span class="fa fa-play"></span></button>';
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Execute" onclick="apl.doRunCommand(\'' + d.CmdName + '\')"><span class="fa fa-play"></span></button>';
 	} },
 ]);
 apl.commandData = ko.observableArray([]);
 apl.commandServerID = ko.observable('');
 apl.showRunCommand = function (serverID) {
-	app.mode('runcommand');	
+	//app.mode('runcommand');
+	$(".modal-run-cmd").modal("show");	
 	apl.commandServerID(serverID);
 	apl.commandData([]);
 	var appMap = ko.mapping.toJS(apl.configApplication);
 
-	// $(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
-	// $(".modal-run-cmd").find(".modal-title span.server").html(serverID);
+	$(".modal-run-cmd").find(".modal-title span.app").html(appMap._id);
+	$(".modal-run-cmd").find(".modal-title span.server").html(serverID);
 
 	appMap.Command.forEach(function (cmd, i) {
 		if (cmd.key == "" || cmd.value == "") {
@@ -280,18 +289,18 @@ apl.gridStatusCheck = function () {
 	})
 }
 
-apl.gridServerDeployDataBound = function () {
-	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
-		var $td = $(e).find("td:eq(4)");
-		if ($td.text() == "DEPLOYED") {
-			$td.css("background-color", "#5cb85c");
-			$td.css("color", "white");
-		} else {
-			$td.css("background-color", "#d9534f");
-			$td.css("color", "white");
-		}
-	});
-};
+// apl.gridServerDeployDataBound = function () {
+// 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
+// 		var $td = $(e).find("td:eq(4)");
+// 		if ($td.text() == "DEPLOYED") {
+// 			$td.css("background-color", "#5cb85c");
+// 			$td.css("color", "white");
+// 		} else {
+// 			$td.css("background-color", "#d9534f");
+// 			$td.css("color", "white");
+// 		}
+// 	});
+// };
 
 apl.addCommand = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
@@ -320,22 +329,62 @@ apl.refreshGridModalDeploy = function () {
 	$(".grid-server-deploy").kendoGrid({
 		dataSource: { 
 			pageSize: 15,
-			data: srv.ServerData()
+			data: Lazy(srv.ServerData()).filter({ serverType: "node" }).toArray()
 		}, 
 		columns: apl.ServerColumns(),
 		filterfable: false,
 		pageable: true,
-		dataBound: apl.gridServerDeployDataBound
+		// dataBound: apl.gridServerDeployDataBound
 	});
 };
 apl.showModalDeploy = function (_id) {
 	return function () {
-		srv.getServers(function () {
+		srv.getServers(function (res) {
 			$(".modal-deploy").modal("show");
 			apl.appIDToDeploy(_id);
 			apl.refreshGridModalDeploy();
 			$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
 				$(e).prop("checked", false);
+			});
+
+			$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
+				$(e).find("td:eq(4)").html();
+				$(e).find("td:eq(0) input:checkbox").hide();
+			});
+
+			res.data.forEach(function (each) {
+				if (each.serverType != "node") {
+					return;
+				}
+
+				var payload = { appID: _id, serverID: each._id };
+				app.ajaxPost("/application/isappdeployed", payload, function (resStatus) {
+					var $grid = $(".grid-server-deploy");
+					var dataSource = $grid.data("kendoGrid").dataSource;
+					var row = Lazy(dataSource.data()).find({ _id: each._id });
+
+					if (row != undefined) {
+						var $row = $(".grid-server-deploy .k-grid-content tr[data-uid='" + row.uid + "']");
+						var $checkbox = $row.find("td:eq(0) input:checkbox");
+						var $tdStatus = $row.find("td:eq(4)");
+
+						if (resStatus.data) {
+							$checkbox.hide();
+							$tdStatus.css("background-color", "#5cb85c");
+							$tdStatus.css("color", "white");
+
+							var appData = Lazy(apl.applicationData()).find({ _id: _id });
+							var target = [each.host.split(":")[0], appData.Port].join(":");
+							var el = "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
+							$tdStatus.empty().append($(el));
+						} else {
+							$checkbox.show();
+							$tdStatus.css("background-color", "#d9534f");
+							$tdStatus.css("color", "white");
+							$tdStatus.html("UNDEPLOYED");
+						}
+					}
+				});
 			});
 		});
 	};
@@ -375,6 +424,11 @@ apl.deploy = function () {
 
 apl.selectApps = function (e) {
 	app.wrapGridSelect(".grid-application", ".btn", function (d) {
+		if (d.IsInternalApp) {
+			swal({ title: "Internal app is read only", type: "info", closeOnConfirm: true });
+			return;
+		}
+		
 		apl.editApplication(d._id);
 		apl.tempCheckIdServer.push(d._id);
 	});
@@ -847,7 +901,6 @@ $(function () {
 	apl.codemirror();
 	apl.prepareTreeView();
 	app.showfilter(false);
-	app.prepareTooltipster($(".tooltipster"));
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
 

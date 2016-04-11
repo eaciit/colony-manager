@@ -54,163 +54,152 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
-    <div id="spark" class="ct-custom" data-bind="visible: (df.popoverMode() == 'spark')">
-        <table>
+    <div id="spark" class="ct-custom" >
+        <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'spark')">
             <tbody>
                 <tr>
                     <td>Spark Master</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="">
+                        <input type="text" class="inp-custom" data-bind="value:master" placeholder="">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Mode</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="">
+                        <input type="text" class="inp-custom" data-bind="value:mode" placeholder="">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
-                    <td>Jars/py files</td>
+                    <td>App files</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Comma separated list of jars or python HDFS files.">
+                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="Comma separated list of jars or python HDFS files.">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>App Name</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:appname" placeholder="Application name">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Main Class</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="">
+                        <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="">
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="hdfs" class="ct-custom" data-bind="visible: (df.popoverMode() == 'hdfs')">
-        <table>
+        <table data-bind="with:df.hdfsModel, visible: (df.popoverMode() == 'hdfs')">
             <tbody>
                 <tr>
                     <td>HDFS Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="HDFS executable/script.">
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="HDFS executable/script.">
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="hive" class="ct-custom" data-bind="visible: (df.popoverMode() == 'hive')">
-        <table>
+        <table data-bind="with:df.hiveModel, visible: (df.popoverMode() == 'hive')">
             <tbody>
                 <tr>
                     <td>Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Path to the script on HDFS.">
+                        <input type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Path to the script on HDFS.">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Hive XML</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Refer to a hive-site.xml for connecting to Hive.">
+                        <input type="text" class="inp-custom" data-bind="value:hivexml" placeholder="Refer to a hive-site.xml for connecting to Hive.">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="shell" class="ct-custom" data-bind="visible: (df.popoverMode() == 'shell')">
-        <table>
+        <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'shell')">
             <tbody>
                 <tr>
                     <td>Shell Command</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Shell command to execute, e.g script.sh">
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Shell command to execute, e.g script.sh">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="mapreduce" class="ct-custom" data-bind="visible: (df.popoverMode() == 'mapreduce')">
-        <table>
+        <table data-bind="with:df.hsModel, visible: (df.popoverMode() == 'mapreduce')">
             <tbody>
                 <tr>
                     <td>Mapper</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="The executable/script to be used as mapper.">
+                        <input type="text" class="inp-custom" data-bind="value:mapper" placeholder="The executable/script to be used as mapper.">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Reducer</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="The executable/script to be used as reducer.">
+                        <input type="text" class="inp-custom" data-bind="value:reducer" placeholder="The executable/script to be used as reducer.">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="java" class="ct-custom" data-bind="visible: (df.popoverMode() == 'java')">
-        <table>
+        <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'java')">
             <tbody>
                 <tr>
                     <td>Jar Name</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Path to the jar on HDFS.">
+                        <input type="text" class="inp-custom" data-bind="value:jar" placeholder="Path to the jar on HDFS.">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Main Class</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Java class. e.g. org.apache.hadoop.examples.Grep">
+                        <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="Java class. e.g. org.apache.hadoop.examples.Grep">
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="email" class="ct-custom" data-bind="visible: (df.popoverMode() == 'email')">
-        <table>
+        <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'email')">
             <tbody>
                 <tr>
                     <td>To Addresses</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Comma-separated values">
+                        <input type="text" class="inp-custom" data-bind="value:to" placeholder="Comma-separated values">
                     </td>
                 </tr>
                 <tr>
                     <td>Subject</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="" placeholder="Plain-text">
+                        <input type="text" class="inp-custom" data-bind="value:subject" placeholder="Plain-text">
                     </td>
                 </tr>
                 <tr>
                     <td>Body</td>
                     <td>
-                        <textarea class="inp-custom" data-bind=""></textarea>
+                        <textarea class="inp-custom" data-bind="value:body"></textarea>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" data-bind="">Add</a>
-    </div>
-    <div id="fork" class="ct-custom" data-bind="visible: (df.popoverMode() == 'fork')">
-        <table>
+        <table data-bind="with:df.stopModel, visible: (df.popoverMode() == 'stop')">
+            <tbody>
+                <tr>
+                    <td>Message</td>
+                    <td>
+                        <textarea class="inp-custom" data-bind="value:message"></textarea>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table data-bind="with:df.forkModel, visible: (df.popoverMode() == 'fork')">
             <tbody>
                 <tr>
                     <td>If</td>
@@ -223,8 +212,24 @@
                     </td>
                 </tr>                
             </tbody>
-    </div>    
+        </table>
+            <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+            <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Add</a>  
+    </div>
     <div style="clear:both;"></div>
+</script>
+
+<script type="text/template" id="fork-row">
+     <tr>
+        <td>If</td>
+        <td>
+            <input type="text" class="inp-fork inp-left" data-bind="" placeholder="">
+        </td>
+        <td>Go To</td>
+        <td>
+            <input type="text" class="inp-fork inp-right" data-bind="" placeholder="">
+        </td>
+    </tr>        
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
@@ -395,7 +400,7 @@
             width: 220px;
         }
         .inp-fork{
-            margin: 0 5px;
+            margin: 2px 5px;
             width: 180px;
         }
 </style>

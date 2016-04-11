@@ -56,121 +56,179 @@
         <h1 class="panel-title"><span data-bind="text: (grp.Groupmode() == '') ? 'Create New' : 'Edit'"></span>
         </h1>
     </div>
-    <div class="panel-body">
+    <ul class="nav nav-tabs" id="myTab">
+        <li class="active"><a data-target="#groups" data-toggle="tab">groups</a></li>
+        <li><a data-target="#MemberConfiguration" data-toggle="tab">MemberConfiguration</a></li>
+        <li><a data-target="#access" data-toggle="tab">access</a></li>
+    </ul>
+    
         <form class="form-horizontal form-server" id="form-add-Server" novalidate>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Add Type</label>
-                    <div class="col-md-7" id="add_type">
-                        <label class="radio-inline"><input type="radio" name="addType" value="Ldap" data-bind="checked: grp.dataType">ldap</label>
-                        <label class="radio-inline"><input type="radio" name="addType" value="Basic" data-bind="checked: grp.dataType">basic</label>
-                        <span class="k-invalid-msg" data-for="ID"></span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">ID</label>
-                    <div class="col-md-7">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: grp.config._id">
-                        <span class="k-invalid-msg" data-for="ID"></span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Title</label>
-                    <div class="col-md-7">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" data-bind="value: grp.config.Title">
-                        <span class="k-invalid-msg" data-for="Title"></span>
-                    </div>
-                </div>
+            <div class="tab-content">
+                <div class="tab-pane active" id="groups">
+                    <div class="panel-body">
+                        
+                             <div class="form-group" id="tipe-group">
+                                <label class="col-md-3 filter-label">Add Type</label>
+                                <div class="col-md-9" id="add_type">
+                                    <label class="radio-inline"><input type="radio" name="addType" value="1" data-bind="checked: grp.dataType">ldap</label>
+                                    <label class="radio-inline"><input type="radio" name="addType" value="0" data-bind="checked: grp.dataType">basic</label>
+                                    <span class="k-invalid-msg" data-for="ID"></span>
+                                    <button class="btn btn-success btn-sm get-tipe" data-bind="click: grp.showModalType, visible: (grp.dataType()== '1')">
+                                        <span class="glyphicon glyphicon-plus"></span> Group
+                                    </button>
+                                </div>
+                            </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-md-3 filter-label">ID</label>
+                                <div class="col-md-7">
+                                    <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: grp.config._id">
+                                    <span class="k-invalid-msg" data-for="ID"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 filter-label">Title</label>
+                                <div class="col-md-7">
+                                    <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Title" type="text" class="form-control input-sm" name="Title" placeholder="Type the Title Here" data-bind="value: grp.config.Title">
+                                    <span class="k-invalid-msg" data-for="Title"></span>
+                                </div>
+                            </div>
 
-            </div>
-            <div class="col-md-6">
-                 <div class="form-group" data-bind="visible: (grp.dataType()== 'Ldap')">
-                    <button class="btn btn-success btn-sm get-tipe" data-bind="click: grp.showModalType">
-                        <span class="glyphicon glyphicon-plus"></span> Group
-                    </button>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Owner</label>
-                    <div class="col-md-7">
-                        <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Owner" type="text" class="form-control input-sm" name="Owner" placeholder="Type the Owner Here" data-bind="value: grp.config.Owner">
-                        <span class="k-invalid-msg" data-for="Owner"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="col-md-3 filter-label">Enable</label>
-                    <div class="col-md-7">
-                        <input type="checkbox" name="Enable" data-bind="checked:grp.config.Enable">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12">
-                <div class="form-group">
-                    <label class="col-sm-1 filter-label">Privilege</label>
-                    <div class="col-sm-12">
-                        <div class="nav">
-                            <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
-                                <span class="glyphicon glyphicon-plus"></span> Add
-                            </button>
                         </div>
-                        <table class="table" id="datasource-settings">
-                            <thead>
-                                <tr>
-                                    <th width="200px;">Access</th>
-                                    <th>Create</th>
-                                    <th>Read</th>
-                                    <th>Update</th>
-                                    <th>Delete</th>
-                                    <th>Special Access 1</th>
-                                    <th>Special Access 2</th>
-                                    <th>Special Access 3</th>
-                                    <th>Special Access 4</th>
-                                </tr>
-                            </thead>
-                            <tbody align="center" data-bind="foreach: usr.config.Grants">
-                                <tr>
-                                    <td>
-                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access, click: usr.click"></select>
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessRead" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessUpdate" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,attr: { title: adm.AccessSpecial1 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, attr: { title: adm.AccessSpecial2 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, attr: { title: adm.AccessSpecial3 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
-                                    </td>
-                                    <td>
-                                        <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
-                                                <span class="glyphicon glyphicon-remove"></span>
+                        <div class="col-md-6" id="fy">
+                            <div class="form-group">
+                                <label class="col-md-3 filter-label">Owner</label>
+                                <div class="col-md-7">
+                                    <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Owner" type="text" class="form-control input-sm" name="Owner" placeholder="Type the Owner Here" data-bind="value: grp.config.Owner">
+                                    <span class="k-invalid-msg" data-for="Owner"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 filter-label">Enable</label>
+                                <div class="col-md-7">
+                                    <input type="checkbox" name="Enable" data-bind="checked:grp.config.Enable">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </diV>
+                <div class="tab-pane" id="MemberConfiguration">
+                    <div class="panel-body">
+                        <div class="col-md-10">
+                            <div class="form-group">
+                                <label class="col-md-2 filter-label">Filter</label>
+                                <div class="col-md-9">
+                                    <input required type="text" class="form-control input-sm" data-bind="value: grp.config.Filter">
+                                </div>
+                                  
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <h4 class="hr-mapp">Mapp Attribute</h4>
+                            <hr>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                <label class="col-md-3 filter-label">Login ID</label>
+                                <div class="col-md-4">
+                                    <input required type="text" class="form-control input-sm" data-bind="value: grp.config.LoginID">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                 
+                                <label class="col-md-3 filter-label">Fullname</label>
+                                <div class="col-md-4">
+                                    <input required type="text" class="form-control input-sm" data-bind=" value: grp.config.Fullname">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                 
+                                <label class="col-md-3 filter-label">Email</label>
+                                <div class="col-md-4">
+                                    <input required type="email" class="form-control input-sm" data-bind="value: grp.config.Email">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="access">
+                    <div class="panel-body">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="col-sm-1 filter-label">Privilege</label>
+                                <div class="col-sm-12">
+                                    <div class="nav">
+                                        <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
+                                            <span class="glyphicon glyphicon-plus"></span> Add
                                         </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                    </div>
+                                    <table class="table" id="datasource-settings">
+                                        <thead>
+                                            <tr>
+                                                <th width="200px;">Access</th>
+                                                <th>Create</th>
+                                                <th>Read</th>
+                                                <th>Update</th>
+                                                <th>Delete</th>
+                                                <th>Special Access 1</th>
+                                                <th>Special Access 2</th>
+                                                <th>Special Access 3</th>
+                                                <th>Special Access 4</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody align="center" data-bind="foreach: usr.config.Grants">
+                                            <tr>
+                                                <td>
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access, optionsCaption: 'Choose...'"></select>
+                                                    <!-- <div data-bind="visible: (app.mode() == 'new')">
+                                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),kendoDropDownList:{ dataSource: usr.Access(), value: usr.templateAccessGrant()[$index()].AccessID(), optionLabel:'select your Access'}"></select>
+                                                    </div> -->
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessRead" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessUpdate" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessDelete" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial1 ,attr: { title: adm.AccessSpecial1 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial2, attr: { title: adm.AccessSpecial2 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial3, attr: { title: adm.AccessSpecial3 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
+                                                            <span class="glyphicon glyphicon-remove"></span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </form>
-    </div>
 </div>
 <!-- modal grup add type -->
 <div class="modal fade" id="modalForgot" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
@@ -178,7 +236,8 @@
         <div class="modal-content">
             <div class="modal-1" id="modal-1">
                 <div class="modal-header">
-                    <h4 class="modal-title" data-bind="html: grp.dataType()">
+                    <h4 class="modal-title">
+                        Ldap
                     </h4>
                 </div>
                 <div  >      
@@ -227,7 +286,7 @@
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Attribute</label>
                             <div class="col-md-8">
-                                <input type="text" id="attribute" class="form-control input-sm" data-bind="value: grp.attribute">
+                                <input type="text" id="attribute-group" class="form-control input-sm" data-bind="value: grp.attribute">
                                 <span class="k-invalid-msg" data-for="attribute"></span>
                             </div>
                         </div> 
@@ -235,7 +294,7 @@
                     </form>    
                     <div class="col-md-12" >    
                     <div class="form-group">
-                        <div id="grid-ldap-group"></div>
+                        <div id="grid-ldap-group" data-bind="visible: (grp.GrupModalgrid() == 'show')"></div>
                     </div>
                     </div>
                     <!-- <div class="clearfix"></div>  -->
@@ -256,3 +315,52 @@
     </div>
 </div>
 <!-- end modal grup add type -->
+<!-- modal refresh group -->
+<div class="modal fade" id="modalRefresh" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content grp-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button type="button" class="close" 
+                   data-dismiss="modal">
+                       <span aria-hidden="true">&times;</span>
+                       <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    Enter Your Access
+                </h4>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                
+                <form role="form" class="form-horizontal" id="email-form">
+                  <div class="form-group">
+                    <label class="control-label col-sm-3">Username</label>
+                    <div class="col-xs-8">
+                      <input type="text" class="form-control input-sm" name="username" placeholder="Enter Username" data-bind="value: grp.configLdapAuht.username"  required/>
+                      <span class="k-invalid-msg" data-for="email"></span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-3">Password</label>
+                    <div class="col-xs-8">
+                      <input type="password" class="form-control input-sm" name="username" placeholder="Enter Password" data-bind="value: grp.configLdapAuht.password"   required/>
+                      <span class="k-invalid-msg" data-for="email"></span>
+                    </div>
+                  </div>
+                </form> 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-default"
+                        data-dismiss="modal">
+                            Close
+                </button>
+                <button type="button" class="btn btn-sm btn-primary grp-refresh" data-bind="click: grp.getRefresh">
+                    Get Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End modal refresh group -->
