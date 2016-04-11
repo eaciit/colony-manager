@@ -55,7 +55,7 @@
 
 <script type="text/template" id="popover-content-template">
     <div id="spark" class="ct-custom" >
-        <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'spark')">
+        <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'Spark')">
             <tbody>
                 <tr>
                     <td>Spark Master</td>
@@ -93,7 +93,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.hdfsModel, visible: (df.popoverMode() == 'hdfs')">
+        <table data-bind="with:df.hdfsModel, visible: (df.popoverMode() == 'HDFS')">
             <tbody>
                 <tr>
                     <td>HDFS Script</td>
@@ -103,7 +103,7 @@
                 </tr>
             </tbody>
         </table>
-         <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'ssh')">
+         <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'SSH Script')">
             <tbody>
                 <tr>
                     <td>SSH Script</td>
@@ -113,7 +113,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.hiveModel, visible: (df.popoverMode() == 'hive')">
+        <table data-bind="with:df.hiveModel, visible: (df.popoverMode() == 'Hive')">
             <tbody>
                 <tr>
                     <td>Script</td>
@@ -131,7 +131,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'shell')">
+        <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'Shell Script')">
             <tbody>
                 <tr>
                     <td>Shell Command</td>
@@ -142,7 +142,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.hsModel, visible: (df.popoverMode() == 'mapreduce')">
+        <table data-bind="with:df.hsModel, visible: (df.popoverMode() == 'Map Reduce')">
             <tbody>
                 <tr>
                     <td>Mapper</td>
@@ -160,7 +160,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'java')">
+        <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'Java App')">
             <tbody>
                 <tr>
                     <td>Jar Name</td>
@@ -177,7 +177,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'email')">
+        <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
             <tbody>
                 <tr>
                     <td>To Addresses</td>
@@ -199,7 +199,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.stopModel, visible: (df.popoverMode() == 'stop')">
+        <table data-bind="with:df.stopModel, visible: (df.popoverMode() == 'Stop')">
             <tbody>
                 <tr>
                     <td>Message</td>
@@ -209,7 +209,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.forkModel, visible: (df.popoverMode() == 'fork')">
+        <table data-bind="with:df.forkModel, visible: (df.popoverMode() == 'Fork')">
             <tbody>
                 <tr>
                     <td>If</td>

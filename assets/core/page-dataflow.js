@@ -413,38 +413,31 @@ df.init = function () {
                             ko.cleanNode($(".popover-content:last")[0]);
                             ko.applyBindings(viewModel, $(".popover-content:last")[0]);
                         }, 10);
+
+                        df.popoverMode(item.dataItem.name);
+
                         if (item.dataItem.name == "Spark") {
-                            $(".popover").attr("style","display: block; top: " +(ymouse-220)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('spark');
+                            $(".popover").attr("style","display: block; top: " +(ymouse-250)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "HDFS"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('hdfs');                            
                         }else if(item.dataItem.name == "Hive"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('hive');
                         }else if(item.dataItem.name == "Shell Script"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('shell');
                         }else if(item.dataItem.name == "SSH Script"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('ssh');
                         }else if(item.dataItem.name == "Map Reduce"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('mapreduce');
                         }else if(item.dataItem.name == "Java App"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('java');
                         }else if(item.dataItem.name == "Email"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('email');
                         }else if(item.dataItem.name == "Stop"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('stop');
                         }else if(item.dataItem.name == "Fork"){
                             var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
                             for (i = 0; i <= cl; i++) {
                                 var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
-                                df.popoverMode('fork');
                                 // console.log(no);
                                 if(no !== 0){
                                     $("#fork").append($("#fork-row").html());
@@ -959,47 +952,47 @@ df.renderActionData = function(){
    
     var action = df.popoverMode()
     switch(action){
-      case "spark":
+      case "Spark":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
           df.sparkModel(dataItem.DataAction);
       break;
-      case "hdfs":
+      case "HDFS":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newHdfsModel():dataItem.DataAction;
           df.hdfsModel(dataItem.DataAction);
       break;
-      case "hive":
+      case "Hive":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newHiveModel():dataItem.DataAction;
           df.hiveModel(dataItem.DataAction);
       break;
-      case "shell":
+      case "Shell Script":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newShModel():dataItem.DataAction;
           df.shModel(dataItem.DataAction);
       break;
-      case "kafka":
+      case "Kafka":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newKafkaModel():dataItem.DataAction;
           df.kafkaModel(dataItem.DataAction);
       break;
-      case "mapreduce":
+      case "Map Reduce":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newHsModel():dataItem.DataAction;
           df.hsModel(dataItem.DataAction);
       break;
-      case "java":
+      case "Java App":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newJavaAppModel():dataItem.DataAction;
           df.javaAppModel(dataItem.DataAction);
       break;
-      case "email":
+      case "Email":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newEmailModel():dataItem.DataAction;
           df.emailModel(dataItem.DataAction);
       break;
-      case "fork":
+      case "Fork":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newForkModel():dataItem.DataAction;
           df.forkModel(dataItem.DataAction);
       break;
-      case "stop":
+      case "Stop":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():dataItem.DataAction;
           df.stopModel(dataItem.DataAction);
       break;
-      case "ssh":
+      case "SSH Script":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():dataItem.DataAction;
           df.sshModel(dataItem.DataAction);
       break;
@@ -1012,37 +1005,37 @@ df.saveActionData = function(){
     var action = df.popoverMode();
     $("#popbtn").popover("hide");
     switch(action){
-        case "spark":
+        case "Spark":
             diagram.dataItem["DataAction"]=df.sparkModel();
         break;
-        case "hdfs":
+        case "HDFS":
             diagram.dataItem["DataAction"]=df.hdfsModel();
         break;
-        case "hive":
+        case "Hive":
             diagram.dataItem["DataAction"]=df.hiveModel();
         break;
-        case "shell":
+        case "Shell Script":
             diagram.dataItem["DataAction"]=df.shModel();
         break;
-        case "kafka":
+        case "Kafka":
             diagram.dataItem["DataAction"]=df.kafkaModel();
         break;
-        case "mapreduce":
+        case "Map Reduce":
             diagram.dataItem["DataAction"]=df.hsModel();
         break;
-        case "java":
+        case "Java App":
             diagram.dataItem["DataAction"]=df.javaAppModel();
         break;
-        case "email":
+        case "Email":
             diagram.dataItem["DataAction"]=df.emailModel();          
         break;
-        case "fork":
+        case "Fork":
             diagram.dataItem["DataAction"]=df.forkModel();
         break;
-        case "stop":
+        case "Stop":
             diagram.dataItem["DataAction"]=df.stopModel();
         break;
-        case "ssh":
+        case "SSH Script":
             diagram.dataItem["DataAction"]=df.sshModel();
         break;
     }
