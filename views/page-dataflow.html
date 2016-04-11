@@ -230,6 +230,16 @@
                 </tr>                
             </tbody>
         </table>
+        <table data-bind="visible: (df.popoverMode() == 'Transitions')">
+            <tbody>
+                <tr>
+                    <td>When Failed</td>
+                    <td>
+                        <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
+                    </td>
+                </tr>                
+            </tbody>
+        </table>
             <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
             <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Add</a>  
     </div>
@@ -300,6 +310,11 @@
             -webkit-border-radius: 15px;
             -moz-border-radius: 15px;
             border-radius: 15px;
+        }
+
+        .btn-transition{
+            border-radius: 8px;
+            font-size: 10px;
         }
 
 		.popover{

@@ -92,6 +92,26 @@ var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 
 df.popoverMode = ko.observable('');
+df.detailMode = ko.observable("");
+
+df.whenFailed = ko.observable("");
+df.allAction = ko.observableArray([]);
+
+df.detailModeDo = function(text,detail) {
+    var diagram = $(".diagram").getKendoDiagram();
+    var cls = $(".btn-transition").find("span").attr("class");
+    var close = cls.indexOf("down") > -1?true:false;
+    if(df.popoverMode() != detail && close){
+        df.whenFailed(diagram.select()[0].dataItem.name+" - "+diagram.select()[0].id);
+        df.popoverMode("Transitions");
+        df.detailMode(text);
+        $(".btn-transition").find("span").attr("class","glyphicon glyphicon-chevron-up");
+    }else{
+        $(".btn-transition").find("span").attr("class","glyphicon glyphicon-chevron-down");
+        df.popoverMode(df.detailMode());
+        df.detailMode("");
+    }
+}
 
 df.sparkModel = ko.observable({
   //UI not yet
@@ -411,6 +431,14 @@ df.init = function () {
 
                         $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
 
+                        $btn = $("<button class='btn btn-primary btn-xs pull-right btn-transition'><span class='glyphicon glyphicon-chevron-down'></span></button>")
+                        $(".popover-title").append($btn);
+
+                        $btn.click(function(){
+                            df.detailModeDo(df.popoverMode(),"Transitions");
+                        });
+
+
                         setTimeout(function () {
                             ko.cleanNode($(".popover-content:last")[0]);
                             ko.applyBindings(viewModel, $(".popover-content:last")[0]);
@@ -561,7 +589,7 @@ df.init = function () {
                                 dataItem:{name:name,image :image, color:color} 
                              });
                             }
-
+                            df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
                         },
        });
 
@@ -696,6 +724,7 @@ df.onRemove = function(e){
     setTimeout(function(){
             if(e.shape != undefined){
             df.checkConnection($(".diagram"));
+            df.allAction.remove(e.shape.dataItem.name+" - "+e.shape.id);
         }
     },500);
 }
@@ -749,6 +778,7 @@ df.renderDiagram = function(elem,data){
     for(var c in shapes){
         var sh = shapes[c];
         diagram.addShape(sh);
+        df.allAction.push(sh.dataItem.name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
     }
 
     diagram = $(elem).getKendoDiagram();
