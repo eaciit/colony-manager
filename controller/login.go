@@ -118,20 +118,20 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	results := make([]toolkit.M, 0, 0)
 
 	cursor.Fetch(&menus, 0, false)
-	fmt.Println("DEBUG 121, : ", menus)
+	// fmt.Println("DEBUG 121, : ", menus)
 	if cursor.Count() > 0 {
 		for _, m := range menus {
 			result := toolkit.M{}
 
 			acc := acl.HasAccess(toolkit.ToString(sessionId), acl.IDTypeSession, m.AccessId, acl.AccessRead)
-
 			result, err = toolkit.ToM(m)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 			result.Set("detail", 7)
-			result.Set("childrens", "")
+
 			if acc {
+				result.Set("childrens", "")
 				if len(m.Childrens) > 0 {
 					childs := GetChildMenu(r, m.Childrens)
 					result.Set("childrens", childs)
@@ -248,7 +248,7 @@ func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	m.SetHeader("Subject", "[no-reply] Self password reset")
 	m.SetBody("text/html", mailmsg)
 
-	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "B920Support")
+	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "******")
 	err = d.DialAndSend(m)
 
 	if err != nil {
