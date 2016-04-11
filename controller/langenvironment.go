@@ -173,7 +173,6 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	serverPathSeparator := CreateApplicationController(l.Server).GetServerPathSeparator(dataServers)
-	// fmt.Println(" ::: ", dataServers)
 
 	sshSetting, sshClient, err := dataServers.Connect()
 	if err != nil {
@@ -181,8 +180,26 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 	}
 	defer sshClient.Close()
 
+	var query *dbox.Filter
+	if payload.Lang == LANG_SCALA {
+		var IsInstalled bool
+		for _, eachLang := range dataServers.InstalledLang {
+			if eachLang.Lang == LANG_JAVA {
+				IsInstalled = eachLang.IsInstalled
+				break
+			}
+		}
+		if !IsInstalled {
+			query = dbox.Or(dbox.Eq("language", LANG_JAVA), dbox.Eq("language", LANG_SCALA))
+		} else {
+			query = dbox.Eq("language", payload.Lang)
+		}
+	} else {
+		query = dbox.Eq("language", payload.Lang)
+	}
+
 	dataLanguage := []colonycore.LanguageEnviroment{}
-	cursor, err := colonycore.Find(new(colonycore.LanguageEnviroment), dbox.Eq("language", payload.Lang))
+	cursor, err := colonycore.Find(new(colonycore.LanguageEnviroment), query)
 	cursor.Fetch(&dataLanguage, 0, false)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -198,6 +215,7 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 				var installShPath string
 
 				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
+					// fmt.Println(ii, " : -- > ", eachLang.Language)
 					targetLang := new(colonycore.InstalledLang)
 					targetLang.Lang = eachLang.Language
 
@@ -260,8 +278,6 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 					if err != nil {
 						return helper.CreateResult(false, nil, err.Error())
 					}
-					// fmt.Println(" --- > ", outputCmd)
-					// fmt.Println("go run : ", outputCmd[0].CMD)
 					fmt.Println(" :: : ", outputCmd[0].Output)
 
 					targetLang.IsInstalled = true
