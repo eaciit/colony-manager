@@ -587,14 +587,14 @@ usr.GetConfigLdap = function() {
             usr.ListAddress.push(res.data[i].Address);   
         };
         usr.ListLdap(data); 
-            $("#Address").kendoAutoComplete({
-                dataSource: usr.ListAddress(),
-                filter: "startswith",
-                change : usr.setLdap,
-                select: function (ev) {
-                    usr.ldap.Address(this.dataItem(ev.item.index())) 
-                }
-            }); 
+        $("#Address").kendoAutoComplete({
+            dataSource: usr.ListAddress(),
+            filter: "startswith",
+            change : usr.setLdap,
+            select: function (ev) {
+                usr.ldap.Address(this.dataItem(ev.item.index())) 
+            }
+        }); 
     });
 };
 usr.setLdap = function(){  
@@ -831,7 +831,8 @@ usr.DisplayLdap =  function(){
         $(".modal-checklogin").modal("show");
         $('#usr-attribute').tokenfield({});
         usr.ldap.Attribute([]);
-        usr.attribute('');
+        $('#usr-attribute').tokenfield('setTokens', []);
+        //usr.attribute('');
 
         usr.GetConfigLdap();
         usr.config.LoginType("1");

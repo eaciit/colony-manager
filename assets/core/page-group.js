@@ -35,6 +35,7 @@ grp.templateLdapAuth={
     username: "",
     password: ""
 }
+grp.generateFilter = ko.observable("");
 grp.configLdapAuht = ko.mapping.fromJS(grp.templateLdapAuth);
 grp.dataType = ko.observable("0");
 grp.dataSearch = ko.observable('');
@@ -488,9 +489,9 @@ grp.backToFront = function() {
 grp.showModalType = function(){
     $('#modalForgot').modal({show: 'true'});
     $('#attribute-group').tokenfield({});
-    grp.GrupModalgrid('hide');
-    
-    grp.attribute('');
+    //grp.GrupModalgrid('hide');
+    $('#attribute-group').tokenfield('setTokens', []);
+    //grp.attribute('');
     grp.autoDataAddress();
     grp.tempDataGrup([]);
 }
@@ -589,10 +590,13 @@ grp.saveGroupLdap = function(){
 
 grp.selectLdapGroup = function(){
     app.wrapGridSelect("#grid-ldap-group", ".btn", function(d) {
+        console.log("-------- 593 ",d);
         grp.config._id(d.cn);
         grp.config.Title(d.name);
         grp.config.Owner(d.usncreated);
-       $('#modalForgot').modal("hide");
+        $('#modalForgot').modal("hide");
+        grp.config.Filter("memberOf=CN="+d.cn+",CN=Users,"+grp.dataTypeConfig.BaseDN());
+
     });
 }
 
