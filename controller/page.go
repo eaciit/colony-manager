@@ -7,7 +7,6 @@ import (
 	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 )
 
 type PageController struct {
@@ -52,7 +51,6 @@ func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
-		toolkit.Println()
 		_data.ID = tm.Get("dsWidget", "").(string)
 		_data.Fields, err = helper.GetFieldsFromDS(tm.Get("dsColony", "").(string))
 		if err != nil {
@@ -61,7 +59,7 @@ func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
 		data = append(data, _data)
 	}
 	widgetSource := filepath.Join(EC_DATA_PATH, "widget", payload.Get("widgetId", "").(string))
-	getFileIndex, err := colonycore.GetPath(widgetSource)
+	getFileIndex, err := colonycore.GetWidgetPath(widgetSource)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -113,7 +111,7 @@ func (p *PageController) GetPage(r *knot.WebContext) interface{} {
 func (p *PageController) SavePage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
+	payload := toolkit.M{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -163,12 +161,12 @@ func (p *PageController) RemovePage(r *knot.WebContext) interface{} {
 func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := map[string]interface{}{}
+	payload := toolkit.M{}
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err := new(colonycore.Page).Save(payload, true); err != nil {
+	if err := new(colonycore.Page).Save(payload, true, false, ""); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -178,9 +176,18 @@ func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
+	payload := toolkit.M{}
 	data := colonycore.Page{}
-	if err := r.GetPayload(&data); err != nil {
+	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
+	}
+	data.ID = payload.Get("_id", "").(string)
+	payload.Set("mode", "delete widget")
+	mode := payload.Get("mode", "").(string)
+	if mode == "new widget" { /*save new widget*/
+		data.Save(payload, true, true, filepath.Join(EC_DATA_PATH, "widget"))
+	} else if mode == "delete widget" { /*delete widget*/
+		data.Delete(payload, "")
 	}
 	if err := data.GetById(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -189,7 +196,7 @@ func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
+/*func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	data := toolkit.M{}
@@ -245,4 +252,4 @@ func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, previewData, "")
-}
+}*/
