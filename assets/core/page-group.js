@@ -316,10 +316,9 @@ grp.config = ko.mapping.fromJS(grp.templateGroup);
 grp.Groupmode = ko.observable('');
 
 grp.savegroup = function() {
-    alert('masuk');
-    // if (!app.isFormValid("#form-add-Group")) {
-    //     return;
-    // }
+    if (!app.isFormValid("#form-add-Group")) {
+        return;
+    }
     var data = ko.mapping.toJS(usr.config.Grants);
     var AccessGrants = [];
     for (var i = 0; i < data.length; i++) {
