@@ -118,7 +118,7 @@
                             <div class="form-group">
                                 <label class="col-md-2 filter-label">Filter</label>
                                 <div class="col-md-9">
-                                    <input required type="text" class="form-control input-sm" name="Filter" data-bind="value: grp.config.Filter">
+                                    <input type="text" class="form-control input-sm" name="Filter" data-bind="value: grp.config.Filter">
                                     <span class="k-invalid-msg" data-for="Filter"></span>
                                 </div>
                                   
@@ -132,7 +132,7 @@
                             <div class="col-md-10">
                                 <label class="col-md-3 filter-label">Login ID</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm" name="login-id" data-bind="value: grp.config.LoginID">
+                                    <input type="text" class="form-control input-sm" name="login-id" data-bind="value: grp.config.LoginID">
                                     <span class="k-invalid-msg" data-for="login-id"></span>
                                 </div>
                             </div>
@@ -142,7 +142,7 @@
                                  
                                 <label class="col-md-3 filter-label">Fullname</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm" name="Fullname" data-bind=" value: grp.config.Fullname">
+                                    <input type="text" class="form-control input-sm" name="Fullname" data-bind=" value: grp.config.Fullname">
                                     <span class="k-invalid-msg" data-for="Fullname"></span>
                                 </div>
                             </div>
@@ -152,7 +152,7 @@
                                  
                                 <label class="col-md-3 filter-label">Email</label>
                                 <div class="col-md-4">
-                                    <input required type="email" class="form-control input-sm" name="Email" data-bind="value: grp.config.Email">
+                                    <input type="email" class="form-control input-sm" name="Email" data-bind="value: grp.config.Email">
                                     <span class="k-invalid-msg" data-for="Email"></span>
                                 </div>
                             </div>
@@ -188,10 +188,8 @@
                                             <tr>
                                                 <td>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access, optionsCaption: 'Choose...'"></select>
-                                                    <!-- <div data-bind="visible: (app.mode() == 'new')">
-                                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),kendoDropDownList:{ dataSource: usr.Access(), value: usr.templateAccessGrant()[$index()].AccessID(), optionLabel:'select your Access'}"></select>
-                                                    </div> -->
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value: usr.config.Grants()[$index()].AccessId,options: usr.unselectedAccess, selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                                
                                                 </td>
                                                 <td>
                                                     <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />

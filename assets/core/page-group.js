@@ -267,7 +267,7 @@ grp.getlistGroups = function(c) {
         if (res.data == null) {
             res.data = "";
         }
-        console.log("----- 264 ",res.data[8].grouptype);
+        // console.log("----- 264 ",res.data[8].grouptype);
         for (var i = 0; i < res.data.length; i++) {
             if(res.data[i].grouptype != 1){
                 data.push({
@@ -351,12 +351,12 @@ grp.savegroup = function() {
         grp.Access.AccessValue.removeAll()
     };
     var groupModal = {
-        Address:  grp.tempDataGrup()[0].Address,
-        BaseDN:  grp.tempDataGrup()[0].BaseDN,
-        Filter:  grp.tempDataGrup()[0].Filter,
-        Username:  grp.tempDataGrup()[0].Username,
-        Password:  grp.tempDataGrup()[0].Password,
-        Attribute:  grp.tempDataGrup()[0].Attribute,
+        Address:  grp.dataTypeConfig.Address(),
+        BaseDN:  grp.dataTypeConfig.BaseDN(),
+        Filter:  grp.dataTypeConfig.Filter(),
+        Username:  grp.dataTypeConfig.Username(),
+        Password:  grp.dataTypeConfig.Password(),
+        Attribute:  grp.dataTypeConfig.Attribute(),
     };
     grp.config.GroupType(grp.dataType());
     group = ko.mapping.fromJS(grp.config);
