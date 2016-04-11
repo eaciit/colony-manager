@@ -189,6 +189,16 @@
                 </tr>
             </tbody>
         </table>
+        <table data-bind="with:df.stopModel, visible: (df.popoverMode() == 'stop')">
+            <tbody>
+                <tr>
+                    <td>Message</td>
+                    <td>
+                        <textarea class="inp-custom" data-bind="value:message"></textarea>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         <table data-bind="with:df.forkModel, visible: (df.popoverMode() == 'fork')">
             <tbody>
                 <tr>
@@ -202,6 +212,7 @@
                     </td>
                 </tr>                
             </tbody>
+        </table>
             <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
             <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Add</a>  
     </div>

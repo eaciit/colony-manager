@@ -413,6 +413,11 @@ df.init = function () {
                             $(".arrow").attr("style","left:30px");
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('email');
+                        }else if(item.dataItem.name == "Stop"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".arrow").attr("style","left:30px");
+                            $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
+                            df.popoverMode('stop');
                         }else if(item.dataItem.name == "Fork"){
                             var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
                             for (i = 0; i <= cl; i++) {
