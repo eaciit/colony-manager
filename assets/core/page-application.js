@@ -164,7 +164,7 @@ apl.commandDataColumns = ko.observableArray([
 	{field: "CmdName", title: "Command Key"},
 	{field: "CmdValue", title: "Command"},
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
-		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.doRunCommand(\'' + d.CmdName + '\')"><span class="fa fa-play"></span></button>';
+		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Execute" onclick="apl.doRunCommand(\'' + d.CmdName + '\')"><span class="fa fa-play"></span></button>';
 	} },
 ]);
 apl.commandData = ko.observableArray([]);
