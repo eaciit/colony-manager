@@ -252,12 +252,13 @@ df.init = function () {
                             var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
                             for (i = 0; i <= cl; i++) {
                                 var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
+                                df.popoverMode('fork');
                                 // console.log(no);
                                 if(no !== 0){
                                     $(".popover-title").html(item.dataItem.name);
                                     $(".arrow").attr("style","left:30px");
-                                    $(".popover").attr("style","display: block; top: " +(ymouse-80)+"px; left: "+(xmouse-30)+"px;");
-                                    df.popoverMode('fork');
+                                    $("#fork").append($("#fork-row").html());
+                                    $(".popover").attr("style","display: block; top: " +(ymouse-100)+"px; left: "+(xmouse-30)+"px;");
                                 };
                             }
                         };
@@ -384,7 +385,7 @@ df.init = function () {
             ymouse = e.pageY;
         });
 };
-
+df.dataRow = ko.observableArray([]);
 df.run = function () {
     app.ajaxPost("/dataflow/start", {}, function (res) {
         if (!app.isFine(res)) {
