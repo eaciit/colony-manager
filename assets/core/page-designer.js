@@ -33,6 +33,10 @@ pg.widgetAvailableConfig = {
 pg.allWidget = {
 	widgets: []
 }
+pg.widgetPosition = ko.observableArray([
+	{value: "fixed", text: "Fixed"},
+	{value: "absolute", text: "Absolute"}
+]);
 pg.allDataSources = ko.observableArray([]);
 pg.availableWidget = ko.mapping.fromJS(pg.allWidget);
 pg.configPageDesigner = ko.mapping.fromJS(pg.wdigetDesignerConfig);
