@@ -20,7 +20,9 @@ var (
 )
 
 func main() {
-	isSetupACL := *flag.String("setupacl", "false", "")
+	var isSetupACL bool
+	flag.BoolVar(&isSetupACL, "setupacl", false, "")
+	flag.Parse()
 
 	if controller.EC_APP_PATH == "" || controller.EC_DATA_PATH == "" {
 		fmt.Println("Please set the EC_APP_PATH and EC_DATA_PATH variable")
@@ -54,7 +56,7 @@ func main() {
 	server.Register(controller.CreatePageController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
 
-	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL == "true" {
+	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL {
 		if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil {
 			fmt.Println("Seems like ACL DB is not yet configured")
 		}
@@ -64,8 +66,8 @@ func main() {
 
 	err := setAclDatabase()
 	if err != nil {
-		fmt.Printf("Error found where set acl database : %v \n", err.Error())
-		return
+		fmt.Println("Warning!", "Colony Manager will running without ACL")
+		fmt.Println("ACL Error", err.Error())
 	}
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
@@ -82,7 +84,6 @@ func main() {
 }
 
 func setAclDatabase() (err error) {
-
 	driver, ci := new(colonycore.Login).GetACLConnectionInfo()
 	conn, err := dbox.NewConnection(driver, ci)
 
