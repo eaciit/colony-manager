@@ -14,9 +14,9 @@
 <div class="col-xs-6 col-sm-2" id="sidebar">
 	<div class="row">
 		<ul class="nav">
-			<li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#">Widget 1</a></div></li>
-			<li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#">Widget 2</a></div></li>
-			<li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#">Widget 3</a></div></li>
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 1</a></div></li>
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 2</a></div></li>
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 3</a></div></li>
 		</ul>
 	</div>
 </div>
@@ -66,8 +66,9 @@
 		</div>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 			<div class="col-md-12">
-				<div class="grid-stack grid-stack-6" id="panel-designer">
-                </div>
+				<!-- <div class="grid-stack grid-stack-6" id="panel-designer">
+                </div> -->
+                <div data-bind="component: {name: 'widget-grid', params: $data}"></div>
 			</div>
 			<div style="clear:both;"></div>
 		</div>
