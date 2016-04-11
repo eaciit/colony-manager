@@ -205,8 +205,20 @@
             <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
             <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Add</a>  
     </div>
-      
     <div style="clear:both;"></div>
+</script>
+
+<script type="text/template" id="fork-row">
+     <tr>
+        <td>If</td>
+        <td>
+            <input type="text" class="inp-fork inp-left" data-bind="" placeholder="">
+        </td>
+        <td>Go To</td>
+        <td>
+            <input type="text" class="inp-fork inp-right" data-bind="" placeholder="">
+        </td>
+    </tr>        
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
@@ -377,7 +389,7 @@
             width: 220px;
         }
         .inp-fork{
-            margin: 0 5px;
+            margin: 2px 5px;
             width: 180px;
         }
 </style>
