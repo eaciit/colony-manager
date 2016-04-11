@@ -216,20 +216,6 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.forkModel, visible: (df.popoverMode() == 'Fork')">
-            <tbody>
-                <tr>
-                    <td>If</td>
-                    <td>
-                        <input type="text" class="inp-fork inp-left" data-bind="" placeholder="">
-                    </td>
-                    <td>Go To</td>
-                    <td>
-                        <input type="text" class="inp-fork inp-right" data-bind="" placeholder="">
-                    </td>
-                </tr>                
-            </tbody>
-        </table>
         <table data-bind="visible: (df.popoverMode() == 'Transitions')">
             <tbody>
                 <tr>
@@ -240,8 +226,9 @@
                 </tr>                
             </tbody>
         </table>
-            <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-            <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Add</a>  
+        <table id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'fork')"></table>
+        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Add</a>
     </div>
     <div style="clear:both;"></div>
 </script>

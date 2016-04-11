@@ -170,9 +170,9 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	initGroup.GroupConf = config
 
 	if g["GroupType"].(string) == "1" {
-		initGroup.GroupType = acl.GroupTypeLdap
+		// initGroup.GroupType = acl.GroupTypeLdap
 	} else if g["GroupType"].(string) == "0" {
-		initGroup.GroupType = acl.GroupTypeBasic
+		// initGroup.GroupType = acl.GroupTypeBasic
 	}
 	//fmt.Println(acl.GroupTypeLdap)
 	err = acl.Save(initGroup)
