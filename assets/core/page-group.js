@@ -9,6 +9,10 @@ grp.templateGroup = {
     Owner: "",
     GroupType: "",
     Grants: ko.observableArray([]),
+    Filter: "",
+    LoginID: "",
+    Fullname: "",
+    Email: "",
 };
 grp.templateFilter = {
     _id: "",
@@ -342,21 +346,22 @@ grp.savegroup = function() {
     };
     grp.config.GroupType(grp.dataType());
     group = ko.mapping.fromJS(grp.config);
-    app.ajaxPost("/group/savegroup", {
-        group: group,
-        grants: AccessGrants,
-        groupConfig: groupModal
-    }, function(res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        swal({
-            title: "Group successfully created",
-            type: "success",
-            closeOnConfirm: true
-        });
-        grp.backToFront();
-    });
+    console.log("======= group ", group);
+    // app.ajaxPost("/group/savegroup", {
+    //     group: group,
+    //     grants: AccessGrants,
+    //     groupConfig: groupModal
+    // }, function(res) {
+    //     if (!app.isFine(res)) {
+    //         return;
+    //     }
+    //     swal({
+    //         title: "Group successfully created",
+    //         type: "success",
+    //         closeOnConfirm: true
+    //     });
+    //     grp.backToFront();
+    // });
 };
 grp.deletegroup = function() {
     var checkboxes = document.getElementsByName('checkboxgroup');
