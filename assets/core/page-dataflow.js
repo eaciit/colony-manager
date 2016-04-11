@@ -22,6 +22,13 @@ viewModel.dataflow = {
          "Color" : "#CEBF00"
     },
     {
+        "Name"  :"SSH Script",
+        "Id"    :"4",
+        "Image" : "icon_ssh.png",
+        "Type"  : "Action",
+        "Color" : "brown"
+    },
+    {
         "Name"  :"Shell Script",
         "Id"    :"4",
         "Image" : "icon_console.png",
@@ -152,12 +159,13 @@ df.newHsModel = function(){
 
 //model same with hdfs UI not yet
 df.sshModel = ko.observable({
-
+ //just in UI
+ script:ko.observable("")
 });
 
 df.newSshModel = function(){
   return {
-
+     script:ko.observable("")
   }
 }
 
@@ -267,6 +275,13 @@ function visualTemplate(options) {
                         fill: "#e8eff7",
                         data:"M0.5,37.5 L37.5,0.5 L74.5,37.5 M0.5,37.5 L74.5,37.5 L37.5,74.5 z"
                     }));
+
+                    g.append(new dataviz.diagram.TextBlock({
+                        x:48,
+                        y:30,
+                        text: dataItem.name,
+                        fontSize:13
+                    }));
                 }else if(dataItem.name == "Stop"){
                      g.append(new dataviz.diagram.Path({
                         data:"M74.5,37.5 C74.5,57.91 57.91,74.5 37.5,74.5 C17,74.5 0.5,57.91 0.5,37.5 C0.5,17 17,0.5 37.5,0.5 C57.91,0.5 74.5,17 74.5,37.5 z",
@@ -277,10 +292,17 @@ function visualTemplate(options) {
                         },
                         fill: "#e8eff7"
                     }));
+
+                    g.append(new dataviz.diagram.TextBlock({
+                        x:25,
+                        y:30,
+                        text: dataItem.name,
+                        fontSize:13
+                    }));
                 }else{
                     g.append(new dataviz.diagram.Rectangle({
-                        width: 200,
-                        height: 50,
+                        width: 150,
+                        height: 45,
                         stroke: {
                             width: 0
                         },
@@ -289,7 +311,7 @@ function visualTemplate(options) {
 
                     g.append(new dataviz.diagram.Rectangle({
                         width: 8,
-                        height: 50,
+                        height: 45,
                         fill: dataItem.color,
                         stroke: {
                             width: 0
@@ -300,11 +322,17 @@ function visualTemplate(options) {
                     source: "/res/img/" + dataItem.image,
                     x: 14,
                     y: 7,
-                    width: 35,
-                    height: 35
+                    width: 30,
+                    height: 30
+                }));
+
+                    g.append(new dataviz.diagram.TextBlock({
+                    text: dataItem.name,
+                    x: 55,
+                    y: 15,
+                    fontSize:13
                 }));
             }
-
             return g;
         }
 
@@ -331,10 +359,6 @@ df.init = function () {
         },
         shapeDefaults: {
                visual: visualTemplate,
-                    content: {
-                        template: "#= dataItem.name #",
-                        fontSize: 15
-                    },
             // content: {
             //     template: function (d) {
             //         console.log(d);
@@ -342,8 +366,6 @@ df.init = function () {
             //     },
             // },
             html: true,
-            // width: 300,
-            // height: 200
         },
         editable:{
             resize:false,
@@ -381,7 +403,6 @@ df.init = function () {
                         if(xmouse>maxxmouse){
                             xmouse = maxxmouse;
                             $(".arrow").attr("style","left:50%"); 
-
                         }else{
                             $(".arrow").attr("style","left:30px"); 
                         }
@@ -406,6 +427,10 @@ df.init = function () {
                             $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
                             df.popoverMode('shell');
+                        }else if(item.dataItem.name == "SSH Script"){
+                            $(".popover-title").html(item.dataItem.name);
+                            $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
+                            df.popoverMode('ssh');
                         }else if(item.dataItem.name == "Map Reduce"){
                             $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
@@ -982,6 +1007,10 @@ df.renderActionData = function(){
           dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():dataItem.DataAction;
           df.stopModel(dataItem.DataAction);
       break;
+      case "ssh":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():dataItem.DataAction;
+          df.sshModel(dataItem.DataAction);
+      break;
     }
 }
 
@@ -1020,6 +1049,9 @@ df.saveActionData = function(){
         break;
         case "stop":
             diagram.dataItem["DataAction"]=df.stopModel();
+        break;
+        case "ssh":
+            diagram.dataItem["DataAction"]=df.sshModel();
         break;
     }
 }

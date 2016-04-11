@@ -103,6 +103,16 @@
                 </tr>
             </tbody>
         </table>
+         <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'ssh')">
+            <tbody>
+                <tr>
+                    <td>SSH Script</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="SSH script.">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         <table data-bind="with:df.hiveModel, visible: (df.popoverMode() == 'hive')">
             <tbody>
                 <tr>
@@ -346,8 +356,8 @@
         .list-left {
         	vertical-align: middle!important;
             list-style-type: none;
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             margin: 5px;
             line-height: 30px;
             text-align: center;
