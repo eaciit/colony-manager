@@ -402,6 +402,10 @@ df.init = function () {
             endCap: "ArrowEnd"
         },
         autoBind: true,
+        select:function(e){
+            df.closePopover("#poptitle");
+            df.closePopover("#popbtn");
+        },
         click:function(e){
             // console.log(e);
             // console.log(this);
