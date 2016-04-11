@@ -7,6 +7,7 @@ grp.templateGroup = {
     Title: "",
     Enable: false,
     Owner: "",
+    GroupType: "",
     Grants: ko.observableArray([]),
 };
 grp.templateFilter = {
@@ -26,7 +27,12 @@ grp.DataTypeTemplate = {
     Password: "",
     Attribute: ko.observableArray([]),
 }
-grp.dataType = ko.observable("Basic");
+grp.templateLdapAuth={
+    username: "",
+    password: ""
+}
+grp.configLdapAuht = ko.mapping.fromJS(grp.templateLdapAuth);
+grp.dataType = ko.observable("0");
 grp.dataSearch = ko.observable('');
 grp.dataTypeConfig = ko.mapping.fromJS(grp.DataTypeTemplate);
 grp.Access = ko.mapping.fromJS(grp.AccessGrantGroup);
@@ -34,6 +40,8 @@ grp.ListAccess = ko.observableArray([]);
 grp.attribute = ko.observable("");
 grp.listAddress = ko.observableArray([]);
 grp.listLdap = ko.observableArray([]);
+grp.tempDataGrup = ko.observableArray([]);
+grp.GrupModalgrid = ko.observable('');
 grp.GroupsColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxgroup' class='ckcGrid' value='#: _id #' />",
     width: 50
@@ -49,7 +57,19 @@ grp.GroupsColumns = ko.observableArray([{
     }, {
     field: "owner",
     title: "Owner"
-}]);
+    },{
+    title: "<center>Action</center>",
+    width: 70,
+    template: function(d){
+        if(d.grouptype == "1"){
+             return "<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered\" title=\"Refresh Ldap Group\" onclick=\"grp.refreshGroupLdap()\"><span class=\"glyphicon glyphicon-refresh\"></span></button></center>"
+         }else{
+            return "";
+         }
+       
+        }
+    } 
+]);
 
 grp.listGroupsColumns = ko.observableArray([  
     {
@@ -110,6 +130,28 @@ grp.selectlistGridGroups = function(e) {
         grp.selectedGroupsData.push(data);
     });
 };
+grp.refreshGroupLdap = function(){
+    // app.ajaxPost("/group/refreshgroupldap", param, function(res) {
+    //     if (!app.isFine(res)) {
+    //         return;
+    //     }
+    // });
+
+    $('#modalRefresh').modal({show: 'true'});
+}
+grp.getRefresh = function(){
+    var param = ko.mapping.toJS(grp.configLdapAuht);
+    console.log(param);
+    app.ajaxPost("/group/refreshgroupldap", param, function(res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        $('#modalRefresh').modal("hide");
+
+    });
+
+}
 grp.removeselectGridGroups = function(e) {
     usr.Access.removeAll();
     usr.getAccess();
@@ -196,7 +238,7 @@ grp.getGroups = function(c) {
             selectable: 'multiple, row',
             change: grp.selectGridGroups,
             filterfable: false,
-            dataBound: app.gridBoundTooltipster('.grid-groups'), 
+            dataBound: app.gridBoundTooltipster('#grid-groups'), 
             columns: grp.GroupsColumns()
     });
                                 
@@ -290,11 +332,20 @@ grp.savegroup = function() {
         AccessGrants.push(ko.mapping.toJSON(grp.Access))
         grp.Access.AccessValue.removeAll()
     };
-    console.log(AccessGrants);
+    var groupModal = {
+        Address:  grp.tempDataGrup()[0].Address,
+        BaseDN:  grp.tempDataGrup()[0].BaseDN,
+        Filter:  grp.tempDataGrup()[0].Filter,
+        Username:  grp.tempDataGrup()[0].Username,
+        Password:  grp.tempDataGrup()[0].Password,
+        Attribute:  grp.tempDataGrup()[0].Attribute,
+    };
+    grp.config.GroupType(grp.dataType());
     group = ko.mapping.fromJS(grp.config);
     app.ajaxPost("/group/savegroup", {
         group: group,
-        grants: AccessGrants
+        grants: AccessGrants,
+        groupConfig: groupModal
     }, function(res) {
         if (!app.isFine(res)) {
             return;
@@ -351,12 +402,14 @@ grp.editGroup = function(c) {
         if (res.data == null) {
             res.data = "";
         }
+        console.log(res.data);
         grp.config._id(res.data._id);
         grp.config.Title(res.data.Title);
         grp.config.Enable(res.data.Enable);
         grp.config.Grants(res.data.Grants);
         grp.config.Owner(res.data.Owner);
         grp.displayAccess(res.data._id);
+        grp.dataType(JSON.stringify(res.data.GroupType));
     });
 };
 
@@ -429,19 +482,12 @@ grp.backToFront = function() {
 
 grp.showModalType = function(){
     $('#modalForgot').modal({show: 'true'});
-    $('#attribute').tokenfield({});
+    $('#attribute-group').tokenfield({});
+    grp.GrupModalgrid('hide');
+    
     grp.attribute('');
-    $('#attribute').tokenfield('setTokens', []);
     grp.autoDataAddress();
-    grp.dataTypeConfig.Address('');
-    grp.dataTypeConfig.BaseDN('');
-    grp.dataTypeConfig.Filter('');
-    grp.dataTypeConfig.Username('');
-    grp.dataTypeConfig.Password('');
-    //$('#modalForgot').tokenfield('destroy');
-    console.log(grp.attribute());
-    $('form').Reset();
-
+    grp.tempDataGrup([]);
 }
 
 grp.autoDataAddress = function(){
@@ -458,9 +504,10 @@ grp.autoDataAddress = function(){
             data.push({
                 Address  :res.data[i].Address,
                 BaseDN   :res.data[i].BaseDN,
-                Filter   :res.data[i].Filter,
+                Filter   :res.data[i].FilterGroup,
                 Username :res.data[i].Username,
                 Password :res.data[i].Password,
+                Attribute :res.data[i].AttributesGroup,
 
             });
         }
@@ -484,47 +531,44 @@ grp.setDataType = function(){
             console.log(grp.listLdap()[i].Address);
             grp.dataTypeConfig.Address(grp.listLdap()[i].Address);
             grp.dataTypeConfig.BaseDN(grp.listLdap()[i].BaseDN);
-            //grp.dataTypeConfig.Filter(grp.listLdap()[i].Filter);
+            grp.dataTypeConfig.Filter(grp.listLdap()[i].Filter);
             grp.dataTypeConfig.Username(grp.listLdap()[i].Username);
             grp.dataTypeConfig.Password(grp.listLdap()[i].Password);
+            $('#attribute-group').tokenfield('setTokens', grp.listLdap()[i].Attribute);
         }
     }
 }
 
 grp.getDataUserLdap = function(){
-    // var param = {
-    //     Address: grp.dataTypeConfig.Address(),
-    //     BaseDN: grp.dataTypeConfig.BaseDN(),
-    //     Filter : grp.dataTypeConfig.Filter(),
-    //     Username : grp.dataTypeConfig.Username(),
-    //     Password : grp.dataTypeConfig.Password(),
-    //     Attribute : grp.dataTypeConfig.Attribute(),
-    // } 
-    var array = grp.attribute().split(",");
+    var array = grp.attribute().replace(/\s/g, '').split(",");
     $.each(array, function(i){
         grp.dataTypeConfig.Attribute.push(array[i]);
-    })
+    });
     var param = ko.mapping.toJS(grp.dataTypeConfig);
+    grp.tempDataGrup.push(param);
     app.ajaxPost("/group/finduserldap", param, function(res){
         if(!app.isFine(res)){
             return;
         }
-        console.log(param);
-        $("#grid-ldap-group").html("");
+        grp.GrupModalgrid('show')
         $('#grid-ldap-group').kendoGrid({
-            dataSource: res.data,
-            pageSize: 5, 
+            dataSource: {
+                data: res.data,
+                pageSize: 5
+            },
             pageable: true,  
             sortable: true,  
             selectable: 'multiple, row', 
             filterfable: true,
             change: grp.selectLdapGroup,
-            // columns: usr.UsersColumnsldap(),
+            columns: [
+                {title: "ID", field: array[0]},
+                {title: "Name", field: array[1]},
+                {title: "Owner", field: array[2]},
+            ],
             dataBound :grp.saveGroupLdap()
         });
     });
-   
-    //grp.dataTypeConfig.Attribute.push(grp.coba());
     
 }
 

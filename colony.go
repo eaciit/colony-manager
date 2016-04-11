@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/colony-manager/installation"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"net/http"
 	"path"
@@ -60,6 +62,12 @@ func main() {
 		setup.ACL()
 	}
 
+	err := setAclDatabase()
+	if err != nil {
+		fmt.Printf("Error found where set acl database : %v \n", err.Error())
+		return
+	}
+
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		sessionid := r.Session("sessionid", "")
 		if sessionid == "" {
@@ -71,4 +79,22 @@ func main() {
 		return true
 	})
 	server.Listen()
+}
+
+func setAclDatabase() (err error) {
+
+	driver, ci := new(colonycore.Login).GetACLConnectionInfo()
+	conn, err := dbox.NewConnection(driver, ci)
+
+	if err != nil {
+		return
+	}
+
+	err = conn.Connect()
+	if err != nil {
+		return
+	}
+
+	err = acl.SetDb(conn)
+	return
 }
