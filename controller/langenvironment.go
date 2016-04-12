@@ -16,7 +16,7 @@ import (
 	// "github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	// "github.com/eaciit/live"
-	// "github.com/eaciit/sshclient"
+	"github.com/eaciit/sshclient"
 	// "github.com/eaciit/toolkit"
 	// "golang.org/x/crypto/ssh"
 )
@@ -27,9 +27,10 @@ var (
 
 const (
 	DESTINSTALL_PATH = "/usr/local/"
-	SERVER_WIN       = "windows"
-	SERVER_LINUX     = "linux"
-	SERVER_OSX       = "osx"
+	// DESTINSTALL_SCALA_PATH = "/usr/local/share/"
+	SERVER_WIN   = "windows"
+	SERVER_LINUX = "linux"
+	SERVER_OSX   = "osx"
 
 	LANG_GO    = "go"
 	LANG_JAVA  = "java"
@@ -212,7 +213,7 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 				var destinationPath string
 				pathstring := []string{dataServers.DataPath, "langenvironment", "installer"}
 
-				var installShPath string
+				var installShPath, uninstallShPath string
 
 				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
 					// fmt.Println(ii, " : -- > ", eachLang.Language)
@@ -232,20 +233,24 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 						sourcePath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, dataInstaller.InstallerSource)
 						destinationPath = strings.Join(pathstring, serverPathSeparator)
 						installShPath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "install.sh")
+						uninstallShPath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "uninstall.sh")
 					} else if eachLang.Language == LANG_JAVA {
 						pathstring = append(pathstring, LANG_JAVA)
 						pathstring = append(pathstring, dataServers.OS)
 						sourcePath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, dataInstaller.InstallerSource)
 						destinationPath = strings.Join(pathstring, serverPathSeparator)
 						installShPath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, "install.sh")
+						uninstallShPath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, "uninstall.sh")
 					} else if eachLang.Language == LANG_SCALA {
 						pathstring = append(pathstring, LANG_SCALA)
 						pathstring = append(pathstring, dataServers.OS)
 						sourcePath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, dataInstaller.InstallerSource)
 						destinationPath = strings.Join(pathstring, serverPathSeparator)
 						installShPath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, "install.sh")
+						uninstallShPath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, "uninstall.sh")
 					}
 					installShdestPath := strings.Join(append(pathstring, "install.sh"), serverPathSeparator)
+					uninstallShdestPath := strings.Join(append(pathstring, "uninstall.sh"), serverPathSeparator)
 					installFilePath := strings.Join(append(pathstring, dataInstaller.InstallerSource), serverPathSeparator)
 
 					err = sshSetting.SshCopyByPath(sourcePath, destinationPath)
@@ -258,16 +263,33 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 						return helper.CreateResult(false, nil, err.Error())
 					}
 
+					err = sshSetting.SshCopyByPath(uninstallShPath, destinationPath)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+
 					//sed -i 's/^M//' install.sh
 					cmdSedInstall := fmt.Sprintf("sed -i 's/\r//g' %s", installShdestPath)
 					_, err = sshSetting.GetOutputCommandSsh(cmdSedInstall)
 					if err != nil {
 						return helper.CreateResult(false, nil, err.Error())
 					}
+					//sed -i 's/^M//' uninstall.sh
+					cmdSedUninstall := fmt.Sprintf("sed -i 's/\r//g' %s", uninstallShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdSedUninstall)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
 
 					// // chmod +x install.sh
-					cmdChmodCli := fmt.Sprintf("chmod -x %s", installShdestPath)
-					_, err = sshSetting.GetOutputCommandSsh(cmdChmodCli)
+					cmdChmodCliInstall := fmt.Sprintf("chmod +x %s", installShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdChmodCliInstall)
+					if err != nil {
+						return helper.CreateResult(false, nil, err.Error())
+					}
+					// // chmod +x uninstall.sh
+					cmdChmodCliUninstall := fmt.Sprintf("chmod +x %s", uninstallShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdChmodCliUninstall)
 					if err != nil {
 						return helper.CreateResult(false, nil, err.Error())
 					}
@@ -289,4 +311,170 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 	}
 
 	return helper.CreateResult(true, payload, "")
+}
+
+func (l *LangenvironmentController) UninstallLang(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := l.GetSampleDataForSetupLang()
+
+	// payload := new(colonycore.LanguageEnvironmentPayload)
+	// err := r.GetPayload(payload)
+	// if err != nil {
+	// 	return helper.CreateResult(false, nil, err.Error())
+	// }
+
+	dataServers := new(colonycore.Server)
+	err := colonycore.Get(dataServers, payload.ServerId)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	serverPathSeparator := CreateApplicationController(l.Server).GetServerPathSeparator(dataServers)
+
+	sshSetting, sshClient, err := dataServers.Connect()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	defer sshClient.Close()
+
+	var query *dbox.Filter
+	if payload.Lang == LANG_SCALA {
+		var IsInstalled bool
+		for _, eachLang := range dataServers.InstalledLang {
+			if eachLang.Lang == LANG_JAVA {
+				IsInstalled = eachLang.IsInstalled
+				break
+			}
+		}
+		if !IsInstalled {
+			query = dbox.Or(dbox.Eq("language", LANG_JAVA), dbox.Eq("language", LANG_SCALA))
+		} else {
+			query = dbox.Eq("language", payload.Lang)
+		}
+	} else {
+		query = dbox.Eq("language", payload.Lang)
+	}
+
+	result, err := l.ProcessSetup(dataServers, query, serverPathSeparator, sshSetting)
+	if err != nil {
+		helper.CreateResult(false, nil, err.Error())
+	}
+	fmt.Println("result :: ", result)
+
+	return helper.CreateResult(true, payload, "")
+}
+func (l *LangenvironmentController) ProcessSetup(dataServers *colonycore.Server, query *dbox.Filter, serverPathSeparator string, sshSetting sshclient.SshSetting) ([]sshclient.RunCommandResult, error) {
+	outputCmd := []sshclient.RunCommandResult{}
+
+	dataLanguage := []colonycore.LanguageEnviroment{}
+	cursor, err := colonycore.Find(new(colonycore.LanguageEnviroment), query)
+	cursor.Fetch(&dataLanguage, 0, false)
+	if err != nil {
+		return outputCmd, err
+	}
+	defer cursor.Close()
+
+	if cursor.Count() > 0 {
+		for _, eachLang := range dataLanguage {
+			for _, dataInstaller := range eachLang.Installer {
+				var sourcePath string
+				var destinationPath string
+				pathstring := []string{dataServers.DataPath, "langenvironment", "installer"}
+
+				var installShPath, uninstallShPath string
+
+				if strings.ToLower(dataServers.OS) == strings.ToLower(dataInstaller.OS) {
+					// targetLang := new(colonycore.InstalledLang)
+					// targetLang.Lang = eachLang.Language
+
+					// for _, eachLang := range dataServers.InstalledLang {
+					// 	if eachLang.Lang == targetLang.Lang {
+					// 		targetLang = eachLang
+					// 		break
+					// 	}
+					// }
+
+					if eachLang.Language == LANG_GO {
+						pathstring = append(pathstring, LANG_GO)
+						pathstring = append(pathstring, dataServers.OS)
+						sourcePath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, dataInstaller.InstallerSource)
+						destinationPath = strings.Join(pathstring, serverPathSeparator)
+						installShPath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "install.sh")
+						uninstallShPath = filepath.Join(leSourcePath, LANG_GO, dataServers.OS, "uninstall.sh")
+					} else if eachLang.Language == LANG_JAVA {
+						pathstring = append(pathstring, LANG_JAVA)
+						pathstring = append(pathstring, dataServers.OS)
+						sourcePath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, dataInstaller.InstallerSource)
+						destinationPath = strings.Join(pathstring, serverPathSeparator)
+						installShPath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, "install.sh")
+						uninstallShPath = filepath.Join(leSourcePath, LANG_JAVA, dataServers.OS, "uninstall.sh")
+					} else if eachLang.Language == LANG_SCALA {
+						pathstring = append(pathstring, LANG_SCALA)
+						pathstring = append(pathstring, dataServers.OS)
+						sourcePath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, dataInstaller.InstallerSource)
+						destinationPath = strings.Join(pathstring, serverPathSeparator)
+						installShPath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, "install.sh")
+						uninstallShPath = filepath.Join(leSourcePath, LANG_SCALA, dataServers.OS, "uninstall.sh")
+					}
+					installShdestPath := strings.Join(append(pathstring, "install.sh"), serverPathSeparator)
+					uninstallShdestPath := strings.Join(append(pathstring, "uninstall.sh"), serverPathSeparator)
+					// installFilePath := strings.Join(append(pathstring, dataInstaller.InstallerSource), serverPathSeparator)
+
+					err = sshSetting.SshCopyByPath(sourcePath, destinationPath)
+					if err != nil {
+						return outputCmd, err
+					}
+
+					err = sshSetting.SshCopyByPath(installShPath, destinationPath)
+					if err != nil {
+						return outputCmd, err
+					}
+
+					err = sshSetting.SshCopyByPath(uninstallShPath, destinationPath)
+					if err != nil {
+						return outputCmd, err
+					}
+
+					//sed -i 's/^M//' install.sh
+					cmdSedInstall := fmt.Sprintf("sed -i 's/\r//g' %s", installShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdSedInstall)
+					if err != nil {
+						return outputCmd, err
+					}
+					//sed -i 's/^M//' uninstall.sh
+					cmdSedUninstall := fmt.Sprintf("sed -i 's/\r//g' %s", uninstallShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdSedUninstall)
+					if err != nil {
+						return outputCmd, err
+					}
+
+					// // chmod +x install.sh
+					cmdChmodCliInstall := fmt.Sprintf("chmod +x %s", installShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdChmodCliInstall)
+					if err != nil {
+						return outputCmd, err
+					}
+					// // chmod +x uninstall.sh
+					cmdChmodCliUninstall := fmt.Sprintf("chmod +x %s", uninstallShdestPath)
+					_, err = sshSetting.GetOutputCommandSsh(cmdChmodCliUninstall)
+					if err != nil {
+						return outputCmd, err
+					}
+
+					// // sh install.sh installFilePath DESTINSTALL_PATH projectpath
+					cmdShCli := fmt.Sprintf("bash %s %s", uninstallShdestPath, DESTINSTALL_PATH)
+					outputCmd, err = sshSetting.RunCommandSshAsMap(cmdShCli)
+					if err != nil {
+						return outputCmd, err
+					}
+					fmt.Println(" :: : ", outputCmd[0].Output)
+
+					// targetLang.IsInstalled = true
+					// dataServers.InstalledLang = append(dataServers.InstalledLang, targetLang)
+					// colonycore.Save(dataServers)
+				}
+			}
+		}
+	}
+
+	return outputCmd, nil
 }
