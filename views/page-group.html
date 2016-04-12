@@ -70,8 +70,8 @@
                              <div class="form-group" id="tipe-group">
                                 <label class="col-md-3 filter-label">Add Type</label>
                                 <div class="col-md-9" id="add_type">
-                                    <label class="radio-inline"><input type="radio" name="addType" value="1" data-bind="checked: grp.dataType">ldap</label>
-                                    <label class="radio-inline"><input type="radio" name="addType" value="0" data-bind="checked: grp.dataType">basic</label>
+                                    <label class="radio-inline"><input type="radio" id="dataType1" name="addType" value="1" data-bind="checked: grp.dataType">ldap</label>
+                                    <label class="radio-inline"><input type="radio" id="dataType2" name="addType" value="0" data-bind="checked: grp.dataType">basic</label>
                                     <button class="btn btn-success btn-sm get-tipe" data-bind="click: grp.showModalType, visible: (grp.dataType()== '1')">
                                         <span class="glyphicon glyphicon-plus"></span> Group
                                     </button>
@@ -82,7 +82,7 @@
                             <div class="form-group">
                                 <label class="col-md-3 filter-label">ID</label>
                                 <div class="col-md-7">
-                                    <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" placeholder="Type the ID Here" data-bind="value: grp.config._id">
+                                    <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="ID" id="ID" placeholder="Type the ID Here" data-bind="value: grp.config._id">
                                     <span class="k-invalid-msg" data-for="ID"></span>
                                 </div>
                             </div>
@@ -132,7 +132,7 @@
                             <div class="col-md-10">
                                 <label class="col-md-3 filter-label">Login ID</label>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control input-sm" name="login-id" data-bind="value: grp.config.LoginID">
+                                    <input type="text" class="form-control input-sm" name="login-id" data-bind="value: grp.config.LoginID" placeholder="enter login id">
                                     <span class="k-invalid-msg" data-for="login-id"></span>
                                 </div>
                             </div>
@@ -142,17 +142,17 @@
                                  
                                 <label class="col-md-3 filter-label">Fullname</label>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control input-sm" name="Fullname" data-bind=" value: grp.config.Fullname">
-                                    <span class="k-invalid-msg" data-for="Fullname"></span>
+                                    <input type="text" class="form-control input-sm" name="Fullname" data-bind=" value: grp.config.Fullname" placeholder="enter Fullname">
+                                    <span class="k-invalid-msg" data-for="fullname"></span>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-md-10">
                                  
-                                <label class="col-md-3 filter-label">Email</label>
+                                <label class="col-md-3 filter-label">email</label>
                                 <div class="col-md-4">
-                                    <input type="email" class="form-control input-sm" name="Email" data-bind="value: grp.config.Email">
+                                    <input type="email" class="form-control input-sm" name="Email" data-bind="value: grp.config.Email" placeholder=" enter Email">
                                     <span class="k-invalid-msg" data-for="Email"></span>
                                 </div>
                             </div>
@@ -163,10 +163,10 @@
                     <div class="panel-body">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="col-sm-1 filter-label">Privilege</label>
+                                <div class="col-sm-1">Privilege</div>
                                 <div class="col-sm-12">
                                     <div class="nav">
-                                        <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
+                                        <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage, visible:(usr.dataAccess().length != usr.tapNum())">
                                             <span class="glyphicon glyphicon-plus"></span> Add
                                         </button>
                                     </div>
@@ -188,7 +188,7 @@
                                             <tr>
                                                 <td>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value: usr.config.Grants()[$index()].AccessId,options: usr.Access, selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value: usr.config.Grants()[$index()].AccessId ,options: usr.unselectedAccessGroup()"></select>
                                                 
                                                 </td>
                                                 <td>
