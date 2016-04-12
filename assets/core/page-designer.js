@@ -106,38 +106,44 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 		
 		if (mode == "settingwidget") {
 			var datavalue = [];
-			$.each(res.data.dataSources, function(key, val) {
-				data = {};
-				data.value = val;
-				data.text = val;
-				datavalue.push(data)
-			});
-			pg.dsWidgetFromPage(datavalue)
-			$.each(res.data.widget, function(keys, values) {
-				if (widgetId == values._id) {
-					ko.mapping.fromJS(values, pg.widgetSettings);
-					$.each(values.dataSources, function(key, value) {
-						$.each(value, function(k, v) {
-							if (k != "fields") {
-								var property = $.extend(true, {}, ko.mapping.toJS(pg.dsMapping));
-								var mapping = pg.mappings;
-								mapping.dsWidget = k;
-								mapping.dsColony = v;
-								property.field.push(mapping);
-								ko.mapping.fromJS(property, pg.dsMapping);
-							}
+			if (res.data.dataSources != null) {
+				$.each(res.data.dataSources, function(key, val) {
+					data = {};
+					data.value = val;
+					data.text = val;
+					datavalue.push(data)
+				});
+				pg.dsWidgetFromPage(datavalue)
+
+				$.each(res.data.widget, function(keys, values) {
+					if (widgetId == values._id) {
+						ko.mapping.fromJS(values, pg.widgetSettings);
+						$.each(values.dataSources, function(key, value) {
+							$.each(value, function(k, v) {
+								if (k != "fields") {
+									var property = $.extend(true, {}, ko.mapping.toJS(pg.dsMapping));
+									var mapping = pg.mappings;
+									mapping.dsWidget = k;
+									mapping.dsColony = v;
+									property.field.push(mapping);
+									ko.mapping.fromJS(property, pg.dsMapping);
+								}
+							});
 						});
-					});
-				}
-			});	
+					}
+				});
+			} else {
+				swal({
+				title: "Oops...",
+				text: 'Datasource is empty, please add datasource first on configuration button.',
+				type: "error",
+				closeOnConfirm: true
+				},
+				function() {
+					pg.closeWidgetSetting();
+				});
+			}
 		}
-		
-		// if (mode == "configuration") {
-		// 	setTimeout(function () {
-		// 		pg.configPageDesigner.dataSourceId(res.data.dataSources)
-		// 	},100);
-		// }
-		// pg.backToConfig();
 	});
 }
 pg.configPage = function() {
@@ -160,10 +166,6 @@ pg.widgetSetting = function(_id, mode) {
 	}
 }
 pg.fieldMapping = function() {
-	// var validator = $("#dsWidget").kendoValidator().data('kendoValidator');
-	// if (!validator.validate()) {
-	// 	return;
-	// }
 	if (!app.isFormValid("#dsWidget")) {
 		return;
 	}
@@ -204,8 +206,6 @@ pg.fieldMapping = function() {
 		contentDoc.open('text/html', 'replace');
 		contentDoc.write(html);
 		contentDoc.close();
-		// console.log($("#formSetting")[0].contentWindow.document, prop)
-		// $("#formSetting")[0].contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
 	});
 }
 pg.closeWidgetSetting = function() {
@@ -223,31 +223,6 @@ pg.backToConfig = function() {
 pg.widgetPage = function(pageId, widgetPageId, widgetId, mode) {
 	pg.getConfigurationPage(pageId, mode, widgetId, widgetPageId)
 };
-pg.testIframe = function(e) {
-	// e.preventDefault();
-
-    var id = "target_iframe";
-
-    var dialog = $("<div><iframe class='k-content-frame' name='" + id + "'></div>").kendoWindow({
-      width: "100%",
-      height: "50%",
-      title: "Posting to iframe example",
-      close: function() { this.destroy() },
-      iframe: true
-    });
-
-    dialog.data("kendoWindow").center().open();
-
-    // $("<form />", {
-    //     action: "http://www.example.com/",
-    //     method: "post",
-    //     target: id
-    // })
-    // .hide().appendTo("body")
-    //    // add any data
-    //   .append("<input name='foo' />").find("[name=foo]").val("bar").end()
-    // .submit().remove();
-}
 
 window.closeModal = function(){
 	pg.closeWidgetSetting();

@@ -5,17 +5,26 @@
 <script src="/res/core/page-designer.js"></script>
 <script src="/res/widget/gridstack.js"></script>
 <script src="/res/widget/widgetdesigner.js"></script>
+<style type="text/css">
+	.k-widget.k-dropdown, .k-widget.k-numerictextbox{
+		width: 100%;
+	}
+	ul, li {list-style-type: none;}
+</style>
+
 <script>
 	pg.pageID = "{{.pageID}}";
 </script>
 
 <div class="col-xs-6 col-sm-2" id="sidebar">
 	<div class="row">
-		<ul class="nav" data-bind="foreach: pg.availableWidget.widgets">
-			<li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#"><span data-bind="text: $data.title"></span></a></div></li>
-			<!-- <li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#">Widget 1</a></div></li>
-			<li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#">Widget 2</a></div></li>
-			<li class="grid-stack-item"><div class="grid-stack-item-content"><a href="#">Widget 3</a></div></li> -->
+		<!-- <ul class="nav" data-bind="foreach: pg.availableWidget.widgets">
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#"><span data-bind="text: $data.title"></span></a></div></li>
+		</ul> -->
+		<ul class="nav">
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 1</a></div></li>
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 2</a></div></li>
+			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 3</a></div></li>
 		</ul>
 	</div>
 </div>
@@ -55,7 +64,6 @@
 				<form class="form-horizontal form-widgetDesigner" data-bind="with: configPageDesigner" novalidate>
 			    	<div class="col-md-12">
 			    		<div class="col-md-12">
-							<!-- <label class="col-md-3 databrowser-label"></label> -->
 				    		<div class="col-md-7">
 					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSources }" name="datasource" id="datasource">
 					    		</select>
@@ -68,8 +76,7 @@
 		</div>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 			<div class="col-md-12">
-				<div class="grid-stack grid-stack-6" id="panel-designer">
-                </div>
+				<div data-bind="component: {name: 'widget-grid', params: $data}"></div>
 			</div>
 			<div style="clear:both;"></div>
 		</div>
@@ -100,22 +107,25 @@
 							<div class="form-group">
 								<label for="position" class="col-sm-2 control-label">Position</label>
 								<div class="col-sm-10">
-									<!-- <input type="text" class="form-control" id="position" name="position" placeholder="Position" data-bind="value: position"> -->
 									<select required id="position" data-bind="kendoDropDownList: { data: pg.widgetPosition, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position' }"></select>
 									<span class="k-invalid-msg" data-for="position"></span>
 								</div>
 							</div>
-							<div class="form-group">
-								<label for="width" class="col-sm-2 control-label">Width</label>
-								<div class="col-sm-10">
-									<input required type="number" class="form-control" id="width" name="width" min="0", max= "12" placeholder="Width" data-bind="value: width">
+							<div class="form-group" data-bind="visible: (position() != '')">
+								<label for="width" class="col-sm-2 control-label" data-bind="text: (position() == 'fixed')?'Width Column':'Width'">Width</label>
+								<div class="col-sm-10" data-bind="visible: (position() == 'fixed')">
+									<input required type="number" class="" id="width" name="width" min="0", max= "12" placeholder="Width" data-bind="kendoNumericTextBox:{value: width, min: 0, max: 12}">
+									<span class="k-invalid-msg" data-for="width"></span>
+								</div>
+								<div class="col-sm-10" data-bind="visible: (position() == 'absolute')">
+									<input required type="number" class="" id="width" name="width" min="0" placeholder="Width" data-bind="kendoNumericTextBox:{value: width, min: 0}">
 									<span class="k-invalid-msg" data-for="width"></span>
 								</div>
 							</div>
 							<div class="form-group">
 								<label for="height" class="col-sm-2 control-label">Height</label>
 								<div class="col-sm-10">
-									<input required type="number" class="form-control" id="height" name="height" min="0" placeholder="Height" data-bind="value: height">
+									<input required type="number" class="" id="height" name="height" min="0" placeholder="Height" data-bind="kendoNumericTextBox:{value: height, min: 0}">
 									<span class="k-invalid-msg" data-for="height"></span>
 								</div>
 							</div>
@@ -123,7 +133,6 @@
 							<div data-bind="foreach: pg.dsMapping.field">
 								<div class="form-group">
 									<label class="col-sm-2 control-label" data-bind="text: $data.dsWidget"></label>
-									<!-- <input type="text" class="form-control" id="" data-bind="value: $data.dsWidget,enable: false"> -->
 									<div class="col-sm-10">
 										<select required id="ds" data-bind="kendoDropDownList: { data: pg.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
 									    <span class="k-invalid-msg" data-for="ds" data-bind="attr: { 'data-for': 'ds' + $index() }"></span>
@@ -132,21 +141,6 @@
 							</div>
 						</div>
 			        	
-					    <!-- <div class="form-group">
-					    	<div class="col-md-12" id="dsWidget">
-					    		<label class="col-md-2"></label>
-					        	<div class="col-md-9 form-inline" data-bind="foreach: pg.dsMapping.field">
-					        		<div class="form-group" style="padding-left:45px; margin-bottom:15px;">
-									    <input type="text" class="form-control" id="ds1" data-bind="value: $data.dsWidget,enable: false">
-								  	</div>
-								  	<div class="form-group"  style="padding-left:45px; margin-bottom:15px;">
-									    <select required id="ds" data-bind="kendoDropDownList: { data: pg.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
-									    <span class="k-invalid-msg" data-for="ds" data-bind="attr: { 'data-for': 'ds' + $index() }"></span> 
-								  	</div>
-					        	</div>
-				        	</div>
-				        	<div class="clearfix"></div>
-			        	</div> -->
 		        	</div>
 
 		        	<div class="form-group" data-bind="visible: (app.mode() == 'fieldMapping')">
@@ -154,33 +148,26 @@
 				    		<iframe class="full-width" id="formSetting" width="100%" height="300" scrolling="no"  frameborder="0"></iframe>
 			        	</div>
 			        	<div class="clearfix"></div>
-			        	<!-- <div id="formSetting"></div> -->
 		        	</div>
 	        	</div>
 
-				<div class="modal-footer">
+				<div class="modal-footer" data-bind="with: pg.widgetSettings">
 					<div data-bind="visible: (app.mode() == 'datasourceMapping')">
 						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
 							<span class="glyphicon glyphicon-remove"></span> Cancel
 						</button>
-						<!-- <button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.testIframe">
-							Next <span class="glyphicon glyphicon-chevron-right"></span>
-						</button> -->
 						<button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">
 							Next <span class="glyphicon glyphicon-chevron-right"></span>
 						</button>
 					</div>
 
 					<div data-bind="visible: (app.mode() == 'fieldMapping')">
-						<button type="button" class="btn btn-sm btn-default" data-bind="click: function(e) {pg.widgetSetting('wp1459947140191', 'back')}">
+						<button type="button" class="btn btn-sm btn-default" data-bind="click: function(e) {pg.widgetSetting(_id(), 'back')}">
 							<span class="glyphicon glyphicon-chevron-left"></span> Back
 						</button>
 						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
 							<span class="glyphicon glyphicon-remove"></span> Cancel
 						</button>
-						<!-- <button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">
-							<span class="glyphicon glyphicon-save"></span> Save
-						</button> -->
 					</div>
 				</div>
 			</div>

@@ -102,5 +102,12 @@ func setAclDatabase() (err error) {
 	}
 
 	err = acl.SetDb(conn)
+
+	defUser := "eaciit"
+	defPass := "123"
+
+	err = acl.CreateUserIfNotExist(defUser, defPass)
+	fmt.Sprintf("Username : %s \n", defUser)
+	fmt.Sprintf("Password : %s \n", defPass)
 	return
 }
