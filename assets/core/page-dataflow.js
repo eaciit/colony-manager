@@ -507,17 +507,7 @@ df.init = function () {
                 lastMouseX = e.pageX;
                 lastMouseY = e.pageY;
             });
-
-            /*$("g").attr("class", "newclass ");
-            $(".newclass").kendoTooltip({
-                show: function () {
-                    $(this.popup.wrapper).css({
-                        top: lastMouseY + 10,
-                        left: lastMouseX - 65
-                    });
-                },
-                content: e.item.dataItem.name + "-" + e.item.id,
-            });*/
+            
             $("g image:last").parent().attr("class", e.item.id);
             $("."+e.item.id).kendoTooltip({
                 show: function () {
