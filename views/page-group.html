@@ -58,11 +58,11 @@
     </div>
     <ul class="nav nav-tabs" id="myTab">
         <li class="active"><a data-target="#groups" data-toggle="tab">groups</a></li>
-        <li><a data-target="#MemberConfiguration" data-toggle="tab">MemberConfiguration</a></li>
+        <li data-bind="visible: (grp.dataType()== '1')"><a data-target="#MemberConfiguration" data-toggle="tab">MemberConfiguration</a></li>
         <li><a data-target="#access" data-toggle="tab">access</a></li>
     </ul>
     
-        <form class="form-horizontal form-server" id="form-add-Server" novalidate>
+        <form class="form-horizontal form-server" id="form-add-Group" novalidate>
             <div class="tab-content">
                 <div class="tab-pane active" id="groups">
                     <div class="panel-body">
@@ -72,7 +72,6 @@
                                 <div class="col-md-9" id="add_type">
                                     <label class="radio-inline"><input type="radio" name="addType" value="1" data-bind="checked: grp.dataType">ldap</label>
                                     <label class="radio-inline"><input type="radio" name="addType" value="0" data-bind="checked: grp.dataType">basic</label>
-                                    <span class="k-invalid-msg" data-for="ID"></span>
                                     <button class="btn btn-success btn-sm get-tipe" data-bind="click: grp.showModalType, visible: (grp.dataType()== '1')">
                                         <span class="glyphicon glyphicon-plus"></span> Group
                                     </button>
@@ -119,7 +118,8 @@
                             <div class="form-group">
                                 <label class="col-md-2 filter-label">Filter</label>
                                 <div class="col-md-9">
-                                    <input required type="text" class="form-control input-sm" data-bind="value: grp.config.Filter">
+                                    <input type="text" class="form-control input-sm" name="Filter" data-bind="value: grp.config.Filter">
+                                    <span class="k-invalid-msg" data-for="Filter"></span>
                                 </div>
                                   
                             </div>
@@ -132,7 +132,8 @@
                             <div class="col-md-10">
                                 <label class="col-md-3 filter-label">Login ID</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm" data-bind="value: grp.config.LoginID">
+                                    <input type="text" class="form-control input-sm" name="login-id" data-bind="value: grp.config.LoginID">
+                                    <span class="k-invalid-msg" data-for="login-id"></span>
                                 </div>
                             </div>
                         </div>
@@ -141,7 +142,8 @@
                                  
                                 <label class="col-md-3 filter-label">Fullname</label>
                                 <div class="col-md-4">
-                                    <input required type="text" class="form-control input-sm" data-bind=" value: grp.config.Fullname">
+                                    <input type="text" class="form-control input-sm" name="Fullname" data-bind=" value: grp.config.Fullname">
+                                    <span class="k-invalid-msg" data-for="Fullname"></span>
                                 </div>
                             </div>
                         </div>
@@ -150,7 +152,8 @@
                                  
                                 <label class="col-md-3 filter-label">Email</label>
                                 <div class="col-md-4">
-                                    <input required type="email" class="form-control input-sm" data-bind="value: grp.config.Email">
+                                    <input type="email" class="form-control input-sm" name="Email" data-bind="value: grp.config.Email">
+                                    <span class="k-invalid-msg" data-for="Email"></span>
                                 </div>
                             </div>
                         </div>
@@ -185,10 +188,8 @@
                                             <tr>
                                                 <td>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access, optionsCaption: 'Choose...'"></select>
-                                                    <!-- <div data-bind="visible: (app.mode() == 'new')">
-                                                        <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),kendoDropDownList:{ dataSource: usr.Access(), value: usr.templateAccessGrant()[$index()].AccessID(), optionLabel:'select your Access'}"></select>
-                                                    </div> -->
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value: usr.config.Grants()[$index()].AccessId,options: usr.Access, selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                                
                                                 </td>
                                                 <td>
                                                     <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
@@ -242,28 +243,28 @@
                 </div>
                 <div  >      
                    <div class="col-md-12" style="margin-top:20px;">
-                    <form class="form-horizontal" id="form-modal" novalidate > 
+                    <form class="form-horizontal" id="form-modal-group" novalidate > 
                         <div class="col-md-6" >
                         <div class="form-group"  >
                             <label class="col-md-3 filter-label" >Address</label>
                             <div class="col-md-8"  >
                                <!--  <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Address" type="text" class="form-control input-sm" name="Address" placeholder="Type the Address Here" data-bind="value: usr.ldap.Address"> -->
                                 <!-- <select class="form-control input-sm" data-bind="options: usr.ListAddress, selectedOptions: usr.selectedAddress , event:{ change: usr.setLdap}" ></select> -->
-                                <input  class="form-control input-sm full-width" data-bind="value: grp.dataTypeConfig.Address" id="address" />
+                                <input required class="form-control input-sm full-width" data-bind="value: grp.dataTypeConfig.Address" name="Address" id="address" />
                                 <span class="k-invalid-msg" data-for="Address"></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Base DN</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for BaseDN" type="text" class="form-control input-sm" name="BaseDN" placeholder="Type the BaseDN Here" data-bind="value: grp.dataTypeConfig.BaseDN">
+                                <input required type="text" class="form-control input-sm" name="BaseDN" placeholder="Type the BaseDN Here" data-bind="value: grp.dataTypeConfig.BaseDN">
                                 <span class="k-invalid-msg" data-for="BaseDN"></span>
                             </div>
                         </div> 
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Filter</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Filter" type="text" class="form-control input-sm" name="Filter" placeholder="Type the Filter Here" data-bind="value: grp.dataTypeConfig.Filter">
+                                <input required type="text" class="form-control input-sm" name="Filter" placeholder="Type the Filter Here" data-bind="value: grp.dataTypeConfig.Filter">
                                 <span class="k-invalid-msg" data-for="Filter"></span>
                             </div>
                         </div> 
@@ -272,22 +273,22 @@
                          <div class="form-group"  >
                             <label class="col-md-3 filter-label">Username</label>
                             <div class="col-md-8" >
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Username" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Username Here" data-bind="value: grp.dataTypeConfig.Username">
+                                <input required type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Username Here" data-bind="value: grp.dataTypeConfig.Username">
                                 <span class="k-invalid-msg" data-for="Username"></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Password</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: grp.dataTypeConfig.Password">
+                                <input required type="password" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: grp.dataTypeConfig.Password">
                                 <span class="k-invalid-msg" data-for="Password"></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Attribute</label>
                             <div class="col-md-8">
-                                <input type="text" id="attribute-group" class="form-control input-sm" data-bind="value: grp.attribute">
-                                <span class="k-invalid-msg" data-for="attribute"></span>
+                                <input required type="text" id="attribute-group" class="form-control input-sm" data-bind="value: grp.attribute" name="Attribute" Placeholder="enter Atribute of ID, Name, Owner">
+                                <span class="k-invalid-msg" data-for="Attribute"></span>
                             </div>
                         </div> 
                     </div>
@@ -338,15 +339,15 @@
                   <div class="form-group">
                     <label class="control-label col-sm-3">Username</label>
                     <div class="col-xs-8">
-                      <input type="text" class="form-control input-sm" name="username" placeholder="Enter Username" data-bind="value: grp.configLdapAuht.username"  required/>
-                      <span class="k-invalid-msg" data-for="email"></span>
+                      <input type="text" class="form-control input-sm" name="username" placeholder="Enter Username" data-bind="value: grp.configLdapAuht.username"  readonly/>
+                      <span class="k-invalid-msg" data-for="username"></span>
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-sm-3">Password</label>
                     <div class="col-xs-8">
-                      <input type="password" class="form-control input-sm" name="username" placeholder="Enter Password" data-bind="value: grp.configLdapAuht.password"   required/>
-                      <span class="k-invalid-msg" data-for="email"></span>
+                      <input type="password" class="form-control input-sm" name="password" placeholder="Enter Password" data-bind="value: grp.configLdapAuht.password"   required/>
+                      <span class="k-invalid-msg" data-for="password"></span>
                     </div>
                   </div>
                 </form> 

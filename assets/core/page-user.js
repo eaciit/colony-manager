@@ -211,10 +211,17 @@ usr.getUsers = function() {
 
 }
  usr.getUsersLdap = function() {
+    if (!app.isFormValid("#form-modal-user")) {
+        return;
+    }
     var array = usr.attribute().replace(/\s/g, '').split(",");
-    $.each(array, function(i){
-        usr.ldap.Attribute.push(array[i]);
-    });
+    if(array.length != 3){
+        array = [];
+    }else{
+        $.each(array, function(i){
+            usr.ldap.Attribute.push(array[i]);
+        });
+    }
     var param = ko.mapping.toJS(usr.ldap);
     usr.tempDataGrup.push(param);
     app.ajaxPost("/user/testfinduserldap", param, function(res){
@@ -323,9 +330,13 @@ usr.saveConfigLdap = function () {
             return;
         } 
     });
+
 };
 
 usr.saveuser = function() {
+    if (!app.isFormValid("#form-add-user")) {
+        return;
+    }
     if (usr.config.Enable() == "") {
         usr.config.Enable(false);
     }
@@ -587,14 +598,14 @@ usr.GetConfigLdap = function() {
             usr.ListAddress.push(res.data[i].Address);   
         };
         usr.ListLdap(data); 
-            $("#Address").kendoAutoComplete({
-                dataSource: usr.ListAddress(),
-                filter: "startswith",
-                change : usr.setLdap,
-                select: function (ev) {
-                    usr.ldap.Address(this.dataItem(ev.item.index())) 
-                }
-            }); 
+        $("#Address").kendoAutoComplete({
+            dataSource: usr.ListAddress(),
+            filter: "startswith",
+            change : usr.setLdap,
+            select: function (ev) {
+                usr.ldap.Address(this.dataItem(ev.item.index())) 
+            }
+        }); 
     });
 };
 usr.setLdap = function(){  
@@ -831,7 +842,8 @@ usr.DisplayLdap =  function(){
         $(".modal-checklogin").modal("show");
         $('#usr-attribute').tokenfield({});
         usr.ldap.Attribute([]);
-        usr.attribute('');
+        $('#usr-attribute').tokenfield('setTokens', []);
+        //usr.attribute('');
 
         usr.GetConfigLdap();
         usr.config.LoginType("1");

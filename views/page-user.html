@@ -68,11 +68,11 @@
         <div class="tab-pane active" id="User">
             <div>
                 <div> 
-                    <form class="form-horizontal form-server" id="form-add-Server" novalidate>
+                    <form class="form-horizontal form-server" id="form-add-user" novalidate>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login Type</label>
                             <div class="col-md-5">
-                                <select class="form-control input-sm" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
+                                <select class="form-control input-sm" name="LoginType" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
                                 <span class="k-invalid-msg" data-for="LoginType"></span>
                             </div>
                             <div class="col-md-2">
@@ -292,28 +292,28 @@
                 </div>
                 <div  >      
                     <div class="col-md-12" style="margin-top:20px;">
-                    <form class="form-horizontal form-server" id="form-add-Server" novalidate > 
+                    <form class="form-horizontal form-server" id="form-modal-user" novalidate > 
                         <div class="col-md-6" >
                         <div class="form-group"  >
                             <label class="col-md-3 filter-label" >Address</label>
                             <div class="col-md-8"  >
                                <!--  <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Address" type="text" class="form-control input-sm" name="Address" placeholder="Type the Address Here" data-bind="value: usr.ldap.Address"> -->
                                 <!-- <select class="form-control input-sm" data-bind="options: usr.ListAddress, selectedOptions: usr.selectedAddress , event:{ change: usr.setLdap}" ></select> -->
-                                <input  class="form-control input-sm full-width"  id="Address" data-bind="value: usr.ldap.Address" />
+                                <input required class="form-control input-sm full-width" name="Address"  id="Address" data-bind="value: usr.ldap.Address" />
                                 <span class="k-invalid-msg" data-for="Address"></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Base DN</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for BaseDN" type="text" class="form-control input-sm" name="BaseDN" placeholder="Type the BaseDN Here" data-bind="value: usr.ldap.BaseDN">
+                                <input required type="text" class="form-control input-sm" name="BaseDN" placeholder="Type the BaseDN Here" data-bind="value: usr.ldap.BaseDN">
                                 <span class="k-invalid-msg" data-for="BaseDN"></span>
                             </div>
                         </div> 
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Filter</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Filter" type="text" class="form-control input-sm" name="Filter" placeholder="Type the Filter Here" data-bind="value: usr.ldap.Filter">
+                                <input type="text" required class="form-control input-sm" name="Filter" placeholder="Type the Filter Here" data-bind="value: usr.ldap.Filter">
                                 <span class="k-invalid-msg" data-for="Filter"></span>
                             </div>
                         </div> 
@@ -322,21 +322,21 @@
                          <div class="form-group"  >
                             <label class="col-md-3 filter-label" >Username</label>
                             <div class="col-md-8"  >
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Username" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Username Here" data-bind="value: usr.ldap.Username">
+                                <input required type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Username Here" data-bind="value: usr.ldap.Username">
                                 <span class="k-invalid-msg" data-for="Username"></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Password</label>
                             <div class="col-md-8">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Password" type="password" class="form-control input-sm" name="FullName" placeholder="Type the Password Here" data-bind="value: usr.ldap.Password">
+                                <input type="password" required class="form-control input-sm" name="Password" placeholder="Type the Password Here" data-bind="value: usr.ldap.Password">
                                 <span class="k-invalid-msg" data-for="Password"></span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Attribute</label>
                             <div class="col-md-8">
-                                <input type="text" id="usr-attribute" class="form-control input-sm" data-bind="value: usr.attribute">
+                                <input type="text" required id="usr-attribute" class="form-control input-sm" name="attribute" data-bind="value: usr.attribute">
                                 <span class="k-invalid-msg" data-for="attribute"></span>
                             </div>
                         </div>
