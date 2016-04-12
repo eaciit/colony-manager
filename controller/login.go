@@ -130,6 +130,8 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 
 	// fmt.Println("DEBUG 121, : ", menus)
 	if cursor.Count() > 0 {
+		//userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
+
 		for _, m := range menus {
 			result := toolkit.M{}
 
@@ -139,14 +141,25 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 				return helper.CreateResult(false, nil, err.Error())
 			}
 			result.Set("detail", 7)
-
-			if acc {
-				result.Set("childrens", "")
-				if len(m.Childrens) > 0 {
-					childs := GetChildMenu(r, m.Childrens)
-					result.Set("childrens", childs)
+			if toolkit.ToString(sessionId) != "" {
+				userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
+				tUser := new(acl.User)
+				err = acl.FindByID(tUser, userid)
+				if err != nil {
+					return helper.CreateResult(false, "", "Get username failed")
 				}
-				results = append(results, result)
+				if tUser.LoginID == "eaciit" {
+					results = append(results, result)
+				} else {
+					if acc {
+						result.Set("childrens", "")
+						if len(m.Childrens) > 0 {
+							childs := GetChildMenu(r, m.Childrens)
+							result.Set("childrens", childs)
+						}
+						results = append(results, result)
+					}
+				}
 			} else if toolkit.ToString(sessionId) == "" && m.AccessId != "COLONY.DASHBOARD" { //will be change after stable, just for devel
 				results = append(results, result)
 			}
