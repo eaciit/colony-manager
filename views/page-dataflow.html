@@ -9,6 +9,7 @@
 }
 .sidebar {
 	padding-right: 0px;
+    width:  5.333333%!important;
 }
 .designer {
 	padding-left: 0px;
@@ -54,8 +55,8 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
-    <div id="" class="ct-custom" >
-        <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'spark')">
+    <div id="spark" class="ct-custom" >
+        <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'Spark')">
             <tbody>
                 <tr>
                     <td>Spark Master</td>
@@ -93,7 +94,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.hdfsModel, visible: (df.popoverMode() == 'hdfs')">
+        <table data-bind="with:df.hdfsModel, visible: (df.popoverMode() == 'HDFS')">
             <tbody>
                 <tr>
                     <td>HDFS Script</td>
@@ -103,7 +104,23 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.hiveModel, visible: (df.popoverMode() == 'hive')">
+         <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'SSH Script')">
+            <tbody>
+                <tr>
+                    <td>User and Host</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="user@host.com">
+                    </td>
+                </tr>
+                <tr>
+                    <td>SSH Script</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="SSH script..">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table data-bind="with:df.hiveModel, visible: (df.popoverMode() == 'Hive')">
             <tbody>
                 <tr>
                     <td>Script</td>
@@ -121,7 +138,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'shell')">
+        <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'Shell Script')">
             <tbody>
                 <tr>
                     <td>Shell Command</td>
@@ -132,7 +149,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.hsModel, visible: (df.popoverMode() == 'mapreduce')">
+        <table data-bind="with:df.hsModel, visible: (df.popoverMode() == 'Map Reduce')">
             <tbody>
                 <tr>
                     <td>Mapper</td>
@@ -150,7 +167,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'java')">
+        <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'Java App')">
             <tbody>
                 <tr>
                     <td>Jar Name</td>
@@ -167,7 +184,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'email')">
+        <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
             <tbody>
                 <tr>
                     <td>To Addresses</td>
@@ -189,7 +206,7 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="with:df.stopModel, visible: (df.popoverMode() == 'stop')">
+        <table data-bind="with:df.stopModel, visible: (df.popoverMode() == 'Stop')">
             <tbody>
                 <tr>
                     <td>Message</td>
@@ -197,6 +214,16 @@
                         <textarea class="inp-custom" data-bind="value:message"></textarea>
                     </td>
                 </tr>
+            </tbody>
+        </table>
+        <table data-bind="visible: (df.popoverMode() == 'Transitions')">
+            <tbody>
+                <tr>
+                    <td>When Failed</td>
+                    <td>
+                        <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
+                    </td>
+                </tr>                
             </tbody>
         </table>
         <table id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'fork')"></table>
@@ -272,6 +299,11 @@
             border-radius: 15px;
         }
 
+        .btn-transition{
+            border-radius: 8px;
+            font-size: 10px;
+        }
+
 		.popover{
 			max-width: 500px!important;
 		}
@@ -333,8 +365,8 @@
         .list-left {
         	vertical-align: middle!important;
             list-style-type: none;
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             margin: 5px;
             line-height: 30px;
             text-align: center;

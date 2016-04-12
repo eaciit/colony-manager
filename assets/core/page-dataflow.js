@@ -22,6 +22,13 @@ viewModel.dataflow = {
          "Color" : "#CEBF00"
     },
     {
+        "Name"  :"SSH Script",
+        "Id"    :"4",
+        "Image" : "icon_ssh.png",
+        "Type"  : "Action",
+        "Color" : "brown"
+    },
+    {
         "Name"  :"Shell Script",
         "Id"    :"4",
         "Image" : "icon_console.png",
@@ -85,6 +92,26 @@ var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 
 df.popoverMode = ko.observable('');
+df.detailMode = ko.observable("");
+
+df.whenFailed = ko.observable("");
+df.allAction = ko.observableArray([]);
+
+df.detailModeDo = function(text,detail) {
+    var diagram = $(".diagram").getKendoDiagram();
+    var cls = $(".btn-transition").find("span").attr("class");
+    var close = cls.indexOf("down") > -1?true:false;
+    if(df.popoverMode() != detail && close){
+        df.whenFailed(diagram.select()[0].dataItem.name+" - "+diagram.select()[0].id);
+        df.popoverMode("Transitions");
+        df.detailMode(text);
+        $(".btn-transition").find("span").attr("class","glyphicon glyphicon-chevron-up");
+    }else{
+        $(".btn-transition").find("span").attr("class","glyphicon glyphicon-chevron-down");
+        df.popoverMode(df.detailMode());
+        df.detailMode("");
+    }
+}
 
 df.sparkModel = ko.observable({
   //UI not yet
@@ -152,12 +179,15 @@ df.newHsModel = function(){
 
 //model same with hdfs UI not yet
 df.sshModel = ko.observable({
-
+ //just in UI
+ script:ko.observable(""),
+ userandhost:ko.observable("")
 });
 
 df.newSshModel = function(){
   return {
-
+     script:ko.observable(""),
+     userandhost:ko.observable("")
   }
 }
 
@@ -267,6 +297,13 @@ function visualTemplate(options) {
                         fill: "#e8eff7",
                         data:"M0.5,37.5 L37.5,0.5 L74.5,37.5 M0.5,37.5 L74.5,37.5 L37.5,74.5 z"
                     }));
+
+                    g.append(new dataviz.diagram.TextBlock({
+                        x:48,
+                        y:30,
+                        text: dataItem.name,
+                        fontSize:13
+                    }));
                 }else if(dataItem.name == "Stop"){
                      g.append(new dataviz.diagram.Path({
                         data:"M74.5,37.5 C74.5,57.91 57.91,74.5 37.5,74.5 C17,74.5 0.5,57.91 0.5,37.5 C0.5,17 17,0.5 37.5,0.5 C57.91,0.5 74.5,17 74.5,37.5 z",
@@ -277,10 +314,17 @@ function visualTemplate(options) {
                         },
                         fill: "#e8eff7"
                     }));
+
+                    g.append(new dataviz.diagram.TextBlock({
+                        x:25,
+                        y:30,
+                        text: dataItem.name,
+                        fontSize:13
+                    }));
                 }else{
                     g.append(new dataviz.diagram.Rectangle({
-                        width: 200,
-                        height: 50,
+                        width: 150,
+                        height: 45,
                         stroke: {
                             width: 0
                         },
@@ -289,7 +333,7 @@ function visualTemplate(options) {
 
                     g.append(new dataviz.diagram.Rectangle({
                         width: 8,
-                        height: 50,
+                        height: 45,
                         fill: dataItem.color,
                         stroke: {
                             width: 0
@@ -300,11 +344,17 @@ function visualTemplate(options) {
                     source: "/res/img/" + dataItem.image,
                     x: 14,
                     y: 7,
-                    width: 35,
-                    height: 35
+                    width: 30,
+                    height: 30
+                }));
+
+                    g.append(new dataviz.diagram.TextBlock({
+                    text: dataItem.name,
+                    x: 55,
+                    y: 15,
+                    fontSize:13
                 }));
             }
-
             return g;
         }
 
@@ -331,10 +381,6 @@ df.init = function () {
         },
         shapeDefaults: {
                visual: visualTemplate,
-                    content: {
-                        template: "#= dataItem.name #",
-                        fontSize: 15
-                    },
             // content: {
             //     template: function (d) {
             //         console.log(d);
@@ -342,8 +388,6 @@ df.init = function () {
             //     },
             // },
             html: true,
-            // width: 300,
-            // height: 200
         },
         editable:{
             resize:false,
@@ -358,6 +402,10 @@ df.init = function () {
             endCap: "ArrowEnd"
         },
         autoBind: true,
+        select:function(e){
+            df.closePopover("#poptitle");
+            df.closePopover("#popbtn");
+        },
         click:function(e){
             // console.log(e);
             // console.log(this);
@@ -381,55 +429,51 @@ df.init = function () {
                         if(xmouse>maxxmouse){
                             xmouse = maxxmouse;
                             $(".arrow").attr("style","left:50%"); 
-
                         }else{
                             $(".arrow").attr("style","left:30px"); 
                         }
+
+                        $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
+
+                        $btn = $("<button class='btn btn-primary btn-xs pull-right btn-transition'><span class='glyphicon glyphicon-chevron-down'></span></button>")
+                        $(".popover-title").append($btn);
+
+                        $btn.click(function(){
+                            df.detailModeDo(df.popoverMode(),"Transitions");
+                        });
+
 
                         setTimeout(function () {
                             ko.cleanNode($(".popover-content:last")[0]);
                             ko.applyBindings(viewModel, $(".popover-content:last")[0]);
                         }, 10);
+
+                        df.popoverMode(item.dataItem.name);
+
                         if (item.dataItem.name == "Spark") {
-                            $(".popover-title").html(item.dataItem.name);
-                            $(".popover").attr("style","display: block; top: " +(ymouse-220)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('spark');
+                            $(".popover").attr("style","display: block; top: " +(ymouse-250)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "HDFS"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('hdfs');                            
                         }else if(item.dataItem.name == "Hive"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('hive');
                         }else if(item.dataItem.name == "Shell Script"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('shell');
+                        }else if(item.dataItem.name == "SSH Script"){
+                            $(".popover").attr("style","display: block; top: " +(ymouse-170)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "Map Reduce"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('mapreduce');
                         }else if(item.dataItem.name == "Java App"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('java');
                         }else if(item.dataItem.name == "Email"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('email');
                         }else if(item.dataItem.name == "Stop"){
-                            $(".popover-title").html(item.dataItem.name);
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                            df.popoverMode('stop');
                         }else if(item.dataItem.name == "Fork"){
                             var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
                             for (i = 0; i <= cl; i++) {
                                 var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
-                                df.popoverMode('fork');
                                 // console.log(no);
                                 if(no !== 0){
-                                    $(".popover-title").html(item.dataItem.name);
                                     $("#fork").append($("#fork-row").html());
                                     $(".popover").attr("style","display: block; top: " +(ymouse-100)+"px; left: "+(xmouse-30)+"px;");
                                 };
@@ -540,7 +584,7 @@ df.init = function () {
                             var posdiag = $(".diagram")[0].getBoundingClientRect();
                             var xpos = (xmouse - posdiag.left);
                             var ypos = (ymouse - posdiag.top);
-
+                            ypos = (screen.height - 200)<ypos?(ypos - 200):ypos; 
                             if(xpos>0&&ypos>0){
                              var diagram = $(".diagram").data("kendoDiagram");
                              diagram.addShape({ 
@@ -549,7 +593,7 @@ df.init = function () {
                                 dataItem:{name:name,image :image, color:color} 
                              });
                             }
-
+                            df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
                         },
        });
 
@@ -684,6 +728,7 @@ df.onRemove = function(e){
     setTimeout(function(){
             if(e.shape != undefined){
             df.checkConnection($(".diagram"));
+            df.allAction.remove(e.shape.dataItem.name+" - "+e.shape.id);
         }
     },500);
 }
@@ -737,6 +782,7 @@ df.renderDiagram = function(elem,data){
     for(var c in shapes){
         var sh = shapes[c];
         diagram.addShape(sh);
+        df.allAction.push(sh.dataItem.name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
     }
 
     diagram = $(elem).getKendoDiagram();
@@ -942,45 +988,49 @@ df.renderActionData = function(){
    
     var action = df.popoverMode()
     switch(action){
-      case "spark":
+      case "Spark":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
           df.sparkModel(dataItem.DataAction);
       break;
-      case "hdfs":
+      case "HDFS":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newHdfsModel():dataItem.DataAction;
           df.hdfsModel(dataItem.DataAction);
       break;
-      case "hive":
+      case "Hive":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newHiveModel():dataItem.DataAction;
           df.hiveModel(dataItem.DataAction);
       break;
-      case "shell":
+      case "Shell Script":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newShModel():dataItem.DataAction;
           df.shModel(dataItem.DataAction);
       break;
-      case "kafka":
+      case "Kafka":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newKafkaModel():dataItem.DataAction;
           df.kafkaModel(dataItem.DataAction);
       break;
-      case "mapreduce":
+      case "Map Reduce":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newHsModel():dataItem.DataAction;
           df.hsModel(dataItem.DataAction);
       break;
-      case "java":
+      case "Java App":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newJavaAppModel():dataItem.DataAction;
           df.javaAppModel(dataItem.DataAction);
       break;
-      case "email":
+      case "Email":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newEmailModel():dataItem.DataAction;
           df.emailModel(dataItem.DataAction);
       break;
-      case "fork":
+      case "Fork":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newForkModel():dataItem.DataAction;
           df.forkModel(dataItem.DataAction);
       break;
-      case "stop":
+      case "Stop":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():dataItem.DataAction;
           df.stopModel(dataItem.DataAction);
+      break;
+      case "SSH Script":
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():dataItem.DataAction;
+          df.sshModel(dataItem.DataAction);
       break;
     }
 }
@@ -991,35 +1041,38 @@ df.saveActionData = function(){
     var action = df.popoverMode();
     $("#popbtn").popover("hide");
     switch(action){
-        case "spark":
+        case "Spark":
             diagram.dataItem["DataAction"]=df.sparkModel();
         break;
-        case "hdfs":
+        case "HDFS":
             diagram.dataItem["DataAction"]=df.hdfsModel();
         break;
-        case "hive":
+        case "Hive":
             diagram.dataItem["DataAction"]=df.hiveModel();
         break;
-        case "shell":
+        case "Shell Script":
             diagram.dataItem["DataAction"]=df.shModel();
         break;
-        case "kafka":
+        case "Kafka":
             diagram.dataItem["DataAction"]=df.kafkaModel();
         break;
-        case "mapreduce":
+        case "Map Reduce":
             diagram.dataItem["DataAction"]=df.hsModel();
         break;
-        case "java":
+        case "Java App":
             diagram.dataItem["DataAction"]=df.javaAppModel();
         break;
-        case "email":
+        case "Email":
             diagram.dataItem["DataAction"]=df.emailModel();          
         break;
-        case "fork":
+        case "Fork":
             diagram.dataItem["DataAction"]=df.forkModel();
         break;
-        case "stop":
+        case "Stop":
             diagram.dataItem["DataAction"]=df.stopModel();
+        break;
+        case "SSH Script":
+            diagram.dataItem["DataAction"]=df.sshModel();
         break;
     }
 }
