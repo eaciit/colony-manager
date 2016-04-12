@@ -500,6 +500,38 @@ df.init = function () {
         },
         dragEnd: df.onDragEnd,
         remove: df.onRemove,
+        mouseEnter: function(e){
+            var lastMouseX,lastMouseY;
+
+            $(document).mousemove(function(e) {
+                lastMouseX = e.pageX;
+                lastMouseY = e.pageY;
+            });
+
+            /*$("g").attr("class", "newclass ");
+            $(".newclass").kendoTooltip({
+                show: function () {
+                    $(this.popup.wrapper).css({
+                        top: lastMouseY + 10,
+                        left: lastMouseX - 65
+                    });
+                },
+                content: e.item.dataItem.name + "-" + e.item.id,
+            });*/
+            $("g image:last").parent().attr("class", e.item.id);
+            $("."+e.item.id).kendoTooltip({
+                show: function () {
+                    $(this.popup.wrapper).css({
+                        top: lastMouseY + 10,
+                        left: lastMouseX - 65
+                    });
+                },
+                content: e.item.dataItem.name + "-" + e.item.id,
+            });
+        },
+        mouseLeave: function(e){
+
+        },
     });
 
     var clickonshape = 0;
@@ -1087,19 +1119,6 @@ df.saveActionData = function(){
         break;
     }
 }
-
-// df.checkForkId = function(){
-//     var  si= $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
-//     for (i = 0; i <= si; i++) {
-//         var shapeid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].from.shape.id;
-//         var shapename = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.dataItem.name;
-//         var thisid = $(".diagram").getKendoDiagram().select()[0].id;
-
-//         if (shapeid == thisid) {
-//             $( ".inp-right" ).val( shapename +"-"+ shapeid );
-//         }
-//     };
-// }
 
 $(function () {
     df.init();
