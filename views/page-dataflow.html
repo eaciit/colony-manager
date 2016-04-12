@@ -9,11 +9,12 @@
 }
 .sidebar {
 	padding-right: 0px;
-    width:  5.333333%!important;
+    width:  6.333333%!important;
 }
 .designer {
 	padding-left: 0px;
 	padding-top: 20px;
+    width: 93.666667%!important;
 }
 </style>
 <div data-bind="visible:df.Mode()!='Grid'">
@@ -195,13 +196,13 @@
                 <tr>
                     <td>Subject</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:subject" placeholder="Plain-text">
+                        <input type="text" class="inp-custom" data-bind="value:subject" placeholder="Email Subject..">
                     </td>
                 </tr>
                 <tr>
                     <td>Body</td>
                     <td>
-                        <textarea class="inp-custom" data-bind="value:body"></textarea>
+                        <textarea class="inp-custom" data-bind="value:body" placeholder="Email Body.."></textarea>
                     </td>
                 </tr>
             </tbody>
@@ -226,16 +227,16 @@
                 </tr>                
             </tbody>
         </table>
-        <table  id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'fork')">
+        <table  id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'Fork')">
             <tbody data-bind = "foreach:df.arrayconn">
                 <tr>
                     <td>If</td>
                     <td>
-                        <input type="text" class="inp-fork inp-left" data-bind="" placeholder="">
+                        <input type="text" class="inp-fork inp-left" data-bind="value:condition" placeholder="">
                     </td>
                     <td>Go To</td>
                     <td>
-                        <input type="text" class="inp-fork inp-right" data-bind="value: name" placeholder="">
+                        <input type="text" disabled="disabled" class="inp-fork inp-right" data-bind="value: name" placeholder="">
                     </td>
                 </tr> 
             </tbody>

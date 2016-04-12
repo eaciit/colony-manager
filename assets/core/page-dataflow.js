@@ -103,7 +103,6 @@ df.detailModeDo = function(text,detail) {
     var cls = $(".btn-transition").find("span").attr("class");
     var close = cls.indexOf("down") > -1?true:false;
     if(df.popoverMode() != detail && close){
-        df.whenFailed(diagram.select()[0].dataItem.name+" - "+diagram.select()[0].id);
         df.popoverMode("Transitions");
         df.detailMode(text);
         $(".btn-transition").find("span").attr("class","glyphicon glyphicon-chevron-up");
@@ -408,8 +407,6 @@ df.init = function () {
             df.closePopover("#popbtn");
         },
         click:function(e){
-            // console.log(e);
-            // console.log(this);
             var diagram = kendo.dataviz.diagram;
             var Shape = diagram.Shape;
             var item = e.item;
@@ -436,13 +433,22 @@ df.init = function () {
 
                         $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
 
-                        $btn = $("<button class='btn btn-primary btn-xs pull-right btn-transition'><span class='glyphicon glyphicon-chevron-down'></span></button>")
+                        $btn = $("<button title='Action details' class='btn btn-primary btn-xs pull-right btn-transition'><span class='glyphicon glyphicon-chevron-down'></span></button>")
                         $(".popover-title").append($btn);
 
                         $btn.click(function(){
                             df.detailModeDo(df.popoverMode(),"Transitions");
                         });
 
+                         $btn.tooltipster({
+                            theme: 'tooltipster-val',
+                            animation: 'grow',
+                            delay: 0,
+                            offsetY: -5,
+                            touchDevices: false,
+                            trigger: 'hover',
+                            position: "top"
+                        });
 
                         setTimeout(function () {
                             ko.cleanNode($(".popover-content:last")[0]);
@@ -470,26 +476,27 @@ df.init = function () {
                         }else if(item.dataItem.name == "Stop"){
                             $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
                         }else if(item.dataItem.name == "Fork"){
-                            var cl = $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
-                            df.arrayconn([]);
-                            for (i = 0; i <= cl; i++) {
-                                var no = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections.length;
-                                df.popoverMode('fork');
-                                if(no !== 0){
-                                    $(".popover-title").html(item.dataItem.name);
-                                    $(".arrow").attr("style","left:30px");
-                                    $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                                    var fromid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].from.shape.id;
-                                    var shapeid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.id;
-                                    var shapename = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.dataItem.name;
-                                    var thisid = $(".diagram").getKendoDiagram().select()[0].id;
+                            // var selected = $(".diagram").getKendoDiagram().select()[0];
+                            // var cl = selected.connectors.length - 1;
+                            // df.arrayconn([]);
+                            // for (i = 0; i <= cl; i++) {
+                            //     var no = selected.connectors[i].connections.length;
+                            //     df.popoverMode('fork');
+                            //    for (ix = 0; ix < no; ix++) {
+                            //         $(".popover-title").html(item.dataItem.name);
+                            //         $(".arrow").attr("style","left:30px");
+                            //         $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
+                            //         var fromid = selected.connectors[i].connections[ix].from.shape == undefined?selected.connectors[i].connections[ix].from.id :selected.connectors[i].connections[ix].from.shape.id;
+                            //         var shapeid = selected.connectors[i].connections[ix].to.shape == undefined?selected.connectors[i].connections[ix].to.id :selected.connectors[i].connections[ix].to.shape.id;
+                            //         var shapename = selected.connectors[i].connections[ix].to.shape == undefined? selected.connectors[i].connections[ix].to.dataItem.name : selected.connectors[i].connections[ix].to.shape.dataItem.name;
+                            //         var thisid = selected.id;
 
-                                    if (fromid == thisid) {
-                                        df.arrayconn.push({name:shapename+" - "+shapeid})
-                                    }
-                                };
-                            }
-                        };
+                            //         if (fromid == thisid) {
+                            //             df.arrayconn.push({name:shapename+" - "+shapeid, condition: "true"})
+                            //         }
+                            //     }
+                            // }
+                        }
                       df.renderActionData();
                       }
                       clickonshape = 0;
@@ -580,6 +587,9 @@ df.init = function () {
     var xmouse = 0;
     var ymouse = 0;
 
+    df.ymouse = ko.observable(0);
+    df.xmouse = ko.observable(0);
+
     $("#sortable-All").kendoSortable({
                          hint: function(element) {
                             return element.clone().addClass("hint");
@@ -611,6 +621,8 @@ df.init = function () {
       $("body").mousemove(function(e) {
             xmouse = e.pageX;
             ymouse = e.pageY;
+            df.xmouse(xmouse);
+            df.ymouse(ymouse);
         });
 };
 df.dataRow = ko.observableArray([]);
@@ -997,7 +1009,10 @@ df.renderActionData = function(){
     var diagram = $(".diagram").getKendoDiagram().select()[0];
     var dataItem = diagram.dataItem;
    
-    var action = df.popoverMode()
+    var action = df.popoverMode();
+    dataItem["DataActionDetails"] = dataItem["DataActionDetails"] == undefined?{}:dataItem["DataActionDetails"];
+    dataItem.DataActionDetails.WhenFailed = dataItem.DataActionDetails.WhenFailed ==undefined?dataItem.name+" - "+diagram.id:dataItem.DataActionDetails.WhenFailed ;
+    df.whenFailed(dataItem.DataActionDetails.WhenFailed);
     switch(action){
       case "Spark":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
@@ -1031,10 +1046,6 @@ df.renderActionData = function(){
           dataItem.DataAction = dataItem.DataAction == undefined? df.newEmailModel():dataItem.DataAction;
           df.emailModel(dataItem.DataAction);
       break;
-      case "Fork":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newForkModel():dataItem.DataAction;
-          df.forkModel(dataItem.DataAction);
-      break;
       case "Stop":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():dataItem.DataAction;
           df.stopModel(dataItem.DataAction);
@@ -1043,7 +1054,34 @@ df.renderActionData = function(){
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():dataItem.DataAction;
           df.sshModel(dataItem.DataAction);
       break;
+      case "Fork":
+            dataItem.DataAction = dataItem.DataAction == undefined? [] :dataItem.DataAction;
+            var selected = $(".diagram").getKendoDiagram().select()[0];
+            var cl = selected.connectors.length - 1;
+            df.arrayconn([]);
+            for (i = 0; i <= cl; i++) {
+                var no = selected.connectors[i].connections.length;
+               for (ix = 0; ix < no; ix++) {
+                    $(".arrow").attr("style","left:30px");
+                    $(".popover").attr("style","display: block; top: " +(df.ymouse()-150)+"px; left: "+(df.xmouse()-30)+"px;");
+                    var fromid = selected.connectors[i].connections[ix].from.shape == undefined?selected.connectors[i].connections[ix].from.id :selected.connectors[i].connections[ix].from.shape.id;
+                    var shapeid = selected.connectors[i].connections[ix].to.shape == undefined?selected.connectors[i].connections[ix].to.id :selected.connectors[i].connections[ix].to.shape.id;
+                    var shapename = selected.connectors[i].connections[ix].to.shape == undefined? selected.connectors[i].connections[ix].to.dataItem.name : selected.connectors[i].connections[ix].to.shape.dataItem.name;
+                    var thisid = selected.id;
+
+                    if (fromid == thisid && dataItem.DataAction.length==0) {
+                        df.arrayconn.push({name:shapename+" - "+shapeid, condition: "true"})
+                    }else if(fromid == thisid){
+                        var condt = Lazy(dataItem.DataAction).find(function ( d ) { return d.name == shapename+" - "+shapeid }).condition;
+                        df.arrayconn.push({name:shapename+" - "+shapeid, condition: condt})
+                    }
+                }
+        }
+      break;
     }
+
+
+
 }
 
 df.saveActionData = function(){
@@ -1051,55 +1089,43 @@ df.saveActionData = function(){
     var dataItem = diagram.dataItem;
     var action = df.popoverMode();
     $("#popbtn").popover("hide");
+    dataItem.DataActionDetails.WhenFailed = df.whenFailed(); 
     switch(action){
         case "Spark":
-            diagram.dataItem["DataAction"]=df.sparkModel();
+            dataItem["DataAction"]=df.sparkModel();
         break;
         case "HDFS":
-            diagram.dataItem["DataAction"]=df.hdfsModel();
+            dataItem["DataAction"]=df.hdfsModel();
         break;
         case "Hive":
-            diagram.dataItem["DataAction"]=df.hiveModel();
+            dataItem["DataAction"]=df.hiveModel();
         break;
         case "Shell Script":
-            diagram.dataItem["DataAction"]=df.shModel();
+            dataItem["DataAction"]=df.shModel();
         break;
         case "Kafka":
-            diagram.dataItem["DataAction"]=df.kafkaModel();
+            dataItem["DataAction"]=df.kafkaModel();
         break;
         case "Map Reduce":
-            diagram.dataItem["DataAction"]=df.hsModel();
+            dataItem["DataAction"]=df.hsModel();
         break;
         case "Java App":
-            diagram.dataItem["DataAction"]=df.javaAppModel();
+            dataItem["DataAction"]=df.javaAppModel();
         break;
         case "Email":
-            diagram.dataItem["DataAction"]=df.emailModel();          
-        break;
-        case "Fork":
-            diagram.dataItem["DataAction"]=df.forkModel();
+            dataItem["DataAction"]=df.emailModel();          
         break;
         case "Stop":
-            diagram.dataItem["DataAction"]=df.stopModel();
+            dataItem["DataAction"]=df.stopModel();
         break;
         case "SSH Script":
-            diagram.dataItem["DataAction"]=df.sshModel();
+            dataItem["DataAction"]=df.sshModel();
+        break;
+        case "Fork":
+            dataItem["DataAction"]=df.arrayconn();
         break;
     }
 }
-
-// df.checkForkId = function(){
-//     var  si= $(".diagram").getKendoDiagram().select()[0].connectors.length - 1;
-//     for (i = 0; i <= si; i++) {
-//         var shapeid = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].from.shape.id;
-//         var shapename = $(".diagram").getKendoDiagram().select()[0].connectors[i].connections[0].to.shape.dataItem.name;
-//         var thisid = $(".diagram").getKendoDiagram().select()[0].id;
-
-//         if (shapeid == thisid) {
-//             $( ".inp-right" ).val( shapename +"-"+ shapeid );
-//         }
-//     };
-// }
 
 $(function () {
     df.init();
