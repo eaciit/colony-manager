@@ -64,12 +64,10 @@ func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
 
 // runProcess process the flow
 func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
-	var ctx []colonycore.ActionContext
 
 	for _, act := range actionBefore {
-		ctx = append(ctx, act.Context)
+		action.Context = append(action.Context, act.Context)
 	}
-
 
 	var res []toolkit.M
 	switch action.Type {
