@@ -115,15 +115,14 @@ wl.previewWidget = function(_id, dataSourceId) {
 		urlprev = "href=\"";
 		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
 		// console.log(html);
-
+		$("#preview").off("load").on("load", function(){
+			var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
+			document.getElementById("preview").contentWindow.Render(res.data.dataSource, setting, {});
+		});
 		var contentDoc = $("#preview")[0].contentWindow.document;
 		contentDoc.open();
 		contentDoc.write(html);
 		contentDoc.close();
-		$("#preview").load(function(){
-			var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
-			document.getElementById("preview").contentWindow.Render(res.data.dataSource, setting, {});
-		});
 	});
 };
 

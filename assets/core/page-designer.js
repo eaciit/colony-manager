@@ -106,30 +106,43 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 		
 		if (mode == "settingwidget") {
 			var datavalue = [];
-			$.each(res.data.dataSources, function(key, val) {
-				data = {};
-				data.value = val;
-				data.text = val;
-				datavalue.push(data)
-			});
-			pg.dsWidgetFromPage(datavalue)
-			$.each(res.data.widget, function(keys, values) {
-				if (widgetId == values._id) {
-					ko.mapping.fromJS(values, pg.widgetSettings);
-					$.each(values.dataSources, function(key, value) {
-						$.each(value, function(k, v) {
-							if (k != "fields") {
-								var property = $.extend(true, {}, ko.mapping.toJS(pg.dsMapping));
-								var mapping = pg.mappings;
-								mapping.dsWidget = k;
-								mapping.dsColony = v;
-								property.field.push(mapping);
-								ko.mapping.fromJS(property, pg.dsMapping);
-							}
+			if (res.data.dataSources != null) {
+				$.each(res.data.dataSources, function(key, val) {
+					data = {};
+					data.value = val;
+					data.text = val;
+					datavalue.push(data)
+				});
+				pg.dsWidgetFromPage(datavalue)
+
+				$.each(res.data.widget, function(keys, values) {
+					if (widgetId == values._id) {
+						ko.mapping.fromJS(values, pg.widgetSettings);
+						$.each(values.dataSources, function(key, value) {
+							$.each(value, function(k, v) {
+								if (k != "fields") {
+									var property = $.extend(true, {}, ko.mapping.toJS(pg.dsMapping));
+									var mapping = pg.mappings;
+									mapping.dsWidget = k;
+									mapping.dsColony = v;
+									property.field.push(mapping);
+									ko.mapping.fromJS(property, pg.dsMapping);
+								}
+							});
 						});
-					});
-				}
-			});	
+					}
+				});
+			} else {
+				swal({
+				title: "Oops...",
+				text: 'Datasource is empty, please add datasource first on configuration button.',
+				type: "error",
+				closeOnConfirm: true
+				},
+				function() {
+					pg.closeWidgetSetting();
+				});
+			}
 		}
 	});
 }
