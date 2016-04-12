@@ -131,13 +131,6 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 				}
 			});	
 		}
-		
-		// if (mode == "configuration") {
-		// 	setTimeout(function () {
-		// 		pg.configPageDesigner.dataSourceId(res.data.dataSources)
-		// 	},100);
-		// }
-		// pg.backToConfig();
 	});
 }
 pg.configPage = function() {
@@ -160,10 +153,6 @@ pg.widgetSetting = function(_id, mode) {
 	}
 }
 pg.fieldMapping = function() {
-	// var validator = $("#dsWidget").kendoValidator().data('kendoValidator');
-	// if (!validator.validate()) {
-	// 	return;
-	// }
 	if (!app.isFormValid("#dsWidget")) {
 		return;
 	}
@@ -204,8 +193,6 @@ pg.fieldMapping = function() {
 		contentDoc.open('text/html', 'replace');
 		contentDoc.write(html);
 		contentDoc.close();
-		// console.log($("#formSetting")[0].contentWindow.document, prop)
-		// $("#formSetting")[0].contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
 	});
 }
 pg.closeWidgetSetting = function() {
@@ -223,31 +210,6 @@ pg.backToConfig = function() {
 pg.widgetPage = function(pageId, widgetPageId, widgetId, mode) {
 	pg.getConfigurationPage(pageId, mode, widgetId, widgetPageId)
 };
-pg.testIframe = function(e) {
-	// e.preventDefault();
-
-    var id = "target_iframe";
-
-    var dialog = $("<div><iframe class='k-content-frame' name='" + id + "'></div>").kendoWindow({
-      width: "100%",
-      height: "50%",
-      title: "Posting to iframe example",
-      close: function() { this.destroy() },
-      iframe: true
-    });
-
-    dialog.data("kendoWindow").center().open();
-
-    // $("<form />", {
-    //     action: "http://www.example.com/",
-    //     method: "post",
-    //     target: id
-    // })
-    // .hide().appendTo("body")
-    //    // add any data
-    //   .append("<input name='foo' />").find("[name=foo]").val("bar").end()
-    // .submit().remove();
-}
 
 window.closeModal = function(){
 	pg.closeWidgetSetting();
