@@ -96,7 +96,7 @@ usr.valueLogintype = ko.observable("");
 usr.ListAddress = ko.observableArray([]);
 usr.ListLdap = ko.observableArray([]);
 usr.selectedAddress = ko.observable("");
-usr.resultAccessID = ko.observableArray([]);
+//usr.resultAccessID = ko.observableArray([]);
 // usr.unselectedAccess = ko.computed(function(){
 //     // usr.dataAccess().forEach(function(d){
 //     //     if( usr.dataSelected().indexOf(d) === -1 ){
