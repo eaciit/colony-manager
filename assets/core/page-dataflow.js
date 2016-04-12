@@ -640,14 +640,26 @@ df.checkConnection = function(elem){
     var diagram = $(elem).getKendoDiagram();
     var conn = diagram.connections;
     var shap = diagram.shapes;
-
     //delete connection with one shape
-    for(var c in conn){
-        var co = conn[c];
+    var idx = 0;
+    var deleted = 0;
+    while(true){
+        var co = conn[idx];
         var sh = co.from == null?co.from : co.from.shape == undefined ?co.from: co.from.shape;
         var shto = co.to == null?co.to: co.to.shape == undefined ?co.to:co.to.shape;
         if(sh == null || shto == null ||  sh ==undefined || shto == undefined){
             diagram.remove(co);
+            deleted+=1;
+        }
+        var newcount = diagram.connections.length;
+        if(deleted>0){
+            idx = 0;
+            deleted=0;
+            conn = diagram.connections;
+        }else if(idx==newcount-1){
+            break;
+        }else{
+            idx+=1;
         }
     }
 
