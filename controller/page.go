@@ -77,8 +77,9 @@ func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	newData := toolkit.M{}
-	newData.Set("datasource", data)
+	newData.Set("fieldDs", data)
 	newData.Set("container", contentstring)
+	newData.Set("pageId", payload.Get("pageId", "").(string))
 	newData.Set("url", dataWidget.URL)
 	return helper.CreateResult(true, newData, "")
 }
@@ -158,6 +159,21 @@ func (p *PageController) RemovePage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
+func (p *PageController) SaveConfigPage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if err := new(colonycore.Page).Save(payload, true, ""); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, payload, "")
+}
+
 func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -166,7 +182,8 @@ func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err := new(colonycore.Page).Save(payload, true, false, ""); err != nil {
+	payload.Set("mode", "save widget")
+	if err := new(colonycore.Page).Save(payload, true, ""); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -183,11 +200,8 @@ func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
 	}
 	data.ID = payload.Get("_id", "").(string)
 	payload.Set("mode", "delete widget")
-	mode := payload.Get("mode", "").(string)
-	if mode == "new widget" { /*save new widget*/
-		data.Save(payload, true, true, filepath.Join(EC_DATA_PATH, "widget"))
-	} else if mode == "delete widget" { /*delete widget*/
-		data.Delete(payload, "")
+	if payload.Get("mode", "").(string) != "" {
+		data.Save(payload, true, filepath.Join(EC_DATA_PATH, "widget"))
 	}
 	if err := data.GetById(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
