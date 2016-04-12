@@ -783,7 +783,7 @@
                     var el = $(ui.draggable).clone(false);
                     el.data('_gridstack_node', node);
                     // if ($(ui.draggable).attr("boolRemove") != "false")
-                    console.log($(ui.draggable));
+                    //console.log($(ui.draggable));
                     var $datagrag = $(ui.draggable).draggable("destroy");
                     $(ui.draggable).remove(); 
                     $("#sidebar ul.nav").append($datagrag.draggable({
