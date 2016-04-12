@@ -643,7 +643,7 @@ df.checkConnection = function(elem){
     //delete connection with one shape
     var idx = 0;
     var deleted = 0;
-    while(true){
+    while(conn.length>0){
         var co = conn[idx];
         var sh = co.from == null?co.from : co.from.shape == undefined ?co.from: co.from.shape;
         var shto = co.to == null?co.to: co.to.shape == undefined ?co.to:co.to.shape;

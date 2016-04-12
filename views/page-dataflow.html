@@ -62,35 +62,35 @@
                 <tr>
                     <td>Spark Master</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:master" placeholder="">
+                        <input type="text" class="inp-custom" data-bind="value:master" placeholder="e.g. local[*]">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Mode</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:mode" placeholder="">
+                        <input type="text" class="inp-custom" data-bind="value:mode" placeholder="e.g. Client">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>App files</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="Comma separated list of jars or python HDFS files.">
+                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="Comma separated list of java or scala HDFS files">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>App Name</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:appname" placeholder="Application name">
+                        <input type="text" class="inp-custom" data-bind="value:appname" placeholder="e.g. My Spark">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Main Class</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="">
+                        <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="e.g. org.spark.example.main">
                     </td>
                 </tr>
             </tbody>
@@ -100,7 +100,7 @@
                 <tr>
                     <td>HDFS Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="HDFS executable/script.">
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Fill HDFS executable/script">
                     </td>
                 </tr>
             </tbody>
@@ -110,13 +110,13 @@
                 <tr>
                     <td>User and Host</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="user@host.com">
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="e.g. user@host.com">
                     </td>
                 </tr>
                 <tr>
                     <td>SSH Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="SSH script..">
+                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Fill SSH script">
                     </td>
                 </tr>
             </tbody>
@@ -126,14 +126,14 @@
                 <tr>
                     <td>Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Path to the script on HDFS.">
+                        <input type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Script or path on HDFS">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Hive XML</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:hivexml" placeholder="Refer to a hive-site.xml for connecting to Hive.">
+                        <input type="text" class="inp-custom" data-bind="value:hivexml" placeholder="Refer to a hive-site.xml for connecting to Hive">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
@@ -155,14 +155,14 @@
                 <tr>
                     <td>Mapper</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:mapper" placeholder="The executable/script to be used as mapper.">
+                        <input type="text" class="inp-custom" data-bind="value:mapper" placeholder="The executable/script to be used as mapper">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Reducer</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:reducer" placeholder="The executable/script to be used as reducer.">
+                        <input type="text" class="inp-custom" data-bind="value:reducer" placeholder="The executable/script to be used as reducer">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
@@ -173,14 +173,14 @@
                 <tr>
                     <td>Jar Name</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:jar" placeholder="Path to the jar on HDFS.">
+                        <input type="text" class="inp-custom" data-bind="value:jar" placeholder="Path to the jar on HDFS">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
                 <tr>
                     <td>Main Class</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="Java class. e.g. org.apache.hadoop.examples.Grep">
+                        <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="Java class. e.g. org.apache.hadoop.examples.main">
                     </td>
                 </tr>
             </tbody>
@@ -196,13 +196,13 @@
                 <tr>
                     <td>Subject</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:subject" placeholder="Email Subject..">
+                        <input type="text" class="inp-custom" data-bind="value:subject" placeholder="Fill Email Subject">
                     </td>
                 </tr>
                 <tr>
                     <td>Body</td>
                     <td>
-                        <textarea class="inp-custom" data-bind="value:body" placeholder="Email Body.."></textarea>
+                        <textarea class="inp-custom" data-bind="value:body" placeholder="Fill Email Body"></textarea>
                     </td>
                 </tr>
             </tbody>
@@ -212,7 +212,7 @@
                 <tr>
                     <td>Message</td>
                     <td>
-                        <textarea class="inp-custom" data-bind="value:message"></textarea>
+                        <textarea class="inp-custom" placeholder="Fill stop message" data-bind="value:message"></textarea>
                     </td>
                 </tr>
             </tbody>
