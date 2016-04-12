@@ -199,7 +199,7 @@ func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	data.ID = payload.Get("_id", "").(string)
-	payload.Set("mode", "delete widget")
+
 	if payload.Get("mode", "").(string) != "" {
 		data.Save(payload, true, filepath.Join(EC_DATA_PATH, "widget"))
 	}

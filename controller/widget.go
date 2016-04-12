@@ -99,6 +99,7 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 		data.ID = widget.ID
 		data.GetById()
 		widget.Config = data.Config
+		widget.URL = data.URL
 	}
 
 	if err := widget.Save(); err != nil {
@@ -192,7 +193,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 			configs = append(configs, val.(map[string]interface{}))
 		}
 		dataWidget.Config = configs
-		dataWidget.URL = w.Server.Address
+		// dataWidget.URL = w.Server.Address
 
 		if err := dataWidget.Save(); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
