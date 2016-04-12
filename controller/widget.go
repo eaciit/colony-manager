@@ -83,10 +83,10 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	widget.Description = r.Request.FormValue("description")
 
 	widget.DataSourceId = strings.Split(datasource, ",")
-	widget.URL = w.Server.Address
 
 	widgetConfig := toolkit.Ms{}
 	if fileName != "" {
+		widget.URL = w.Server.Address
 		widgetConfig, err = widget.ExtractFile(compressedSource, fileName)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
@@ -101,8 +101,7 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 		widget.Config = data.Config
 	}
 
-	extractDest := filepath.Join(compressedSource, widget.ID)
-	if err := widget.Save(extractDest); err != nil {
+	if err := widget.Save(); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -195,8 +194,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 		dataWidget.Config = configs
 		dataWidget.URL = w.Server.Address
 
-		extractDest := filepath.Join(compressedSource, dataWidget.ID)
-		if err := dataWidget.Save(extractDest); err != nil {
+		if err := dataWidget.Save(); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 	}

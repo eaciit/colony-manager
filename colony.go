@@ -22,6 +22,7 @@ var (
 func main() {
 	var isSetupACL bool
 	flag.BoolVar(&isSetupACL, "setupacl", false, "")
+	flag.BoolVar(&controller.IsDevMode, "devmode", controller.IsDevMode, "")
 	flag.Parse()
 
 	if controller.EC_APP_PATH == "" || controller.EC_DATA_PATH == "" {
@@ -71,6 +72,10 @@ func main() {
 	}
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
+		if controller.IsDevMode {
+			http.Redirect(r.Writer, r.Request, "/web/index", 301)
+		}
+
 		sessionid := r.Session("sessionid", "")
 		if sessionid == "" {
 			http.Redirect(r.Writer, r.Request, "/web/login", 301)

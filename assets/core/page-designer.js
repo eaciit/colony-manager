@@ -26,7 +26,19 @@ pg.mappings = {
 pg.dsMappingConfig = {
 	field: []
 }
+pg.widgetAvailableConfig = {
+	_id: "",
+	title: ""
+};
+pg.allWidget = {
+	widgets: []
+}
+pg.widgetPosition = ko.observableArray([
+	{value: "fixed", text: "Fixed"},
+	{value: "absolute", text: "Absolute"}
+]);
 pg.allDataSources = ko.observableArray([]);
+pg.availableWidget = ko.mapping.fromJS(pg.allWidget);
 pg.configPageDesigner = ko.mapping.fromJS(pg.wdigetDesignerConfig);
 pg.dsMapping = ko.mapping.fromJS(pg.dsMappingConfig);
 pg.dsWidgetFromPage = ko.observableArray([]);
@@ -52,16 +64,37 @@ pg.saveConfig = function() {
 	}
 
 	var param = {_id: pg.pageID, dataSourceId: ko.mapping.toJS(pg.configPageDesigner)["dataSources"]}
-	app.ajaxPost("/page/savedesigner", param, function (res) {
+	app.ajaxPost("/page/saveconfigpage", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 		pg.backToConfig();
 	});
 }
-pg.getConfigurationPage = function(_id, mode, widgetId) {
-	var param = {_id: _id}
-	
+pg.getAvailableWidget = function() {
+	app.ajaxPost("/widget/getwidget", {search: ""}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		
+		$.each(res.data, function(key, val) {
+			var property = $.extend(true, {}, ko.mapping.toJS(pg.availableWidget));
+			var mapping = pg.widgetAvailableConfig;
+			mapping._id = val._id;
+			mapping.title = val.title;
+			property.widgets.push(mapping);
+			ko.mapping.fromJS(property, pg.availableWidget);
+		});
+	});
+};
+pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
+	var param
+	if (mode == "new widget") {
+		param = {_id: _id, widgetId: widgetId, widgetPageId: widgetPageId, mode: mode}
+	} else {
+		param = {_id: _id, widgetId: "", widgetPageId: "", mode: ""}
+	}
+	// console.log(param)
 	app.ajaxPost("/page/editpagedesigner", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -89,6 +122,7 @@ pg.getConfigurationPage = function(_id, mode, widgetId) {
 								var property = $.extend(true, {}, ko.mapping.toJS(pg.dsMapping));
 								var mapping = pg.mappings;
 								mapping.dsWidget = k;
+								mapping.dsColony = v;
 								property.field.push(mapping);
 								ko.mapping.fromJS(property, pg.dsMapping);
 							}
@@ -109,13 +143,13 @@ pg.getConfigurationPage = function(_id, mode, widgetId) {
 pg.configPage = function() {
 	app.mode("configpage");
 	pg.getDataSource();
-	pg.getConfigurationPage(pg.pageID, "configuration", "");
+	pg.getConfigurationPage(pg.pageID, "configuration", "", "");
 };
 pg.widgetSetting = function(_id, mode) {
 	app.mode("datasourceMapping");
 	pg.previewMode("");
 	if (mode != "back") {
-		pg.getConfigurationPage(pg.pageID, "settingwidget", _id);
+		pg.getConfigurationPage(pg.pageID, "settingwidget", _id, "");
 	}
 	// pg.getDataSource();
 	if (mode == "modal") {
@@ -126,16 +160,32 @@ pg.widgetSetting = function(_id, mode) {
 	}
 }
 pg.fieldMapping = function() {
-	var validator = $("#dsWidget").kendoValidator().data('kendoValidator');
-	if (!validator.validate()) {
+	// var validator = $("#dsWidget").kendoValidator().data('kendoValidator');
+	// if (!validator.validate()) {
+	// 	return;
+	// }
+	if (!app.isFormValid("#dsWidget")) {
 		return;
 	}
-	
+	$( "#formSetting" ).empty();
 	var prop = ko.mapping.toJS(pg.widgetSettings)
 	var param = {
+		pageId: pg.pageID,
 		widgetId: prop.widgetId,
 		datasource: ko.mapping.toJS(pg.dsMapping.field)
 	};
+
+	$.each(ko.mapping.toJS(pg.dsMapping.field), function(key, val) {
+		$.each(val, function(a,b) {
+			$.each(prop.dataSources[key], function(x,y) {
+				if (b == x){
+					prop.dataSources[key][x] = val.dsColony
+					// console.log(prop, prop.dataSources)
+				}
+			});
+		});
+	});
+
 	app.ajaxPost("/page/getallfields", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -147,11 +197,15 @@ pg.fieldMapping = function() {
 		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+res.data.url);
 		urlprev = "href=\"";
 		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+res.data.url);
+		$("#formSetting").off("load").on("load", function(){
+			window.frames[0].frameElement.contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
+		});
 		var contentDoc = $("#formSetting")[0].contentWindow.document;
-		contentDoc.open();
+		contentDoc.open('text/html', 'replace');
 		contentDoc.write(html);
 		contentDoc.close();
-		// console.log(res.data)
+		// console.log($("#formSetting")[0].contentWindow.document, prop)
+		// $("#formSetting")[0].contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
 	});
 }
 pg.closeWidgetSetting = function() {
@@ -164,3 +218,42 @@ pg.backToConfig = function() {
 	ko.mapping.fromJS(pg.dsMappingConfig, pg.dsMapping)
 	ko.mapping.fromJS(pg.wdigetDesignerConfig, pg.configPageDesigner)
 }
+
+//temp button
+pg.widgetPage = function(pageId, widgetPageId, widgetId, mode) {
+	pg.getConfigurationPage(pageId, mode, widgetId, widgetPageId)
+};
+pg.testIframe = function(e) {
+	// e.preventDefault();
+
+    var id = "target_iframe";
+
+    var dialog = $("<div><iframe class='k-content-frame' name='" + id + "'></div>").kendoWindow({
+      width: "100%",
+      height: "50%",
+      title: "Posting to iframe example",
+      close: function() { this.destroy() },
+      iframe: true
+    });
+
+    dialog.data("kendoWindow").center().open();
+
+    // $("<form />", {
+    //     action: "http://www.example.com/",
+    //     method: "post",
+    //     target: id
+    // })
+    // .hide().appendTo("body")
+    //    // add any data
+    //   .append("<input name='foo' />").find("[name=foo]").val("bar").end()
+    // .submit().remove();
+}
+
+window.closeModal = function(){
+	pg.closeWidgetSetting();
+}
+
+$(function (){
+	pg.getConfigurationPage(pg.pageID, "", "", "");
+	pg.getAvailableWidget();
+});

@@ -16,6 +16,7 @@ var (
 	AppBasePath  string   = func(dir string, err error) string { return dir }(os.Getwd())
 	EC_APP_PATH  string   = os.Getenv("EC_APP_PATH")
 	EC_DATA_PATH string   = os.Getenv("EC_DATA_PATH")
+	IsDevMode    bool     = false
 )
 
 func init() {

@@ -56,7 +56,9 @@ lang.setupLangEnviroment = function (param){
 		if (!res.success) {
 			sweetAlert("Oops...", res.message, "error");
 			lang.getserverlanguage();
+			return;
 		}
+		
 		swal({title: param.Lang+" language successfully setup", type: "success", closeOnConfirm: true});
 		lang.getserverlanguage();
 	});

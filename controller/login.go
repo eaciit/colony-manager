@@ -118,6 +118,16 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	results := make([]toolkit.M, 0, 0)
 
 	cursor.Fetch(&menus, 0, false)
+
+	if IsDevMode {
+		for _, m := range menus {
+			result, _ := toolkit.ToM(m)
+			results = append(results, result)
+		}
+
+		return helper.CreateResult(true, results, "Success")
+	}
+
 	// fmt.Println("DEBUG 121, : ", menus)
 	if cursor.Count() > 0 {
 		for _, m := range menus {

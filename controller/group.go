@@ -159,8 +159,27 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	}
 	g := payload["group"].(map[string]interface{})
 	config := payload["groupConfig"].(map[string]interface{})
+	memberConf := toolkit.M{}
 
-	delete(config, "Password")
+	if g["GroupType"].(string) == "1" {
+
+		memberConf.Set("username", config["Username"].(string)).
+			Set("password", config["Password"].(string)).
+			Set("address", config["Address"].(string)).
+			Set("basedn", config["BaseDN"].(string)).
+			Set("filter", "("+g["Filter"].(string)+")").
+			Set("attributes", []string{g["LoginID"].(string), g["Fullname"].(string), g["Email"].(string)}).
+			Set("mapattributes", toolkit.M{}.Set("LoginID", g["LoginID"].(string)).
+				Set("FullName", g["Fullname"].(string)).
+				Set("Email", g["Email"].(string)))
+
+		err = acl.AddUserLdapByGroup(g["_id"].(string), memberConf)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		delete(config, "Password")
+		delete(memberConf, "password")
+	}
 
 	initGroup := new(acl.Group)
 	initGroup.ID = g["_id"].(string)
@@ -168,19 +187,19 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	initGroup.Owner = g["Owner"].(string)
 	initGroup.Enable = g["Enable"].(bool)
 	initGroup.GroupConf = config
+	initGroup.MemberConf = memberConf
 
 	if g["GroupType"].(string) == "1" {
-		initGroup.GroupType = acl.GroupTypeLdap
+		// initGroup.GroupType = acl.GroupTypeLdap
 	} else if g["GroupType"].(string) == "0" {
-		initGroup.GroupType = acl.GroupTypeBasic
+		// initGroup.GroupType = acl.GroupTypeBasic
 	}
-	//fmt.Println(acl.GroupTypeLdap)
+
 	err = acl.Save(initGroup)
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
 
-	fmt.Println(payload["groupConfig"].(map[string]interface{}))
 	var grant map[string]interface{}
 	for _, p := range payload["grants"].([]interface{}) {
 		dat := []byte(p.(string))
@@ -283,8 +302,8 @@ func (a *GroupController) SaveGroupConfigLdap(r *knot.WebContext) interface{} {
 	o.BaseDN = payload["BaseDN"].(string)
 	o.FilterGroup = payload["Filter"].(string)
 	o.Username = payload["Username"].(string)
-
 	//o.Password = payload["Password"].(string)
+
 	err = toolkit.Serde(payload["Attribute"], &o.AttributesGroup, "json")
 	if err != nil {
 		return helper.CreateResult(false, err.Error(), "error")
@@ -332,6 +351,28 @@ func (a *GroupController) FindUserLdap(r *knot.WebContext) interface{} {
 }
 func (a *GroupController) RefreshGroupLdap(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-	return helper.CreateResult(true, "", "success")
+	group := new(acl.Group)
+	err = acl.FindByID(group, payload["groupid"].(string))
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+	config, err := toolkit.ToM(group.MemberConf)
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+	fmt.Println(payload["password"].(string))
+	config.Set("password", payload["password"].(string))
+	fmt.Println(config)
+	err = acl.RefreshUserLdapByGroup(payload["groupid"].(string), config)
+	if err != nil {
+		return helper.CreateResult(true, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "success")
 }
