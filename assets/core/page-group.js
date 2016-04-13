@@ -3,7 +3,7 @@ app.section('group');
 viewModel.group = {};
 var grp = viewModel.group;
 grp.templateGroup = {
-    _id: "",
+   _id: "",
     Title: "",
     Enable: ko.observable(false),
     Owner: "",
@@ -68,7 +68,7 @@ grp.GroupsColumns = ko.observableArray([{
     },{
     title: "<center>Action</center>",
     width: 70,
-    template: function(d){
+    template: function(d){ 
         if(d.grouptype == "1"){
             grp.configLdapAuht.groupid(d._id);
             grp.configLdapAuht.username(d.memberconf.username);
@@ -108,6 +108,9 @@ grp.selectGridGroups = function(e) {
         grp.showGroup(true);
         app.mode("editor");
     });
+    $('#dataType1').attr('disabled', true);
+    $('#dataType2').attr('disabled', true);
+    $("#ID").prop('readonly', true);
 };
 grp.temp=ko.observableArray([]);
 grp.selectlistGridGroups = function(e) {    
@@ -351,12 +354,12 @@ grp.savegroup = function() {
         grp.Access.AccessValue.removeAll()
     };
     var groupModal = {
-        Address:  grp.dataTypeConfig.Address(),
-        BaseDN:  grp.dataTypeConfig.BaseDN(),
-        Filter:  grp.dataTypeConfig.Filter(),
-        Username:  grp.dataTypeConfig.Username(),
-        Password:  grp.dataTypeConfig.Password(),
-        Attribute:  grp.dataTypeConfig.Attribute(),
+        address:  grp.dataTypeConfig.Address(),
+        basedn:  grp.dataTypeConfig.BaseDN(),
+        filter:  grp.dataTypeConfig.Filter(),
+        username:  grp.dataTypeConfig.Username(),
+        password:  grp.dataTypeConfig.Password(),
+        attributes:  grp.dataTypeConfig.Attribute(),
     };
     grp.config.GroupType(grp.dataType());
     group = ko.mapping.fromJS(grp.config);
@@ -406,10 +409,13 @@ grp.createNewGroup = function() {
     usr.getAccess();
     grp.config._id("");
     grp.config.Title("");
-    grp.config.Enable("");
+    grp.config.Enable(false);
     grp.config.Grants("");
     grp.config.Owner("");
     app.mode("editor");
+    $('#dataType1').attr('disabled', false);
+    $('#dataType2').attr('disabled', false);
+    $("#ID").prop('readonly', false);
 };
 grp.editGroup = function(c) {
     usr.config.Grants.removeAll();
@@ -578,24 +584,32 @@ grp.getDataUserLdap = function(){
         if(!app.isFine(res)){
             return;
         }
-        grp.GrupModalgrid('show')
-        $('#grid-ldap-group').kendoGrid({
-            dataSource: {
-                data: res.data,
-                pageSize: 5
-            },
-            pageable: true,  
-            sortable: true,  
-            selectable: 'multiple, row', 
-            filterfable: true,
-            change: grp.selectLdapGroup,
-            columns: [
-                {title: "ID", field: grp.ArrayDataID()[0]},
-                {title: "Name", field: grp.ArrayDataID()[1]},
-                {title: "Owner", field: grp.ArrayDataID()[2]},
-            ],
-            dataBound :grp.saveGroupLdap()
-        });
+        if(res.message != "error" && res.success != false){
+            grp.GrupModalgrid('show')
+            $('#grid-ldap-group').kendoGrid({
+                dataSource: {
+                    data: res.data,
+                    pageSize: 5
+                },
+                pageable: true,  
+                sortable: true,  
+                selectable: 'multiple, row', 
+                filterfable: true,
+                change: grp.selectLdapGroup,
+                columns: [
+                    {title: "ID", field: grp.ArrayDataID()[0]},
+                    {title: "Name", field: grp.ArrayDataID()[1]},
+                    {title: "Owner", field: grp.ArrayDataID()[2]},
+                ],
+                dataBound :grp.saveGroupLdap()
+            });
+        }else{
+            swal({
+                title: "Your Search Fail,  No Connection !!",
+                type: "error",
+                closeOnConfirm: true
+            });
+        }
     });
     
 }

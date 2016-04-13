@@ -69,10 +69,9 @@ usr.templateAccessGrant2 = function() {
     }
     return self;
 };
-usr.this = this;
 usr.tempDataGrup = ko.observableArray([]);
 usr.tapNum = ko.observable(0);
-usr.tapAccess = ko.observableArray([]);
+usr.dataAccess = ko.observableArray([]);
 usr.attribute = ko.observableArray("");
 usr.Access = ko.observableArray([]);
 usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
@@ -97,6 +96,20 @@ usr.valueLogintype = ko.observable("");
 usr.ListAddress = ko.observableArray([]);
 usr.ListLdap = ko.observableArray([]);
 usr.selectedAddress = ko.observable("");
+//usr.resultAccessID = ko.observableArray([]);
+// usr.unselectedAccess = ko.computed(function(){
+//     // usr.dataAccess().forEach(function(d){
+//     //     if( usr.dataSelected().indexOf(d) === -1 ){
+//     //         result.push(d)
+//     //     }
+
+//     // });
+//     // if(usr.tapNum()== 1){
+//         return usr.dataAccess();
+//     //}
+//     //return result;
+// });
+usr.dataSelected = ko.observable([]);
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
     width: 50
@@ -544,6 +557,7 @@ usr.getAccess = function() {
         }
         for (var i in res.data) {
             usr.Access.push(res.data[i]._id);
+             usr.dataAccess.push(res.data[i]._id)
             data.push({
                 text: res.data[i]._id,
                 value: res.data[i].title
@@ -551,10 +565,6 @@ usr.getAccess = function() {
         };
         usr.createGridPrivilege(res.data);
         usr.dropdownAccess(res.data)
-        $.each(usr.Access(), function(i){
-            usr.tapAccess().push(usr.Access()[i]);
-        });
-        console.log("masuk sini");
     });
 
 };
@@ -635,27 +645,10 @@ usr.selectRow = function() {
     }
 }
 usr.addFromPrivilage = function() {
-    //usr.tapNum(usr.tapNum()+1);
+    usr.tapNum(usr.tapNum()+1);
     app.mode('new'); 
     var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
     usr.config.Grants.push(new usr.templateAccessGrant());
-    // // if(usr.Access != 0){
-    // //     if(usr.tapNum() >=1){
-    // //         var ind = usr.Access().indexOf(usr.config.Grants()[0].AccessID())
-    // //         delete usr.Access()[ind]; 
-    // //     }
-        
-    // // }
-    // if(usr.tapNum() >1){
-    //     var ind = usr.tapAccess().indexOf(usr.config.Grants()[0].AccessID())
-    //     usr.tapAccess().splice(ind, 1);
-    //     //alert(usr.tapAccess()) 
-    //      //usr.Access([]);
-    //     $.each(usr.tapAccess(), function(i){
-    //         usr.Access().push(usr.tapAccess()[i]);
-    //     });
-    // }
-    // console.log(usr.tapAccess());
 
 };
 usr.displayAccess = function(e) { 
