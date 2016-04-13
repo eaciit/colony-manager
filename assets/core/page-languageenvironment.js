@@ -59,7 +59,7 @@ lang.setupLangEnviroment = function (param){
 			lang.getserverlanguage();
 			return;
 		}	
-		swal({title: param.Lang+" language successfully setup", type: "success", closeOnConfirm: true});
+		swal({title: param.Lang+" language successfully install", type: "success", closeOnConfirm: true});
 		lang.getserverlanguage();
 	});
 }
@@ -73,7 +73,7 @@ lang.removeLangEnviroment = function(param){
 			lang.getserverlanguage();
 			return;
 		}
-		swal({title: param.Lang+" language successfully remove", type: "success", closeOnConfirm: true});
+		swal({title: param.Lang+" language successfully uninstall", type: "success", closeOnConfirm: true});
 		lang.getserverlanguage();
 	})
 }
