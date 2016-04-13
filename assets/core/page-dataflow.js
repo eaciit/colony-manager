@@ -1156,6 +1156,8 @@ df.deleteParamOutput = function(e){
     df.actionDetails().output.param.remove(dt);
 }
 
+df.servers = ko.observableArray(["server1","server2"]);
+
 $(function () {
     df.init();
     app.section('');

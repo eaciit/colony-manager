@@ -56,6 +56,14 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
+    <table data-bind="with:df.sparkModel">
+        <tbody>
+            <tr>
+                <td>Server</td>
+                <td>  <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.servers}"></td>
+            </tr>
+        </tbody>
+    </table>
     <div class="ct-custom" >
         <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'Spark')">
             <tbody>
@@ -254,8 +262,8 @@
                             </tr>
                             <!-- ko foreach: output.param -->
                             <tr>
-                                <td> <input class="inp-output" data-bind="value:key"></td> </td>
-                                <td> <input class="inp-output" data-bind="value:value"></td> </td>
+                                <td> <input class="inp-output" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+                                <td> <input class="inp-output" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
                                 <td>
                                     <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);"><span class="glyphicon glyphicon-trash"></span></a>
                                 </td>
@@ -378,6 +386,10 @@
 	    	opacity: 0.6;
 	    	cursor: pointer;
 		}
+
+        td:first-child{
+            width: 80px!important;
+        }
 
 		.pTitle{
 			font-weight: bold;
