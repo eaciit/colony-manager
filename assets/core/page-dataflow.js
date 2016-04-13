@@ -95,6 +95,31 @@ df.arrayconn = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
 
+df.outputType = ko.observableArray([
+"json",
+"sv",
+"text"
+    ]);
+
+df.actionDetails = ko.observable({
+    whenFailed : ko.observable(""),
+    input : ko.observableArray([]),
+    output:{
+        type:ko.observable(""),
+        param:ko.observableArray([])
+    }
+});
+
+df.newActionDetails = function(){
+   return { whenFailed : ko.observable(""),
+        input : ko.observableArray([]),
+        output:{
+            type:ko.observable(""),
+            param:ko.observableArray([])
+        }
+    }
+};
+
 df.whenFailed = ko.observable("");
 df.allAction = ko.observableArray([]);
 
@@ -464,47 +489,8 @@ df.init = function () {
                         }, 10);
 
                         df.popoverMode(item.dataItem.name);
+                        $(".popover").attr("style","display: block; top: " +(ymouse-250)+"px; left: "+(xmouse-30)+"px;");
 
-                        if (item.dataItem.name == "Spark") {
-                            $(".popover").attr("style","display: block; top: " +(ymouse-250)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "HDFS"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Hive"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Shell Script"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-120)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "SSH Script"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-170)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Map Reduce"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Java App"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Email"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Stop"){
-                            $(".popover").attr("style","display: block; top: " +(ymouse-210)+"px; left: "+(xmouse-30)+"px;");
-                        }else if(item.dataItem.name == "Fork"){
-                            // var selected = $(".diagram").getKendoDiagram().select()[0];
-                            // var cl = selected.connectors.length - 1;
-                            // df.arrayconn([]);
-                            // for (i = 0; i <= cl; i++) {
-                            //     var no = selected.connectors[i].connections.length;
-                            //     df.popoverMode('fork');
-                            //    for (ix = 0; ix < no; ix++) {
-                            //         $(".popover-title").html(item.dataItem.name);
-                            //         $(".arrow").attr("style","left:30px");
-                            //         $(".popover").attr("style","display: block; top: " +(ymouse-150)+"px; left: "+(xmouse-30)+"px;");
-                            //         var fromid = selected.connectors[i].connections[ix].from.shape == undefined?selected.connectors[i].connections[ix].from.id :selected.connectors[i].connections[ix].from.shape.id;
-                            //         var shapeid = selected.connectors[i].connections[ix].to.shape == undefined?selected.connectors[i].connections[ix].to.id :selected.connectors[i].connections[ix].to.shape.id;
-                            //         var shapename = selected.connectors[i].connections[ix].to.shape == undefined? selected.connectors[i].connections[ix].to.dataItem.name : selected.connectors[i].connections[ix].to.shape.dataItem.name;
-                            //         var thisid = selected.id;
-
-                            //         if (fromid == thisid) {
-                            //             df.arrayconn.push({name:shapename+" - "+shapeid, condition: "true"})
-                            //         }
-                            //     }
-                            // }
-                        }
                       df.renderActionData();
                       }
                       clickonshape = 0;
@@ -625,8 +611,8 @@ df.init = function () {
                                 y:ypos, 
                                 dataItem:{name:name,image :image, color:color} 
                              });
-                            }
                             df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
+                            }
                         },
        });
 
@@ -1034,9 +1020,16 @@ df.renderActionData = function(){
     var dataItem = diagram.dataItem;
    
     var action = df.popoverMode();
-    dataItem["DataActionDetails"] = dataItem["DataActionDetails"] == undefined?{}:dataItem["DataActionDetails"];
-    dataItem.DataActionDetails.WhenFailed = dataItem.DataActionDetails.WhenFailed ==undefined?dataItem.name+" - "+diagram.id:dataItem.DataActionDetails.WhenFailed ;
-    df.whenFailed(dataItem.DataActionDetails.WhenFailed);
+
+    dataItem.DataActionDetails= dataItem.DataActionDetails == undefined? df.newActionDetails() :dataItem.DataActionDetails;
+    df.actionDetails(dataItem.DataActionDetails);
+    //set default
+    var whenfailed = df.actionDetails().whenFailed() ==""?dataItem.name+" - "+diagram.id: df.actionDetails().whenFailed() ;
+    df.actionDetails().whenFailed(whenfailed);
+    var outputType = df.actionDetails().output.type() ==""?"json": df.actionDetails().output.type() ;
+    df.actionDetails().output.type(outputType);
+    //end set default
+    
     switch(action){
       case "Spark":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
@@ -1113,7 +1106,7 @@ df.saveActionData = function(){
     var dataItem = diagram.dataItem;
     var action = df.popoverMode();
     $("#popbtn").popover("hide");
-    dataItem.DataActionDetails.WhenFailed = df.whenFailed(); 
+    dataItem.DataActionDetails = df.actionDetails(); 
     switch(action){
         case "Spark":
             dataItem["DataAction"]=df.sparkModel();
@@ -1150,6 +1143,20 @@ df.saveActionData = function(){
         break;
     }
 }
+
+df.addParamOutput = function () {
+    var idx = df.actionDetails().output.param().length;
+    df.actionDetails().output.param.push({idx:idx,key:"",value:""});
+}
+
+df.deleteParamOutput = function(e){
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dt = Lazy(df.actionDetails().output.param()).find(function ( d ) { return d.idx == idx });
+    df.actionDetails().output.param.remove(dt);
+}
+
+df.servers = ko.observableArray(["server1","server2"]);
 
 $(function () {
     df.init();

@@ -56,7 +56,15 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
-    <div id="spark" class="ct-custom" >
+    <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork')">
+        <tbody>
+            <tr>
+                <td>Server</td>
+                <td>  <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.servers}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="ct-custom" >
         <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'Spark')">
             <tbody>
                 <tr>
@@ -224,21 +232,46 @@
               <li><a href="#output" data-toggle="tab">Output</a></li>
             </ul>
 
-            <div class="tab-content">
+            <div class="tab-content" data-bind="with:df.actionDetails">
               <div class="tab-pane active" id="transition">
                     <table>
                         <tbody>
                             <tr>
                                 <td>When Failed</td>
                                 <td>
-                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
+                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
                                 </td>
                             </tr>                
                         </tbody>
                     </table>
               </div>
               <div class="tab-pane" id="input">Input</div>
-              <div class="tab-pane" id="output">Output</div>
+              <div class="tab-pane" id="output">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Type</td>
+                                <td>
+                                      <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-info btn-xs" data-bind="" onclick="df.addParamOutput();">Add parameter</a>
+                                </td>
+                            </tr>
+                            <!-- ko foreach: output.param -->
+                            <tr>
+                                <td> <input class="inp-output" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+                                <td> <input class="inp-output" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
+                                <td>
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                                </td>
+                            </tr>
+                             <!-- /ko -->
+                        </tbody>
+                    </table>
+              </div>
             </div>
         </div>
       
@@ -256,10 +289,10 @@
                 </tr> 
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
     </div>
     <div style="clear:both;"></div>
+     <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
@@ -322,7 +355,17 @@
 
 		.popover{
 			max-width: 500px!important;
+            min-width: 300px!important;
+            min-height: 250px!important;
+            max-height: 350px!important;
+            overflow-y:scroll;
 		}
+
+        .popover-content .ct-custom{
+            max-width: 500px!important;
+            min-width: 300px!important;
+            min-height: 200px!important;
+        }
 
 		.popover-content .col-md-4{
 			padding-right: 0px;
@@ -344,6 +387,10 @@
 	    	cursor: pointer;
 		}
 
+        td:first-child{
+            width: 80px!important;
+        }
+
 		.pTitle{
 			font-weight: bold;
     		font-size: large;
@@ -364,6 +411,14 @@
 		.mgBottom{
 			margin-bottom: 10px;
 		}
+
+        .mgTop10{
+            margin-top:10px;
+        }
+
+        .arrow{
+            display: none!important;
+        }
 
        #sortable-All {
             min-height: 40px;
@@ -436,6 +491,10 @@
         }
         .inp-fork{
             margin: 2px 5px;
+            width: 180px;
+        }
+        .inp-output{
+            margin: 5px -2px 5px 5px;
             width: 180px;
         }
 </style>
