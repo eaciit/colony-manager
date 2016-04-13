@@ -366,6 +366,7 @@ function visualTemplate(options) {
         }
 
 
+
 df.init = function () {
     df.createGrid();
 
