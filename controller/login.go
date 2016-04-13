@@ -354,8 +354,8 @@ func (l *LoginController) Authenticate(r *knot.WebContext) interface{} {
 }
 
 func (l *LoginController) PrepareDefaultUser() (err error) {
-	username := colonycore.GetConfig("default_username", "")
-	password := colonycore.GetConfig("default_password", "")
+	username := colonycore.GetConfig("default_username", "").(string)
+	password := colonycore.GetConfig("default_password", "").(string)
 
 	user := new(acl.User)
 	filter := dbox.Contains("loginid", username)

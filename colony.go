@@ -65,8 +65,7 @@ func main() {
 		setup.ACL()
 	}
 
-	err := setAclDatabase()
-	if err != nil {
+	if err := setAclDatabase(); err != nil {
 		fmt.Println("Warning!", "Colony Manager will running without ACL")
 		fmt.Println("ACL Error", err.Error())
 	}
