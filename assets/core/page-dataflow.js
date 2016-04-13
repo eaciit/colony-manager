@@ -286,7 +286,7 @@ function visualTemplate(options) {
             var dataviz = kendo.dataviz;
             var g = new dataviz.diagram.Group();
             var dataItem = options.dataItem;
-            
+
                 if(dataItem.name == "Fork"){
                      g.append(new dataviz.diagram.Path({
                         width: 120,
@@ -351,8 +351,15 @@ function visualTemplate(options) {
                     g.append(new dataviz.diagram.TextBlock({
                     text: dataItem.name,
                     x: 55,
-                    y: 15,
+                    y: 8,
                     fontSize:13
+                }));
+
+                     g.append(new dataviz.diagram.TextBlock({
+                    text: options.id,
+                    x: 55,
+                    y: 24,
+                    fontSize:10
                 }));
             }
             return g;
@@ -507,27 +514,9 @@ df.init = function () {
         },
         dragEnd: df.onDragEnd,
         remove: df.onRemove,
-        mouseEnter: function(e){
-            var lastMouseX,lastMouseY;
-
-            $(document).mousemove(function(e) {
-                lastMouseX = e.pageX;
-                lastMouseY = e.pageY;
-            });
-            
-            $("g image:last").parent().attr("class", e.item.id);
-            $("."+e.item.id).kendoTooltip({
-                show: function () {
-                    $(this.popup.wrapper).css({
-                        top: lastMouseY + 10,
-                        left: lastMouseX - 65
-                    });
-                },
-                content: e.item.dataItem.name + "-" + e.item.id,
-            });
+        mouseEnter: function(e){           
         },
         mouseLeave: function(e){
-
         },
     });
 
