@@ -225,7 +225,7 @@
             </ul>
 
             <div class="tab-content">
-              <div class="tab-pane active" id="transition">
+                <div class="tab-pane active" id="transition">
                     <table>
                         <tbody>
                             <tr>
@@ -236,9 +236,31 @@
                             </tr>                
                         </tbody>
                     </table>
-              </div>
-              <div class="tab-pane" id="input">Input</div>
-              <div class="tab-pane" id="output">Output</div>
+                </div>
+                <div class="tab-pane" id="input">
+                    <a class="pointer" data-bind="" onclick="df.showRow();">
+                        <span data-bind="">Add </span>
+                        <i class="fa fa-plus"></i>
+                    </a>
+                    <table id= "" data-bind="">
+                        <tbody data-bind = "foreach:df.arrayinp">
+                            <tr class="tr-inp">
+                                <td>
+                                    <input type="text" class="inp-fork" data-bind="" placeholder="">
+                                </td>
+                                <td>
+                                    <input type="text" class="inp-fork" data-bind="" placeholder="">
+                                </td>
+                                <td>
+                                    <a class="pointer" data-bind="" onclick="df.deleteRow();">
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </td>
+                            </tr> 
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="output">Output</div>
             </div>
         </div>
       

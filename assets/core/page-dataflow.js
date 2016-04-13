@@ -91,6 +91,7 @@ viewModel.dataFlowList = ko.observableArray([]);
 var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 df.arrayconn = ko.observableArray([]);
+df.arrayinp = ko.observableArray([]);
 
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
@@ -1149,6 +1150,14 @@ df.saveActionData = function(){
             dataItem["DataAction"]=df.arrayconn();
         break;
     }
+}
+
+df.showRow = function(){
+    df.arrayinp.push(".tr-inp");
+}
+
+df.deleteRow = function(each){
+    df.arrayinp.remove(each);   
 }
 
 $(function () {
