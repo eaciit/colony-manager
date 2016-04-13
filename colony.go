@@ -43,7 +43,6 @@ func main() {
 	server.Register(controller.CreateDataSourceController(server), "")
 	server.Register(controller.CreateDataGrabberController(server), "")
 	server.Register(controller.CreateDataFlowController(server), "")
-	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateFileBrowserController(server), "")
 	server.Register(controller.CreateWebGrabberController(server), "")
 	server.Register(controller.CreateApplicationController(server), "")
