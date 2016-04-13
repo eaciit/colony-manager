@@ -89,6 +89,18 @@ a {
 .align-left {
   text-align: left; }
 
+#grid-groups {
+  margin-top: 1%; }
+
+#grid-users {
+  margin-top: 1%; }
+
+.grid-sessions {
+  margin-top: 1%; }
+
+.grid-access {
+  margin-top: 1%; }
+
 table.table tr:hover td {
   background-color: #E8F3FF; }
 
