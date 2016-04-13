@@ -91,7 +91,6 @@ viewModel.dataFlowList = ko.observableArray([]);
 var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 df.arrayconn = ko.observableArray([]);
-df.arrayinp = ko.observableArray([]);
 
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
@@ -1184,14 +1183,6 @@ df.saveActionData = function(){
     }
 }
 
-<<<<<<< HEAD
-df.showRow = function(){
-    df.arrayinp.push(".tr-inp");
-}
-
-df.deleteRow = function(each){
-    df.arrayinp.remove(each);   
-=======
 df.addParamOutput = function () {
     var idx = df.actionDetails().output.param().length;
     df.actionDetails().output.param.push({idx:idx,key:"",value:""});
@@ -1202,7 +1193,18 @@ df.deleteParamOutput = function(e){
     idx = idx == undefined? $(e.target).parent().attr("index"):idx;
     var dt = Lazy(df.actionDetails().output.param()).find(function ( d ) { return d.idx == idx });
     df.actionDetails().output.param.remove(dt);
->>>>>>> e75d948d4fde81bffdaef4cc64519144903fc492
+}
+
+df.addParamInput = function () {
+    var idy = df.actionDetails().input().length;
+    df.actionDetails().input.push({idy:idy,keys:"",values:""});
+}
+
+df.deleteParamInput = function(e){
+    var idy = $(e.target).attr("index");
+    idy = idy == undefined? $(e.target).parent().attr("index"):idy;
+    var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idy == idy });
+    df.actionDetails().input.remove(dr);
 }
 
 $(function () {

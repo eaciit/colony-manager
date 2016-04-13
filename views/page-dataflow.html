@@ -223,14 +223,8 @@
               <li><a href="#input" data-toggle="tab">Input</a></li>
               <li><a href="#output" data-toggle="tab">Output</a></li>
             </ul>
-
-<<<<<<< HEAD
-            <div class="tab-content">
-                <div class="tab-pane active" id="transition">
-=======
             <div class="tab-content" data-bind="with:df.actionDetails">
               <div class="tab-pane active" id="transition">
->>>>>>> e75d948d4fde81bffdaef4cc64519144903fc492
                     <table>
                         <tbody>
                             <tr>
@@ -241,35 +235,32 @@
                             </tr>                
                         </tbody>
                     </table>
-<<<<<<< HEAD
                 </div>
                 <div class="tab-pane" id="input">
-                    <a class="pointer" data-bind="" onclick="df.showRow();">
+                    <a class="pointer" data-bind="" onclick="df.addParamInput();">
                         <span data-bind="">Add </span>
                         <i class="fa fa-plus"></i>
                     </a>
                     <table id= "" data-bind="">
-                        <tbody data-bind = "foreach:df.arrayinp">
-                            <tr class="tr-inp">
+                        <tbody data-bind = "">
+                            <!-- ko foreach: input -->
+                            <tr>
                                 <td>
-                                    <input type="text" class="inp-fork" data-bind="" placeholder="">
+                                    <input type="text" class="inp-fork" data-bind="value:keys" placeholder="">
                                 </td>
                                 <td>
-                                    <input type="text" class="inp-fork" data-bind="" placeholder="">
+                                    <input type="text" class="inp-fork" data-bind="value:values" placeholder="">
                                 </td>
                                 <td>
-                                    <a class="pointer" data-bind="" onclick="df.deleteRow();">
+                                    <a class="pointer" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);">
                                         <i class="fa fa-minus"></i>
                                     </a>
                                 </td>
-                            </tr> 
+                            </tr>
+                            <!-- /ko -->
                         </tbody>
                     </table>
                 </div>
-                <div class="tab-pane" id="output">Output</div>
-=======
-              </div>
-              <div class="tab-pane" id="input">Input</div>
               <div class="tab-pane" id="output">
                     <table>
                         <tbody>
@@ -295,8 +286,7 @@
                              <!-- /ko -->
                         </tbody>
                     </table>
-              </div>
->>>>>>> e75d948d4fde81bffdaef4cc64519144903fc492
+                </div>
             </div>
         </div>
       
