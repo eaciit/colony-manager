@@ -5,14 +5,32 @@
 </style>
 
 <h1>Session</h1>
+<nav class="navbar" data-bind="visible: (app.mode() == '')">
+    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
+        <span class="glyphicon glyphicon-search"></span>                    
+    </button>
+    <button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
+        <span class="glyphicon glyphicon-search"></span>                    
+    </button>
+</nav>
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
+    <div class="col-md-4">
+        <label class="col-md-4 filter-label">
+            Search
+        </label>
+        <div class="col-md-8">
+            <input class="form-control full-width input-sm search" name="search" type="text" data-bind='value : ses.search, event:{keyup:ses.searchsession(event)}'placeholder="Type keyword here and enter" />
+        </div>
+    </div>
+</nav>
 
-<nav class="navbar" data-bind="visible: (app.mode() == '')"> 
+<!-- <nav class="navbar" data-bind="visible: (app.mode() == '')"> 
     <div class="col-md-3">
     <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : ses.search, event:{keyup:ses.searchsession(event)}'/>
 </div>
-</nav>
+</nav> -->
  
-<div class="panel" data-bind="visible: (app.mode() == '')"> 
+<div data-bind="visible: (app.mode() == '')"> 
         <div class="grid grid-sessions"></div>
 </div>
 
