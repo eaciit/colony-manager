@@ -72,7 +72,7 @@
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login Type</label>
                             <div class="col-md-5">
-                                <select class="form-control input-sm" name="LoginType" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
+                                <select class="form-control input-sm" id="LoginType" name="LoginType" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
                                 <span class="k-invalid-msg" data-for="LoginType"></span>
                             </div>
                             <div class="col-md-2">
@@ -84,7 +84,7 @@
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login ID</label>
                             <div class="col-md-7">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
+                                <input required id="LoginID" pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
                                 <span class="k-invalid-msg" data-for="LoginID"></span>
                             </div>
                         </div>
@@ -177,7 +177,7 @@
                         <tr>
                             <td>
                                 <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access  "></select>
+                                <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.dataAccess, selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
                             </td>
                             <td>
                                 <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessCreate" />
@@ -202,12 +202,13 @@
                             </td>
                             <td>
                                 <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
-                            </td>
+                            </td> 
                             <td>
                                 <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
                                                 <span class="glyphicon glyphicon-remove"></span>
                                         </button>
                             </td>
+
                         </tr>
                     </tbody>
                 </table>
