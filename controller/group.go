@@ -159,15 +159,10 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	}
 	g := payload["group"].(map[string]interface{})
 	config := payload["groupConfig"].(map[string]interface{})
-	memberConf := toolkit.M{}
+	memberConf, _ := toolkit.ToM(config)
 
 	if g["GroupType"].(string) == "1" {
-
-		memberConf.Set("username", config["Username"].(string)).
-			Set("password", config["Password"].(string)).
-			Set("address", config["Address"].(string)).
-			Set("basedn", config["BaseDN"].(string)).
-			Set("filter", "("+g["Filter"].(string)+")").
+		memberConf.Set("filter", "("+g["Filter"].(string)+")").
 			Set("attributes", []string{g["LoginID"].(string), g["Fullname"].(string), g["Email"].(string)}).
 			Set("mapattributes", toolkit.M{}.Set("LoginID", g["LoginID"].(string)).
 				Set("FullName", g["Fullname"].(string)).
@@ -177,7 +172,7 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
-		delete(config, "Password")
+		delete(config, "password")
 		delete(memberConf, "password")
 	}
 
@@ -190,9 +185,9 @@ func (a *GroupController) SaveGroup(r *knot.WebContext) interface{} {
 	initGroup.MemberConf = memberConf
 
 	if g["GroupType"].(string) == "1" {
-		// initGroup.GroupType = acl.GroupTypeLdap
+		initGroup.GroupType = acl.GroupTypeLdap
 	} else if g["GroupType"].(string) == "0" {
-		// initGroup.GroupType = acl.GroupTypeBasic
+		initGroup.GroupType = acl.GroupTypeBasic
 	}
 
 	err = acl.Save(initGroup)
@@ -366,9 +361,6 @@ func (a *GroupController) RefreshGroupLdap(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())
 	}
-	fmt.Println(payload["password"].(string))
-	config.Set("password", payload["password"].(string))
-	fmt.Println(config)
 	err = acl.RefreshUserLdapByGroup(payload["groupid"].(string), config)
 	if err != nil {
 		return helper.CreateResult(true, nil, err.Error())

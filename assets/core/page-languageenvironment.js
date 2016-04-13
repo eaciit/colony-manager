@@ -46,7 +46,8 @@ lang.getserverlanguage = function (c){
 		}else {
 			lang.setGrid(lang.dataLanguage())	
 		}
-	});	
+	});
+	$('.pleasewait').remove();	
 }
 
 lang.setupLangEnviroment = function (param){
@@ -57,18 +58,37 @@ lang.setupLangEnviroment = function (param){
 			sweetAlert("Oops...", res.message, "error");
 			lang.getserverlanguage();
 			return;
-		}
-		
-		swal({title: param.Lang+" language successfully setup", type: "success", closeOnConfirm: true});
+		}	
+		swal({title: param.Lang+" language successfully install", type: "success", closeOnConfirm: true});
 		lang.getserverlanguage();
 	});
 }
 
-function getAttr(serverid,language){
+lang.removeLangEnviroment = function(param){
+	console.log(param);
+	$('.btn-language').prop('disabled', true);
+	app.ajaxPost("/langenvironment/uninstalllang", param, function (res){
+		if (!res.success){
+			sweetAlert("Oops...", res.message, "error");
+			lang.getserverlanguage();
+			return;
+		}
+		swal({title: param.Lang+" language successfully uninstall", type: "success", closeOnConfirm: true});
+		lang.getserverlanguage();
+	})
+}
+
+
+function getAttr(serverid,language, check){
 	var param = ko.mapping.toJS(lang.SetupLangEnv);
 	param.ServerId = serverid; 
 	param.Lang = language;
-	lang.setupLangEnviroment(param);
+
+	if (check == "false"){
+		lang.setupLangEnviroment(param);	
+	}else {
+		lang.removeLangEnviroment(param);
+	}
 } 
 
 lang.setGrid = function(data){
@@ -89,15 +109,15 @@ lang.setGrid = function(data){
 			each[e.Lang] = e.IsInstalled;
 			if (i == 0){
 				columnGrid.push({
-					width:"100px",
+					width:"130px",
 					title:"<center>"+e.Lang+"</center>",
 					template: function (f){
 					var checkDisable = '';
 					checkDisable = f[e.Lang];
 					if (checkDisable == true){
-						return ["<center><button class=\"btn btn-sm btn-default btn-start tooltipster tooltipstered disabled\" title=\"Installed\"><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
+						return ["<center><button class=\"btn btn-sm btn-default btn-start btn-text-danger tooltipster tooltipstered \"title=\"uninstall\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"','"+checkDisable+"'), miniloader()\" ><span class=\"glyphicon glyphicon-remove\"></span></button></center>"].join(" ");
 						} else {
-						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"Setup\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"'), miniloader()\" language =\""+e.Lang+"\" ><span class=\"fa fa-cog\"></span></button></center>"].join(" ");	
+						return ["<center><button class=\"btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered\" title=\"install\" onClick=\"getAttr('"+f._id+"','"+e.Lang+"','"+checkDisable+"'), miniloader()\" language =\""+e.Lang+"\" ><span class=\"glyphicon glyphicon-cog\"></span></button></center>"].join(" ");	
 						}
 					}
 				});

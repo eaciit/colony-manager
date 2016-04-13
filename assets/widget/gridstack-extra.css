@@ -1,3 +1,18 @@
+ul, li {
+  list-style-type: none;
+}
+
+.grid-panel { 
+  padding-top: 20px; 
+}
+
+.wg-panel{
+  max-height:24px;
+  padding-bottom:2px;
+  padding-top:2px;
+  padding-right:2px;
+}
+
 .grid-stack.grid-stack-1 > .grid-stack-item {
   min-width: 100%;
 }
