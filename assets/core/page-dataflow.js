@@ -1157,6 +1157,17 @@ df.deleteParamOutput = function(e){
 }
 
 df.servers = ko.observableArray(["server1","server2"]);
+df.addParamInput = function () {
+    var idy = df.actionDetails().input().length;
+    df.actionDetails().input.push({idy:idy,keys:"",values:""});
+}
+
+df.deleteParamInput = function(e){
+    var idy = $(e.target).attr("index");
+    idy = idy == undefined? $(e.target).parent().attr("index"):idy;
+    var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idy == idy });
+    df.actionDetails().input.remove(dr);
+}
 
 $(function () {
     df.init();
