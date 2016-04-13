@@ -469,6 +469,8 @@ df.init = function () {
                         $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
 
                         $btn = $("<button title='Action details' class='btn btn-primary btn-xs pull-right btn-transition'><span class='glyphicon glyphicon-chevron-down'></span></button>")
+                        
+                        if(item.dataItem.name!="Fork" && item.dataItem.name!="Stop")
                         $(".popover-title").append($btn);
 
                         $btn.click(function(){
@@ -613,7 +615,9 @@ df.init = function () {
                                 y:ypos, 
                                 dataItem:{name:name,image :image, color:color} 
                              });
-                            df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
+
+                             if(name!="Fork")
+                                df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
                             }
                         },
        });
@@ -817,6 +821,8 @@ df.renderDiagram = function(elem,data){
     for(var c in shapes){
         var sh = shapes[c];
         diagram.addShape(sh);
+        
+        if(sh.dataItem.name!="Fork")
         df.allAction.push(sh.dataItem.name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
     }
 
