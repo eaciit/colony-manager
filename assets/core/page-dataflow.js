@@ -507,6 +507,28 @@ df.init = function () {
         },
         dragEnd: df.onDragEnd,
         remove: df.onRemove,
+        mouseEnter: function(e){
+            var lastMouseX,lastMouseY;
+
+            $(document).mousemove(function(e) {
+                lastMouseX = e.pageX;
+                lastMouseY = e.pageY;
+            });
+            
+            $("g image:last").parent().attr("class", e.item.id);
+            $("."+e.item.id).kendoTooltip({
+                show: function () {
+                    $(this.popup.wrapper).css({
+                        top: lastMouseY + 10,
+                        left: lastMouseX - 65
+                    });
+                },
+                content: e.item.dataItem.name + "-" + e.item.id,
+            });
+        },
+        mouseLeave: function(e){
+
+        },
     });
 
     var clickonshape = 0;
