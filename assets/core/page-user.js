@@ -72,6 +72,7 @@ usr.templateAccessGrant2 = function() {
 usr.tempDataGrup = ko.observableArray([]);
 usr.tapNum = ko.observable(0);
 usr.dataAccess = ko.observableArray([]);
+usr.dataAccessUser = ko.observableArray([]);
 usr.attribute = ko.observableArray("");
 usr.Access = ko.observableArray([]);
 usr.AccessGrant = ko.mapping.fromJS(usr.templateAccessGrant);
@@ -96,19 +97,8 @@ usr.valueLogintype = ko.observable("");
 usr.ListAddress = ko.observableArray([]);
 usr.ListLdap = ko.observableArray([]);
 usr.selectedAddress = ko.observable("");
-//usr.resultAccessID = ko.observableArray([]);
-// usr.unselectedAccess = ko.computed(function(){
-//     // usr.dataAccess().forEach(function(d){
-//     //     if( usr.dataSelected().indexOf(d) === -1 ){
-//     //         result.push(d)
-//     //     }
+usr.tempAccessID = ko.observableArray([]);
 
-//     // });
-//     // if(usr.tapNum()== 1){
-//         return usr.dataAccess();
-//     //}
-//     //return result;
-// });
 usr.dataSelected = ko.observable([]);
 usr.UsersColumns = ko.observableArray([{
     template: "<input type='checkbox' name='checkboxuser' class='ckcGrid' value='#: _id #' />",
@@ -154,6 +144,58 @@ usr.selectGridUsers = function() {
         grp.selectedGroupsData.removeAll(); 
     });
 };
+
+usr.unselectedAccessGroup = function(index){
+    return ko.computed(function(){
+        var result = [];
+
+        usr.dataAccess().forEach(function(d){
+            var isFound = false;
+
+            usr.config.Grants().forEach(function (f, i) {
+                if (f.AccessID() == d && i != index) {
+                    isFound = true;
+                }
+            });
+
+            if (!isFound) {
+                result.push(d);
+            }
+        });
+
+        console.log(result);
+
+        return result;
+
+    },usr);
+    
+}
+
+usr.unselectedAccessUser = function(index){
+    return ko.computed(function(){
+        var resultUser = [];
+
+        usr.dataAccessUser().forEach(function(d){
+            var isFound = false;
+
+            usr.config.Grants().forEach(function (f, i) {
+                if (f.AccessID() == d && i != index) {
+                    isFound = true;
+                }
+            });
+
+            if (!isFound) {
+                resultUser.push(d);
+            }
+        });
+
+        console.log(resultUser);
+
+        return resultUser;
+
+    },usr);
+    
+}
 usr.selectGridLdap = function() {    
     app.wrapGridSelect("#grid-ldap", ".btn", function(d) {
         usr.config.LoginID(d.cn)
@@ -557,7 +599,9 @@ usr.getAccess = function() {
         }
         for (var i in res.data) {
             usr.Access.push(res.data[i]._id);
-             usr.dataAccess.push(res.data[i]._id)
+            usr.dataAccess.push(res.data[i]._id);
+            usr.dataAccessUser.push(res.data[i]._id);
+
             data.push({
                 text: res.data[i]._id,
                 value: res.data[i].title
@@ -647,6 +691,7 @@ usr.selectRow = function() {
 usr.addFromPrivilage = function() {
     usr.tapNum(usr.tapNum()+1);
     app.mode('new'); 
+    usr.config.Grants()
     var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
     usr.config.Grants.push(new usr.templateAccessGrant());
 
@@ -885,11 +930,7 @@ usr.ChangePass = function() {
     }
 };
 
-// $(function() { 
-//     if(usr.tapNum() >1){
-//         var ind = usr.Access().indexOf(usr.config.Grants()[0].AccessID())
-//         usr.Access().splice(ind,1); 
-//     }
-//     alert('lalala');
-// });
-//  
+$(function() { 
+    usr.config.Grants.removeAll();
+});
+ 
