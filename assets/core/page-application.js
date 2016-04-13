@@ -423,6 +423,7 @@ apl.deploy = function () {
 };
 
 apl.selectApps = function (e) {
+	app.showfilter(false);
 	app.wrapGridSelect(".grid-application", ".btn", function (d) {
 		if (d.IsInternalApp) {
 			swal({ title: "Internal app is read only", type: "info", closeOnConfirm: true });
@@ -478,6 +479,7 @@ apl.editApplication = function(_id) {
 };
 
 apl.createNewApplication = function () {
+	app.showfilter(false);
 	var editor = $('#scriptarea').data('CodeMirrorInstance');
 	var treeviewLeft = $("#treeview-left").data("kendoTreeView");
 	var uploadFile = $("#files");

@@ -95,6 +95,31 @@ df.arrayconn = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
 
+df.outputType = ko.observableArray([
+"json",
+"sv",
+"text"
+    ]);
+
+df.actionDetails = ko.observable({
+    whenFailed : ko.observable(""),
+    input : ko.observableArray([]),
+    output:{
+        type:ko.observable(""),
+        param:ko.observableArray([])
+    }
+});
+
+df.newActionDetails = function(){
+   return { whenFailed : ko.observable(""),
+        input : ko.observableArray([]),
+        output:{
+            type:ko.observable(""),
+            param:ko.observableArray([])
+        }
+    }
+};
+
 df.whenFailed = ko.observable("");
 df.allAction = ko.observableArray([]);
 
@@ -364,6 +389,7 @@ function visualTemplate(options) {
             }
             return g;
         }
+
 
 
 df.init = function () {
@@ -1033,9 +1059,16 @@ df.renderActionData = function(){
     var dataItem = diagram.dataItem;
    
     var action = df.popoverMode();
-    dataItem["DataActionDetails"] = dataItem["DataActionDetails"] == undefined?{}:dataItem["DataActionDetails"];
-    dataItem.DataActionDetails.WhenFailed = dataItem.DataActionDetails.WhenFailed ==undefined?dataItem.name+" - "+diagram.id:dataItem.DataActionDetails.WhenFailed ;
-    df.whenFailed(dataItem.DataActionDetails.WhenFailed);
+
+    dataItem.DataActionDetails= dataItem.DataActionDetails == undefined? df.newActionDetails() :dataItem.DataActionDetails;
+    df.actionDetails(dataItem.DataActionDetails);
+    //set default
+    var whenfailed = df.actionDetails().whenFailed() ==""?dataItem.name+" - "+diagram.id: df.actionDetails().whenFailed() ;
+    df.actionDetails().whenFailed(whenfailed);
+    var outputType = df.actionDetails().output.type() ==""?"json": df.actionDetails().output.type() ;
+    df.actionDetails().output.type(outputType);
+    //end set default
+    
     switch(action){
       case "Spark":
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
@@ -1112,7 +1145,7 @@ df.saveActionData = function(){
     var dataItem = diagram.dataItem;
     var action = df.popoverMode();
     $("#popbtn").popover("hide");
-    dataItem.DataActionDetails.WhenFailed = df.whenFailed(); 
+    dataItem.DataActionDetails = df.actionDetails(); 
     switch(action){
         case "Spark":
             dataItem["DataAction"]=df.sparkModel();
@@ -1148,6 +1181,18 @@ df.saveActionData = function(){
             dataItem["DataAction"]=df.arrayconn();
         break;
     }
+}
+
+df.addParamOutput = function () {
+    var idx = df.actionDetails().output.param().length;
+    df.actionDetails().output.param.push({idx:idx,key:"",value:""});
+}
+
+df.deleteParamOutput = function(e){
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dt = Lazy(df.actionDetails().output.param()).find(function ( d ) { return d.idx == idx });
+    df.actionDetails().output.param.remove(dt);
 }
 
 $(function () {

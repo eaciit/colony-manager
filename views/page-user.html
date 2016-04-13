@@ -13,6 +13,36 @@
 <h1>User</h1>
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
+    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
+        <span class="glyphicon glyphicon-search"></span>                    
+    </button>
+    <button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
+        <span class="glyphicon glyphicon-search"></span>                    
+    </button>
+    <div class="btn-group" role="group">
+        <button class="btn btn-sm btn-primary mgTop15"data-bind="click:usr.getUsers">
+            <span class="glyphicon glyphicon-refresh"></span> Refresh
+        </button>
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: usr.createNewUser">
+            <span class="glyphicon glyphicon-plus"></span> Add
+        </button>
+        <button class="btn btn-sm btn-danger mgTop15" data-bind="click:usr.deleteuser">
+            <span class="glyphicon glyphicon-remove"></span> Delete
+        </button>
+    </div>
+</nav>
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
+<div class="col-md-4">
+    <label class="col-md-4 filter-label">
+        Search
+    </label>
+    <div class="col-md-8">
+        <input class="form-control full-width input-sm search" name="search" type="text"  data-bind='value : usr.search, event:{keyup:usr.searchUser(event)}' placeholder="Type keyword here" />
+    </div>
+</div>
+</nav>
+
+<!-- <nav class="navbar" data-bind="visible: (app.mode() == '')">
     <div class="col-md-4">
         <button class="btn btn-sm btn-primary navbar-btn" data-bind="click:usr.getUsers">
             <span class="glyphicon glyphicon-refresh"></span> Refresh
@@ -27,7 +57,7 @@
     <div class="col-md-3" style="margin-top:10px;">
         <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : usr.search, event:{keyup:usr.searchUser(event)}'/>
     </div>
-</nav>
+</nav> -->
 
 <div data-bind="visible: (app.mode() == '')">
     <div class="gr-position">
@@ -41,7 +71,21 @@
     </div>
 </div>
 
-<nav class="navbar" data-bind="visible:(app.mode() == 'new') | (app.mode() == 'editor')">
+<nav class="navbar"  data-bind="visible:(app.mode() == 'new') | (app.mode() == 'editor')">
+    <div class="btn-group" role="group">
+        <button class="btn btn-sm btn-primary mgTop15"  data-bind="click: usr.backToFront">
+            <span class="glyphicon glyphicon-chevron-left"></span> Back
+        </button>
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: usr.saveuser">
+            <span class="glyphicon glyphicon-save" ></span> Save
+        </button>
+        <button class="btn btn-sm btn-danger mgTop15" id="removeOnEditGroup">
+            <span class="glyphicon glyphicon-remove"></span> Delete
+        </button>
+    </div>
+</nav>
+
+<!-- <nav class="navbar" data-bind="visible:(app.mode() == 'new') | (app.mode() == 'editor')">
     <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: usr.backToFront">
         <span class="glyphicon glyphicon-chevron-left"></span> Back
     </button>
@@ -51,7 +95,7 @@
     <button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup">
         <span class="glyphicon glyphicon-remove"></span> Delete
     </button>
-</nav>
+</nav> -->
 
 <div class="panel" data-bind="visible: (app.mode() == 'new') | (app.mode() == 'editor') " style="width: 800px;">
     <div class="panel-heading">
@@ -72,7 +116,7 @@
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login Type</label>
                             <div class="col-md-5">
-                                <select class="form-control input-sm" name="LoginType" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
+                                <select class="form-control input-sm" id="LoginType" name="LoginType" data-bind="value: usr.valueLogintype,options: usr.Logintype"></select>
                                 <span class="k-invalid-msg" data-for="LoginType"></span>
                             </div>
                             <div class="col-md-2">
@@ -84,7 +128,7 @@
                         <div class="form-group">
                             <label class="col-md-3 filter-label">Login ID</label>
                             <div class="col-md-7">
-                                <input required pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
+                                <input required id="LoginID" pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for Login ID" type="text" class="form-control input-sm" name="LoginID" placeholder="Type the Login ID Here" data-bind="value: usr.config.LoginID">
                                 <span class="k-invalid-msg" data-for="LoginID"></span>
                             </div>
                         </div>
@@ -202,12 +246,13 @@
                             </td>
                             <td>
                                 <input type='checkbox' data-bind=" checked: usr.config.Grants()[$index()].AccessSpecial4,attr: { title: adm.AccessSpecial4 },event: { mouseover: adm.getTitle(usr.config.Grants()[$index()].AccessID) }" />
-                            </td>
+                            </td> 
                             <td>
                                 <button type="button" class="btn btn-sm btn-danger" data-bind="click: usr.removeAccess($data)">
                                                 <span class="glyphicon glyphicon-remove"></span>
                                         </button>
                             </td>
+
                         </tr>
                     </tbody>
                 </table>
