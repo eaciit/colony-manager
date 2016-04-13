@@ -82,7 +82,7 @@
 		</div>
 	</div>
 
-	<!-- Modal DataSource -->
+<!-- Modal DataSource -->
 	<div class="modal fade modal-widgetsetting" tabindex="-1" role="dialog">
 		<div class="modal-dialog" style="width: 50%;">
 			<div class="modal-content" data-bind="with: dsMapping">
@@ -90,12 +90,16 @@
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: pg.closeWidgetSetting">
 						<span aria-hidden="true">&times;</span>
 					</button>
-					<h4 class="modal-title" data-bind="text: pg.previewMode() == '' ? 'Data Source' : 'Widget Setting'">
-					</h4>
 				</div>
 
 				<div class="modal-body">
-					<div data-bind="visible: (app.mode() == 'datasourceMapping')">
+					<ul class="nav nav-tabs" id="myTab">
+        				<li class="active"><a data-target="#DataSource" data-toggle="tab">Data source</a></li>
+       					<li><a data-target="#WidgetSetting" data-toggle="tab" data-bind="click: pg.fieldMapping">Widget Setting</a></li>
+   					</ul>
+					<!--<div data-bind="visible: (app.mode() == 'datasourceMapping')">-->
+					<div class="tab-content">
+        			<div class="tab-pane active" id="DataSource">
 						<div class="form-horizontal" id="dsWidget" data-bind="with: pg.widgetSettings">
 							<div class="form-group">
 								<label for="title" class="col-sm-2 control-label">Title</label>
@@ -139,37 +143,21 @@
 								    </div>
 								</div>
 							</div>
-						</div>
-			        	
+						</div>   	
 		        	</div>
-
-		        	<div class="form-group" data-bind="visible: (app.mode() == 'fieldMapping')">
-				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;">
+		        	
+		        	<!--</div>-->
+		        	<div class="tab-pane" id="WidgetSetting">
+					<div class="col-md-12">
 				    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pg.adjustIframe()"></iframe>
-			        	</div>
-			        	<div class="clearfix"></div>
-		        	</div>
-	        	</div>
-
-				<div class="modal-footer" data-bind="with: pg.widgetSettings">
-					<div data-bind="visible: (app.mode() == 'datasourceMapping')">
-						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
-							<span class="glyphicon glyphicon-remove"></span> Cancel
-						</button>
-						<button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">Next <span class="glyphicon glyphicon-chevron-right"></span>
-						</button>
-					</div>
-
-					<div data-bind="visible: (app.mode() == 'fieldMapping')">
-						<button type="button" class="btn btn-sm btn-default" data-bind="click: function(e) {pg.widgetSetting(_id(), 'back')}">
-							<span class="glyphicon glyphicon-chevron-left"></span> Back
-						</button>
-						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
-							<span class="glyphicon glyphicon-remove"></span> Cancel
-						</button>
+			        </div>
+			       	<div class="clearfix"></div>
+					
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+
 </div>
+

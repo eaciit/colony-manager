@@ -4,6 +4,7 @@ var widgets = [
         {x: 6, y: 0, width: 2, height: 4},
         {x: 1, y: 2, width: 4, height: 2}
     ];
+
 var widgetFunc = function (widgets) {
     var self = this;
 
@@ -17,10 +18,12 @@ var widgetFunc = function (widgets) {
             height: 4,
             auto_position: true
         });
+
         return false;
     };
 
     this.deleteWidget = function (item) {
+        console.log(self.widgets())
         self.widgets.remove(item);
         return false;
     };
@@ -60,8 +63,8 @@ ko.components.register('widget-grid', {
             '            <div class="panel panel-default">',
             '                <div class="panel-heading wg-panel clearfix">',
             '                  <div class="pull-right">',
-            '                    <a href="#" class="btn btn-default btn-xs tooltipster" title="Config"><span class="glyphicon glyphicon-cog"></span></a>',
-            '                    <a href="#" class="btn btn-danger btn-xs" data-bind="click: $root.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
+            '                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pg.widgetSetting(\'wp1459947140191\', \'modal\')}" title="Config"><span class="glyphicon glyphicon-cog"></span></a>',
+            '                    <a href="#" class="btn btn-danger btn-xs" data-bind="click: pg.widgetgrid.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
             '                  </div>',
             '               </div>',
             '            </div>',
