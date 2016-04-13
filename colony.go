@@ -109,9 +109,5 @@ func setAclDatabase() (err error) {
 
 	err = acl.SetDb(conn)
 	new(controller.LoginController).PrepareDefaultUser()
-
-	// err = acl.CreateUserIfNotExist(defUser, defPass)
-	fmt.Sprintf("Username : %s \n", defUser)
-	fmt.Sprintf("Password : %s \n", defPass)
 	return
 }
