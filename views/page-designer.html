@@ -5,6 +5,10 @@
 <script src="/res/core/page-designer.js"></script>
 <script src="/res/widget/gridstack.js"></script>
 <script src="/res/widget/widgetdesigner.js"></script>
+<script>
+	pg.pageID = "{{.pageID}}";
+</script>
+
 <style type="text/css">
 	.k-widget.k-dropdown, .k-widget.k-numerictextbox{
 		width: 100%;
@@ -75,7 +79,7 @@
 			</div>
 		</div>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
-			<div class="col-md-12">
+			<div class="col-md-12 grid-panel">
 				<div data-bind="component: {name: 'widget-grid', params: $data}"></div>
 			</div>
 			<div style="clear:both;"></div>

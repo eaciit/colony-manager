@@ -792,6 +792,7 @@
                         scroll: true,
                         appendTo: 'body'
                     }));
+
                     node.el = el;
                     self.placeholder.hide();
                     el
@@ -805,7 +806,22 @@
                         .removeData('draggable')
                         .removeClass('ui-draggable ui-draggable-dragging ui-draggable-disabled')
                         .unbind('drag', onDrag);
+
                     self.container.append(el);
+
+                    var name_widget = el.find($(".grid-stack-item-content")).find("a").html();
+                    $headerPanel = $('<div class="panel panel-default">'+
+                                        '<div class="panel-heading wg-panel clearfix">'+
+                                            '<span>'+name_widget+'</span>'+
+                                            '<div class="pull-right">'+
+                                                ' <a href="#" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-cog"></span></a> '+
+                                                ' <a href="#" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></a> '+
+                                            '</div>'+
+                                        '</div>'+
+                                    '</div>');
+                    el.find($(".grid-stack-item-content")).find("a").remove();
+                    $headerPanel.appendTo(el.find($(".grid-stack-item-content")));
+
                     self._prepareElementByNode(el, node);
                     self._updateContainerHeight();
                     self._triggerChangeEvent();

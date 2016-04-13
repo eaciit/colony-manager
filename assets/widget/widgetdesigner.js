@@ -56,7 +56,16 @@ ko.components.register('widget-grid', {
         [
             '<div class="grid-stack" data-bind="foreach: {data: widgets, afterRender: afterAddWidget}">',
             '   <div class="grid-stack-item" data-bind="attr: {\'data-gs-x\': $data.x, \'data-gs-y\': $data.y, \'data-gs-width\': $data.width, \'data-gs-height\': $data.height, \'data-gs-auto-position\': $data.auto_position}">',
-            '       <div class="grid-stack-item-content"><button data-bind="click: $root.deleteWidget">Delete me</button></div>',
+            '       <div class="grid-stack-item-content">',
+            '            <div class="panel panel-default">',
+            '                <div class="panel-heading wg-panel clearfix">',
+            '                  <div class="pull-right">',
+            '                    <a href="#" class="btn btn-default btn-xs tooltipster" title="Config"><span class="glyphicon glyphicon-cog"></span></a>',
+            '                    <a href="#" class="btn btn-danger btn-xs" data-bind="click: $root.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
+            '                  </div>',
+            '               </div>',
+            '            </div>',
+            '       </div>',
             '   </div>',
             '</div> '
         ].join('')
