@@ -56,7 +56,7 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
-    <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork')">
+    <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork' && df.popoverMode() != 'Stop')">
         <tbody>
             <tr>
                 <td>Server</td>
@@ -71,34 +71,40 @@
                     <td>Spark Master</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:master" placeholder="e.g. local[*]">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <!-- <button class="btn pd-custom fileChooserBtn">..</button> -->
                     </td>
                 </tr>
                 <tr>
                     <td>Mode</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:mode" placeholder="e.g. Client">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <!-- <button class="btn pd-custom fileChooserBtn">..</button> -->
                     </td>
                 </tr>
                 <tr>
-                    <td>App files</td>
+                    <td>App file</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="Comma separated list of java or scala HDFS files">
+                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="File java or scala in HDFS files">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
-                <tr>
+              <!--   <tr>
                     <td>App Name</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:appname" placeholder="e.g. My Spark">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td>Main Class</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="e.g. org.spark.example.main">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Arguments</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:args" placeholder="Comma separated arguments">
                     </td>
                 </tr>
             </tbody>
@@ -138,13 +144,13 @@
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
-                <tr>
+              <!--   <tr>
                     <td>Hive XML</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:hivexml" placeholder="Refer to a hive-site.xml for connecting to Hive">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
-                </tr>
+                </tr> -->
             </tbody>
         </table>
         <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'Shell Script')">
@@ -174,23 +180,43 @@
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
+                 <tr>
+                    <td>Input</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:input" placeholder="Fill input file path">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                 <tr>
+                    <td>Output</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:output" placeholder="Fill output file path">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                 <tr>
+                    <td>Parameters</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:parameters" placeholder="Comma separated parameters">
+                    </td>
+                </tr>
             </tbody>
         </table>
         <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'Java App')">
             <tbody>
                 <tr>
-                    <td>Jar Name</td>
+                    <td>Jar File</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:jar" placeholder="Path to the jar on HDFS">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
-                <tr>
+              <!--   <tr>
                     <td>Main Class</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="Java class. e.g. org.apache.hadoop.examples.main">
                     </td>
-                </tr>
+                </tr> -->
             </tbody>
         </table>
         <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
@@ -225,7 +251,7 @@
                 </tr>
             </tbody>
         </table>
-        <div data-bind="visible: (df.popoverMode() == 'Transitions')">
+        <div data-bind="visible: (df.popoverMode() == 'Transitions' && df.detailMode() != 'Fork' && df.detailMode() != 'Stop' )">
             <ul class="nav nav-tabs" id="myTab">
               <li class="active"><a href="#transition" data-toggle="tab">Transition</a></li>
               <li><a href="#input" data-toggle="tab">Input</a></li>
@@ -389,6 +415,10 @@
 
         td:first-child{
             width: 80px!important;
+        }
+
+        #fork td:first-child{
+            width: 20px!important;
         }
 
 		.pTitle{

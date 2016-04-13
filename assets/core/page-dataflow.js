@@ -141,11 +141,12 @@ df.detailModeDo = function(text,detail) {
 df.sparkModel = ko.observable({
   //UI not yet
   type : ko.observable(""),
-  args:ko.observableArray([]),
+  // args:ko.observableArray([]),
 
   appname:ko.observable(""),
   master : ko.observable(""),
   mode:ko.observable(""),
+  args:ko.observable(""),
 
   //back end not yet
   mainclass:ko.observable(""),
@@ -156,11 +157,12 @@ df.newSparkModel = function(){
     return {
     //UI not yet
     type : ko.observable(""),
-    args:ko.observableArray([]),
+    // args:ko.observableArray([]),
 
-    appname:ko.observable(""),
+    // appname:ko.observable(""),
     master : ko.observable(""),
     mode:ko.observable(""),
+    args:ko.observable(""),
 
     //back end not yet
     mainclass:ko.observable(""),
@@ -186,9 +188,9 @@ df.hsModel = ko.observable({
   mapper : ko.observable(""),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
-  //UI not yet
   input : ko.observable(""),
-  output:ko.observable("")
+  output:ko.observable(""),
+  parameters:ko.observable("")
 });
 
 df.newHsModel = function(){
@@ -196,9 +198,9 @@ df.newHsModel = function(){
   mapper : ko.observable(""),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
-  //UI not yet
   input : ko.observable(""),
-  output:ko.observable("")
+  output:ko.observable(""),
+  parameters:ko.observable("")
 }
 }
 
@@ -236,7 +238,7 @@ df.hiveModel = ko.observable({
   //UI not yet
   param:ko.observableArray([]),
   //back end not yet
-  hivexml:ko.observable("")
+  // hivexml:ko.observable("")
 });
 
 df.newHiveModel = function(){
@@ -245,7 +247,7 @@ df.newHiveModel = function(){
   //UI not yet
   param:ko.observableArray([]),
   //back end not yet
-  hivexml:ko.observable("")
+  // hivexml:ko.observable("")
 }
 }
 
@@ -263,13 +265,13 @@ df.newShModel = function(){
 //back end not yet
 df.javaAppModel = ko.observable({
   jar : ko.observable(""),
-  mainclass : ko.observable("")
+  // mainclass : ko.observable("")
 });
 
 df.newJavaAppModel = function(){
     return {
     jar : ko.observable(""),
-    mainclass : ko.observable("")
+    // mainclass : ko.observable("")
   }
 }
 
@@ -811,7 +813,7 @@ df.renderDiagram = function(elem,data){
     var diagram = $(elem).getKendoDiagram();
     var shapes = data.shapes;
     var conn = data.connections;
-
+    df.allAction([]);
     for(var c in shapes){
         var sh = shapes[c];
         diagram.addShape(sh);
@@ -1093,6 +1095,9 @@ df.renderActionData = function(){
                         df.arrayconn.push({name:shapename+" - "+shapeid, condition: condt})
                     }
                 }
+        }
+        if(df.arrayconn().length==0){
+            $("#popbtn").popover("hide");
         }
       break;
     }
