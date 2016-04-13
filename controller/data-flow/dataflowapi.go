@@ -269,8 +269,8 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []
 		args = args + " " + spark.File
 	}
 
-	for _, str := range args {
-		args = args + " " + str
+	if spark.args != "" {
+		args = args + " " + spark.args
 	}
 
 	cmd := fmt.Sprintf(CMD_SPARK, args)
@@ -325,14 +325,18 @@ func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction) (re
 
 	for _, file := range mr.Files {
 		if file != "" {
-			cmd = cmd + file
+			cmd = cmd + " -file" + file
 		}
 	}
 
-	for _, param := range mr.Params {
+	/*for _, param := range mr.Params {
 		if param != "" {
 			cmd = cmd + param
 		}
+	}*/
+
+	if mr.Params != "" {
+		cmd = cmd + " " + mr.Params
 	}
 
 	result, e := sshclient.GetOutputCommandSsh(cmd)
