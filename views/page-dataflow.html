@@ -56,7 +56,7 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
-    <div id="spark" class="ct-custom" >
+    <div class="ct-custom" >
         <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'Spark')">
             <tbody>
                 <tr>
@@ -281,10 +281,10 @@
                 </tr> 
             </tbody>
         </table>
-        <a class="mgTop10 btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom mgTop10 btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
     </div>
     <div style="clear:both;"></div>
+     <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
@@ -347,7 +347,17 @@
 
 		.popover{
 			max-width: 500px!important;
+            min-width: 300px!important;
+            min-height: 250px!important;
+            max-height: 350px!important;
+            overflow-y:scroll;
 		}
+
+        .popover-content .ct-custom{
+            max-width: 500px!important;
+            min-width: 300px!important;
+            min-height: 200px!important;
+        }
 
 		.popover-content .col-md-4{
 			padding-right: 0px;
@@ -392,6 +402,10 @@
 
         .mgTop10{
             margin-top:10px;
+        }
+
+        .arrow{
+            display: none!important;
         }
 
        #sortable-All {
