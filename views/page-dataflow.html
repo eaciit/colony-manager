@@ -217,16 +217,31 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="visible: (df.popoverMode() == 'Transitions')">
-            <tbody>
-                <tr>
-                    <td>When Failed</td>
-                    <td>
-                        <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
-                    </td>
-                </tr>                
-            </tbody>
-        </table>
+        <div data-bind="visible: (df.popoverMode() == 'Transitions')">
+            <ul class="nav nav-tabs" id="myTab">
+              <li class="active"><a href="#transition" data-toggle="tab">Transition</a></li>
+              <li><a href="#input" data-toggle="tab">Input</a></li>
+              <li><a href="#output" data-toggle="tab">Output</a></li>
+            </ul>
+
+            <div class="tab-content">
+              <div class="tab-pane active" id="transition">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>When Failed</td>
+                                <td>
+                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
+                                </td>
+                            </tr>                
+                        </tbody>
+                    </table>
+              </div>
+              <div class="tab-pane" id="input">Input</div>
+              <div class="tab-pane" id="output">Output</div>
+            </div>
+        </div>
+      
         <table  id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'Fork')">
             <tbody data-bind = "foreach:df.arrayconn">
                 <tr>
