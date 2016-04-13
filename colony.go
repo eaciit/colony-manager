@@ -3,16 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	"path"
+	"path/filepath"
+	"runtime"
+
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/colony-manager/installation"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	"net/http"
-	"path"
-	"path/filepath"
-	"runtime"
 )
 
 var (
@@ -107,6 +108,5 @@ func setAclDatabase() (err error) {
 
 	err = acl.SetDb(conn)
 	new(controller.LoginController).PrepareDefaultUser()
-
 	return
 }
