@@ -3,16 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	"path"
+	"path/filepath"
+	"runtime"
+
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/colony-manager/installation"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	"net/http"
-	"path"
-	"path/filepath"
-	"runtime"
 )
 
 var (
@@ -106,7 +107,7 @@ func setAclDatabase() (err error) {
 	defUser := "eaciit"
 	defPass := "123"
 
-	err = acl.CreateUserIfNotExist(defUser, defPass)
+	// err = acl.CreateUserIfNotExist(defUser, defPass)
 	fmt.Sprintf("Username : %s \n", defUser)
 	fmt.Sprintf("Password : %s \n", defPass)
 	return
