@@ -5,10 +5,6 @@
 <script src="/res/core/page-designer.js"></script>
 <script src="/res/widget/gridstack.js"></script>
 <script src="/res/widget/widgetdesigner.js"></script>
-<script>
-	pg.pageID = "{{.pageID}}";
-</script>
-
 <style type="text/css">
 	.k-widget.k-dropdown, .k-widget.k-numerictextbox{
 		width: 100%;
@@ -44,7 +40,7 @@
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(e) {pg.widgetSetting('wp1459947140191', 'modal')}">
 	    		<span class="glyphicon glyphicon-plus"></span> Pop up Widget
 	    	</button>
-	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(e) {pg.widgetPage('page02', 'wp0000000000', 'widget2', 'new widget')}">
+	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(e) {pg.widgetPage('page03', 'wp1459947140191', 'widget3', 'new widget')}">
 	    		<span class="glyphicon glyphicon-plus"></span> dummy widget 2
 	    	</button>
 		</nav>
@@ -79,7 +75,7 @@
 			</div>
 		</div>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
-			<div class="col-md-12 grid-panel">
+			<div class="col-md-12">
 				<div data-bind="component: {name: 'widget-grid', params: $data}"></div>
 			</div>
 			<div style="clear:both;"></div>
@@ -149,7 +145,7 @@
 
 		        	<div class="form-group" data-bind="visible: (app.mode() == 'fieldMapping')">
 				    	<div class="col-md-12" style="padding-left:45px; padding-right:45px;">
-				    		<iframe class="full-width" id="formSetting" width="100%" height="300" scrolling="no"  frameborder="0"></iframe>
+				    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pg.adjustIframe()"></iframe>
 			        	</div>
 			        	<div class="clearfix"></div>
 		        	</div>
@@ -160,8 +156,7 @@
 						<button type="button" class="btn btn-sm btn-danger" data-bind="click: pg.closeWidgetSetting">
 							<span class="glyphicon glyphicon-remove"></span> Cancel
 						</button>
-						<button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">
-							Next <span class="glyphicon glyphicon-chevron-right"></span>
+						<button type="button" class="btn btn-sm btn-primary" data-bind="click: pg.fieldMapping">Next <span class="glyphicon glyphicon-chevron-right"></span>
 						</button>
 					</div>
 

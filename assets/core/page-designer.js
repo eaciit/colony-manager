@@ -224,6 +224,12 @@ pg.widgetPage = function(pageId, widgetPageId, widgetId, mode) {
 	pg.getConfigurationPage(pageId, mode, widgetId, widgetPageId)
 };
 
+pg.adjustIframe = function() {
+	document.getElementById("formSetting").style.height = document.getElementById("formSetting").contentWindow.document.body.scrollHeight + "px";
+};
+
+pg.AdjustIframeHeight = function(i) { document.getElementById("formSetting").style.height = parseInt(i) + "px"; }
+
 window.closeModal = function(){
 	pg.closeWidgetSetting();
 }
