@@ -1,1 +1,1 @@
-go run colony.go
+go run colony.go -devmode=true
