@@ -19,6 +19,12 @@ type LoginController struct {
 	App
 }
 
+func CreateLoginController(l *knot.Server) *LoginController {
+	var controller = new(LoginController)
+	controller.Server = l
+	return controller
+}
+
 func (l *LoginController) prepareconnection() (conn dbox.IConnection, err error) {
 	driver, ci := new(colonycore.Login).GetACLConnectionInfo()
 	conn, err = dbox.NewConnection(driver, ci)
@@ -124,7 +130,6 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 			result, _ := toolkit.ToM(m)
 			results = append(results, result)
 		}
-
 		return helper.CreateResult(true, results, "Success")
 	}
 
@@ -160,8 +165,6 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 						results = append(results, result)
 					}
 				}
-			} else if toolkit.ToString(sessionId) == "" && m.AccessId != "COLONY.DASHBOARD" { //will be change after stable, just for devel
-				results = append(results, result)
 			}
 		}
 	}
@@ -350,8 +353,36 @@ func (l *LoginController) Authenticate(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, result, "")
 }
 
-func CreateLoginController(l *knot.Server) *LoginController {
-	var controller = new(LoginController)
-	controller.Server = l
-	return controller
+func (l *LoginController) PrepareDefaultUser() (err error) {
+	username := "eaciit"
+	password := "Password.1"
+
+	user := new(acl.User)
+	filter := dbox.Contains("loginid", username)
+	c, err := acl.Find(user, filter, nil)
+
+	if err != nil {
+		return
+	}
+
+	if c.Count() == 0 {
+		user.ID = toolkit.RandomString(32)
+		user.LoginID = username
+		user.FullName = username
+		user.Password = password
+		user.Enable = true
+
+		err = acl.Save(user)
+		if err != nil {
+			return
+		}
+		err = acl.ChangePassword(user.ID, password)
+		if err != nil {
+			return
+		}
+
+		fmt.Printf(`Default user "%s" with standard password has been created%s`, username, "\n")
+	}
+
+	return
 }

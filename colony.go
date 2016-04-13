@@ -102,10 +102,13 @@ func setAclDatabase() (err error) {
 		return
 	}
 
-	err = acl.SetDb(conn)
+	// if colonycore.GetConfig("default_username") == nil {
+	// 	colonycore.SetConfig("default_username", "eaciit")
+	// 	colonycore.SetConfig("default_password", "Password.1")
+	// }
 
-	defUser := "eaciit"
-	defPass := "123"
+	err = acl.SetDb(conn)
+	new(controller.LoginController).PrepareDefaultUser()
 
 	// err = acl.CreateUserIfNotExist(defUser, defPass)
 	fmt.Sprintf("Username : %s \n", defUser)
