@@ -9,6 +9,7 @@ import (
 	"github.com/eaciit/colony-manager/installation"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -106,8 +107,37 @@ func setAclDatabase() (err error) {
 	defUser := "eaciit"
 	defPass := "123"
 
-	err = acl.CreateUserIfNotExist(defUser, defPass)
+	err = CreateUserIfNotExist(defUser, defPass)
+
 	fmt.Sprintf("Username : %s \n", defUser)
 	fmt.Sprintf("Password : %s \n", defPass)
+
+	return
+}
+func CreateUserIfNotExist(username, password string) (err error) {
+	user := new(acl.User)
+	filter := dbox.Contains("loginid", username)
+	c, err := acl.Find(user, filter, nil)
+
+	if err != nil {
+		return
+	}
+	if c.Count() == 0 {
+		user.ID = toolkit.RandomString(32)
+		user.LoginID = username
+		user.FullName = username
+		user.Password = password
+		user.Enable = true
+
+		err = acl.Save(user)
+		if err != nil {
+			return
+		}
+		err = acl.ChangePassword(user.ID, password)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
