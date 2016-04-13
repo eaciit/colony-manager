@@ -224,18 +224,24 @@
               <li><a href="#output" data-toggle="tab">Output</a></li>
             </ul>
 
+<<<<<<< HEAD
             <div class="tab-content">
                 <div class="tab-pane active" id="transition">
+=======
+            <div class="tab-content" data-bind="with:df.actionDetails">
+              <div class="tab-pane active" id="transition">
+>>>>>>> e75d948d4fde81bffdaef4cc64519144903fc492
                     <table>
                         <tbody>
                             <tr>
                                 <td>When Failed</td>
                                 <td>
-                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
+                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
                                 </td>
                             </tr>                
                         </tbody>
                     </table>
+<<<<<<< HEAD
                 </div>
                 <div class="tab-pane" id="input">
                     <a class="pointer" data-bind="" onclick="df.showRow();">
@@ -261,6 +267,36 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="output">Output</div>
+=======
+              </div>
+              <div class="tab-pane" id="input">Input</div>
+              <div class="tab-pane" id="output">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Type</td>
+                                <td>
+                                      <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-info btn-xs" data-bind="" onclick="df.addParamOutput();">Add parameter</a>
+                                </td>
+                            </tr>
+                            <!-- ko foreach: output.param -->
+                            <tr>
+                                <td> <input class="inp-output" data-bind="value:key"></td> </td>
+                                <td> <input class="inp-output" data-bind="value:value"></td> </td>
+                                <td>
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                                </td>
+                            </tr>
+                             <!-- /ko -->
+                        </tbody>
+                    </table>
+              </div>
+>>>>>>> e75d948d4fde81bffdaef4cc64519144903fc492
             </div>
         </div>
       
@@ -278,8 +314,8 @@
                 </tr> 
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
+        <a class="mgTop10 btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom mgTop10 btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
     </div>
     <div style="clear:both;"></div>
 </script>
@@ -387,6 +423,10 @@
 			margin-bottom: 10px;
 		}
 
+        .mgTop10{
+            margin-top:10px;
+        }
+
        #sortable-All {
             min-height: 40px;
             margin: 0;
@@ -458,6 +498,10 @@
         }
         .inp-fork{
             margin: 2px 5px;
+            width: 180px;
+        }
+        .inp-output{
+            margin: 5px -2px 5px 5px;
             width: 180px;
         }
 </style>

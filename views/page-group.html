@@ -11,27 +11,51 @@
 </style>
 
 <h1>Group</h1>
-
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
-    <div class="nav1">
-        <div class="col-md-4">
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: grp.getGroups">
+    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
+        <span class="glyphicon glyphicon-search"></span>                    
+    </button>
+    <button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
+        <span class="glyphicon glyphicon-search"></span>                    
+    </button>
+    <div class="btn-group" role="group">
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: grp.getGroups">
             <span class="glyphicon glyphicon-refresh"></span> Refresh
         </button>
-            <button class="btn btn-sm btn-success" data-bind="click: grp.createNewGroup">
-                <span class="glyphicon glyphicon-plus"></span> Add
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: grp.createNewGroup">
+            <span class="glyphicon glyphicon-plus"></span> Create New Application
         </button>
-            <button class="btn btn-sm btn-danger navbar-btn" data-bind="click:grp.deletegroup">
+        <button class="btn btn-sm btn-danger mgTop15" data-bind="click:grp.deletegroup">
             <span class="glyphicon glyphicon-remove"></span> Delete
         </button>
-        </div>
-        <!-- <label class="col-md-4 filter-label no-left-padding"> -->
-        <div class="col-md-3" id="nav-group-search">
-            <input class="form-control full-width input-sm searchsrv" name="search" placeholder="Search" data-bind='value : grp.search'/>   
-        </div>
     </div>
 </nav>
+<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
+<div class="col-md-4">
+    <label class="col-md-4 filter-label">
+        Search
+    </label>
+    <div class="col-md-8">
+        <input class="form-control full-width input-sm search" name="search" type="text" data-bind='value : grp.search' placeholder="Type keyword here" />
+    </div>
+</div>
+</nav>
+
 <nav class="navbar" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')">
+    <div class="btn-group" role="group">
+        <button class="btn btn-sm btn-primary mgTop15"  data-bind="click: grp.backToFront">
+            <span class="glyphicon glyphicon-chevron-left"></span> Back
+        </button>
+        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: grp.savegroup">
+            <span class="glyphicon glyphicon-save" ></span> Save
+        </button>
+        <button class="btn btn-sm btn-danger mgTop15" id="removeOnEditGroup">
+            <span class="glyphicon glyphicon-remove"></span> Delete
+        </button>
+    </div>
+</nav>
+
+<!-- <nav class="navbar" data-bind="visible: (app.mode() == 'new') |(app.mode() == 'editor')">
     <button class="btn btn-sm btn-warning navbar-btn" data-bind="click: grp.backToFront">
         <span class="glyphicon glyphicon-chevron-left"></span> Back
     </button>
@@ -41,7 +65,7 @@
     <button class="btn btn-sm btn-danger navbar-btn" id="removeOnEditGroup">
         <span class="glyphicon glyphicon-remove"></span> Delete
     </button>
-</nav>
+</nav> -->
 
 <div data-bind="visible: (app.mode() == '')">
         <div class="gr-position">
@@ -166,7 +190,7 @@
                                 <div class="col-sm-1">Privilege</div>
                                 <div class="col-sm-12">
                                     <div class="nav">
-                                        <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage, visible:(usr.dataAccess().length != usr.tapNum())">
+                                        <button class="btn btn-success btn-sm" data-bind="click: usr.addFromPrivilage">
                                             <span class="glyphicon glyphicon-plus"></span> Add
                                         </button>
                                     </div>
@@ -188,7 +212,7 @@
                                             <tr>
                                                 <td>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value: usr.config.Grants()[$index()].AccessId,options: usr.Access, selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access  "></select>
                                                 
                                                 
                                                 </td>

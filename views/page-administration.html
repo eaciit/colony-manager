@@ -46,22 +46,50 @@
 	<div class="col-md-12" data-bind="with: access, visible: (app.section() == 'access')">
 		<h1>Access</h1>	
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-			<div class="nav1">
-				<div class="col-md-4"> 
-				<button class="btn btn-sm btn-primary" data-bind="click: adm.refreshAccess">
-			    		<span class="glyphicon glyphicon-refresh"></span> Refresh
-			    </button>
-				 <button class="btn btn-sm btn-success" data-bind="click: adm.createNewAccess">
-			    		<span class="glyphicon glyphicon-plus"></span> Add
-			    </button>
-		    	<button class="btn btn-sm btn-danger" data-bind="click: adm.deleteaccess"><span class="glyphicon glyphicon-remove"></span> Delete</button>
-		    	</div>
-		    	<div class="col-md-3"> 
-		    	<input class="form-control full-width input-sm searchsrv" type="text" name="search" placeholder="Search" data-bind='value : adm.search, event:{keyup:adm.searchAccess(event)}'/>			
-				</div>
+		    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
+		        <span class="glyphicon glyphicon-search"></span>                    
+		    </button>
+		    <button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
+		        <span class="glyphicon glyphicon-search"></span>                    
+		    </button>
+		    <div class="btn-group" role="group">
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: adm.refreshAccess">
+		            <span class="glyphicon glyphicon-refresh"></span> Refresh
+		        </button>
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: adm.createNewAccess">
+		            <span class="glyphicon glyphicon-plus"></span> Add
+		        </button>
+		        <button class="btn btn-sm btn-danger mgTop15" data-bind="click: adm.deleteaccess">
+		            <span class="glyphicon glyphicon-remove"></span> Delete
+		        </button>
 		    </div>
-		</nav>	
+		</nav>
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
+		    <div class="col-md-4">
+		        <label class="col-md-4 filter-label">
+		            Search
+		        </label>
+		        <div class="col-md-8">
+		            <input class="form-control full-width input-sm search" name="search" type="text" data-bind='value : adm.search, event:{keyup:adm.searchAccess(event)}' placeholder="Type keyword here and enter" />
+		        </div>
+		    </div>
+		</nav>
+
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+		    <div class="btn-group" role="group">
+		        <button class="btn btn-sm btn-primary mgTop15"  data-bind="click: adm.backToFront">
+		            <span class="glyphicon glyphicon-chevron-left"></span> Back
+		        </button>
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: adm.saveaccess">
+		            <span class="glyphicon glyphicon-save" ></span> Save
+		        </button>
+		        <button class="btn btn-sm btn-danger mgTop15" data-bind="click: adm.deleteaccess">
+		            <span class="glyphicon glyphicon-remove"></span> Delete
+		        </button>
+		    </div>
+		</nav>
+
+		<!-- <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: adm.backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
@@ -71,7 +99,7 @@
 	    	<button class="btn btn-sm btn-danger" data-bind="click: adm.deleteaccess">
 	    		<span class="glyphicon glyphicon-remove"></span> Delete
 	    	</button>
-		</nav> 
+		</nav>  -->
 		 
 		<div data-bind="visible: (app.mode() == '')"> 
 			 <div class="gr-position">
