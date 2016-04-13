@@ -78,6 +78,7 @@ lang.removeLangEnviroment = function(param){
 	})
 }
 
+
 function getAttr(serverid,language, check){
 	var param = ko.mapping.toJS(lang.SetupLangEnv);
 	param.ServerId = serverid; 
