@@ -1,13 +1,14 @@
 package dataflow
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/hdc/hive"
 	"github.com/eaciit/colony-manager/controller"	
 	"github.com/eaciit/toolkit"
+	"encoding/json"
 	"io/ioutil"
 	//"math/rand"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"time"
 	"os/exec"
 	"bufio"
+	"strconv"
 )
 
 const (
@@ -32,11 +34,15 @@ const (
 
 	SSH_OPERATION_MKDIR = "MKDIR"
 	// SSH_OPERATION_* please define
+
+
+	ACT_RESULT_PATH = "/usr/eaciit/dataflow/result/"
 )
 
 var CurrentAction colonycore.FlowAction
 var hivex *hive.Hive
 var hdfsx *hdfs.WebHdfs
+var act_result_path string
 
 func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
 	//var steps []colonycore.FlowAction
@@ -64,51 +70,58 @@ func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
 
 // runProcess process the flow
 func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
-
+/*
 	for _, act := range actionBefore {
 		action.Context = append(action.Context, act.Context)
-	}
+	}*/
 
-	var res []toolkit.M
 	switch action.Type {
 		case ACTION_TYPE_HIVE:
-			res, e = runHive(process, action)
+			e = runHive(process, action)
 			break
 		case ACTION_TYPE_HDFS:
-			res, e = runHDFS(process, action)
+			e = runHDFS(process, action)
 			break
 		case ACTION_TYPE_SPARK:
-			res, e = runSpark(process, action)
+			e = runSpark(process, action)
 			break
 		case ACTION_TYPE_SSH:
-			res, e = runSSH(process, action)
+			e = runSSH(process, action)
 			break
 	}
-	fmt.Println(res)
+	var msg string
+	if e != nil { msg = "status : NOK \n Error : " + e.Error() } else { msg = "status : OK \n Error : " }
+	writeActionResultStatus(process, action, msg)
 	return e
 }
 
-func runHive(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runHive(process colonycore.DataFlow, action colonycore.FlowAction) (e error) {
 	var action_hive colonycore.ActionHive
 	action_hive = action.Action.(colonycore.ActionHive)
 
 	hivex = hive.HiveConfig(action.Server.Host, "", "Username", "Password", "Path")
 
+	var res []toolkit.M
 	e = hivex.Populate(action_hive.ScriptPath, &res)
 
-	return res, e
+	if e == nil {
+		writeActionResult(process, action, res)
+	}
+
+	return
 }
 
-func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (e error) {
 	hdfsx, e = hdfs.NewWebHdfs(hdfs.NewHdfsConfig("http://192.168.0.223:50070", "hdfs"))
 	var action_hdfs colonycore.ActionHDFS
 	var server *colonycore.Server
+	var res []toolkit.M
 	action_hdfs = action.Action.(colonycore.ActionHDFS)
 
 	switch action_hdfs.Operation {
 		case "GetDir":
 			listdir, e := hdfsx.List(action_hdfs.Path)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			for _, files := range listdir.FileStatuses.FileStatus {
 
@@ -127,11 +140,11 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			tempPath := strings.Replace(controller.GetHomeDir()+"/", "//", "/", -1)
 			FileName := strings.Split(action_hdfs.Path, "/")[len(strings.Split(action_hdfs.Path, "/"))-1]
 			file, e := os.Create(tempPath + FileName)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 			defer file.Close()
 
 			e = hdfsx.Put(tempPath+FileName, action_hdfs.NewPath, "", nil, server)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			var tk toolkit.M
 			tk.Set("result", "OK")
@@ -139,7 +152,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			break
 		case "NewFolder":
 			e = hdfsx.MakeDir(action_hdfs.Path, "")
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			var tk toolkit.M
 			tk.Set("result", "OK")
@@ -148,7 +161,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 		case "Permission":
 			permission, e := helper.ConstructPermission(action_hdfs.Permission)
 			e = hdfsx.SetPermission(action_hdfs.Path, permission)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			var tk toolkit.M
 			tk.Set("result", "OK")
@@ -159,7 +172,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			if err != nil {
 				if len(err) > 0 {
 					for _, e = range err {
-						return nil, e
+						return e
 					}
 				}
 				break
@@ -171,7 +184,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			break
 		case "Rename":
 			e = hdfsx.Rename(action_hdfs.Path, action_hdfs.NewPath)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			var tk toolkit.M
 			tk.Set("result", "OK")
@@ -179,7 +192,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			break
 		case "Download":
 			e = hdfsx.GetToLocal(action_hdfs.Path, action_hdfs.NewPath, action_hdfs.Permission, server)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			var tk toolkit.M
 			tk.Set("result", "OK")
@@ -187,7 +200,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			break
 		case "Upload":
 			e = hdfsx.Put(action_hdfs.Path, action_hdfs.NewPath, action_hdfs.Permission, nil, server)
-			if e != nil { return nil, e; break }
+			if e != nil { return e; break }
 
 			var tk toolkit.M
 			tk.Set("result", "OK")
@@ -197,10 +210,10 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 			break
 	}
 
-	return res, e
+	return
 }
 
-func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (e error) {
 	var action_spark colonycore.ActionSpark
 	action_spark = action.Action.(colonycore.ActionSpark)
 
@@ -208,27 +221,28 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []
 	cmd := exec.Command("spark-submit", arg...)
 	Stdout, e := cmd.StdoutPipe()
 
-	if  e != nil { return nil, e }
+	if  e != nil { return e }
 
 	var result toolkit.M
 	result.Set("Result", bufio.NewReader(Stdout) )
 
 	e = cmd.Start()
 
-	return res, e
+	return 
 }
 
-func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error){
+func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (e error){
 	var action_ssh colonycore.ActionSSH
 	action_ssh = action.Action.(colonycore.ActionSSH)
+	var res []toolkit.M
 
 	cmd := exec.Command("sh", "-c", action_ssh.Operation)
 	//stdin, e := cmd.StdinPipe()
 	//if e!= nil {return nil, e}
 	stdout, e := cmd.StdoutPipe()
-	if e!= nil {return nil, e}
+	if e!= nil {return e}
 	e = cmd.Start()
-	if e!= nil {return nil, e}
+	if e!= nil {return e}
 
 	var result toolkit.M
 	//result.Set("result_stdin", bufio.NewReader(stdin))
@@ -239,21 +253,17 @@ func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (res []to
 
 // watch watch the process and mantain the link between the action in the flow
 func watch(process colonycore.DataFlow) (e error) {
-
-	var firstAction colonycore.FlowAction
 	var ListCurrentTierAction, ListLastTierAction []colonycore.FlowAction
 	var nextIdx []string
 	isLastAction := false
+	act_result_path = ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + process.ID
 	idx := 1
 
 	for _, action := range process.Actions {
 		if action.FirstAction {
-			firstAction = action
-			break
+			ListCurrentTierAction = append(ListCurrentTierAction, action)
 		}
 	}
-
-	if CurrentAction.Action == nil {CurrentAction = firstAction	}
 
 	for isLastAction == false {
 		if len(nextIdx) == 0{ isLastAction = true }
@@ -267,12 +277,12 @@ func watch(process colonycore.DataFlow) (e error) {
 			var filenames []string
 			var ActionBefore []colonycore.FlowAction
 			for isFound {
-				ActionBefore = GetActionBefore(ListLastTierAction, CurrentAction)
+				ActionBefore = getActionBefore(ListLastTierAction, CurrentAction) 
 
 				for _,actx := range ActionBefore{
-					files, e = ioutil.ReadFile(formatActionOutputFile(process, actx))
+					files, e = getActionResultStatus(process, actx)
 					if e!= nil { return e; break}
-					if files != nil {isFound = true; filenames = append(filenames,formatActionOutputFile(process, actx))} else {isFound = false; filenames = []string{}; break}
+					if files != nil {isFound = true; filenames = append(filenames,getActionResultStatusPath(process, actx))} else {isFound = false; filenames = []string{}; break}
 				}
 
 				time.Sleep(time.Second * 5)
@@ -293,8 +303,9 @@ func watch(process colonycore.DataFlow) (e error) {
 							nextIdx = append(nextIdx, GetAction(process, nok).Id)
 						}
 					}
+
+					go runProcess(process, CurrentAction, ActionBefore)
 				}
-				go runProcess(process, CurrentAction, ActionBefore)
 			}
 
 			if idx == len(ListCurrentTierAction){ ListLastTierAction = []colonycore.FlowAction{} }
@@ -337,8 +348,8 @@ func GetStatus(flowId string) (process colonycore.DataFlow, e error) {
 	return
 }
 
-func formatActionOutputFile(flow colonycore.DataFlow, action colonycore.FlowAction) (dirName string) {
-	return flow.Name + action.Id
+func getActionResultStatusPath(flow colonycore.DataFlow, action colonycore.FlowAction) (dirName string) {
+	return act_result_path + "/" + action.Id + "/act_status/res_Status.txt"
 }
 
 func GetAction(flow colonycore.DataFlow, actionId string) (action colonycore.FlowAction) {
@@ -351,7 +362,7 @@ func GetAction(flow colonycore.DataFlow, actionId string) (action colonycore.Flo
 	return
 }
 
-func GetActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction colonycore.FlowAction)(ActionBefore []colonycore.FlowAction){
+func getActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction colonycore.FlowAction)(ActionBefore []colonycore.FlowAction){
 	for _, act := range ListActionBefore{
 		for _, idx := range act.OK {
 			if idx == CurrentAction.Id {ActionBefore = append(ActionBefore, act)}
@@ -361,5 +372,42 @@ func GetActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction col
 			if idx == CurrentAction.Id {ActionBefore = append(ActionBefore, act)}
 		}
 	}
+	return
+}
+
+func setCommandArgument(flow colonycore.DataFlow, action colonycore.FlowAction, ActionBefore []colonycore.FlowAction)(arguments []string){
+	return nil
+}
+
+func writeActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowAction, msg string)(err error){
+	filepath := act_result_path + "/" + action.Id + "/act_status/res_Status.txt"
+	err = ioutil.WriteFile(filepath, []byte(msg), 0755)
+	return
+}
+
+func getActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowAction)(file []byte, err error){
+	temppath := act_result_path + "/" + action.Id + "/act_status/res_Status.txt"
+	res, err := ioutil.ReadFile(temppath)
+	return res, err
+}
+
+func writeActionResult(flow colonycore.DataFlow, action colonycore.FlowAction, data interface{})(err error){
+	idx:=1
+	filename := action.Id + "_" + strconv.Itoa( idx)
+	var res interface{}
+
+	switch action.OutputType{
+		case "JSON":
+			res, err = json.Marshal(data)
+			filename += ".json"
+			break
+		case "CSV":break
+		case "TSV":break
+		case "TEXT":break
+		default:break
+	}
+
+	filepath := ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + "/" + flow.ID + "/" + action.Id + "/act_result/" + filename
+	err = ioutil.WriteFile(filepath, res.([]byte), 0755)
 	return
 }
