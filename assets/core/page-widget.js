@@ -16,31 +16,25 @@ wl.searchfield = ko.observable("");
 wl.scrapperMode = ko.observable("");
 wl.previewMode = ko.observable("");
 wl.WidgetColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
-		return [
-			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
-		].join(" ");
+	{ template: function(d) {
+		id = 'd._id', onclick =''
 	}},
 	{ field: "title", title: "Title" },
-	{ field: "description", title: "Description" },
-	/*{ field: "dataSourceId", title: "Data Source", template: "#= dataSourceId.join(', ') #", 
-		editor: function(container, options) {
-			$("<select multiple='multiple' data-bind='value: dataSourceId' />")
-            .appendTo(container)
-            .kendoMultiSelect({
-            	autoClose: false,
-                dataSource: wl.widgetDataSource(),
-                select: wl.selectCount
-            });
-		}
-	},*/
-	{title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
-		return[
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Preview' onclick='wl.openWidget(\"" + d._id + "\",\"grid\")'><span class='fa fa-eye'></span></button>",
-			// "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Setting' onclick=''><span class='fa fa-pencil'></span></button>",
-		].join(" ");
-	}}
+	{ field:"action"}
 ]);
+
+wl.setGridwl = function (){
+	$('.grid-widget').kendoGrid({
+		dataSource:{ pageSize :15, data : wl.widgetListdata()}, 
+		selectable : 'row',
+		columns : wl.WidgetColumns(),
+		pageable : true,
+		dataBound: app.gridBoundTooltipster('.grid-widget'),
+		rowTemplate : kendo.template($("#rowTemplate").html()),
+	})
+	$('.grid-widget').find("thead").remove();
+	$('.grid-widget').find('.k-grid-header').remove()	
+}
 
 wl.selectCount = function(e) {
 	console.log(this.dataSource.view(), e.item.index())
@@ -61,6 +55,7 @@ wl.getWidgetList = function(mode) {
 		}
 		wl.widgetListdata(res.data);
 		wl.getDataSource();
+		wl.setGridwl();
 	});
 }
 
@@ -72,7 +67,6 @@ wl.getDataSource = function() {
 		if (!res.data) {
 			res.data = [];
 		}
-		
 		$.each(res.data, function(key,val) {
 			wl.widgetDataSource.push(val._id)	
 		});
@@ -90,7 +84,7 @@ wl.openWidget = function(_id, mode) {
 		getId = _id();
 	}
 
-	$(".modal-widget-preview").modal("hide");
+	// $(".modal-widget-preview").modal("hide");
 	
 	$(".modal-widget-datasource").modal({
 		backdrop: 'static',
@@ -190,12 +184,6 @@ wl.saveWidget = function() {
 		wl.backToFront();
 	});
 };
-
-wl.selectWidget = function() {
-	app.wrapGridSelect(".grid-widget", ".btn", function (d) {
-		wl.editWidget(d._id, "editor");
-	});
-}
 
 wl.editWidget = function(_id, mode) {
 	wl.getFile();

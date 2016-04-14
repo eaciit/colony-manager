@@ -43,7 +43,6 @@ func main() {
 	server.Register(controller.CreateDataSourceController(server), "")
 	server.Register(controller.CreateDataGrabberController(server), "")
 	server.Register(controller.CreateDataFlowController(server), "")
-	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateFileBrowserController(server), "")
 	server.Register(controller.CreateWebGrabberController(server), "")
 	server.Register(controller.CreateApplicationController(server), "")
@@ -66,8 +65,7 @@ func main() {
 		setup.ACL()
 	}
 
-	err := setAclDatabase()
-	if err != nil {
+	if err := setAclDatabase(); err != nil {
 		fmt.Println("Warning!", "Colony Manager will running without ACL")
 		fmt.Println("ACL Error", err.Error())
 	}
@@ -102,10 +100,10 @@ func setAclDatabase() (err error) {
 		return
 	}
 
-	// if colonycore.GetConfig("default_username") == nil {
-	// 	colonycore.SetConfig("default_username", "eaciit")
-	// 	colonycore.SetConfig("default_password", "Password.1")
-	// }
+	if colonycore.GetConfig("default_username") == nil {
+		colonycore.SetConfig("default_username", "eaciit")
+		colonycore.SetConfig("default_password", "Password.1")
+	}
 
 	err = acl.SetDb(conn)
 	new(controller.LoginController).PrepareDefaultUser()
