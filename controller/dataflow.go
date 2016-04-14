@@ -88,46 +88,75 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 
 		dataItem := shape["dataItem"].(map[string]interface{})
 		id := shape["id"].(string)
-
+		firstAction := shape["firstAction"]
 		name := dataItem["name"].(string)
+
 		if name != "" {
-			/*dataAction := dataItem["DataAction"].(map[string]interface{})
-			dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})*/
+			dataAction := dataItem["DataAction"].(map[string]interface{})
+			dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
+
 			action := colonycore.FlowAction{
-				Id:       id,
-				Name:     name + " - " + id,
-				Interval: 1,
-				Retry:    3,
+				Id:          id,
+				Name:        name + " - " + id,
+				Interval:    1,
+				Retry:       3,
+				FirstAction: firstAction,
+				/*Server: ,
+				  InputParam: ,
+				  OutputParam: ,
+				  OutputType: ,
+				  OutputPath: ,*/
 			}
 
 			switch name {
 			case "Spark":
-				spark := colonycore.ActionSpark{}
+				spark := colonycore.ActionSpark{
+					Master:    dataAction["master"],
+					Mode:      dataAction["mode"],
+					File:      dataAction["appfiles"],
+					MainClass: dataAction["mainclass"],
+					Args:      dataAction["args"],
+				}
 				action.Action = spark
 				action.Type = dataflow.ACTION_TYPE_SPARK
 				break
 			case "Hive":
-				hive := colonycore.ActionHive{}
+				hive := colonycore.ActionHive{
+					ScriptPath: dataAction["scriptpath"],
+					// Params:     ,
+				}
 				action.Action = hive
 				action.Type = dataflow.ACTION_TYPE_HIVE
 				break
 			case "SSH Script":
-				ssh := colonycore.ActionSSH{}
+				ssh := colonycore.ActionSSH{
+					Command: dataAction["script"],
+				}
 				action.Action = ssh
 				action.Type = dataflow.ACTION_TYPE_SSH
 				break
 			case "HDFS":
-				hdfs := colonycore.ActionHDFS{}
+				hdfs := colonycore.ActionHDFS{
+				// Command: dataAction["script"],
+				}
 				action.Action = hdfs
 				action.Type = dataflow.ACTION_TYPE_HDFS
 				break
 			case "Java App":
-				java := colonycore.ActionJavaApp{}
+				java := colonycore.ActionJavaApp{
+					Jar: dataAction["jar"],
+				}
 				action.Action = java
 				action.Type = dataflow.ACTION_TYPE_JAVA
 				break
 			case "Map Reduce":
-				mr := colonycore.ActionHadoopStreaming{}
+				mr := colonycore.ActionHadoopStreaming{
+					// Jar: ,
+					Mapper:  dataAction["mapper"],
+					Reducer: dataAction["reducer"],
+					Inputt:  dataAction["input"],
+					Output:  dataAction["output"],
+				}
 				action.Action = mr
 				action.Type = dataflow.ACTION_TYPE_MAP_REDUCE
 				break
@@ -137,7 +166,12 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 				action.Type = dataflow.ACTION_TYPE_KAFKA
 				break
 			case "Email":
-				email := colonycore.ActionEmail{}
+				email := colonycore.ActionEmail{
+				/*To:,
+				  CC:,
+				  Subject:,
+				  Body:,*/
+				}
 				action.Action = email
 				action.Type = dataflow.ACTION_TYPE_EMAIL
 				break
