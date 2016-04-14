@@ -23,8 +23,22 @@ var widgetFunc = function (widgets) {
     };
 
     this.deleteWidget = function (item) {
-        console.log(self.widgets())
-        self.widgets.remove(item);
+         swal({
+                title: "Are you sure?",
+                text: "You will delete this widget",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                closeOnConfirm: true,
+                closeOnCancel: true
+              },
+              function(isConfirm){
+                if (isConfirm) {
+                     self.widgets.remove(item);
+                } 
+              });
+       
         return false;
     };
 };
@@ -63,8 +77,8 @@ ko.components.register('widget-grid', {
             '            <div class="panel panel-default">',
             '                <div class="panel-heading wg-panel clearfix">',
             '                  <div class="pull-right">',
-            '                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pg.widgetSetting(\'wp1459947140191\', \'modal\')}" title="Config"><span class="glyphicon glyphicon-cog"></span></a>',
-            '                    <a href="#" class="btn btn-danger btn-xs" data-bind="click: pg.widgetgrid.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
+            '                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pg.widgetSetting(\'wp1459947140191\', \'modal\')}" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>',
+            '                    <a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" data-bind="click: pg.widgetgrid.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
             '                  </div>',
             '               </div>',
             '            </div>',
@@ -86,6 +100,9 @@ $(function () {
     // $('#panel-designer').gridstack(options);
 	$('#sidebar .grid-stack-item').draggable({
 	    handle: '.grid-stack-item-content',
+        placeholder: function(element) {
+                            return element.clone().addClass("placeholder");
+        },
         helper: "clone",
 	    scroll: true,
 	    appendTo: 'body',
