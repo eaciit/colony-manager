@@ -28,13 +28,13 @@ viewModel.dataflow = {
         "Type"  : "Action",
         "Color" : "brown"
     },
-    {
-        "Name"  :"Shell Script",
-        "Id"    :"4",
-        "Image" : "icon_console.png",
-        "Type"  : "Action",
-        "Color" : "black"
-    },
+    // {
+    //     "Name"  :"Shell Script",
+    //     "Id"    :"4",
+    //     "Image" : "icon_console.png",
+    //     "Type"  : "Action",
+    //     "Color" : "black"
+    // },
     {
         "Name"  :"Kafka",
         "Id"    :"5",
@@ -186,6 +186,7 @@ df.newHdfsModel = function(){
 
 df.hsModel = ko.observable({
   mapper : ko.observable(""),
+  mapfiles : ko.observableArray([]),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
   input : ko.observable(""),
@@ -196,6 +197,7 @@ df.hsModel = ko.observable({
 df.newHsModel = function(){
   return {
   mapper : ko.observable(""),
+  mapfiles : ko.observableArray([]),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
   input : ko.observable(""),
@@ -1170,7 +1172,7 @@ df.deleteParamOutput = function(e){
 df.servers = ko.observableArray(["server1","server2"]);
 df.addParamInput = function () {
     var idy = df.actionDetails().input().length;
-    df.actionDetails().input.push({idy:idy,keys:"",values:""});
+    df.actionDetails().input.push({idy:idy,key:"",value:""});
 }
 
 df.deleteParamInput = function(e){
@@ -1180,7 +1182,32 @@ df.deleteParamInput = function(e){
     df.actionDetails().input.remove(dr);
 }
 
+df.addFileMapReduce = function () {
+    var idm = df.hsModel().mapfiles().length;
+    df.hsModel().mapfiles.push({idm:idm,path:""});
+}
+
+df.deleteFileMapReduce = function(e){
+    var idm = $(e.target).attr("index");
+    idm = idm == undefined? $(e.target).parent().attr("index"):idm;
+    var dm = Lazy(df.hsModel().mapfiles()).find(function ( d ) { return d.idm == idm });
+    df.hsModel().mapfiles.remove(dm);
+}
+
 $(function () {
     df.init();
     app.section('');
+    $('body').on('mousedown', 'div', function(e) {
+        $('.popover').addClass('draggable').parents().on('mousemove', function(e) {
+            $('.draggable').offset({
+                top: e.pageY - $('.draggable').outerHeight() / 2,
+                left: e.pageX - $('.draggable').outerWidth() / 2
+            }).on('mouseup', function() {
+                $(this).removeClass('draggable');
+            });
+        });
+        e.preventDefault();
+    }).on('mouseup', function() {
+        $('.draggable').removeClass('draggable');
+    });
 });
