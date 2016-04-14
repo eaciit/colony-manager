@@ -5,7 +5,36 @@
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: WidgetPage">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'widgetpage')">
 		<h1>Widget Page</h1>
-		<nav class="navbar" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar" id="nav-wigetList" data-bind="visible: (app.mode() == '')">
+		    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
+		        <span class="glyphicon glyphicon-search"></span>                    
+		    </button>
+		    <button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
+		        <span class="glyphicon glyphicon-search"></span>                    
+		    </button>
+		    <div class="btn-group" role="group">
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: getPageList">
+		            <span class="glyphicon glyphicon-refresh"></span> Refresh
+		        </button>
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: addPage">
+		            <span class="glyphicon glyphicon-plus"></span> Add Widget
+		        </button>
+		        <button class="btn btn-sm btn-danger mgTop15" id="removeWebGrabber" data-bind="click: removePage">
+		            <span class="glyphicon glyphicon-remove"></span> Delete
+		        </button>
+		    </div>
+		</nav>
+		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
+		    <div class="col-md-4">
+		        <label class="col-md-4 filter-label">
+		            Search
+		        </label>
+		        <div class="col-md-8">
+		            <input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="" placeholder="Type keyword here" />
+		        </div>
+		    </div>
+		</nav>
+		<!-- <nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getPageList">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
@@ -25,8 +54,8 @@
 					<input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="" placeholder="Type keyword here" />
 				</div>
 			</div>
-		</nav>
-		<div class="panel" data-bind="visible: (app.mode() == '')">
+		</nav> -->
+		<div data-bind="visible: (app.mode() == '')">
 		    <div class="panel-body">
 		    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { 
 					model: { 
@@ -37,18 +66,29 @@
 						} 
 					} 
 				} }, data: wp.pageListdata, change: wp.selectPage,selectable: 'row', columns: wp.PageColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div>
+				<p class="bg-danger bgcustom">Please click row to edit!</p>
 		    </div>
-		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+		    <div class="btn-group" role="group">
+		        <button class="btn btn-sm btn-warning mgTop15"  data-bind="click: backToFront">
+		            <span class="glyphicon glyphicon-chevron-left"></span> Back
+		        </button>
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: savePage">
+		            <span class="glyphicon glyphicon-save" ></span> Save
+		        </button>
+		    </div>
+		</nav>
+
+		<!-- <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: savePage">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-		</nav>
+		</nav> -->
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 			<div class="panel-heading">
 		        <h1 class="panel-title">
