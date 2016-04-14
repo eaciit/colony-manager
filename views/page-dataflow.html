@@ -60,7 +60,7 @@
         <tbody>
             <tr>
                 <td>Server</td>
-                <td>  <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.servers}"></td>
+                <td>  <input type="text" class="inp-fork inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,value:df.selectedServer }"></td>
             </tr>
         </tbody>
     </table>
@@ -121,16 +121,17 @@
         </table>
          <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'SSH Script')">
             <tbody>
-                <tr>
+               <!--  <tr>
                     <td>User and Host</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:script" placeholder="e.g. user@host.com">
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td>SSH Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Fill SSH script">
+                        <textarea type="text" class="inp-custom" data-bind="value:script" placeholder="Fill SSH script"></textarea>
+                        <button class="btn pd-custom fileChooserBtn textareabtn">..</button>
                     </td>
                 </tr>
             </tbody>
@@ -140,8 +141,8 @@
                 <tr>
                     <td>Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Script or path on HDFS">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <textarea type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Script or path on HDFS"></textarea>
+                        <button class="btn pd-custom fileChooserBtn textareabtn">..</button>
                     </td>
                 </tr>
               <!--   <tr>
@@ -156,10 +157,10 @@
         <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'Shell Script')">
             <tbody>
                 <tr>
-                    <td>Shell Command</td>
+                    <td>Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Shell command to execute, e.g script.sh">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <textarea type="text" class="inp-custom" data-bind="value:script" placeholder="Shell command to execute, e.g script.sh"></textarea>
+                        <button class="btn pd-custom fileChooserBtn textareabtn">..</button>
                     </td>
                 </tr>
             </tbody>
@@ -340,8 +341,8 @@
         </table>
     </div>
     <div style="clear:both;"></div>
-     <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
+        <!-- <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a> -->
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
@@ -400,6 +401,10 @@
         .btn-transition{
             border-radius: 8px;
             font-size: 10px;
+        }
+
+        .textareabtn{
+            vertical-align: 100%;
         }
 
 		.popover{

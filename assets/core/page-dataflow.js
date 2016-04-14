@@ -121,6 +121,7 @@ df.newActionDetails = function(){
 };
 
 df.whenFailed = ko.observable("");
+df.selectedServer = ko.observable("");
 df.allAction = ko.observableArray([]);
 
 df.detailModeDo = function(text,detail) {
@@ -141,6 +142,7 @@ df.detailModeDo = function(text,detail) {
 df.sparkModel = ko.observable({
   //UI not yet
   type : ko.observable(""),
+  server : ko.observable(""),
   // args:ko.observableArray([]),
 
   appname:ko.observable(""),
@@ -157,6 +159,7 @@ df.newSparkModel = function(){
     return {
     //UI not yet
     type : ko.observable(""),
+    server : ko.observable(""),
     // args:ko.observableArray([]),
 
     // appname:ko.observable(""),
@@ -175,16 +178,19 @@ df.hdfsModel = ko.observable({
 //it must be array
 
 //beta in UI
+server : ko.observable(""),
 script : ko.observable("")
 });
 
 df.newHdfsModel = function(){
   return {
+    server : ko.observable(""),
     script : ko.observable("")
   }
 }
 
 df.hsModel = ko.observable({
+    server : ko.observable(""),
   mapper : ko.observable(""),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
@@ -195,6 +201,7 @@ df.hsModel = ko.observable({
 
 df.newHsModel = function(){
   return {
+    server : ko.observable(""),
   mapper : ko.observable(""),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
@@ -207,19 +214,22 @@ df.newHsModel = function(){
 //model same with hdfs UI not yet
 df.sshModel = ko.observable({
  //just in UI
+ server : ko.observable(""),
  script:ko.observable(""),
- userandhost:ko.observable("")
+ // userandhost:ko.observable("")
 });
 
 df.newSshModel = function(){
   return {
+    server : ko.observable(""),
      script:ko.observable(""),
-     userandhost:ko.observable("")
+     // userandhost:ko.observable("")
   }
 }
 
 //back end not yet
 df.emailModel = ko.observable({
+    server : ko.observable(""),
   to:ko.observable(""),
   subject:ko.observable(""),
   body:ko.observable("")
@@ -227,6 +237,7 @@ df.emailModel = ko.observable({
 
 df.newEmailModel = function(){
   return {
+    server : ko.observable(""),
   to:ko.observable(""),
   subject:ko.observable(""),
   body:ko.observable("")
@@ -234,6 +245,7 @@ df.newEmailModel = function(){
 }
 
 df.hiveModel = ko.observable({
+    server : ko.observable(""),
   scriptpath: ko.observable(""),
   //UI not yet
   param:ko.observableArray([]),
@@ -243,6 +255,7 @@ df.hiveModel = ko.observable({
 
 df.newHiveModel = function(){
   return {
+    server : ko.observable(""),
   scriptpath: ko.observable(""),
   //UI not yet
   param:ko.observableArray([]),
@@ -253,23 +266,27 @@ df.newHiveModel = function(){
 
 //back end not yet
 df.shModel = ko.observable({
+    server : ko.observable(""),
   script : ko.observable("")
 });
 
 df.newShModel = function(){
   return {
+    server : ko.observable(""),
     script : ko.observable("")
   }
 }
 
 //back end not yet
 df.javaAppModel = ko.observable({
+  server : ko.observable(""),
   jar : ko.observable(""),
   // mainclass : ko.observable("")
 });
 
 df.newJavaAppModel = function(){
     return {
+    server : ko.observable(""),
     jar : ko.observable(""),
     // mainclass : ko.observable("")
   }
@@ -299,12 +316,13 @@ df.newForkModel = function(){
 
 //need discuss with all team
 df.kafkaModel = ko.observable({
+    server : ko.observable(""),
 
 });
 
 df.newKafkaModel = function(){
   return{
-
+    server : ko.observable(""),
   }
 }
 
@@ -456,14 +474,17 @@ df.init = function () {
                         df.closePopover("#poptitle");
                         $("#popbtn").popover("show");
 
-                        var scres = screen.width
-                        var maxxmouse = scres - 350
+                        var scres = screen.width;
+                        var scresh = screen.height;
+                        var maxxmouse = scres - 450;
+                        var minymouse = 370;
 
                         if(xmouse>maxxmouse){
                             xmouse = maxxmouse;
-                            $(".arrow").attr("style","left:50%"); 
-                        }else{
-                            $(".arrow").attr("style","left:30px"); 
+                        }
+
+                        if(ymouse<minymouse){
+                            ymouse = ymouse + 350;
                         }
 
                         $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
@@ -493,7 +514,7 @@ df.init = function () {
                         }, 10);
 
                         df.popoverMode(item.dataItem.name);
-                        $(".popover").attr("style","display: block; top: " +(ymouse-250)+"px; left: "+(xmouse-30)+"px;");
+                        $(".popover").attr("style","display: block; top: " +(ymouse-320)+"px; left: "+(xmouse-30)+"px;");
 
                       df.renderActionData();
                       }
@@ -672,29 +693,33 @@ df.checkConnection = function(elem){
 
     //delete invalid connection
     for(var c in conn){
-        var co = conn[c];
-        var sh = co.from.shape == undefined ?co.from: co.from.shape;
-        var shto = co.to.shape == undefined ?co.to:co.to.shape;
-            df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
-            df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
+        try{
+            var co = conn[c];
+            var sh = co.from.shape == undefined ?co.from: co.from.shape;
+            var shto = co.to.shape == undefined ?co.to:co.to.shape;
+                df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
+                df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
 
-        if(sh.dataItem.name !="Fork" ){
-            df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
-            if(df.counts[sh.id+"-"] >1){
-                diagram.remove(co);
-                continue;
+            if(sh.dataItem.name !="Fork" ){
+                df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
+                if(df.counts[sh.id+"-"] >1){
+                    diagram.remove(co);
+                    continue;
+                }
+            }   
+
+            if(shto.dataItem.name !="Fork"){
+                df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
+                 if(df.counts["-"+shto.id] >1){
+                    diagram.remove(co);
+                    continue;
+                }
             }
-        }   
 
-        if(shto.dataItem.name !="Fork"){
-            df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
-             if(df.counts["-"+shto.id] >1){
+            if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
                 diagram.remove(co);
-                continue;
             }
-        }
-
-        if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
+        }catch(e){
             diagram.remove(co);
         }
     }
@@ -1087,8 +1112,6 @@ df.renderActionData = function(){
             for (i = 0; i <= cl; i++) {
                 var no = selected.connectors[i].connections.length;
                for (ix = 0; ix < no; ix++) {
-                    $(".arrow").attr("style","left:30px");
-                    $(".popover").attr("style","display: block; top: " +(df.ymouse()-150)+"px; left: "+(df.xmouse()-30)+"px;");
                     var fromid = selected.connectors[i].connections[ix].from.shape == undefined?selected.connectors[i].connections[ix].from.id :selected.connectors[i].connections[ix].from.shape.id;
                     var shapeid = selected.connectors[i].connections[ix].to.shape == undefined?selected.connectors[i].connections[ix].to.id :selected.connectors[i].connections[ix].to.shape.id;
                     var shapename = selected.connectors[i].connections[ix].to.shape == undefined? selected.connectors[i].connections[ix].to.dataItem.name : selected.connectors[i].connections[ix].to.shape.dataItem.name;
@@ -1109,8 +1132,23 @@ df.renderActionData = function(){
     }
 
 
-
+    if(action!="Fork"&&action!="Stop"){
+        setTimeout(function(){
+            if(dataItem.DataAction.server() == ""){
+                $(".ddl-server:input").getKendoDropDownList().select(0);
+            }
+            var serv = dataItem.DataAction.server() == ""? $(".ddl-server:input").getKendoDropDownList().value() :dataItem.DataAction.server();
+            dataItem.DataAction.server(serv);
+            df.selectedServer(dataItem.DataAction.server());
+        },100);
+    }
 }
+
+df.selectedServer.subscribe(function(val){
+    var diagram = $(".diagram").getKendoDiagram().select()[0];
+    var dataItem = diagram.dataItem;
+    dataItem.DataAction.server(val);
+});
 
 df.saveActionData = function(){
     var diagram = $(".diagram").getKendoDiagram().select()[0];
