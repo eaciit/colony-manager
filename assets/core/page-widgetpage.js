@@ -11,6 +11,7 @@ wp.pageListConfig = {
 wp.pageListdata = ko.observableArray([]);
 wp.searchfield = ko.observable("");
 wp.scrapperMode = ko.observable("");
+wp.allDataSources = ko.observableArray([]);
 wp.configPageList = ko.mapping.fromJS(wp.pageListConfig);
 
 wp.PageColumns = ko.observableArray([
@@ -34,6 +35,7 @@ wp.selectPage = function(){
 	});
 };
 wp.editPage = function(_id){
+	wp.getDataSource();
 	ko.mapping.fromJS(wp.pageListConfig, wp.configPageList);
 	app.ajaxPost("/page/editpage", {_id: _id}, function(res){
 		if(!app.isFine(res)){
@@ -101,12 +103,14 @@ wp.savePage = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
-		wp.backToFront();
+		window.location.href="/web/widgetdesigner?id=" + res.data._id.replace(/\|/g, "-");
 	});
 };
 wp.addPage = function(){
+	wp.getDataSource();
 	app.mode("editor");
 	wp.scrapperMode("");
+
 };
 wp.getPageList = function(){
 	app.ajaxPost("/page/getpage", {search: wp.searchfield()}, function(res){
@@ -117,6 +121,21 @@ wp.getPageList = function(){
 			res.data = [];
 		}
 		wp.pageListdata(res.data);
+	});
+};
+
+wp.getDataSource = function() {
+	app.ajaxPost("/page/getdatasource", {}, function(res){
+		if(!app.isFine(res)){
+			return;
+		}
+		if (!res.data) {
+			res.data = [];
+		}
+		
+		$.each(res.data, function(key,val) {
+			wp.allDataSources.push(val._id)	
+		});
 	});
 };
 
