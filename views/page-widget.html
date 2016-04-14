@@ -71,13 +71,23 @@
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
+		    <div class="btn-group" role="group">
+		        <button class="btn btn-sm btn-warning mgTop15"  data-bind="click: backToFront">
+		            <span class="glyphicon glyphicon-chevron-left"></span> Back
+		        </button>
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: saveWidget">
+		            <span class="glyphicon glyphicon-save" ></span> Save
+		        </button>
+		    </div>
+		</nav>
+		<!-- <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveWidget">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-		</nav>
+		</nav> -->
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 			<div class="panel-heading">
 		        <h1 class="panel-title">
