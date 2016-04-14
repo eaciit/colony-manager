@@ -53,7 +53,29 @@
 	</div>
 </div>
 
-<button style="display:none" title="asd" data-content="" id="popbtn"></button>
+<button style="display:none" data-content="" id="popbtn"></button>
+<button style="display:none" data-content="" id="popGlobalVar"></button>
+
+<script type="text/template" id="popover-content-globalvar">
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <a class="btn btn-info btn-xs" data-bind="" onclick="df.addGlobalVar();">Add variables</a>
+            </td>
+        </tr>
+        <!-- ko foreach: df.globalVar -->
+        <tr>
+            <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+            <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter default value"></td> </td>
+            <td>
+                <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteGlobalVar(event);"><span class="glyphicon glyphicon-trash"></span></a>
+            </td>
+        </tr>
+         <!-- /ko -->
+    </tbody>
+</table>
+</script>
 
 <script type="text/template" id="popover-content-template">
     <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork' && df.popoverMode() != 'Stop')">
@@ -351,6 +373,10 @@
 	<p class="pDesc" data-bind="text:Description"></p>
 </div>
 
+<div class="divContext" onclick="df.setContext();">
+    <span title="Set Global Variable" class="glyphicon glyphicon-cog"></span>
+</div>
+
 <button style="display:none" data-content="" id="poptitle">
 <div class="poptitle-content">
 	<div class="col-md-8">
@@ -440,6 +466,22 @@
 	    	opacity: 0.6;
 	    	cursor: pointer;
 		}
+
+        .divContext{
+            position: absolute;
+            top: 175px !important;
+            left: 96.4%;
+            text-align: center;
+            vertical-align: middle;
+            width: 2.6%;
+            height: 3%;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .divContext .glyphicon{
+            font-size: 20px;
+        }
 
         td:first-child{
             width: 80px!important;
@@ -553,6 +595,10 @@
         }
         .inp-output{
             margin: 5px -2px 5px 5px;
+            width: 180px;
+        }
+        .inp-global{
+            margin: 5px 2px 5px 5px;
             width: 180px;
         }
 </style>

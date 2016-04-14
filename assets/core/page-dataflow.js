@@ -91,7 +91,7 @@ viewModel.dataFlowList = ko.observableArray([]);
 var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 df.arrayconn = ko.observableArray([]);
-
+df.globalVar = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
 
@@ -458,6 +458,7 @@ df.init = function () {
         select:function(e){
             df.closePopover("#poptitle");
             df.closePopover("#popbtn");
+            df.closePopover("#popGlobalVar");
         },
         click:function(e){
             var diagram = kendo.dataviz.diagram;
@@ -472,6 +473,8 @@ df.init = function () {
                     setTimeout(function(){
                       if(clickonshape == 2) {
                         df.closePopover("#poptitle");
+                        df.closePopover("#popGlobalVar");
+
                         $("#popbtn").popover("show");
 
                         var scres = screen.width;
@@ -486,6 +489,7 @@ df.init = function () {
                         if(ymouse<minymouse){
                             ymouse = ymouse + 350;
                         }
+                        $(".popover-title").removeAttr("style");
 
                         $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
 
@@ -526,10 +530,6 @@ df.init = function () {
         },
         dragEnd: df.onDragEnd,
         remove: df.onRemove,
-        mouseEnter: function(e){           
-        },
-        mouseLeave: function(e){
-        },
     });
 
     var clickonshape = 0;
@@ -560,6 +560,12 @@ df.init = function () {
         content: $("#popover-content-template").html()        
     });
 
+     $("#popGlobalVar").popover({
+        html : true,
+        placement : 'top',
+        content: $("#popover-content-globalvar").html()        
+    });
+
     $("#poptitle").popover({
         html : true,
         placement : 'right',
@@ -568,6 +574,7 @@ df.init = function () {
 
     $(".pTitle").dblclick(function(e){
         $("#popbtn").popover("hide");
+        $("#popGlobalVar").popover("hide");
         $("#poptitle").popover("show");
         $(".popover-title").removeAttr("style");
         $(".popover-title").html("Edit Title");
@@ -587,6 +594,7 @@ df.init = function () {
 
     $(".pDesc").dblclick(function(e){
         $("#popbtn").popover("hide");
+        $("#popGlobalVar").popover("hide");
         $("#poptitle").popover("show");
         $(".popover-title").removeAttr("style");
         $(".popover-title").html("Edit Desciption");
@@ -903,6 +911,8 @@ df.Save = function(){
 df.clearDiagram = function(){
     df.closePopover("#popbtn");
     df.closePopover("#poptitle");
+    df.closePopover("#popGlobalVar");
+
     $(".diagram").getKendoDiagram().clear();
 }
 
@@ -993,7 +1003,24 @@ df.goToDesigner = function(Id){
     df.DataShape(selected.datashapes);
     df.Name(selected.name);
     df.Description(selected.description);
+    df.globalVar([]);
     df.Reload();
+
+    $(".glyphicon-cog").tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "left"
+    });
+
+    $("svg").click(function(){
+        df.closePopover("#poptitle");
+        df.closePopover("#popbtn");
+        df.closePopover("#popGlobalVar");
+    });
 }
 
 df.backToGrid = function(){
@@ -1002,11 +1029,28 @@ df.backToGrid = function(){
 }
 
 df.newDF = function(){
+      $(".glyphicon-cog").tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "left"
+    });
+
+    $("svg").click(function(){
+        df.closePopover("#poptitle");
+        df.closePopover("#popbtn");
+        df.closePopover("#popGlobalVar");
+    });
+
     df.ID("");
     df.Mode("Designer");
     df.DataShape({});
     df.Name("Add Title");
     df.Description("Add Description");
+    df.globalVar([]);
     df.Reload();
 }
 
@@ -1205,6 +1249,18 @@ df.deleteParamOutput = function(e){
     df.actionDetails().output.param.remove(dt);
 }
 
+df.addGlobalVar = function () {
+    var idx = df.globalVar().length;
+   df.globalVar.push({idx:idx,key:"",value:""});
+}
+
+df.deleteGlobalVar = function(e){
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dt = Lazy(df.globalVar()).find(function ( d ) { return d.idx == idx });
+    df.globalVar.remove(dt);
+}
+
 df.servers = ko.observableArray(["server1","server2"]);
 df.addParamInput = function () {
     var idy = df.actionDetails().input().length;
@@ -1216,6 +1272,40 @@ df.deleteParamInput = function(e){
     idy = idy == undefined? $(e.target).parent().attr("index"):idy;
     var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idy == idy });
     df.actionDetails().input.remove(dr);
+}
+
+df.setContext = function(){
+
+    df.closePopover("#poptitle");
+    df.closePopover("#popbtn");
+
+    $("#popGlobalVar").popover("show");
+
+    if(df.globalVar().length==0)
+    df.addGlobalVar();
+    
+    $(".popover-title").removeAttr("style");
+    $(".popover-title").html("Add Global Variables")
+    var scres = screen.width;
+    var scresh = screen.height;
+    var maxxmouse = scres - 450;
+    var minymouse = 370;
+
+    if(df.xmouse()>maxxmouse){
+        df.xmouse(maxxmouse);
+    }
+
+    if(df.ymouse()<minymouse){
+        df.ymouse(df.ymouse() + 350);
+    }
+
+      setTimeout(function () {
+        ko.cleanNode($(".popover-content:last")[0]);
+        ko.applyBindings(viewModel, $(".popover-content:last")[0]);
+    }, 10);
+
+    $(".popover").attr("style","display: block; top: " +(df.ymouse()-320)+"px; left: "+(df.xmouse()-50)+"px;");
+
 }
 
 $(function () {
