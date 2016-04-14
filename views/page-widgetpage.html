@@ -4,7 +4,7 @@
 <!-- main area -->
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: WidgetPage">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'widgetpage')">
-		<h1>Widget Page</h1>
+		<h1>Page</h1>
 		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: getPageList">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
@@ -53,7 +53,7 @@
 			<div class="panel-heading">
 		        <h1 class="panel-title">
 		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
-			        	Widget
+			        	Page
 	        	</h1>
 		    </div>
 		    <div class="clearfix">&nbsp;</div>
@@ -78,6 +78,13 @@
 				    		<label class="col-md-3 databrowser-label">URL</label>
 				    		<div class="col-md-7">
 					    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+				    		</div>
+			    		</div>
+			    		<div class="form-group">
+				    		<label class="col-md-3 databrowser-label">Page Data Source</label>
+				    		<div class="col-md-7">
+					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wp.allDataSources, value: dataSources, placeholder: 'Choose the data source' }" name="datasource" id="datasource"></select>
+							    <span class="k-invalid-msg" data-for="datasource"></span>
 				    		</div>
 			    		</div>
 			    	</div>

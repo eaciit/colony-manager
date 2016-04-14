@@ -100,6 +100,7 @@ grp.showGroup = ko.observable(false);
 grp.GroupsData = ko.observableArray([]);
 grp.search = ko.observable("");
 grp.selectGridGroups = function(e) {
+    app.showfilter(false);
     usr.Access.removeAll();
     usr.getAccess();
     grp.isNew(false);
@@ -404,6 +405,7 @@ grp.deletegroup = function() {
     grp.backToFront();
 };
 grp.createNewGroup = function() {
+    app.showfilter(false);
     usr.Access.removeAll();
     usr.config.Grants.removeAll();
     usr.getAccess();
@@ -427,7 +429,6 @@ grp.editGroup = function(c) {
         if (res.data == null) {
             res.data = "";
         }
-        console.log(res.data);
         grp.config._id(res.data._id);
         grp.config.Title(res.data.Title);
         grp.config.Enable(res.data.Enable);
@@ -448,7 +449,6 @@ grp.displayAccess = function(e) {
         if (res.data == null) {
             res.data = "";
         }
-        console.log(res.data);
         for (var i = 0; i < res.data.length; i++) {
             var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));
             usr.config.Grants.push(new usr.templateAccessGrant2()); 

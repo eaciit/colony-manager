@@ -10,79 +10,168 @@
 		width: 100%;
 	}
 	ul, li {list-style-type: none;}
+
+	.sidebar {
+		padding-top: 20px;
+		padding-right: 0px;
+	    width:  15.333333%!important;
+	}
+	.designer {
+		padding-left: 0px;
+		padding-top: 20px;
+	    width: 84.666667%!important;
+	}
+	.content-designer{
+		padding-top: 20px;
+	}
+	.list-widget {
+        min-height: 40px;
+        margin: 0;
+        padding: 0;
+        margin-bottom: 15px;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
+        float: left;
+    }
+
+    .list-left {
+        vertical-align: middle!important;
+        list-style-type: none;
+        width: 150px;
+        height: 45px;
+        margin: 5px;
+        line-height: 30px;
+        text-align: center;
+        background-color: #E8EFF7;
+        color: #000000;
+        border-radius: 3px;
+        cursor: move;
+        background-repeat: no-repeat;
+		background-size: 30px 30px;
+		background-position: 50% 50%;
+		border: 1px solid #CCC;
+		vertical-align: middle;
+    }
+
+    .placeholder {
+        border: 1px dashed #ccc;
+        background-color: #fff!important;
+        color: #333;
+    }
+
+    .mgLeft{
+			margin-left: 25px;
+	}
+
+	.mgRight{
+			margin-right: 25px;
+	}
+
 </style>
 
 <script>
 	pg.pageID = "{{.pageID}}";
 </script>
 
-<div class="col-xs-6 col-sm-2" id="sidebar">
-	<div class="row">
-		<!-- <ul class="nav" data-bind="foreach: pg.availableWidget.widgets">
-			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#"><span data-bind="text: $data.title"></span></a></div></li>
-		</ul> -->
-		<ul class="nav">
-			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 1</a></div></li>
-			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 2</a></div></li>
-			<li class="grid-stack-item" boolRemove="false"><div class="grid-stack-item-content"><a href="#">Widget 3</a></div></li>
-		</ul>
-	</div>
-</div>
-
-<!-- main area -->
-<div class="col-xs-12 col-sm-10" id="content" data-bind="with: PageDesigner">
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: PageDesigner">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'pagedesigner')">
-		<h1>Page Designer</h1>
-		<nav class="navbar" data-bind="visible: (app.mode() == '')">
-            <button class="btn btn-sm btn-success navbar-btn" data-bind="click: configPage">
-	    		<span class="glyphicon glyphicon-refresh"></span> Configuration
-	    	</button>
-            <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(e) {pg.widgetSetting('wp1459947140191', 'modal')}">
-	    		<span class="glyphicon glyphicon-plus"></span> Pop up Widget
-	    	</button>
-	    	<button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(e) {pg.widgetPage('page03', 'wp1459947140191', 'widget3', 'new widget')}">
-	    		<span class="glyphicon glyphicon-plus"></span> dummy widget 2
-	    	</button>
-		</nav>
+		<ol class="breadcrumb bc-custom">
+			<li>Page Designer</li>
+			<div class="pull-right">
+				<button class="btn mgRight tooltipster" title="Back" onclick="location.href='/web/widgetpage'"><span class="glyphicon glyphicon-arrow-left"></span></button>
+				<button class="btn btn-primary tooltipster" title="Save" onclick=""><span class="glyphicon glyphicon-floppy-disk"></span></button>
+				<button class="btn btn-primary tooltipster" title="Preview" onclick=""><span class="glyphicon glyphicon-eye-open"></span></button>
+				<button class="btn mgLeft tooltipster" title="Configuration" data-bind="click: configPage">
+			    		<span class="glyphicon glyphicon-cog"></span>
+			    </button>
+			</div>
+		</ol>
 
-		<nav class="navbar" data-bind="visible: (app.mode() == 'configpage')">
-			<button class="btn btn-sm btn-info navbar-btn" data-bind="click: backToConfig">
-				<span class="glyphicon glyphicon-chevron-left"></span> Back
-			</button>
-			<button class="btn btn-sm btn-success navbar-btn" data-bind="click: saveConfig">
-				<span class="glyphicon glyphicon-save"></span> Save
-			</button>
-		</nav>
-		<div class="panel" data-bind="visible: (app.mode() == 'configpage')">
-			<div class="panel-heading">
-		        <h1 class="panel-title">
-		        	Data Source
-	        	</h1>
-		    </div>
-		    <div class="clearfix">&nbsp;</div>
-			<div class="panel-body">
-				<form class="form-horizontal form-widgetDesigner" data-bind="with: configPageDesigner" novalidate>
-			    	<div class="col-md-12">
-			    		<div class="col-md-12">
-				    		<div class="col-md-7">
-					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSources }" name="datasource" id="datasource">
-					    		</select>
-					    		<span class="k-invalid-msg" data-for="datasource"></span>
-				    		</div>
-						</div>
-			    	</div>
-			    </form>
+		<div class="row dataflow-content">
+			<div class="col-md-2 sidebar">
+				<div class="list-widget" id="sidebar" >
+		              <div class="list-left">
+		              	<div class="grid-stack-item" boolRemove="false">
+		              		<div class="grid-stack-item-content">
+		              			<a href="#">Widget 1</a>
+		              		</div>
+		              	</div>
+		              </div>
+		              <div class="list-left">
+		              	<div class="grid-stack-item" boolRemove="false">
+		              		<div class="grid-stack-item-content">
+		              			<a href="#">Widget 2</a>
+		              		</div>
+		              	</div>
+		              </div>
+		              <div class="list-left">
+		              	<div class="grid-stack-item" boolRemove="false">
+		              		<div class="grid-stack-item-content">
+		              			<a href="#">Widget 3</a>
+		              		</div>
+		              	</div>
+		              </div>
+		        </div>
 			</div>
-		</div>
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-			<div class="col-md-12">
-				<div data-bind="component: {name: 'widget-grid', params: $data}"></div>
+			
+			<div class="col-md-10 designer">
+				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
+					<div class="col-md-12">
+						<div data-bind="component: {name: 'widget-grid', params: $data}"></div>
+					</div>
+					<div style="clear:both;"></div>
+				</div>
 			</div>
-			<div style="clear:both;"></div>
 		</div>
 	</div>
-
-<!-- Modal DataSource -->
+	<!-- Modal Configuration -->
+	<div class="modal fade modal-config" tabindex="-1" role="dialog">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h4 class="modal-title">Page Configuration</h4>
+	            </div>
+	            <div class="modal-body">
+	               <form class="form-horizontal form-widgetDesigner" data-bind="with: configPageDesigner" novalidate>
+	               		<!-- <div class="col-md-12"> -->
+	               			<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">ID</label>
+					    		<div class="col-md-7">
+						    		<input required type="text" class="form-control input-sm" name="_id" placeholder="Type the page id Here" data-bind="value: _id" readonly>
+									<span class="k-invalid-msg" data-for="_id"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Title</label>
+					    		<div class="col-md-7">
+						    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: title">
+									<span class="k-invalid-msg" data-for="title"></span>
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">URL</label>
+					    		<div class="col-md-7">
+						    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+					    		</div>
+				    		</div>
+				    		<div class="form-group">
+					    		<label class="col-md-3 databrowser-label">Page Data Source</label>
+					    		<div class="col-md-7">
+						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSources }" name="datasource" id="datasource"></select>
+						 			<span class="k-invalid-msg" data-for="datasource"></span>
+					    		</div>
+				    		</div>
+	               		<!-- </div> -->
+				   </form>
+	            </div>
+	            <div class="modal-footer">
+	                <button class="btn btn-sm btn-danger" data-dismiss="modal" data-bind="click: backToConfig"><span class="glyphicon glyphicon-remove"></span>  Cancel</button>
+	                <button class="btn btn-sm btn-primary" data-bind="click: saveConfig"><span class="glyphicon glyphicon-save"></span> Save</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	<!-- Modal DataSource -->
 	<div class="modal fade modal-widgetsetting" tabindex="-1" role="dialog">
 		<div class="modal-dialog" style="width: 50%;">
 			<div class="modal-content" data-bind="with: dsMapping">
@@ -90,6 +179,7 @@
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: pg.closeWidgetSetting">
 						<span aria-hidden="true">&times;</span>
 					</button>
+					<h4 class="modal-title">Widget Setting</h4>
 				</div>
 
 				<div class="modal-body">
@@ -159,5 +249,6 @@
 		</div>
 	</div>
 
+</div>
 </div>
 
