@@ -212,7 +212,7 @@
                                             <tr>
                                                 <td>
                                                     <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select>
-                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options: usr.Access  "></select>
+                                                    <select class="form-control input-sm" data-bind="visible: (app.mode() == 'new'),value:usr.config.Grants()[$index()].AccessID ,options:usr.unselectedAccessGroup($index())"></select>
                                                 
                                                 
                                                 </td>
