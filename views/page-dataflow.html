@@ -42,7 +42,7 @@
 		    	</div>
 
 				  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;">
-		              <div data-bind="css: Name,attr:{name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
+		              <div data-bind="css: Name,attr:{type: Type, name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
 		          </div>
 			</div>
 			
@@ -82,7 +82,7 @@
         <tbody>
             <tr>
                 <td>Server</td>
-                <td>  <input type="text" class="inp-fork inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,value:df.selectedServer }"></td>
+                <td>  <input type="text" class="inp-fork inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,dataTextField:'_id',dataValueField:'_id' ,value:df.selectedServer }"></td>
             </tr>
         </tbody>
     </table>
