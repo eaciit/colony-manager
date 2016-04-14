@@ -1197,4 +1197,17 @@ df.deleteFileMapReduce = function(e){
 $(function () {
     df.init();
     app.section('');
+    $('body').on('mousedown', 'div', function(e) {
+        $('.popover').addClass('draggable').parents().on('mousemove', function(e) {
+            $('.draggable').offset({
+                top: e.pageY - $('.draggable').outerHeight() / 2,
+                left: e.pageX - $('.draggable').outerWidth() / 2
+            }).on('mouseup', function() {
+                $(this).removeClass('draggable');
+            });
+        });
+        e.preventDefault();
+    }).on('mouseup', function() {
+        $('.draggable').removeClass('draggable');
+    });
 });
