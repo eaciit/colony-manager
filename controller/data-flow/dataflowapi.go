@@ -3,13 +3,12 @@ package dataflow
 import (
 	"fmt"
 	"io/ioutil"
-	"math/rand"
+	"strconv"
 
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/hdc/hive"
-	"github.com/eaciit/sshclient"
 	"github.com/eaciit/toolkit"
 	//"math/rand"
 
@@ -24,6 +23,12 @@ const (
 	ACTION_TYPE_DECISION = "DECISION"
 	ACTION_TYPE_SSH      = "SSH"
 	ACTION_TYPE_KAFKA    = "KAFKA"
+
+	ACTION_TYPE_MAP_REDUCE = "MR"
+	ACTION_TYPE_EMAIL      = "EMAIL"
+	ACTION_TYPE_STOP       = "STOP"
+	ACTION_TYPE_FORK       = "FORK"
+	ACTION_TYPE_JAVA       = "JAVA"
 
 	FORK_TYPE_ALL       = "ALL"
 	FORK_TYPE_ONE       = "ONE"
@@ -41,12 +46,12 @@ var hivex *hive.Hive
 var hdfsx *hdfs.WebHdfs
 
 // Start, to start the flow process
-func Start(flow colonycore.DataFlow, user string, globalParam tk.M) (processID string, e error) {
+func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
 	var steps []colonycore.FlowAction
 	// steps = append(steps, flow.Actions[0].(colonycore.FlowAction))
 
 	process := colonycore.DataFlowProcess{
-		Id:          generateProcessID(),
+		Id:          generateProcessID(flow.ID),
 		Flow:        flow,
 		StartDate:   time.Now(),
 		StartedBy:   user,
@@ -55,7 +60,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam tk.M) (processID s
 	}
 
 	// save the DataFlowProcess
-	err = colonycore.Save(process)
+	e = colonycore.Save(&process)
 	if e != nil {
 		return
 	}
@@ -77,9 +82,9 @@ func Start(flow colonycore.DataFlow, user string, globalParam tk.M) (processID s
 // runProcess, process the flow
 func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
 
-	for _, act := range actionBefore {
+	/*for _, act := range actionBefore {
 		action.Context = append(action.Context, act.Context)
-	}
+	}*/
 
 	var res []toolkit.M
 	switch action.Type {
@@ -94,6 +99,15 @@ func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actio
 		break
 	case ACTION_TYPE_SSH:
 		res, e = runSSH(process, action)
+		break
+	case ACTION_TYPE_EMAIL:
+		// res, e = runSSH(process, action)
+		break
+	case ACTION_TYPE_MAP_REDUCE:
+		res, e = runMapReduce(process, action)
+		break
+	case ACTION_TYPE_JAVA:
+		res, e = runJava(process, action)
 		break
 	}
 	fmt.Println(res)
@@ -234,23 +248,22 @@ func runHive(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 }*/
 
 func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
-	server := Action.Server
-	setting, _, err := (&server).Connect()
-	hdfs = action.Action.(colonycore.ActionHDFS)
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	hdfs := action.Action.(colonycore.ActionHDFS)
 
-	result, e := sshclient.GetOutputCommandSsh(hdfs.Command)
+	result, e := setting.GetOutputCommandSsh(hdfs.Command)
 
 	if e != nil {
 		return res, e
 	}
 
-	res.Set("result_stdout", result)
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
 func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
-	var spark colonycore.ActionSpark
-	spark = action.Action.(colonycore.ActionSpark)
+	spark := action.Action.(colonycore.ActionSpark)
 	args := ""
 
 	if spark.MainClass != "" {
@@ -269,57 +282,57 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []
 		args = args + " " + spark.File
 	}
 
-	if spark.args != "" {
-		args = args + " " + spark.args
+	if spark.Args != "" {
+		args = args + " " + spark.Args
 	}
 
 	cmd := fmt.Sprintf(CMD_SPARK, args)
 
-	server := Action.Server
-	setting, _, err := (&server).Connect()
-	result, e := sshclient.GetOutputCommandSsh(cmd)
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
 		return res, e
 	}
 
-	res.Set("result_stdout", result)
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
 func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
-	server := Action.Server
-	setting, _, err := (&server).Connect()
-	action_ssh = action.Action.(colonycore.ActionSSH)
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	ssh := action.Action.(colonycore.ActionSSH)
 
-	result, e := sshclient.GetOutputCommandSsh(action_ssh.Command)
+	result, e := setting.GetOutputCommandSsh(ssh.Command)
 
 	if e != nil {
 		return res, e
 	}
 
-	res.Set("result_stdout", result)
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
 func runShell(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
-	server := Action.Server
-	setting, _, err := (&server).Connect()
-	shell = action.Action.(colonycore.ActionShellScript)
-	result, e := sshclient.GetOutputCommandSsh(shell.Script)
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	shell := action.Action.(colonycore.ActionShellScript)
+	result, e := setting.GetOutputCommandSsh(shell.Script)
 
 	if e != nil {
 		return res, e
 	}
 
-	res.Set("result_stdout", result)
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
 func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
-	server := Action.Server
-	setting, _, err := (&server).Connect()
-	mr = action.Action.(colonycore.ActionShellScript)
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	mr := action.Action.(colonycore.ActionHadoopStreaming)
 
 	cmd := fmt.Sprintf(CMD_MAP_REDUCE, mr.Jar, mr.Input, mr.Output, mr.Mapper, mr.Reducer)
 
@@ -339,28 +352,28 @@ func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction) (re
 		cmd = cmd + " " + mr.Params
 	}
 
-	result, e := sshclient.GetOutputCommandSsh(cmd)
+	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
 		return res, e
 	}
 
-	res.Set("result_stdout", result)
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
 func runJava(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
-	server := Action.Server
-	setting, _, err := (&server).Connect()
-	java = action.Action.(colonycore.ActionJavaApp)
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	java := action.Action.(colonycore.ActionJavaApp)
 	cmd := fmt.Sprintf(CMD_JAVA, java.Jar)
-	result, e := sshclient.GetOutputCommandSsh(cmd)
+	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
 		return res, e
 	}
 
-	res.Set("result_stdout", result)
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
@@ -450,11 +463,18 @@ func watch(process colonycore.DataFlow) (e error) {
 
 //  generateProcessID generate the ID
 func generateProcessID(flowID string) (processID string) {
-	processID = flowID + "-" + randString(10)
+	now := time.Now()
+	y := strconv.Itoa(now.Year())
+	m := strconv.Itoa(int(now.Month()))
+	d := strconv.Itoa(now.Day())
+	hh := strconv.Itoa(now.Hour())
+	nm := strconv.Itoa(now.Minute())
+	ns := strconv.Itoa(now.Second())
+	processID = flowID + "-" + y + m + d + hh + nm + ns
 	return
 }
 
-func randString(n int) string {
+/*func randString(n int) string {
 	var src = rand.NewSource(time.Now().UnixNano())
 
 	b := make([]byte, 30)
@@ -472,7 +492,7 @@ func randString(n int) string {
 	}
 
 	return string(b)
-}
+}*/
 
 // GetStatus get the status of running flow
 func GetProcessedFlow(id string) (process colonycore.DataFlowProcess, e error) {
@@ -484,7 +504,7 @@ func GetProcessedFlow(id string) (process colonycore.DataFlowProcess, e error) {
 	}
 
 	if e != nil && cursor != nil {
-		return nil, e
+		return
 	}
 
 	if len(dataDs) > 0 {
