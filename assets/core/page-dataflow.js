@@ -1352,7 +1352,12 @@ res.name = item.name;
 res.description = res.id +" - "+res.name;
 res.type = item.type;
 res.server = action.server();
-res.action = JSON.parse(ko.toJSON(action));
+
+var actj = JSON.parse(ko.toJSON(action));
+
+delete actj.server
+
+res.action = actj;
 res.OK = [];
 res.KO = [];
 
