@@ -1057,9 +1057,11 @@ df.newDF = function(){
     });
 
     $("svg").click(function(){
-        df.closePopover("#poptitle");
-        df.closePopover("#popbtn");
-        df.closePopover("#popGlobalVar");
+        if($(".popover-title").html()=="Add Global Variables"){
+            df.closePopover("#poptitle");
+            df.closePopover("#popbtn");
+            df.closePopover("#popGlobalVar");
+        }
     });
 
     df.ID("");
@@ -1421,6 +1423,7 @@ df.draggablePopover = function(e){
         draggableDiv.draggable('disable');
     });
 }
+
 $(function () {
     df.init();
     app.section('');  

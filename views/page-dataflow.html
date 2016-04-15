@@ -317,8 +317,8 @@
                             </tr>
                             <!-- ko foreach: input -->
                             <tr>
-                                <td> <input class="inp-output" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
-                                <td> <input class="inp-output" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
+                                <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+                                <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
                                 <td>
                                     <a class="btn btn-danger btn-xs" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);"><span class="glyphicon glyphicon-trash"></span></a>
                                 </td>
@@ -343,8 +343,8 @@
                             </tr>
                             <!-- ko foreach: output.param -->
                             <tr>
-                                <td> <input class="inp-output" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
-                                <td> <input class="inp-output" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
+                                <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+                                <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
                                 <td>
                                     <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);"><span class="glyphicon glyphicon-trash"></span></a>
                                 </td>
@@ -377,9 +377,12 @@
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
-&nbsp;
-	<p class="pTitle" data-bind="text:Name"></p>
-	<p class="pDesc" data-bind="text:Description"></p>
+    <div class="col-md-12">
+        <input class="pTitle inline-edit" data-bind="text:Name" value="Add Title"></input>
+    </div>
+    <div class="col-md-12">
+    	<input class="pDesc inline-edit" data-bind="text:Description" value="Add Description"></input>
+    </div>
 </div>
 
 <div class="divContext" onclick="df.setContext();">
@@ -471,8 +474,8 @@
 
 		.divTitleDF{
 	    	position: absolute;
-	    	top: 156px !important;
-	    	left: 37.4%;
+	    	top: 170px !important;
+	    	left: 34%;
 	    	text-align: center;
 	    	width: 30.6%;
 	    	height: 10%;
@@ -508,6 +511,10 @@
 			font-weight: bold;
     		font-size: large;
 		}
+
+        .pDesc{
+            width: 100%;
+        }
 
 		.mgLeft{
 			margin-left: 25px;
@@ -606,16 +613,29 @@
             margin: 2px 5px;
             width: 180px;
         }
-        .inp-output{
-            margin: 5px -2px 5px 5px;
-            width: 180px;
-        }
         .inp-mapfiles{
             margin: 5px -2px 5px 8px;
             width: 270px;
         }
         .inp-global{
-            margin: 5px 2px 5px 5px;
+            margin: 5px 2px 5px;
             width: 180px;
+        }
+        input.inline-edit{
+          border: none;
+          padding: 0;
+          margin: 10px 0 5px;
+          text-align: inherit;
+          vertical-align: top;
+        }
+
+        input.inline-edit:hover,
+        input.inline-edit:focus{
+          background-color: #FFD;
+
+          -webkit-transition: background-color 0.5s;
+             -moz-transition: background-color 0.5s;
+              -ie-transition: background-color 0.5s;
+                  transition: background-color 0.5s;
         }
 </style>
