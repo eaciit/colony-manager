@@ -9,7 +9,7 @@
 	<div class="col-md-12" data-bind="visible: (app.section() == 'widget')">
 		<h1>Widget List</h1>
 
-		<nav class="navbar" id="nav-wigetList" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
 		    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
 		        <span class="glyphicon glyphicon-search"></span>                    
 		    </button>
@@ -61,7 +61,7 @@
 				</div>
 			</nav> -->
 		<div data-bind="visible: (app.mode() == '')">
-		    <div class="panel-body">
+		    <div class="pdCustom">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniloader()">
 			    	<div class="grid grid-widget" id ="grid-widget" ></div>
@@ -215,15 +215,27 @@
 
 <script id="rowTemplate" type="text/x-kendo-tmpl">
     <tr data-uid="#: _id #">
-        <td class="details" style="width: 30px;">
-        	<center><input type='checkbox' id=#: _id# ></center>
+        <td style="width: 30px;">
+        	<center>
+        		<input type='checkbox' id=#: _id# >
+        	</center>
         </td>
-        <td class="details" style="width: 82%;">
-           <span class="name" style="font-size: 15px;">#: title#</span><br>
-           <span class="title">#: description #</span>
+        <td class="text">
+           <span class="title">#: title#</span><br>
+           <span class="description">#: description #</span>
         </td>
-        <td class="details" style="border-left: none;">
-        	<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered"title="Edit" onclick='wl.editWidget("#: _id#","editor")'><span class="fa fa-pencil fa-fw"></span></button>&nbsp;&nbsp;<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered"title="Setting"><span class="fa fa-cog"></span></button>&nbsp;&nbsp;<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered" title="Preview" onclick='wl.openWidget("#: _id#","grid")'><span class='glyphicon glyphicon-eye-open'></span></button>
+        <td class="action" style="width: 120px;">
+        	<div class="btn-group btn-sm">
+	        		<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Edit" onclick='wl.editWidget("#: _id#","editor")'>
+	        		<span class="fa fa-pencil"></span>
+	    		</button>
+	        	<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Setting">
+	        		<span class="fa fa-cog"></span>
+	    		</button>
+	        	<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Preview" onclick='wl.openWidget("#: _id#","grid")'>
+	        		<span class='fa fa-eye'></span>
+	    		</button>
+        	</div>
         </td>
    </tr>
 </script>
