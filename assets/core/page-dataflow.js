@@ -535,9 +535,10 @@ df.init = function () {
 
                       df.renderActionData();
                       }
+                      df.draggablePopover();
                       clickonshape = 0;
                     }, 300);
-
+                
                 }
             }
         },
@@ -1412,25 +1413,15 @@ df.getConnectionShape = function(shape){
     }
     return {in:resfrom,out:resto};
 }
-
+df.draggablePopover = function(e){
+    var draggableDiv = $('.popover').draggable({handle: ".popover-title"});
+    $('.popover-content', draggableDiv).mousedown(function(e) {
+        draggableDiv.draggable('enable');
+    }).mouseup(function(e) {
+        draggableDiv.draggable('disable');
+    });
+}
 $(function () {
     df.init();
-    app.section('');
-    // $('body').on('mousedown', 'div', function(e) {
-    //     $('.popover').draggable({
-    //         drag: function() {
-    //             var offset = $(this).offset();
-    //             var xPos = offset.left;
-    //             var yPos = offset.top;
-    //         },
-    //         start: function () {
-    //             $(this).draggable("enable");
-    //         },
-    //         stop: function () {
-    //             $(this).draggable("disable");
-    //         },
-    //         handle: ".popover-title"
-    //     });
-    //     e.preventDefault();
-    // })
+    app.section('');  
 });
