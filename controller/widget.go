@@ -176,10 +176,17 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	widget := new(colonycore.Widget)
+	widget.ID = data.GetString("_id")
+	if err := widget.GetById(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	previewData := toolkit.M{}
 	previewData.Set("container", contentstring)
 	previewData.Set("dataSource", widgetData)
 	previewData.Set("widgetBasePath", strings.Replace(getFileIndex, EC_DATA_PATH+toolkit.PathSeparator+"widget", "", -1))
+	previewData.Set("settings", widget.Config)
 
 	if data.Get("mode", "").(string) == "save" {
 		dataWidget := colonycore.Widget{}

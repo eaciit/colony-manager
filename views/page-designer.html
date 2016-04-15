@@ -53,7 +53,7 @@
 		vertical-align: middle;
     }
 
-    .placeholder {
+    .placeholder-dash {
         border: 1px dashed #ccc;
         background-color: #fff!important;
         color: #333;
@@ -66,6 +66,11 @@
 	.mgRight{
 			margin-right: 25px;
 	}
+
+	.not-active {
+       pointer-events: none;
+       cursor: move;
+    } 
 
 </style>
 
@@ -90,26 +95,20 @@
 		<div class="row dataflow-content">
 			<div class="col-md-2 sidebar">
 				<div class="list-widget" id="sidebar" >
-		              <div class="list-left">
-		              	<div class="grid-stack-item" boolRemove="false">
+		              <div class="list-left grid-stack-item" boolRemove="false">
 		              		<div class="grid-stack-item-content">
-		              			<a href="#">Widget 1</a>
+		              			<a href="#" class="not-active">Widget 1</a>
 		              		</div>
-		              	</div>
 		              </div>
-		              <div class="list-left">
-		              	<div class="grid-stack-item" boolRemove="false">
+		               <div class="list-left grid-stack-item" boolRemove="false">
 		              		<div class="grid-stack-item-content">
-		              			<a href="#">Widget 2</a>
+		              			<a href="#" class="not-active">Widget 2</a>
 		              		</div>
-		              	</div>
 		              </div>
-		              <div class="list-left">
-		              	<div class="grid-stack-item" boolRemove="false">
+		               <div class="list-left grid-stack-item" boolRemove="false">
 		              		<div class="grid-stack-item-content">
-		              			<a href="#">Widget 3</a>
+		              			<a href="#" class="not-active">Widget 3</a>
 		              		</div>
-		              	</div>
 		              </div>
 		        </div>
 			</div>

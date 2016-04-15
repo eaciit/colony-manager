@@ -161,7 +161,14 @@ pg.widgetSetting = function(_id, mode) {
 	app.mode("datasourceMapping");
 	pg.previewMode("");
 	if (mode != "back") {
-		pg.getConfigurationPage(pg.pageID, "settingwidget", _id, "");
+		var param = {
+			pageID: pg.pageID,
+			widgetID: _id
+		};
+
+		app.ajaxPost("/page/getwidgetsetting", param, function (res) {
+			console.log(res);
+		});
 	}
 	// pg.getDataSource();
 	if (mode == "modal") {

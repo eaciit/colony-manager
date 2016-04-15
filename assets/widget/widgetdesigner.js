@@ -99,20 +99,18 @@ $(function () {
  //    };
     // $('#panel-designer').gridstack(options);
 	$('#sidebar .grid-stack-item').draggable({
-	    handle: '.grid-stack-item-content',
-        placeholder: function(element) {
-                            return element.clone().addClass("placeholder");
-        },
         helper: "clone",
+	    handle: '.grid-stack-item-content',
 	    scroll: true,
 	    appendTo: 'body',
-	  //   stop: function(event, ui) {
-
-			// $('#panel-designer').data("gridstack").addWidget($('<div class="grid-stack-item-content"> Example Widget </div>'), 0, 0);
-	  //   }
-	    // drop: function(event){
-			// $('#panel-designer').data("gridstack").addWidget($('<div><div class="grid-stack-item-content" /><div/>'),node.x, node.y, 4, 4);
-		// }
+        revert: true,
+        start: function( event, ui ) {
+              $(this).addClass('placeholder-dash');
+        },
+        stop: function( event, ui ) {
+              $(this).removeClass('placeholder-dash');
+              $(this).addClass('list-left'); 
+        }
 	});
 	// $('#panel-designer').droppable({
 	// 	drop: function (event, ui) {
