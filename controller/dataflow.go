@@ -82,6 +82,13 @@ func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 
 func constructActions(dataShapes map[string]interface{}) (actions []colonycore.FlowAction) {
 	shapes := dataShapes["shapes"]
+	connections := dataShapes["connections"]
+	/*var conMap tk.M
+	for _, val := range connections {
+		conMap.Set(val["fromId"].(string), val["toId"].(string))
+	}*/
+
+	fmt.Printf("test ===> %#v", connections)
 
 	for _, val := range shapes.([]interface{}) {
 		shape := val.(map[string]interface{})
@@ -91,9 +98,14 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 		// firstAction := shape["firstAction"].(bool)
 		name := dataItem["name"].(string)
 
-		if name != "" && dataItem["DataAction"] != nil {
+		if name != "" && dataItem["DataAction"] != nil && dataItem["DataActionDetails"] != nil {
 			dataAction := dataItem["DataAction"].(map[string]interface{})
-			// dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
+			dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
+
+			split := strings.Split(dataActionDetails["WhenFailed"].(string), "-")
+
+			KO := append([]string{}, strings.Trim(split[1], " "))
+			// OK := conMap.Get(id)
 
 			action := colonycore.FlowAction{
 				Id:       id,
@@ -106,6 +118,8 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 				  OutputParam: ,
 				  OutputType: ,
 				  OutputPath: ,*/
+				KO: KO,
+				// OK:  OK,
 			}
 
 			switch name {
