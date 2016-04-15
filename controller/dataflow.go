@@ -88,19 +88,19 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 
 		dataItem := shape["dataItem"].(map[string]interface{})
 		id := shape["id"].(string)
-		firstAction := shape["firstAction"].(bool)
+		// firstAction := shape["firstAction"].(bool)
 		name := dataItem["name"].(string)
 
-		if name != "" {
+		if name != "" && dataItem["DataAction"] != nil {
 			dataAction := dataItem["DataAction"].(map[string]interface{})
 			// dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
 
 			action := colonycore.FlowAction{
-				Id:          id,
-				Name:        name + " - " + id,
-				Interval:    1,
-				Retry:       3,
-				FirstAction: firstAction,
+				Id:       id,
+				Name:     name + " - " + id,
+				Interval: 1,
+				Retry:    3,
+				// FirstAction: firstAction,
 				/*Server: ,
 				  InputParam: ,
 				  OutputParam: ,
@@ -115,7 +115,7 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 					Mode:      dataAction["mode"].(string),
 					File:      dataAction["appfiles"].(string),
 					MainClass: dataAction["mainclass"].(string),
-					Args:      dataAction["args"].(string),
+					// Args:      dataAction["args"].(string),
 				}
 				action.Action = spark
 				action.Type = dataflow.ACTION_TYPE_SPARK
