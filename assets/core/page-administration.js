@@ -62,6 +62,7 @@ adm.showAccess = ko.observable(false);
 adm.AccessData = ko.observableArray([]);
 
 adm.selectGridAccess = function(e) {
+    app.showfilter(false);
     adm.isNew(false);
     app.wrapGridSelect(".grid-access", ".btn", function(d) { 
         adm.editAccess(d._id);
@@ -201,6 +202,7 @@ adm.saveaccess = function() {
 };
 
 adm.createNewAccess = function() {
+    app.showfilter(false);
     adm.config._id("");
     adm.config.Title("");
     adm.config.Group1("");

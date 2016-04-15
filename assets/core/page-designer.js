@@ -69,6 +69,8 @@ pg.saveConfig = function() {
 			return;
 		}
 		pg.backToConfig();
+		$('.modal-config').modal('hide');
+		swal({title: "Your configuration saved", type: "success"});
 	});
 }
 pg.getAvailableWidget = function() {
@@ -150,6 +152,10 @@ pg.configPage = function() {
 	app.mode("configpage");
 	pg.getDataSource();
 	pg.getConfigurationPage(pg.pageID, "configuration", "", "");
+	$(".modal-config").modal({
+			backdrop: 'static',
+			keyboard: true
+	});
 };
 pg.widgetSetting = function(_id, mode) {
 	app.mode("datasourceMapping");
@@ -237,4 +243,5 @@ window.closeModal = function(){
 $(function (){
 	pg.getConfigurationPage(pg.pageID, "", "", "");
 	pg.getAvailableWidget();
+	app.prepareTooltipster();
 });

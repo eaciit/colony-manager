@@ -169,3 +169,17 @@ func (w *WebController) WidgetDesigner(r *knot.WebContext) interface{} {
 
 	return toolkit.M{"href": "/widgetdesigner", "pageID": payload["id"]}
 }
+
+func (w *WebController) PageView(r *knot.WebContext, args []string) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = "views/page-view.html"
+
+	data := toolkit.M{"pageID": args[0]}
+	if len(args) == 0 {
+		return data
+	}
+
+	return data
+}

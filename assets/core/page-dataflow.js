@@ -28,13 +28,13 @@ viewModel.dataflow = {
         "Type"  : "Action",
         "Color" : "brown"
     },
-    {
-        "Name"  :"Shell Script",
-        "Id"    :"4",
-        "Image" : "icon_console.png",
-        "Type"  : "Action",
-        "Color" : "black"
-    },
+    // {
+    //     "Name"  :"Shell Script",
+    //     "Id"    :"4",
+    //     "Image" : "icon_console.png",
+    //     "Type"  : "Action",
+    //     "Color" : "black"
+    // },
     {
         "Name"  :"Kafka",
         "Id"    :"5",
@@ -91,7 +91,7 @@ viewModel.dataFlowList = ko.observableArray([]);
 var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 df.arrayconn = ko.observableArray([]);
-
+df.globalVar = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
 
@@ -121,6 +121,7 @@ df.newActionDetails = function(){
 };
 
 df.whenFailed = ko.observable("");
+df.selectedServer = ko.observable("");
 df.allAction = ko.observableArray([]);
 
 df.detailModeDo = function(text,detail) {
@@ -141,6 +142,7 @@ df.detailModeDo = function(text,detail) {
 df.sparkModel = ko.observable({
   //UI not yet
   type : ko.observable(""),
+  server : ko.observable(""),
   // args:ko.observableArray([]),
 
   appname:ko.observable(""),
@@ -157,6 +159,7 @@ df.newSparkModel = function(){
     return {
     //UI not yet
     type : ko.observable(""),
+    server : ko.observable(""),
     // args:ko.observableArray([]),
 
     // appname:ko.observable(""),
@@ -175,17 +178,21 @@ df.hdfsModel = ko.observable({
 //it must be array
 
 //beta in UI
+server : ko.observable(""),
 script : ko.observable("")
 });
 
 df.newHdfsModel = function(){
   return {
+    server : ko.observable(""),
     script : ko.observable("")
   }
 }
 
 df.hsModel = ko.observable({
+    server : ko.observable(""),
   mapper : ko.observable(""),
+  mapfiles : ko.observableArray([]),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
   input : ko.observable(""),
@@ -195,7 +202,9 @@ df.hsModel = ko.observable({
 
 df.newHsModel = function(){
   return {
+    server : ko.observable(""),
   mapper : ko.observable(""),
+  mapfiles : ko.observableArray([]),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
   input : ko.observable(""),
@@ -207,19 +216,22 @@ df.newHsModel = function(){
 //model same with hdfs UI not yet
 df.sshModel = ko.observable({
  //just in UI
+ server : ko.observable(""),
  script:ko.observable(""),
- userandhost:ko.observable("")
+ // userandhost:ko.observable("")
 });
 
 df.newSshModel = function(){
   return {
+    server : ko.observable(""),
      script:ko.observable(""),
-     userandhost:ko.observable("")
+     // userandhost:ko.observable("")
   }
 }
 
 //back end not yet
 df.emailModel = ko.observable({
+    server : ko.observable(""),
   to:ko.observable(""),
   subject:ko.observable(""),
   body:ko.observable("")
@@ -227,6 +239,7 @@ df.emailModel = ko.observable({
 
 df.newEmailModel = function(){
   return {
+    server : ko.observable(""),
   to:ko.observable(""),
   subject:ko.observable(""),
   body:ko.observable("")
@@ -234,6 +247,7 @@ df.newEmailModel = function(){
 }
 
 df.hiveModel = ko.observable({
+    server : ko.observable(""),
   scriptpath: ko.observable(""),
   //UI not yet
   param:ko.observableArray([]),
@@ -243,6 +257,7 @@ df.hiveModel = ko.observable({
 
 df.newHiveModel = function(){
   return {
+    server : ko.observable(""),
   scriptpath: ko.observable(""),
   //UI not yet
   param:ko.observableArray([]),
@@ -253,23 +268,27 @@ df.newHiveModel = function(){
 
 //back end not yet
 df.shModel = ko.observable({
+    server : ko.observable(""),
   script : ko.observable("")
 });
 
 df.newShModel = function(){
   return {
+    server : ko.observable(""),
     script : ko.observable("")
   }
 }
 
 //back end not yet
 df.javaAppModel = ko.observable({
+  server : ko.observable(""),
   jar : ko.observable(""),
   // mainclass : ko.observable("")
 });
 
 df.newJavaAppModel = function(){
     return {
+    server : ko.observable(""),
     jar : ko.observable(""),
     // mainclass : ko.observable("")
   }
@@ -299,12 +318,13 @@ df.newForkModel = function(){
 
 //need discuss with all team
 df.kafkaModel = ko.observable({
+    server : ko.observable(""),
 
 });
 
 df.newKafkaModel = function(){
   return{
-
+    server : ko.observable(""),
   }
 }
 
@@ -396,7 +416,7 @@ function visualTemplate(options) {
 
 df.init = function () {
     df.createGrid();
-
+    df.getServers();
     var dataSource = new kendo.data.HierarchicalDataSource({
         data: [],
         schema: {
@@ -440,6 +460,7 @@ df.init = function () {
         select:function(e){
             df.closePopover("#poptitle");
             df.closePopover("#popbtn");
+            df.closePopover("#popGlobalVar");
         },
         click:function(e){
             var diagram = kendo.dataviz.diagram;
@@ -454,17 +475,23 @@ df.init = function () {
                     setTimeout(function(){
                       if(clickonshape == 2) {
                         df.closePopover("#poptitle");
+                        df.closePopover("#popGlobalVar");
+
                         $("#popbtn").popover("show");
 
-                        var scres = screen.width
-                        var maxxmouse = scres - 350
+                        var scres = screen.width;
+                        var scresh = screen.height;
+                        var maxxmouse = scres - 450;
+                        var minymouse = 370;
 
                         if(xmouse>maxxmouse){
                             xmouse = maxxmouse;
-                            $(".arrow").attr("style","left:50%"); 
-                        }else{
-                            $(".arrow").attr("style","left:30px"); 
                         }
+
+                        if(ymouse<minymouse){
+                            ymouse = ymouse + 350;
+                        }
+                        $(".popover-title").removeAttr("style");
 
                         $(".popover-title").html(item.dataItem.name+" - "+$(".diagram").getKendoDiagram().select()[0].id);
 
@@ -493,7 +520,7 @@ df.init = function () {
                         }, 10);
 
                         df.popoverMode(item.dataItem.name);
-                        $(".popover").attr("style","display: block; top: " +(ymouse-250)+"px; left: "+(xmouse-30)+"px;");
+                        $(".popover").attr("style","display: block; top: " +(ymouse-320)+"px; left: "+(xmouse-30)+"px;");
 
                       df.renderActionData();
                       }
@@ -505,10 +532,6 @@ df.init = function () {
         },
         dragEnd: df.onDragEnd,
         remove: df.onRemove,
-        mouseEnter: function(e){           
-        },
-        mouseLeave: function(e){
-        },
     });
 
     var clickonshape = 0;
@@ -539,6 +562,12 @@ df.init = function () {
         content: $("#popover-content-template").html()        
     });
 
+     $("#popGlobalVar").popover({
+        html : true,
+        placement : 'top',
+        content: $("#popover-content-globalvar").html()        
+    });
+
     $("#poptitle").popover({
         html : true,
         placement : 'right',
@@ -547,6 +576,7 @@ df.init = function () {
 
     $(".pTitle").dblclick(function(e){
         $("#popbtn").popover("hide");
+        $("#popGlobalVar").popover("hide");
         $("#poptitle").popover("show");
         $(".popover-title").removeAttr("style");
         $(".popover-title").html("Edit Title");
@@ -566,6 +596,7 @@ df.init = function () {
 
     $(".pDesc").dblclick(function(e){
         $("#popbtn").popover("hide");
+        $("#popGlobalVar").popover("hide");
         $("#poptitle").popover("show");
         $(".popover-title").removeAttr("style");
         $(".popover-title").html("Edit Desciption");
@@ -603,6 +634,7 @@ df.init = function () {
                             var name = $(e.item).attr("name");
                             var image = $(e.item).attr("image");
                             var color = $(e.item).attr("color");
+                            var type = $(e.item).attr("type");
 
                             var posdiag = $(".diagram")[0].getBoundingClientRect();
                             var xpos = (xmouse - posdiag.left);
@@ -613,7 +645,7 @@ df.init = function () {
                              diagram.addShape({ 
                                 x:xpos,
                                 y:ypos, 
-                                dataItem:{name:name,image :image, color:color} 
+                                dataItem:{name:name,image :image, color:color,type:type} 
                              });
 
                              if(name!="Fork")
@@ -672,29 +704,33 @@ df.checkConnection = function(elem){
 
     //delete invalid connection
     for(var c in conn){
-        var co = conn[c];
-        var sh = co.from.shape == undefined ?co.from: co.from.shape;
-        var shto = co.to.shape == undefined ?co.to:co.to.shape;
-            df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
-            df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
+        try{
+            var co = conn[c];
+            var sh = co.from.shape == undefined ?co.from: co.from.shape;
+            var shto = co.to.shape == undefined ?co.to:co.to.shape;
+                df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
+                df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
 
-        if(sh.dataItem.name !="Fork" ){
-            df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
-            if(df.counts[sh.id+"-"] >1){
-                diagram.remove(co);
-                continue;
+            if(sh.dataItem.name !="Fork" ){
+                df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
+                if(df.counts[sh.id+"-"] >1){
+                    diagram.remove(co);
+                    continue;
+                }
+            }   
+
+            if(shto.dataItem.name !="Fork"){
+                df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
+                 if(df.counts["-"+shto.id] >1){
+                    diagram.remove(co);
+                    continue;
+                }
             }
-        }   
 
-        if(shto.dataItem.name !="Fork"){
-            df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
-             if(df.counts["-"+shto.id] >1){
+            if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
                 diagram.remove(co);
-                continue;
             }
-        }
-
-        if(df.counts[sh.id+shto.id]>1||df.counts[shto.id+sh.id]>1){
+        }catch(e){
             diagram.remove(co);
         }
     }
@@ -878,6 +914,8 @@ df.Save = function(){
 df.clearDiagram = function(){
     df.closePopover("#popbtn");
     df.closePopover("#poptitle");
+    df.closePopover("#popGlobalVar");
+
     $(".diagram").getKendoDiagram().clear();
 }
 
@@ -968,7 +1006,26 @@ df.goToDesigner = function(Id){
     df.DataShape(selected.datashapes);
     df.Name(selected.name);
     df.Description(selected.description);
+    df.globalVar([]);
     df.Reload();
+
+    $(".glyphicon-cog").tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "left"
+    });
+
+    $("svg").click(function(){
+        if($(".popover-title").html()=="Add Global Variables"){
+        df.closePopover("#poptitle");
+        df.closePopover("#popbtn");
+        df.closePopover("#popGlobalVar");
+    }
+    });
 }
 
 df.backToGrid = function(){
@@ -977,11 +1034,28 @@ df.backToGrid = function(){
 }
 
 df.newDF = function(){
+      $(".glyphicon-cog").tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "left"
+    });
+
+    $("svg").click(function(){
+        df.closePopover("#poptitle");
+        df.closePopover("#popbtn");
+        df.closePopover("#popGlobalVar");
+    });
+
     df.ID("");
     df.Mode("Designer");
     df.DataShape({});
     df.Name("Add Title");
     df.Description("Add Description");
+    df.globalVar([]);
     df.Reload();
 }
 
@@ -1087,8 +1161,6 @@ df.renderActionData = function(){
             for (i = 0; i <= cl; i++) {
                 var no = selected.connectors[i].connections.length;
                for (ix = 0; ix < no; ix++) {
-                    $(".arrow").attr("style","left:30px");
-                    $(".popover").attr("style","display: block; top: " +(df.ymouse()-150)+"px; left: "+(df.xmouse()-30)+"px;");
                     var fromid = selected.connectors[i].connections[ix].from.shape == undefined?selected.connectors[i].connections[ix].from.id :selected.connectors[i].connections[ix].from.shape.id;
                     var shapeid = selected.connectors[i].connections[ix].to.shape == undefined?selected.connectors[i].connections[ix].to.id :selected.connectors[i].connections[ix].to.shape.id;
                     var shapename = selected.connectors[i].connections[ix].to.shape == undefined? selected.connectors[i].connections[ix].to.dataItem.name : selected.connectors[i].connections[ix].to.shape.dataItem.name;
@@ -1109,8 +1181,23 @@ df.renderActionData = function(){
     }
 
 
-
+    if(action!="Fork"&&action!="Stop"){
+        setTimeout(function(){
+            if(dataItem.DataAction.server() == ""){
+                $(".ddl-server:input").getKendoDropDownList().select(0);
+            }
+            var serv = dataItem.DataAction.server() == ""? $(".ddl-server:input").getKendoDropDownList().value() :dataItem.DataAction.server();
+            dataItem.DataAction.server(serv);
+            df.selectedServer(dataItem.DataAction.server());
+        },100);
+    }
 }
+
+df.selectedServer.subscribe(function(val){
+    var diagram = $(".diagram").getKendoDiagram().select()[0];
+    var dataItem = diagram.dataItem;
+    dataItem.DataAction.server(val);
+});
 
 df.saveActionData = function(){
     var diagram = $(".diagram").getKendoDiagram().select()[0];
@@ -1167,10 +1254,22 @@ df.deleteParamOutput = function(e){
     df.actionDetails().output.param.remove(dt);
 }
 
-df.servers = ko.observableArray(["server1","server2"]);
+df.addGlobalVar = function () {
+    var idx = df.globalVar().length;
+   df.globalVar.push({idx:idx,key:"",value:""});
+}
+
+df.deleteGlobalVar = function(e){
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dt = Lazy(df.globalVar()).find(function ( d ) { return d.idx == idx });
+    df.globalVar.remove(dt);
+}
+
+df.servers = ko.observableArray([]);
 df.addParamInput = function () {
     var idy = df.actionDetails().input().length;
-    df.actionDetails().input.push({idy:idy,keys:"",values:""});
+    df.actionDetails().input.push({idy:idy,key:"",value:""});
 }
 
 df.deleteParamInput = function(e){
@@ -1180,7 +1279,147 @@ df.deleteParamInput = function(e){
     df.actionDetails().input.remove(dr);
 }
 
+df.addFileMapReduce = function () {
+    var idm = df.hsModel().mapfiles().length;
+    df.hsModel().mapfiles.push({idm:idm,path:""});
+}
+
+df.deleteFileMapReduce = function(e){
+    var idm = $(e.target).attr("index");
+    idm = idm == undefined? $(e.target).parent().attr("index"):idm;
+    var dm = Lazy(df.hsModel().mapfiles()).find(function ( d ) { return d.idm == idm });
+    df.hsModel().mapfiles.remove(dm);
+}
+
+df.setContext = function(){
+
+    df.closePopover("#poptitle");
+    df.closePopover("#popbtn");
+
+    $("#popGlobalVar").popover("show");
+
+    if(df.globalVar().length==0)
+    df.addGlobalVar();
+    
+    $(".popover-title").removeAttr("style");
+    $(".popover-title").html("Add Global Variables")
+    var scres = screen.width;
+    var scresh = screen.height;
+    var maxxmouse = scres - 450;
+    var minymouse = 370;
+
+    if(df.xmouse()>maxxmouse){
+        df.xmouse(maxxmouse);
+    }
+
+    if(df.ymouse()<minymouse){
+        df.ymouse(df.ymouse() + 350);
+    }
+
+      setTimeout(function () {
+        ko.cleanNode($(".popover-content:last")[0]);
+        ko.applyBindings(viewModel, $(".popover-content:last")[0]);
+    }, 10);
+
+    $(".popover").attr("style","display: block; top: " +(df.ymouse()-320)+"px; left: "+(df.xmouse()-50)+"px;");
+}
+
+df.getServers = function (){
+    var  url= '/filebrowser/getservers';
+    $.ajax({
+                url: url,
+                call: 'POST',
+                dataType: 'json',
+                // data : data,
+                contentType: 'application/json; charset=utf-8',
+                success : function(res) {
+                    df.servers(res.data);
+                      },
+                error: function (a, b, c) {
+            },
+        });
+}
+
+df.convertShapeToFlowAction = function(shape){
+var res = {};
+
+var item = shape.dataItem;
+var action = item.DataAction;
+var details = item.DataActionDetails;
+
+res.id = shape.id;
+res.name = item.name;
+res.description = res.id +" - "+res.name;
+res.type = item.type;
+res.server = action.server();
+res.action = JSON.parse(ko.toJSON(action));
+res.OK = [];
+res.KO = [];
+
+var conn = df.getConnectionShape(shape);
+var inc = conn.in;
+var outc = conn.out;
+var det = JSON.parse(ko.toJSON(details));
+
+for(var i in outc){
+    var co = outc[i];
+    res.OK.push(co.id);
+}
+
+res.KO.push(det.whenFailed);
+res.Retry = 0;
+res.Interval = 0;
+
+if(inc.length==0)
+res.firstaction = true;
+
+res.inputparam = det.input;
+res.outputparam = det.output.param;
+res.outputtype = det.output.type;
+
+
+return res;
+}
+
+df.getConnectionShape = function(shape){
+    var conn = shape.connectors;
+    var res = [];
+    var resfrom = [];
+    for(var i in conn){
+        var co = conn[i].connections
+        for(var x in co){
+            var dt = co[x];
+            var dshape = dt.to.shape == undefined?dt.to:dt.to.shape;
+            var dshapef = dt.from.shape == undefined?dt.from:dt.from.shape;
+
+            if(dshapef.id==shape.id)//conn out
+            res.push(dshape);
+
+            if(dshape.id==shape.id)//conn in
+            resfrom.push(dshapef);
+        }
+    }
+    return {in:resfrom,out:resto};
+}
+
 $(function () {
     df.init();
     app.section('');
+    // $('body').on('mousedown', 'div', function(e) {
+    //     $('.popover').draggable({
+    //         drag: function() {
+    //             var offset = $(this).offset();
+    //             var xPos = offset.left;
+    //             var yPos = offset.top;
+    //         },
+    //         start: function () {
+    //             $(this).draggable("enable");
+    //         },
+    //         stop: function () {
+    //             $(this).draggable("disable");
+    //         },
+    //         handle: ".popover-title"
+    //     });
+    //     e.preventDefault();
+    // })
 });

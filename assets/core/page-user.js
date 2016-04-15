@@ -130,6 +130,7 @@ usr.UsersColumnsldap = ko.observableArray([ {
     }  
 ]);
 usr.selectGridUsers = function() { 
+    app.showfilter(false);
     app.mode('edit')
     usr.Access.removeAll();
     usr.getAccess();
@@ -487,6 +488,7 @@ usr.deleteuser = function() {
 usr.Usermode = ko.observable('');
 
 usr.createNewUser = function() {
+    app.showfilter(false);
     usr.Access.removeAll();
     usr.config.Grants.removeAll();
     usr.config._id("");
@@ -690,6 +692,9 @@ usr.selectRow = function() {
 }
 usr.addFromPrivilage = function() {
     usr.tapNum(usr.tapNum()+1);
+    if(usr.tapNum == 1){
+        usr.config.Grants.removeAll();
+    }
     app.mode('new'); 
     usr.config.Grants()
     var item = ko.mapping.fromJS($.extend(true, {}, usr.templateAccessGrant));

@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
@@ -34,11 +36,13 @@ func main() {
 	runtime.GOMAXPROCS(4)
 	colonycore.ConfigPath = filepath.Join(controller.EC_APP_PATH, "config")
 
+	webController := controller.CreateWebController(server)
+
 	server = new(knot.Server)
 	server.Address = "localhost:3000"
 	server.RouteStatic("res", path.Join(controller.AppBasePath, "assets"))
 	server.RouteStatic("res-widget", path.Join(controller.EC_DATA_PATH, "widget"))
-	server.Register(controller.CreateWebController(server), "")
+	server.Register(webController, "")
 	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateDataSourceController(server), "")
 	server.Register(controller.CreateDataGrabberController(server), "")
@@ -71,19 +75,33 @@ func main() {
 	}
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
-		if controller.IsDevMode {
-			http.Redirect(r.Writer, r.Request, "/web/index", 301)
+		// page router
+		regex := regexp.MustCompile("/page/[a-zA-Z0-9_]+(/.*)?$")
+		rURL := r.Request.URL.String()
+		if regex.MatchString(rURL) {
+			args := strings.Split(strings.Replace(rURL, "/page/", "", -1), "/")
+			return webController.PageView(r, args)
 		}
 
+		// is dev mode?
+		if controller.IsDevMode {
+			http.Redirect(r.Writer, r.Request, "/web/index", 301)
+			return true
+		}
+
+		// session detect
 		sessionid := r.Session("sessionid", "")
 		if sessionid == "" {
 			http.Redirect(r.Writer, r.Request, "/web/login", 301)
+			return true
 		} else {
 			http.Redirect(r.Writer, r.Request, "/web/index", 301)
+			return true
 		}
 
 		return true
 	})
+
 	server.Listen()
 }
 

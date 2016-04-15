@@ -42,7 +42,7 @@
 		    	</div>
 
 				  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;">
-		              <div data-bind="css: Name,attr:{name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
+		              <div data-bind="css: Name,attr:{type: Type, name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
 		          </div>
 			</div>
 			
@@ -53,14 +53,36 @@
 	</div>
 </div>
 
-<button style="display:none" title="asd" data-content="" id="popbtn"></button>
+<button style="display:none" data-content="" id="popbtn"></button>
+<button style="display:none" data-content="" id="popGlobalVar"></button>
+
+<script type="text/template" id="popover-content-globalvar">
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <a class="btn btn-info btn-xs" data-bind="" onclick="df.addGlobalVar();">Add variables</a>
+            </td>
+        </tr>
+        <!-- ko foreach: df.globalVar -->
+        <tr>
+            <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+            <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter default value"></td> </td>
+            <td>
+                <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteGlobalVar(event);"><span class="glyphicon glyphicon-trash"></span></a>
+            </td>
+        </tr>
+         <!-- /ko -->
+    </tbody>
+</table>
+</script>
 
 <script type="text/template" id="popover-content-template">
     <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork' && df.popoverMode() != 'Stop')">
         <tbody>
             <tr>
                 <td>Server</td>
-                <td>  <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.servers}"></td>
+                <td>  <input type="text" class="inp-fork inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,dataTextField:'_id',dataValueField:'_id' ,value:df.selectedServer }"></td>
             </tr>
         </tbody>
     </table>
@@ -121,16 +143,17 @@
         </table>
          <table data-bind="with:df.sshModel, visible: (df.popoverMode() == 'SSH Script')">
             <tbody>
-                <tr>
+               <!--  <tr>
                     <td>User and Host</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:script" placeholder="e.g. user@host.com">
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td>SSH Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Fill SSH script">
+                        <textarea type="text" class="inp-custom" data-bind="value:script" placeholder="Fill SSH script"></textarea>
+                        <button class="btn pd-custom fileChooserBtn textareabtn">..</button>
                     </td>
                 </tr>
             </tbody>
@@ -140,8 +163,8 @@
                 <tr>
                     <td>Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Script or path on HDFS">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <textarea type="text" class="inp-custom" data-bind="value:scriptpath" placeholder="Script or path on HDFS"></textarea>
+                        <button class="btn pd-custom fileChooserBtn textareabtn">..</button>
                     </td>
                 </tr>
               <!--   <tr>
@@ -156,10 +179,10 @@
         <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'Shell Script')">
             <tbody>
                 <tr>
-                    <td>Shell Command</td>
+                    <td>Script</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:script" placeholder="Shell command to execute, e.g script.sh">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <textarea type="text" class="inp-custom" data-bind="value:script" placeholder="Shell command to execute, e.g script.sh"></textarea>
+                        <button class="btn pd-custom fileChooserBtn textareabtn">..</button>
                     </td>
                 </tr>
             </tbody>
@@ -200,6 +223,20 @@
                         <input type="text" class="inp-custom" data-bind="value:parameters" placeholder="Comma separated parameters">
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        <a class="btn btn-info btn-xs" data-bind="" onclick="df.addFileMapReduce();">Add files</a>
+                    </td>
+                </tr>
+                <!-- ko foreach: mapfiles -->
+                <tr>
+                    <td colspan="2">
+                        <input class="inp-mapfiles" data-bind="value:path" placeholder="Fill the file path">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <a class="btn btn-danger btn-xs" data-bind="attr:{index:idm}" onclick="df.deleteFileMapReduce(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                    </td>
+                </tr>
+                <!-- /ko -->
             </tbody>
         </table>
         <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'Java App')">
@@ -271,27 +308,22 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="input">
-                    <a class="pointer" data-bind="" onclick="df.addParamInput();">
-                        <span data-bind="">Add </span>
-                        <i class="fa fa-plus"></i>
-                    </a>
-                    <table id= "" data-bind="">
-                        <tbody data-bind = "">
-                            <!-- ko foreach: input -->
+                    <table>
+                        <tbody>
                             <tr>
                                 <td>
-                                    <input type="text" class="inp-fork" data-bind="value:keys" placeholder="">
-                                </td>
-                                <td>
-                                    <input type="text" class="inp-fork" data-bind="value:values" placeholder="">
-                                </td>
-                                <td>
-                                    <a class="pointer" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);">
-                                        <i class="fa fa-minus"></i>
-                                    </a>
+                                    <a class="btn btn-info btn-xs" data-bind="" onclick="df.addParamInput();">Add parameter</a>
                                 </td>
                             </tr>
-                            <!-- /ko -->
+                            <!-- ko foreach: input -->
+                            <tr>
+                                <td> <input class="inp-output" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+                                <td> <input class="inp-output" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
+                                <td>
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                                </td>
+                            </tr>
+                             <!-- /ko -->
                         </tbody>
                     </table>
                 </div>
@@ -301,7 +333,7 @@
                             <tr>
                                 <td>Type</td>
                                 <td>
-                                      <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
                                 </td>
                             </tr>
                             <tr>
@@ -340,14 +372,18 @@
         </table>
     </div>
     <div style="clear:both;"></div>
-     <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
+        <!-- <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a> -->
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
 &nbsp;
 	<p class="pTitle" data-bind="text:Name"></p>
 	<p class="pDesc" data-bind="text:Description"></p>
+</div>
+
+<div class="divContext" onclick="df.setContext();">
+    <span title="Set Global Variable" class="glyphicon glyphicon-cog"></span>
 </div>
 
 <button style="display:none" data-content="" id="poptitle">
@@ -402,6 +438,10 @@
             font-size: 10px;
         }
 
+        .textareabtn{
+            vertical-align: 100%;
+        }
+
 		.popover{
 			max-width: 500px!important;
             min-width: 300px!important;
@@ -425,6 +465,10 @@
 			padding-right: 0px;
 		}
 
+        .popover-title{
+            cursor:move;
+        }
+
 		.divTitleDF{
 	    	position: absolute;
 	    	top: 156px !important;
@@ -435,6 +479,22 @@
 	    	opacity: 0.6;
 	    	cursor: pointer;
 		}
+
+        .divContext{
+            position: absolute;
+            top: 175px !important;
+            left: 96.4%;
+            text-align: center;
+            vertical-align: middle;
+            width: 2.6%;
+            height: 3%;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .divContext .glyphicon{
+            font-size: 20px;
+        }
 
         td:first-child{
             width: 80px!important;
@@ -548,6 +608,14 @@
         }
         .inp-output{
             margin: 5px -2px 5px 5px;
+            width: 180px;
+        }
+        .inp-mapfiles{
+            margin: 5px -2px 5px 8px;
+            width: 270px;
+        }
+        .inp-global{
+            margin: 5px 2px 5px 5px;
             width: 180px;
         }
 </style>

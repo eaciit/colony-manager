@@ -149,6 +149,9 @@ table.table
 .full-width
 	width: 100%
 
+#nav-wigetList
+	margin-left: 1%
+
 .filter-label
 	line-height: 25px
 	text-align: right
@@ -940,3 +943,59 @@ body
 		border: 8px solid white
 		width: 100%
 		height: 100%
+
+$grid-soft-border-color: #E8E8E8
+
+.k-grid.grid-soft
+	-webkit-box-shadow: none
+	box-shadow: none
+	border-color: $grid-soft-border-color
+	border-radius: 0px
+	color: $black
+
+	.k-pager-wrap
+		border-color: $grid-soft-border-color
+		background-color: #FAFAFA
+
+	table
+		tr
+			&:first-child td 
+				border-top: none
+
+			td 
+				border-color: #F7F7F7
+
+	.k-pager-nav
+		border-radius: 0px
+
+.k-grid.grid-list
+	table
+		tr
+			td.text
+				width: 82%
+				border-left: none
+				padding-left: 0px
+			
+				.title
+					font-size: 18px
+					font-weight: bold
+
+			td.action
+				border-left: none
+				text-align: right
+				padding-right: 10px
+
+			&.k-state-selected
+				td.text
+					.title
+						color: inherit
+
+.k-grid.grid-unselectable
+	table
+		tr.k-state-selected
+			background-color: inherit
+			border-color: inherit
+			color: inherit
+
+		tr:hover
+			background-color: rgba(58, 139, 223, 0.03)
