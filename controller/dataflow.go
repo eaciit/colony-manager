@@ -88,7 +88,7 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 
 		dataItem := shape["dataItem"].(map[string]interface{})
 		id := shape["id"].(string)
-		firstAction := shape["firstAction"].(bool)
+		// firstAction := shape["firstAction"].(bool)
 		name := dataItem["name"].(string)
 
 		if name != "" {
@@ -96,11 +96,11 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 			// dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
 
 			action := colonycore.FlowAction{
-				Id:          id,
-				Name:        name + " - " + id,
-				Interval:    1,
-				Retry:       3,
-				FirstAction: firstAction,
+				Id:       id,
+				Name:     name + " - " + id,
+				Interval: 1,
+				Retry:    3,
+				// FirstAction: firstAction,
 				/*Server: ,
 				  InputParam: ,
 				  OutputParam: ,
