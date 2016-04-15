@@ -782,19 +782,28 @@
                     node._grid = self;
                     var el = $(ui.draggable).clone(false);
                     el.data('_gridstack_node', node);
-                    // if ($(ui.draggable).attr("boolRemove") != "false")
-                    //console.log($(ui.draggable));
-                    var $datagrag = $(ui.draggable).draggable("destroy");
+
+                    var $datagrag = $(ui.draggable).clone();
+
                     $(ui.draggable).remove();
-                    $("#sidebar").find(".grid-stack-item-content").removeClass(".list-left");
-                    $("#sidebar ul.nav").append($datagrag.draggable({
+                    $datagrag.removeClass('placeholder-dash');
+                    
+                    $("#sidebar").append($datagrag.draggable({
                         handle: '.grid-stack-item-content',
                         helper: "clone",
                         scroll: true,
                         appendTo: 'body',
+                        revert: true,
                         placeholder: function(element) {
                             return element.clone().addClass("placeholder");
                         },
+                        start: function( event, ui ) {
+                              $(this).addClass('placeholder-dash');
+                        },
+                        stop: function( event, ui ) {
+                              $(this).removeClass('placeholder-dash');
+                              $(this).addClass('list-left'); 
+                        }
                     }));
 
                     node.el = el;
@@ -808,6 +817,8 @@
                         .removeAttr('style')
                         .enableSelection()
                         .removeData('draggable')
+                        .removeClass('list-left')
+                        .removeClass('placeholder-dash')
                         .removeClass('ui-draggable ui-draggable-dragging ui-draggable-disabled')
                         .unbind('drag', onDrag);
 
@@ -823,15 +834,15 @@
                                             '</div>'+
                                         '</div>'+
                                     '</div>');
+                    el.find('.grid-stack-item-content').parent().removeClass('list-left');
                     el.find($(".grid-stack-item-content")).find("a").remove();
                     $headerPanel.appendTo(el.find($(".grid-stack-item-content")));
-
                     self._prepareElementByNode(el, node);
                     self._updateContainerHeight();
                     self._triggerChangeEvent();
 
                     self.grid.endUpdate();
-                    app.prepareTooltipster();
+                    // app.prepareTooltipster();
                 }
             });
         }
