@@ -9,37 +9,7 @@
 	<div class="col-md-12" data-bind="visible: (app.section() == 'widget')">
 		<h1>Widget List</h1>
 
-		<nav class="navbar" id="nav-wigetList" data-bind="visible: (app.mode() == '')">
-		    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
-		        <span class="glyphicon glyphicon-search"></span>                    
-		    </button>
-		    <button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true) }">
-		        <span class="glyphicon glyphicon-search"></span>                    
-		    </button>
-		    <div class="btn-group" role="group">
-		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: function(){wl.getWidgetList('refresh')}">
-		            <span class="glyphicon glyphicon-refresh"></span> Refresh
-		        </button>
-		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: addWidget">
-		            <span class="glyphicon glyphicon-plus"></span> Add Widget
-		        </button>
-		        <button class="btn btn-sm btn-danger mgTop15" data-bind="click: removeWidget">
-		            <span class="glyphicon glyphicon-remove"></span> Delete
-		        </button>
-		    </div>
-		</nav>
-		<nav class="navbar mgTop15 mgBtm-15" data-bind="visible: app.showfilter()">
-		    <div class="col-md-4">
-		        <label class="col-md-4 filter-label">
-		            Search
-		        </label>
-		        <div class="col-md-8">
-		            <input class="form-control full-width input-sm search" name="search" type="text" data-bind='value:wl.searchfield' placeholder="Type keyword here" />
-		        </div>
-		    </div>
-		</nav>
-
-		<!-- <nav class="navbar" data-bind="visible: (app.mode() == '')">
+		<nav class="navbar" data-bind="visible: (app.mode() == '')">
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: function(){wl.getWidgetList('refresh')}">
 	    		<span class="glyphicon glyphicon-refresh"></span> Refresh
 	    	</button>
@@ -59,35 +29,22 @@
 						<input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="value:wl.searchfield" placeholder="Type keyword here" />
 					</div>
 				</div>
-			</nav> -->
-		<div data-bind="visible: (app.mode() == '')">
-		    <div class="panel-body">
+			</nav>
+		<div class="" data-bind="visible: (app.mode() == '')">
 				{{template "_miniloader.html"}}	
 				<div data-bind="visible: !app.miniloader()">
 			    	<div class="grid grid-widget" id ="grid-widget" ></div>
-				    <!-- <p class="bg-danger bgcustom">Please click row to edit!</p> -->
 			    </div>
-		    </div>
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
-		    <div class="btn-group" role="group">
-		        <button class="btn btn-sm btn-warning mgTop15"  data-bind="click: backToFront">
-		            <span class="glyphicon glyphicon-chevron-left"></span> Back
-		        </button>
-		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: saveWidget">
-		            <span class="glyphicon glyphicon-save" ></span> Save
-		        </button>
-		    </div>
-		</nav>
-		<!-- <nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
 			<button class="btn btn-sm btn-warning navbar-btn" data-bind="click: backToFront">
 	    		<span class="glyphicon glyphicon-chevron-left"></span> Back
 	    	</button>
             <button class="btn btn-sm btn-primary navbar-btn" data-bind="click: saveWidget">
 	    		<span class="glyphicon glyphicon-save"></span> Save
 	    	</button>
-		</nav> -->
+		</nav>
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 			<div class="panel-heading">
 		        <h1 class="panel-title">
@@ -186,8 +143,10 @@
 						<button type="button" class="btn btn-sm btn-warning" data-dismiss="modal" data-bind="click: wl.closeModal">
 							<span class="glyphicon glyphicon-remove"></span> Close
 						</button>
-						<button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.previewWidget(_id, dataSourceId)}">
-							<span class="glyphicon glyphicon-eye-open"></span> Preview
+						<!-- <button type="button" class="btn btn-sm btn-primary" data-bind="click: function(){wl.previewWidget(_id, dataSourceId)}"> -->
+							<!-- <span class="glyphicon glyphicon-eye-open"></span> Preview -->
+							<button type="button" class="btn btn-sm btn-primary" data-bind="">
+							<span class="glyphicon glyphicon-save"></span> Save
 						</button>
 					</div>
 					<div data-bind="visible: wl.previewMode() != ''">
@@ -216,14 +175,18 @@
 <script id="rowTemplate" type="text/x-kendo-tmpl">
     <tr data-uid="#: _id #">
         <td class="details" style="width: 30px;">
-        	<center><input type='checkbox' id=#: _id# ></center>
+        	<center><input type='checkbox' id=#: _id# value="#: _id#" name="select[]"></center>
         </td>
         <td class="details" style="width: 82%;">
-           <span class="name" style="font-size: 15px;">#: title#</span><br>
+           <strong><span class="name" style="font-size: 18px;">#: title#</span></strong><br>
            <span class="title">#: description #</span>
         </td>
         <td class="details" style="border-left: none;">
-        	<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered"title="Edit" onclick='wl.editWidget("#: _id#","editor")'><span class="fa fa-pencil fa-fw"></span></button>&nbsp;&nbsp;<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered"title="Setting"><span class="fa fa-cog"></span></button>&nbsp;&nbsp;<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered" title="Preview" onclick='wl.openWidget("#: _id#","grid")'><span class='glyphicon glyphicon-eye-open'></span></button>
+        	<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered"title="Edit" onclick='wl.editWidget("#: _id#","editor")'><span class="fa fa-pencil fa-fw"></span></button>&nbsp;&nbsp;
+        	
+        	<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered"title="Setting" onclick='wl.openWidget("#: _id#","grid")'><span class="fa fa-cog"></span></button>&nbsp;&nbsp;
+
+        	<button class="btn btn-sm btn-default btn-start btn-text-success tooltipster tooltipstered" title="Preview" onclick='wl.previewWidget("#: _id#")'><span class='glyphicon glyphicon-eye-open'></span></button>
         </td>
    </tr>
 </script>
