@@ -141,7 +141,7 @@ df.detailModeDo = function(text,detail) {
 
 df.sparkModel = ko.observable({
   //UI not yet
-  type : ko.observable(""),
+  // type : ko.observable(""),
   server : ko.observable(""),
   // args:ko.observableArray([]),
 
@@ -158,7 +158,7 @@ df.sparkModel = ko.observable({
 df.newSparkModel = function(){
     return {
     //UI not yet
-    type : ko.observable(""),
+    // type : ko.observable(""),
     server : ko.observable(""),
     // args:ko.observableArray([]),
 
@@ -521,7 +521,6 @@ df.init = function () {
 
                         df.popoverMode(item.dataItem.name);
                         $(".popover").attr("style","display: block; top: " +(ymouse-320)+"px; left: "+(xmouse-30)+"px;");
-
                       df.renderActionData();
                       }
                       clickonshape = 0;
@@ -1044,10 +1043,12 @@ df.newDF = function(){
         position: "left"
     });
 
-    $("svg").click(function(){
+   $("svg").click(function(){
+        if($(".popover-title").html()=="Add Global Variables"){
         df.closePopover("#poptitle");
         df.closePopover("#popbtn");
         df.closePopover("#popGlobalVar");
+    }
     });
 
     df.ID("");
@@ -1347,6 +1348,11 @@ var item = shape.dataItem;
 var action = item.DataAction;
 var details = item.DataActionDetails;
 
+if(action==undefined||details==undefined){
+    alert("Data not complete !");
+    return
+}
+
 res.id = shape.id;
 res.name = item.name;
 res.description = res.id +" - "+res.name;
@@ -1371,7 +1377,7 @@ for(var i in outc){
     res.OK.push(co.id);
 }
 
-res.KO.push(det.whenFailed);
+res.KO.push(det.whenFailed.split("-")[1].trim());
 res.Retry = 0;
 res.Interval = 0;
 
@@ -1404,7 +1410,7 @@ df.getConnectionShape = function(shape){
             resfrom.push(dshapef);
         }
     }
-    return {in:resfrom,out:resto};
+    return {in:resfrom,out:res};
 }
 
 $(function () {
