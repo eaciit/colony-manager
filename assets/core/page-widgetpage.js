@@ -30,6 +30,7 @@ wp.PageColumns = ko.observableArray([
 ]);
 
 wp.selectPage = function(){
+	app.showfilter(false);
 	app.wrapGridSelect(".grid-page", ".btn", function (d) {
 		wp.editPage(d._id, "editor");
 	});
@@ -110,7 +111,7 @@ wp.addPage = function(){
 	wp.getDataSource();
 	app.mode("editor");
 	wp.scrapperMode("");
-
+	app.showfilter(false);
 };
 wp.getPageList = function(){
 	app.ajaxPost("/page/getpage", {search: wp.searchfield()}, function(res){
