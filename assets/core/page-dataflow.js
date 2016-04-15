@@ -192,7 +192,7 @@ df.newHdfsModel = function(){
 df.hsModel = ko.observable({
     server : ko.observable(""),
   mapper : ko.observable(""),
-  mapfiles : ko.observableArray([]),
+  // mapfiles : ko.observableArray([]),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
   input : ko.observable(""),
@@ -204,7 +204,7 @@ df.newHsModel = function(){
   return {
     server : ko.observable(""),
   mapper : ko.observable(""),
-  mapfiles : ko.observableArray([]),
+  // mapfiles : ko.observableArray([]),
   reducer : ko.observable(""),
   files : ko.observableArray([]),
   input : ko.observable(""),
@@ -907,12 +907,19 @@ df.Save = function(){
       return false;
     }
 
+    var actdt = df.buildShapeData(".diagram");
+    if(actdt==undefined){
+        swal("Warning", "Data not completed!", "warning");
+        return;
+    }
+
     app.ajaxPost("/dataflow/save", {
         ID : df.ID(),
         Name:df.Name(),
         Description:df.Description(),
-        Actions:[],
+        Actions: actdt,
         DataShapes:df.DataShape(),
+        GlobalParam:df.globalVar()
     }, function(res){
         if(!app.isFine(res)){
           return;
@@ -1110,13 +1117,22 @@ df.Search = function(){
       },500);
 }
 
+df.checkObservable = function(dt){
+    for(var key in dt){
+        if(ko.isObservable(dt[key])){
+            return dt;
+        }else{
+            return ko.mapping.fromJS(dt);
+        }
+    }
+}
+
 df.renderActionData = function(){
     var diagram = $(".diagram").getKendoDiagram().select()[0];
     var dataItem = diagram.dataItem;
    
     var action = df.popoverMode();
-
-    dataItem.DataActionDetails= dataItem.DataActionDetails == undefined? df.newActionDetails() :dataItem.DataActionDetails;
+    dataItem.DataActionDetails= dataItem.DataActionDetails == undefined? df.newActionDetails() :df.checkObservable(dataItem.DataActionDetails);
     df.actionDetails(dataItem.DataActionDetails);
     //set default
     var whenfailed = df.actionDetails().whenFailed() ==""?dataItem.name+" - "+diagram.id: df.actionDetails().whenFailed() ;
@@ -1127,50 +1143,53 @@ df.renderActionData = function(){
     
     switch(action){
       case "Spark":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newSparkModel():df.checkObservable(dataItem.DataAction);
           df.sparkModel(dataItem.DataAction);
       break;
       case "HDFS":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newHdfsModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newHdfsModel():df.checkObservable(dataItem.DataAction);
           df.hdfsModel(dataItem.DataAction);
       break;
       case "Hive":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newHiveModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newHiveModel():df.checkObservable(dataItem.DataAction);
           df.hiveModel(dataItem.DataAction);
       break;
       case "Shell Script":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newShModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newShModel():df.checkObservable(dataItem.DataAction);
           df.shModel(dataItem.DataAction);
       break;
       case "Kafka":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newKafkaModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newKafkaModel():df.checkObservable(dataItem.DataAction);
           df.kafkaModel(dataItem.DataAction);
       break;
       case "Map Reduce":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newHsModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newHsModel():df.checkObservable(dataItem.DataAction);
           df.hsModel(dataItem.DataAction);
       break;
       case "Java App":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newJavaAppModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newJavaAppModel():df.checkObservable(dataItem.DataAction);
           df.javaAppModel(dataItem.DataAction);
       break;
       case "Email":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newEmailModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newEmailModel():df.checkObservable(dataItem.DataAction);
           df.emailModel(dataItem.DataAction);
       break;
       case "Stop":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newStopModel():df.checkObservable(dataItem.DataAction);
           df.stopModel(dataItem.DataAction);
       break;
       case "SSH Script":
-          dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():dataItem.DataAction;
+          dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():df.checkObservable(dataItem.DataAction);
           df.sshModel(dataItem.DataAction);
       break;
       case "Fork":
-            dataItem.DataAction = dataItem.DataAction == undefined? [] :dataItem.DataAction;
-            var selected = $(".diagram").getKendoDiagram().select()[0];
-            var cl = selected.connectors.length - 1;
             df.arrayconn([]);
+            if(dataItem.DataAction == undefined){
+                 dataItem.DataAction = [];
+            }
+
+            var selected = diagram;
+            var cl = selected.connectors.length - 1;
             for (i = 0; i <= cl; i++) {
                 var no = selected.connectors[i].connections.length;
                for (ix = 0; ix < no; ix++) {
@@ -1179,17 +1198,24 @@ df.renderActionData = function(){
                     var shapename = selected.connectors[i].connections[ix].to.shape == undefined? selected.connectors[i].connections[ix].to.dataItem.name : selected.connectors[i].connections[ix].to.shape.dataItem.name;
                     var thisid = selected.id;
 
-                    if (fromid == thisid && dataItem.DataAction.length==0) {
-                        df.arrayconn.push({name:shapename+" - "+shapeid, condition: "true"})
-                    }else if(fromid == thisid){
-                        var condt = Lazy(dataItem.DataAction).find(function ( d ) { return d.name == shapename+" - "+shapeid }).condition;
-                        df.arrayconn.push({name:shapename+" - "+shapeid, condition: condt})
-                    }
+                        var DAjs = dataItem.DataAction;
+                        var condt = Lazy(DAjs).find(function ( d ) { return d.name == shapename+" - "+shapeid });
+                       if (condt == undefined && fromid == thisid){
+                             df.arrayconn.push({
+                            name: shapename+" - "+shapeid, 
+                            condition: "true"});
+                        }else if(fromid == thisid){
+                               df.arrayconn.push({
+                            name: shapename+" - "+shapeid, 
+                            condition: condt.condition});
+                        }
                 }
         }
+
         if(df.arrayconn().length==0){
             $("#popbtn").popover("hide");
         }
+            dataItem.DataAction = df.arrayconn();
       break;
     }
 
@@ -1281,27 +1307,27 @@ df.deleteGlobalVar = function(e){
 
 df.servers = ko.observableArray([]);
 df.addParamInput = function () {
-    var idy = df.actionDetails().input().length;
-    df.actionDetails().input.push({idy:idy,key:"",value:""});
+    var idx = df.actionDetails().input().length;
+    df.actionDetails().input.push({idx:idx,key:"",value:""});
 }
 
 df.deleteParamInput = function(e){
-    var idy = $(e.target).attr("index");
-    idy = idy == undefined? $(e.target).parent().attr("index"):idy;
-    var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idy == idy });
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idx == idx });
     df.actionDetails().input.remove(dr);
 }
 
 df.addFileMapReduce = function () {
-    var idm = df.hsModel().mapfiles().length;
-    df.hsModel().mapfiles.push({idm:idm,path:""});
+    var idx = df.hsModel().files().length;
+    df.hsModel().files.push({idx:idx,path:""});
 }
 
 df.deleteFileMapReduce = function(e){
-    var idm = $(e.target).attr("index");
-    idm = idm == undefined? $(e.target).parent().attr("index"):idm;
-    var dm = Lazy(df.hsModel().mapfiles()).find(function ( d ) { return d.idm == idm });
-    df.hsModel().mapfiles.remove(dm);
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dm = Lazy(df.hsModel().files()).find(function ( d ) { return d.idx == idx });
+    df.hsModel().files.remove(dm);
 }
 
 df.setContext = function(){
@@ -1353,27 +1379,49 @@ df.getServers = function (){
         });
 }
 
+df.buildShapeData = function(id){
+    var shapes = $(id).getKendoDiagram().shapes
+    var res = [];
+    for(var i in shapes){
+        var re = df.convertShapeToFlowAction(shapes[i])
+        if(re == undefined){
+            return undefined;
+        }else{
+            res.push(re);
+        }
+    }
+    return res;
+}
+
 df.convertShapeToFlowAction = function(shape){
 var res = {};
+
 
 var item = shape.dataItem;
 var action = item.DataAction;
 var details = item.DataActionDetails;
 
-if(action==undefined||details==undefined){
-    alert("Data not complete !");
-    return
+if(item.name=="Fork"||item.name=="Stop"){
+    $(".diagram").getKendoDiagram().select(shape);
+    df.popoverMode(item.name);
+    df.renderActionData();
+    var dtemp =  $(".diagram").getKendoDiagram().select()[0];
+    item = dtemp.dataItem;
+    action = item.DataAction;
+    details = item.DataActionDetails;
+}else if(action==undefined||details==undefined){
+    return undefined;
 }
 
 res.id = shape.id;
 res.name = item.name;
 res.description = res.id +" - "+res.name;
 res.type = item.type;
-res.server = action.server();
+res.server =  res.name == "Fork" || res.name == "Stop"?"" : action.server();
 
 var actj = JSON.parse(ko.toJSON(action));
 
-delete actj.server
+// delete actj.server
 
 res.action = actj;
 res.OK = [];
@@ -1392,6 +1440,8 @@ for(var i in outc){
 res.KO.push(det.whenFailed.split("-")[1].trim());
 res.Retry = 0;
 res.Interval = 0;
+
+res.firstaction = false;
 
 if(inc.length==0)
 res.firstaction = true;
