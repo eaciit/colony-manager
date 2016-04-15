@@ -13,8 +13,6 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
-	"strconv"
-
 )
 
 const (
@@ -80,11 +78,6 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 
 // runProcess, process the flow
 func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
-/*
-	for _, act := range actionBefore {
-		action.Context = append(action.Context, act.Context)
-	}*/
-
 	switch action.Type {
 
 		case ACTION_TYPE_HIVE:
@@ -114,10 +107,6 @@ func runHive(process colonycore.DataFlow, action colonycore.FlowAction) (e error
 
 	var res []toolkit.M
 	e = hivex.Populate(action_hive.ScriptPath, &res)
-
-	if e == nil {
-		writeActionResult(process, action, res)
-	}
 
 	return
 }
@@ -165,7 +154,6 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (e erro
 	}
 	return 
 }
-
 
 func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (e error) {
 	server := action.Server
@@ -342,8 +330,6 @@ func watch(process colonycore.DataFlow) (e error) {
 	}
 
 	return
-
-
 }
 
 //  generateProcessID generate the ID
@@ -439,23 +425,37 @@ func getActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowActio
 	return res, err
 }
 
-func writeActionResult(flow colonycore.DataFlow, action colonycore.FlowAction, data interface{})(err error){
-	idx:=1
-	filename := action.Id + "_" + strconv.Itoa( idx)
-	var res interface{}
+func decodeOutputFile(action colonycore.FlowAction)(output interface{}, e error){
+	outputPath := action.OutputPath
 
-	switch action.OutputType{
+	file, e := ioutil.ReadFile(outputPath)
+	if e != nil {
+		return nil, e
+	}
+
+	switch action.OutputType {
 		case "JSON":
-			res, err = json.Marshal(data)
-			filename += ".json"
-			break
+			e = json.Unmarshal(file, &output)
 		case "CSV":break
+			output, e = decodeCSV(file)
 		case "TSV":break
+			output, e = decodeTSV(file)
 		case "TEXT":break
+			output, e = decodeText(file)
 		default:break
 	}
 
-	filepath := ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + "/" + flow.ID + "/" + action.Id + "/act_result/" + filename
-	err = ioutil.WriteFile(filepath, res.([]byte), 0755)
+	return 
+}
+
+func decodeCSV(file []byte)(retVal interface{}, e error){
+	return
+}
+
+func decodeTSV(file []byte)(retVal interface{}, e error){
+	return
+}
+
+func decodeText(file []byte)(retVal interface{}, e error){
 	return
 }
