@@ -328,6 +328,17 @@ df.newKafkaModel = function(){
   }
 }
 
+$.fn.popoverShow = function () {
+    var $self = $(this);
+    $self.off('show.bs.popover').on('show.bs.popover', function () {
+        if (!$(".popover").hasClass("ui-draggable")) {
+            setTimeout(function () {
+                $(".popover").draggable({ handle: '.popover-title' });
+            }, 500);
+        }
+    });
+    $self.popover("show");
+};
 
 function visualTemplate(options) {
             var dataviz = kendo.dataviz;
@@ -477,7 +488,7 @@ df.init = function () {
                         df.closePopover("#poptitle");
                         df.closePopover("#popGlobalVar");
 
-                        $("#popbtn").popover("show");
+                        $("#popbtn").popoverShow();
 
                         var scres = screen.width;
                         var scresh = screen.height;

@@ -179,6 +179,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	previewData := toolkit.M{}
 	previewData.Set("container", contentstring)
 	previewData.Set("dataSource", widgetData)
+	previewData.Set("widgetBasePath", strings.Replace(getFileIndex, EC_DATA_PATH+toolkit.PathSeparator+"widget", "", -1))
 
 	if data.Get("mode", "").(string) == "save" {
 		dataWidget := colonycore.Widget{}
