@@ -50,6 +50,7 @@ func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 	currentDataFlow.Name = tk.ToString(payload["Name"])
 	currentDataFlow.Description = tk.ToString(payload["Description"])
 	currentDataFlow.ID = tk.ToString(payload["ID"])
+	// currentDataFlow.GlobalParam = nil
 
 	dataDs := []colonycore.DataFlow{}
 	cursor, err := colonycore.Find(new(colonycore.DataFlow), dbox.Eq("_id", currentDataFlow.ID))
@@ -107,21 +108,55 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 			KO := append([]string{}, strings.Trim(split[1], " "))
 			OK := append([]string{}, conMap.GetString(id))
 
-			/*input := ""
+			inputParam := tk.M{}
+			outputParam := tk.M{}
 			outputType := ""
-			outputParam := ""*/
+
+			if dataActionDetails["output"].(map[string]interface{})["type"] != nil {
+				outputType = dataActionDetails["output"].(map[string]interface{})["type"].(string)
+			}
+
+			for _, in := range dataActionDetails["input"].([]interface{}) {
+				fmt.Printf("=> %#v \n", in)
+				inputParam.Set("", "")
+			}
+
+			for _, out := range dataActionDetails["output"].(map[string]interface{})["param"].([]interface{}) {
+				fmt.Printf("=> %#v \n", out)
+				outputParam.Set("", "")
+			}
+
+			server := colonycore.Server{}
+
+			if dataAction["server"] != nil {
+				dsServer := []colonycore.Server{}
+				cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", dataAction["server"].(string)))
+
+				if err != nil {
+					//
+				} else {
+					if cursor != nil {
+						cursor.Fetch(&dsServer, 0, false)
+						defer cursor.Close()
+					}
+
+					if len(dsServer) > 0 {
+						server = dsServer[0]
+					}
+				}
+			}
 
 			action := colonycore.FlowAction{
 				Id:       id,
-				Name:     name + " - " + id,
+				Name:     name + "-" + id,
 				Interval: 1,
 				Retry:    3,
 				// FirstAction: firstAction,
-				/*Server: ,
-				  InputParam: ,
-				  OutputParam: ,
-				  OutputType: ,
-				  OutputPath: ,*/
+				Server:      server,
+				InputParam:  inputParam,
+				OutputParam: outputParam,
+				OutputType:  outputType,
+				//   OutputPath: ,
 				KO: KO,
 				OK: OK,
 			}
