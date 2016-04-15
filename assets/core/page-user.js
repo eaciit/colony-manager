@@ -71,6 +71,7 @@ usr.templateAccessGrant2 = function() {
 };
 usr.tempDataGrup = ko.observableArray([]);
 usr.tapNum = ko.observable(0);
+usr.ArrayDataID = ko.observableArray([]);
 usr.dataAccess = ko.observableArray([]);
 usr.dataAccessUser = ko.observableArray([]);
 usr.attribute = ko.observableArray("");
@@ -270,14 +271,16 @@ usr.getUsers = function() {
     if (!app.isFormValid("#form-modal-user")) {
         return;
     }
-    var array = usr.attribute().replace(/\s/g, '').split(",");
-    if(array.length != 3){
-        array = [];
+
+    usr.ArrayDataID(usr.attribute().replace(/\s/g, '').split(","));
+    if(usr.ArrayDataID().length != 2){
+        usr.ArrayDataID([])
     }else{
-        $.each(array, function(i){
-            usr.ldap.Attribute.push(array[i]);
+        $.each(usr.ArrayDataID(), function(i){
+            usr.ldap.Attribute.push(usr.ArrayDataID()[i]);
         });
     }
+
     var param = ko.mapping.toJS(usr.ldap);
     usr.tempDataGrup.push(param);
     app.ajaxPost("/user/testfinduserldap", param, function(res){
@@ -296,8 +299,8 @@ usr.getUsers = function() {
             filterfable: true,
             change: usr.selectGridLdap,
             columns: [
-                {title: "ID", field: array[0]},
-                {title: "Name", field: array[1]},
+                {title: "ID", field: usr.ArrayDataID()[0]},
+                {title: "Name", field: usr.ArrayDataID()[1]},
             ],
             dataBound :usr.saveConfigLdap()
         });
