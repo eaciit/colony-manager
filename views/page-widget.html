@@ -189,7 +189,7 @@
     <tr data-uid="#: _id #">
         <td style="width: 30px;">
         	<center>
-        		<input type='checkbox' id=#: _id# >
+        		<input type='checkbox' id=#: _id# value="#: _id#" name="select[]">
         	</center>
         </td>
         <td class="text">
@@ -198,14 +198,14 @@
         </td>
         <td class="action" style="width: 120px;">
         	<div class="btn-group btn-sm">
-	        		<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Edit widget" onclick='wl.editWidget("#: _id#","editor")'>
-	        		<span class="fa fa-pencil"></span>
+        		<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Edit widget" onclick='wl.editWidget("#: _id#","editor")'>
+        			<span class="fa fa-pencil"></span>
 	    		</button>
 	        	<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Configure" onclick='wl.openWidget("#: _id#","grid")'>
 	        		<span class="fa fa-cog"></span>
 	    		</button>
 	        	<button class="btn btn-sm btn-primary tooltipster tooltipstered" title="Preview" onclick='wl.previewWidget("#: _id#")'>
-	        		<span class='fa fa-eye'></span>
+        			<span class='fa fa-eye'></span>
 	    		</button>
         	</div>
         </td>
