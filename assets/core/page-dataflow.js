@@ -1403,7 +1403,7 @@ df.getConnectionShape = function(shape){
     return {in:resfrom,out:resto};
 }
 df.draggablePopover = function(e){
-    var draggableDiv = $('.popover').draggable();
+    var draggableDiv = $('.popover').draggable({handle: ".popover-title"});
     $('.popover-content', draggableDiv).mousedown(function(e) {
         draggableDiv.draggable('enable');
     }).mouseup(function(e) {
