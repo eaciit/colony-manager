@@ -88,12 +88,12 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 
 		dataItem := shape["dataItem"].(map[string]interface{})
 		id := shape["id"].(string)
-		firstAction := shape["firstAction"]
+		firstAction := shape["firstAction"].(bool)
 		name := dataItem["name"].(string)
 
 		if name != "" {
 			dataAction := dataItem["DataAction"].(map[string]interface{})
-			dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
+			// dataActionDetails := dataItem["DataActionDetails"].(map[string]interface{})
 
 			action := colonycore.FlowAction{
 				Id:          id,
@@ -111,18 +111,18 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 			switch name {
 			case "Spark":
 				spark := colonycore.ActionSpark{
-					Master:    dataAction["master"],
-					Mode:      dataAction["mode"],
-					File:      dataAction["appfiles"],
-					MainClass: dataAction["mainclass"],
-					Args:      dataAction["args"],
+					Master:    dataAction["master"].(string),
+					Mode:      dataAction["mode"].(string),
+					File:      dataAction["appfiles"].(string),
+					MainClass: dataAction["mainclass"].(string),
+					Args:      dataAction["args"].(string),
 				}
 				action.Action = spark
 				action.Type = dataflow.ACTION_TYPE_SPARK
 				break
 			case "Hive":
 				hive := colonycore.ActionHive{
-					ScriptPath: dataAction["scriptpath"],
+					ScriptPath: dataAction["scriptpath"].(string),
 					// Params:     ,
 				}
 				action.Action = hive
@@ -130,21 +130,21 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 				break
 			case "SSH Script":
 				ssh := colonycore.ActionSSH{
-					Command: dataAction["script"],
+					Command: dataAction["script"].(string),
 				}
 				action.Action = ssh
 				action.Type = dataflow.ACTION_TYPE_SSH
 				break
 			case "HDFS":
 				hdfs := colonycore.ActionHDFS{
-				// Command: dataAction["script"],
+				// Command: dataAction["script"].(string),
 				}
 				action.Action = hdfs
 				action.Type = dataflow.ACTION_TYPE_HDFS
 				break
 			case "Java App":
 				java := colonycore.ActionJavaApp{
-					Jar: dataAction["jar"],
+					Jar: dataAction["jar"].(string),
 				}
 				action.Action = java
 				action.Type = dataflow.ACTION_TYPE_JAVA
@@ -152,10 +152,10 @@ func constructActions(dataShapes map[string]interface{}) (actions []colonycore.F
 			case "Map Reduce":
 				mr := colonycore.ActionHadoopStreaming{
 					// Jar: ,
-					Mapper:  dataAction["mapper"],
-					Reducer: dataAction["reducer"],
-					Inputt:  dataAction["input"],
-					Output:  dataAction["output"],
+					Mapper:  dataAction["mapper"].(string),
+					Reducer: dataAction["reducer"].(string),
+					Input:   dataAction["input"].(string),
+					Output:  dataAction["output"].(string),
 				}
 				action.Action = mr
 				action.Type = dataflow.ACTION_TYPE_MAP_REDUCE

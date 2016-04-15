@@ -31,7 +31,7 @@ wl.setGridwl = function (){
 		pageable : true,
 		dataBound: app.gridBoundTooltipster('.grid-widget'),
 		rowTemplate : kendo.template($("#rowTemplate").html()),
-	})
+	}).addClass("grid-soft grid-list grid-unselectable");
 	$('.grid-widget').find("thead").remove();
 	$('.grid-widget').find('.k-grid-header').remove()	
 }
