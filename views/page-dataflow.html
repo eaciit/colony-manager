@@ -56,41 +56,55 @@
 <button style="display:none" title="asd" data-content="" id="popbtn"></button>
 
 <script type="text/template" id="popover-content-template">
-    <div id="spark" class="ct-custom" >
+    <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork' && df.popoverMode() != 'Stop')">
+        <tbody>
+            <tr>
+                <td>Server</td>
+                <td>  <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.servers}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="ct-custom" >
         <table data-bind="with:df.sparkModel,visible: (df.popoverMode() == 'Spark')">
             <tbody>
                 <tr>
                     <td>Spark Master</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:master" placeholder="e.g. local[*]">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <!-- <button class="btn pd-custom fileChooserBtn">..</button> -->
                     </td>
                 </tr>
                 <tr>
                     <td>Mode</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:mode" placeholder="e.g. Client">
-                        <button class="btn pd-custom fileChooserBtn">..</button>
+                        <!-- <button class="btn pd-custom fileChooserBtn">..</button> -->
                     </td>
                 </tr>
                 <tr>
-                    <td>App files</td>
+                    <td>App file</td>
                     <td>
-                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="Comma separated list of java or scala HDFS files">
+                        <input type="text" class="inp-custom" data-bind="value:appfiles" placeholder="File java or scala in HDFS files">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
-                <tr>
+              <!--   <tr>
                     <td>App Name</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:appname" placeholder="e.g. My Spark">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td>Main Class</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="e.g. org.spark.example.main">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Arguments</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:args" placeholder="Comma separated arguments">
                     </td>
                 </tr>
             </tbody>
@@ -130,13 +144,13 @@
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
-                <tr>
+              <!--   <tr>
                     <td>Hive XML</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:hivexml" placeholder="Refer to a hive-site.xml for connecting to Hive">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
-                </tr>
+                </tr> -->
             </tbody>
         </table>
         <table data-bind="with:df.shModel, visible: (df.popoverMode() == 'Shell Script')">
@@ -166,23 +180,43 @@
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
+                 <tr>
+                    <td>Input</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:input" placeholder="Fill input file path">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                 <tr>
+                    <td>Output</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:output" placeholder="Fill output file path">
+                        <button class="btn pd-custom fileChooserBtn">..</button>
+                    </td>
+                </tr>
+                 <tr>
+                    <td>Parameters</td>
+                    <td>
+                        <input type="text" class="inp-custom" data-bind="value:parameters" placeholder="Comma separated parameters">
+                    </td>
+                </tr>
             </tbody>
         </table>
         <table data-bind="with:df.javaAppModel,visible: (df.popoverMode() == 'Java App')">
             <tbody>
                 <tr>
-                    <td>Jar Name</td>
+                    <td>Jar File</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:jar" placeholder="Path to the jar on HDFS">
                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
-                <tr>
+              <!--   <tr>
                     <td>Main Class</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:mainclass" placeholder="Java class. e.g. org.apache.hadoop.examples.main">
                     </td>
-                </tr>
+                </tr> -->
             </tbody>
         </table>
         <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
@@ -217,16 +251,79 @@
                 </tr>
             </tbody>
         </table>
-        <table data-bind="visible: (df.popoverMode() == 'Transitions')">
-            <tbody>
-                <tr>
-                    <td>When Failed</td>
-                    <td>
-                        <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:df.whenFailed}">
-                    </td>
-                </tr>                
-            </tbody>
-        </table>
+        <div data-bind="visible: (df.popoverMode() == 'Transitions' && df.detailMode() != 'Fork' && df.detailMode() != 'Stop' )">
+            <ul class="nav nav-tabs" id="myTab">
+              <li class="active"><a href="#transition" data-toggle="tab">Transition</a></li>
+              <li><a href="#input" data-toggle="tab">Input</a></li>
+              <li><a href="#output" data-toggle="tab">Output</a></li>
+            </ul>
+            <div class="tab-content" data-bind="with:df.actionDetails">
+              <div class="tab-pane active" id="transition">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>When Failed</td>
+                                <td>
+                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
+                                </td>
+                            </tr>                
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="input">
+                    <a class="pointer" data-bind="" onclick="df.addParamInput();">
+                        <span data-bind="">Add </span>
+                        <i class="fa fa-plus"></i>
+                    </a>
+                    <table id= "" data-bind="">
+                        <tbody data-bind = "">
+                            <!-- ko foreach: input -->
+                            <tr>
+                                <td>
+                                    <input type="text" class="inp-fork" data-bind="value:keys" placeholder="">
+                                </td>
+                                <td>
+                                    <input type="text" class="inp-fork" data-bind="value:values" placeholder="">
+                                </td>
+                                <td>
+                                    <a class="pointer" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);">
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- /ko -->
+                        </tbody>
+                    </table>
+                </div>
+              <div class="tab-pane" id="output">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Type</td>
+                                <td>
+                                      <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-info btn-xs" data-bind="" onclick="df.addParamOutput();">Add parameter</a>
+                                </td>
+                            </tr>
+                            <!-- ko foreach: output.param -->
+                            <tr>
+                                <td> <input class="inp-output" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+                                <td> <input class="inp-output" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
+                                <td>
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                                </td>
+                            </tr>
+                             <!-- /ko -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+      
         <table  id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'Fork')">
             <tbody data-bind = "foreach:df.arrayconn">
                 <tr>
@@ -241,10 +338,10 @@
                 </tr> 
             </tbody>
         </table>
-        <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
-        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
     </div>
     <div style="clear:both;"></div>
+     <a class="btn btn-sm btn-warning pull-left" data-bind="" onclick="df.closePopover('#popbtn');">Cancel</a>
+        <a class="mgBottom btn btn-sm btn-primary pull-right" onclick="df.saveActionData();" data-bind="">Save</a>
 </script>
 
 <div class="divTitleDF" data-bind="with:df">
@@ -307,7 +404,17 @@
 
 		.popover{
 			max-width: 500px!important;
+            min-width: 300px!important;
+            min-height: 250px!important;
+            max-height: 350px!important;
+            overflow-y:scroll;
 		}
+
+        .popover-content .ct-custom{
+            max-width: 500px!important;
+            min-width: 300px!important;
+            min-height: 200px!important;
+        }
 
 		.popover-content .col-md-4{
 			padding-right: 0px;
@@ -329,6 +436,14 @@
 	    	cursor: pointer;
 		}
 
+        td:first-child{
+            width: 80px!important;
+        }
+
+        #fork td:first-child{
+            width: 20px!important;
+        }
+
 		.pTitle{
 			font-weight: bold;
     		font-size: large;
@@ -349,6 +464,14 @@
 		.mgBottom{
 			margin-bottom: 10px;
 		}
+
+        .mgTop10{
+            margin-top:10px;
+        }
+
+        .arrow{
+            display: none!important;
+        }
 
        #sortable-All {
             min-height: 40px;
@@ -421,6 +544,10 @@
         }
         .inp-fork{
             margin: 2px 5px;
+            width: 180px;
+        }
+        .inp-output{
+            margin: 5px -2px 5px 5px;
             width: 180px;
         }
 </style>

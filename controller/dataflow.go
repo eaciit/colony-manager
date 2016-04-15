@@ -50,11 +50,13 @@ func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 
 	dataDs := []colonycore.DataFlow{}
 	cursor, err := colonycore.Find(new(colonycore.DataFlow), dbox.Eq("_id", currentDataFlow.ID))
-	cursor.Fetch(&dataDs, 0, false)
-	if err != nil {
+	if cursor != nil {
+		cursor.Fetch(&dataDs, 0, false)
+		defer cursor.Close()
+	}
+	if err != nil && cursor != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	defer cursor.Close()
 
 	if len(dataDs) == 0 {
 		currentDataFlow.CreatedDate = time.Now()
@@ -93,12 +95,15 @@ func (a *DataFlowController) GetListData(r *knot.WebContext) interface{} {
 	cursor, err := colonycore.Find(new(colonycore.DataFlow), query)
 
 	dataDs := []colonycore.DataFlow{}
-	cursor.Fetch(&dataDs, 0, false)
 
-	if err != nil {
+	if cursor != nil {
+		cursor.Fetch(&dataDs, 0, false)
+		defer cursor.Close()
+	}
+
+	if err != nil && cursor != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	defer cursor.Close()
 
 	return helper.CreateResult(true, dataDs, "success")
 }
