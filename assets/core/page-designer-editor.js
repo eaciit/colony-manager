@@ -1,9 +1,11 @@
+viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
+
 var widgets = [
-        {x: 0, y: 0, width: 2, height: 2},
-        {x: 2, y: 0, width: 4, height: 2},
-        {x: 6, y: 0, width: 2, height: 4},
-        {x: 1, y: 2, width: 4, height: 2}
-    ];
+    {x: 0, y: 0, width: 2, height: 2},
+    {x: 2, y: 0, width: 4, height: 2},
+    {x: 6, y: 0, width: 2, height: 4},
+    {x: 1, y: 2, width: 4, height: 2}
+];
 
 var widgetFunc = function (widgets) {
     var self = this;
