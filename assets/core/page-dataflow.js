@@ -387,7 +387,7 @@ function visualTemplate(options) {
                         }
                     }));
 
-                 g.append(new dataviz.diagram.Image({
+                g.append(new dataviz.diagram.Image({
                     source: "/res/img/" + dataItem.image,
                     x: 14,
                     y: 7,
@@ -395,14 +395,14 @@ function visualTemplate(options) {
                     height: 30
                 }));
 
-                    g.append(new dataviz.diagram.TextBlock({
+                g.append(new dataviz.diagram.TextBlock({
                     text: dataItem.name,
                     x: 55,
                     y: 8,
                     fontSize:13
                 }));
 
-                     g.append(new dataviz.diagram.TextBlock({
+                g.append(new dataviz.diagram.TextBlock({
                     text: options.id,
                     x: 55,
                     y: 24,
@@ -435,7 +435,7 @@ df.init = function () {
             subtype: "radial"
         },
         shapeDefaults: {
-               visual: visualTemplate,
+            visual: visualTemplate,
             // content: {
             //     template: function (d) {
             //         console.log(d);
@@ -625,35 +625,34 @@ df.init = function () {
     df.xmouse = ko.observable(0);
 
     $("#sortable-All").kendoSortable({
-                         hint: function(element) {
-                            return element.clone().addClass("hint");
-                        },
-                        placeholder: function(element) {
-                            return element.clone().addClass("placeholder");
-                        },
-                        end:function(e){
-                            var name = $(e.item).attr("name");
-                            var image = $(e.item).attr("image");
-                            var color = $(e.item).attr("color");
-                            var type = $(e.item).attr("type");
+        hint: function(element) {
+            return element.clone().addClass("hint");
+        },
+        placeholder: function(element) {
+            return element.clone().addClass("placeholder");
+        },
+        end:function(e){
+            var name = $(e.item).attr("name");
+            var image = $(e.item).attr("image");
+            var color = $(e.item).attr("color");
+            var type = $(e.item).attr("type");
 
-                            var posdiag = $(".diagram")[0].getBoundingClientRect();
-                            var xpos = (xmouse - posdiag.left);
-                            var ypos = (ymouse - posdiag.top);
-                            ypos = (screen.height - 200)<ypos?(ypos - 200):ypos; 
-                            if(xpos>0&&ypos>0){
-                             var diagram = $(".diagram").data("kendoDiagram");
-                             diagram.addShape({ 
-                                x:xpos,
-                                y:ypos, 
-                                dataItem:{name:name,image :image, color:color,type:type} 
-                             });
-
-                             if(name!="Fork")
-                                df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
-                            }
-                        },
-       });
+            var posdiag = $(".diagram")[0].getBoundingClientRect();
+            var xpos = (xmouse - posdiag.left);
+            var ypos = (ymouse - posdiag.top);
+            ypos = (screen.height - 200)<ypos?(ypos - 200):ypos; 
+            if(xpos>0&&ypos>0){
+                var diagram = $(".diagram").data("kendoDiagram");
+                diagram.addShape({ 
+                    x:xpos,
+                    y:ypos, 
+                    dataItem:{name:name,image :image, color:color,type:type} 
+                });
+                if(name!="Fork")
+                    df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
+            }
+        },
+    });
 
       $("body").mousemove(function(e) {
             xmouse = e.pageX;
@@ -810,17 +809,17 @@ df.onRemove = function(e){
 }
 
 df.draggedElementsTexts = function(e) {
-            var text;
-            var elements;
-            if (e.shapes.length) {
-                text = "shapes";
-                elements = e.shapes;
-            } else {
-                text = "connections";
-                elements = e.connections;
-            }
-            return text;
-        }
+    var text;
+    var elements;
+    if (e.shapes.length) {
+        text = "shapes";
+        elements = e.shapes;
+    } else {
+        text = "connections";
+        elements = e.connections;
+    }
+    return text;
+}
 
 df.getShapeData = function(elem){
     var diagram = $(elem).getKendoDiagram();
@@ -890,7 +889,7 @@ df.Reload = function(){
 }
 
 df.Save = function(){
-     var ch = df.checkFlow(".diagram");
+    var ch = df.checkFlow(".diagram");
     if(ch){
         df.DataShape(df.getShapeData(".diagram"));
     }else{
@@ -933,64 +932,61 @@ df.popDescSave = function(val){
 }
 
 df.createGrid = function(search){
-      var searchtxt = search == undefined?"":search;
-     app.ajaxPost("/dataflow/getlistdata", {
+    var searchtxt = search == undefined?"":search;
+    app.ajaxPost("/dataflow/getlistdata", {
         search : searchtxt
     }, function(res){
         if(!app.isFine(res)){
-          return;
+            return;
         }else{
             dfl(res.data);
-           $("#dataFlowGrid").html();
-           $("#dataFlowGrid").kendoGrid({
-              dataSource:{
-                  data:res.data,
-                  pageSize:10,
-              },
-              pageable: {
-                            input: true,
-                            numeric: false
-              },
-              columns:[
-                   {field:"name",title:"Name",width:200},
-                   {field:"description", title:"Description"},
-                   {field:"createddate",align:"center" , width:150, title:"Created Date" ,template:"#:moment(Date.parse(createddate)).format('DD-MMM-YYYY HH:mm')#"
-                      ,attributes: {
-                        style: "text-align: center;",
-                      },
-                      headerAttributes: {
-                        style: "text-align: center;",
-                      },
-                   },
+            $("#dataFlowGrid").html();
+            $("#dataFlowGrid").kendoGrid({
+                dataSource:{
+                    data:res.data,
+                    pageSize:10,
+                },
+                pageable: {
+                    input: true,
+                    numeric: false
+                },
+                columns:[
+                    {field:"name",title:"Name",width:200},
+                    {field:"description", title:"Description"},
+                    {field:"createddate",align:"center" , width:150, title:"Created Date" ,template:"#:moment(Date.parse(createddate)).format('DD-MMM-YYYY HH:mm')#"
+                        ,attributes: {
+                            style: "text-align: center;",
+                        },
+                        headerAttributes: {
+                            style: "text-align: center;",
+                        },
+                    },
                    {field:"lastmodified",align:"center" , width:150, title:"Last Modified" ,template:"#:moment(Date.parse(lastmodified)).format('DD-MMM-YYYY HH:mm')#"
-                      ,attributes: {
-                        style: "text-align: center;",
-                      },
-                      headerAttributes: {
-                        style: "text-align: center;",
-                      },
-                   },
-                   {field:"createdby",width:200,title:"Created By"},
-                   {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-wrench'></span></button>"},
-                   {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"}
-              ],
-              dataBound:function(){
-                  $(".tooltipster-grid").tooltipster({
-                      theme: 'tooltipster-val',
-                      animation: 'grow',
-                      delay: 0,
-                      offsetY: -5,
-                      touchDevices: false,
-                      trigger: 'hover',
-                      position: "top"
-                  });
-              }
-          });
-
+                        ,attributes: {
+                            style: "text-align: center;",
+                        },
+                            headerAttributes: {
+                            style: "text-align: center;",
+                        },
+                    },
+                    {field:"createdby",width:200,title:"Created By"},
+                    {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-wrench'></span></button>"},
+                    {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"}
+                ],
+                dataBound:function(){
+                    $(".tooltipster-grid").tooltipster({
+                        theme: 'tooltipster-val',
+                        animation: 'grow',
+                        delay: 0,
+                        offsetY: -5,
+                        touchDevices: false,
+                        trigger: 'hover',
+                        position: "top"
+                    });
+                }
+            });
         }
     });
-
-     
 }
 
 df.goToDesigner = function(Id){
@@ -1063,35 +1059,36 @@ df.newDF = function(){
 }
 
 df.delete = function(Id){
-         swal({
-          title: "Are you sure?",
-          text: "You will delete this data",
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Yes",
-          cancelButtonText: "No",
-          closeOnConfirm: true,
-          closeOnCancel: true
-        },
-        function(isConfirm){
-          if (isConfirm) {
-             app.ajaxPost("/dataflow/delete", {
+    swal({
+        title: "Are you sure?",
+        text: "You will delete this data",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    },
+    function(isConfirm){
+        if (isConfirm) {
+            app.ajaxPost("/dataflow/delete", {
                 ID : Id,
             }, function(res){
                 if(!app.isFine(res)){
-                  return;
+                    return;
                 }else{
-                  df.createGrid();
-                   swal("Success", "Data Saved !", "success");
+                    df.createGrid();
+                    swal("Success", "Data Saved !", "success");
                 }
             });
         } 
-        });
+    });
 }
 
 
 var SearchTimeOut = setTimeout(function(){
-                },500);
+
+},500);
 
 df.Search = function(){
      clearTimeout(SearchTimeOut);
@@ -1176,11 +1173,11 @@ df.renderActionData = function(){
                         df.arrayconn.push({name:shapename+" - "+shapeid, condition: condt})
                     }
                 }
-        }
-        if(df.arrayconn().length==0){
-            $("#popbtn").popover("hide");
-        }
-      break;
+            }
+            if(df.arrayconn().length==0){
+                $("#popbtn").popover("hide");
+            }
+        break;
     }
 
 
@@ -1330,17 +1327,17 @@ df.setContext = function(){
 df.getServers = function (){
     var  url= '/filebrowser/getservers';
     $.ajax({
-                url: url,
-                call: 'POST',
-                dataType: 'json',
-                // data : data,
-                contentType: 'application/json; charset=utf-8',
-                success : function(res) {
-                    df.servers(res.data);
-                      },
-                error: function (a, b, c) {
-            },
-        });
+        url: url,
+        call: 'POST',
+        dataType: 'json',
+        // data : data,
+        contentType: 'application/json; charset=utf-8',
+        success : function(res) {
+            df.servers(res.data);
+        },
+        error: function (a, b, c) {
+        },
+    });
 }
 
 df.convertShapeToFlowAction = function(shape){
