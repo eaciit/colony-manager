@@ -210,3 +210,26 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, previewData, "")
 }
+
+func (p *WidgetController) GetWidgetSetting(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		PageID   string `json:"pageID"`
+		WidgetID string `json:"widgetID"`
+	}{}
+
+	widget := new(colonycore.Widget)
+	widget.ID = payload.WidgetID
+
+	if err := colonycore.Get(widget, widget.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	res, err := widget.GetConfigWidget()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
