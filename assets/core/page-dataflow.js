@@ -416,7 +416,7 @@ function visualTemplate(options) {
 
 df.init = function () {
     df.createGrid();
-
+    df.getServers();
     var dataSource = new kendo.data.HierarchicalDataSource({
         data: [],
         schema: {
@@ -634,6 +634,7 @@ df.init = function () {
                             var name = $(e.item).attr("name");
                             var image = $(e.item).attr("image");
                             var color = $(e.item).attr("color");
+                            var type = $(e.item).attr("type");
 
                             var posdiag = $(".diagram")[0].getBoundingClientRect();
                             var xpos = (xmouse - posdiag.left);
@@ -644,7 +645,7 @@ df.init = function () {
                              diagram.addShape({ 
                                 x:xpos,
                                 y:ypos, 
-                                dataItem:{name:name,image :image, color:color} 
+                                dataItem:{name:name,image :image, color:color,type:type} 
                              });
 
                              if(name!="Fork")
@@ -1019,9 +1020,11 @@ df.goToDesigner = function(Id){
     });
 
     $("svg").click(function(){
+        if($(".popover-title").html()=="Add Global Variables"){
         df.closePopover("#poptitle");
         df.closePopover("#popbtn");
         df.closePopover("#popGlobalVar");
+    }
     });
 }
 
@@ -1263,7 +1266,7 @@ df.deleteGlobalVar = function(e){
     df.globalVar.remove(dt);
 }
 
-df.servers = ko.observableArray(["server1","server2"]);
+df.servers = ko.observableArray([]);
 df.addParamInput = function () {
     var idy = df.actionDetails().input().length;
     df.actionDetails().input.push({idy:idy,key:"",value:""});
@@ -1321,20 +1324,102 @@ df.setContext = function(){
     $(".popover").attr("style","display: block; top: " +(df.ymouse()-320)+"px; left: "+(df.xmouse()-50)+"px;");
 }
 
+df.getServers = function (){
+    var  url= '/filebrowser/getservers';
+    $.ajax({
+                url: url,
+                call: 'POST',
+                dataType: 'json',
+                // data : data,
+                contentType: 'application/json; charset=utf-8',
+                success : function(res) {
+                    df.servers(res.data);
+                      },
+                error: function (a, b, c) {
+            },
+        });
+}
+
+df.convertShapeToFlowAction = function(shape){
+var res = {};
+
+var item = shape.dataItem;
+var action = item.DataAction;
+var details = item.DataActionDetails;
+
+res.id = shape.id;
+res.name = item.name;
+res.description = res.id +" - "+res.name;
+res.type = item.type;
+res.server = action.server();
+res.action = JSON.parse(ko.toJSON(action));
+res.OK = [];
+res.KO = [];
+
+var conn = df.getConnectionShape(shape);
+var inc = conn.in;
+var outc = conn.out;
+var det = JSON.parse(ko.toJSON(details));
+
+for(var i in outc){
+    var co = outc[i];
+    res.OK.push(co.id);
+}
+
+res.KO.push(det.whenFailed);
+res.Retry = 0;
+res.Interval = 0;
+
+if(inc.length==0)
+res.firstaction = true;
+
+res.inputparam = det.input;
+res.outputparam = det.output.param;
+res.outputtype = det.output.type;
+
+
+return res;
+}
+
+df.getConnectionShape = function(shape){
+    var conn = shape.connectors;
+    var res = [];
+    var resfrom = [];
+    for(var i in conn){
+        var co = conn[i].connections
+        for(var x in co){
+            var dt = co[x];
+            var dshape = dt.to.shape == undefined?dt.to:dt.to.shape;
+            var dshapef = dt.from.shape == undefined?dt.from:dt.from.shape;
+
+            if(dshapef.id==shape.id)//conn out
+            res.push(dshape);
+
+            if(dshape.id==shape.id)//conn in
+            resfrom.push(dshapef);
+        }
+    }
+    return {in:resfrom,out:resto};
+}
+
 $(function () {
     df.init();
     app.section('');
-    $('body').on('mousedown', 'div', function(e) {
-        $('.popover').addClass('draggable').parents().on('mousemove', function(e) {
-            $('.draggable').offset({
-                top: e.pageY - $('.draggable').outerHeight() / 2,
-                left: e.pageX - $('.draggable').outerWidth() / 2
-            }).on('mouseup', function() {
-                $(this).removeClass('draggable');
-            });
-        });
-        e.preventDefault();
-    }).on('mouseup', function() {
-        $('.draggable').removeClass('draggable');
-    });
+    // $('body').on('mousedown', 'div', function(e) {
+    //     $('.popover').draggable({
+    //         drag: function() {
+    //             var offset = $(this).offset();
+    //             var xPos = offset.left;
+    //             var yPos = offset.top;
+    //         },
+    //         start: function () {
+    //             $(this).draggable("enable");
+    //         },
+    //         stop: function () {
+    //             $(this).draggable("disable");
+    //         },
+    //         handle: ".popover-title"
+    //     });
+    //     e.preventDefault();
+    // })
 });
