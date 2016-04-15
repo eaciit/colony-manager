@@ -1,24 +1,15 @@
 package controller
 
 import (
-	// "archive/zip"
-	"encoding/json"
-	// "errors"
 	"fmt"
 	"path/filepath"
 	"strings"
-	// "time"
 
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
-	_ "github.com/eaciit/dbox/dbc/jsons"
-	// "github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/live"
 	"github.com/eaciit/sshclient"
-	// "github.com/eaciit/toolkit"
-	// "golang.org/x/crypto/ssh"
 )
 
 var (
@@ -60,19 +51,6 @@ func CreateLangenvironmentController(l *knot.Server) *LangenvironmentController 
 	var controller = new(LangenvironmentController)
 	controller.Server = l
 	return controller
-}
-
-func (l *LangenvironmentController) GetSampleDataForSetupLang() colonycore.LanguageEnvironmentPayload {
-	// s := `[{ "ServerId": "vagrant-test1", "Lang": [ "go" ] }, { "ServerId": "vagrant-test2", "Lang": [ "go", "java" ] }]`
-	s := `{ "ServerId": "localhost", "Lang": "go" }`
-
-	r := colonycore.LanguageEnvironmentPayload{}
-	err := json.Unmarshal([]byte(s), &r)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return r
 }
 
 func (le *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{} {
@@ -160,7 +138,6 @@ func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) inter
 
 func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	// payload := l.GetSampleDataForSetupLang()
 
 	payload := new(colonycore.LanguageEnvironmentPayload)
 	err := r.GetPayload(payload)
@@ -226,6 +203,8 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 							break
 						}
 					}
+
+					targetLang.IsInstalled = true
 
 					if eachLang.Language == LANG_GO {
 						pathstring = append(pathstring, LANG_GO)
@@ -302,8 +281,18 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 					}
 					fmt.Println(" :: : ", outputCmd[0].Output)
 
-					targetLang.IsInstalled = true
-					dataServers.InstalledLang = append(dataServers.InstalledLang, targetLang)
+					newInstalledLangs := []*colonycore.InstalledLang{}
+
+					for _, each := range dataServers.InstalledLang {
+						if each.Lang == targetLang.Lang {
+							continue
+						}
+
+						newInstalledLangs = append(newInstalledLangs, each)
+					}
+
+					newInstalledLangs = append(newInstalledLangs, targetLang)
+					dataServers.InstalledLang = newInstalledLangs
 					colonycore.Save(dataServers)
 				}
 			}
@@ -315,16 +304,15 @@ func (l *LangenvironmentController) SetupFromSH(r *knot.WebContext) interface{} 
 
 func (l *LangenvironmentController) UninstallLang(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	payload := l.GetSampleDataForSetupLang()
 
-	// payload := new(colonycore.LanguageEnvironmentPayload)
-	// err := r.GetPayload(payload)
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
+	payload := new(colonycore.LanguageEnvironmentPayload)
+	err := r.GetPayload(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	dataServers := new(colonycore.Server)
-	err := colonycore.Get(dataServers, payload.ServerId)
+	err = colonycore.Get(dataServers, payload.ServerId)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -359,6 +347,18 @@ func (l *LangenvironmentController) UninstallLang(r *knot.WebContext) interface{
 		helper.CreateResult(false, nil, err.Error())
 	}
 	fmt.Println("result :: ", result)
+
+	for _, eachLang := range dataServers.InstalledLang {
+		if eachLang.Lang == payload.Lang {
+			eachLang.IsInstalled = false
+			break
+		}
+	}
+
+	err = colonycore.Save(dataServers)
+	if err != nil {
+		helper.CreateResult(false, nil, err.Error())
+	}
 
 	return helper.CreateResult(true, payload, "")
 }

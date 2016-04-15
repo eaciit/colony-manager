@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
@@ -18,12 +17,6 @@ func CreatePageController(s *knot.Server) *PageController {
 	var controller = new(PageController)
 	controller.Server = s
 	return controller
-}
-
-func (p *PageController) View(r *knot.WebContext, args []string) interface{} {
-	fmt.Println(args)
-
-	return nil
 }
 
 func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {

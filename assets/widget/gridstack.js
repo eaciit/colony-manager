@@ -785,12 +785,16 @@
                     // if ($(ui.draggable).attr("boolRemove") != "false")
                     //console.log($(ui.draggable));
                     var $datagrag = $(ui.draggable).draggable("destroy");
-                    $(ui.draggable).remove(); 
+                    $(ui.draggable).remove();
+                    $("#sidebar").find(".grid-stack-item-content").removeClass(".list-left");
                     $("#sidebar ul.nav").append($datagrag.draggable({
                         handle: '.grid-stack-item-content',
                         helper: "clone",
                         scroll: true,
-                        appendTo: 'body'
+                        appendTo: 'body',
+                        placeholder: function(element) {
+                            return element.clone().addClass("placeholder");
+                        },
                     }));
 
                     node.el = el;
@@ -814,8 +818,8 @@
                                         '<div class="panel-heading wg-panel clearfix">'+
                                             '<span>'+name_widget+'</span>'+
                                             '<div class="pull-right">'+
-                                                ' <a href="#" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-cog"></span></a> '+
-                                                ' <a href="#" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></a> '+
+                                                ' <a href="#" class="btn btn-default btn-xs tooltipster" title="Setting"><span class="glyphicon glyphicon-cog"></span></a> '+
+                                                ' <a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove"><span class="glyphicon glyphicon-trash"></span></a> '+
                                             '</div>'+
                                         '</div>'+
                                     '</div>');
@@ -827,6 +831,7 @@
                     self._triggerChangeEvent();
 
                     self.grid.endUpdate();
+                    app.prepareTooltipster();
                 }
             });
         }
