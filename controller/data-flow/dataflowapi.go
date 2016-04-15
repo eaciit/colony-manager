@@ -87,28 +87,29 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 // runProcess, process the flow
 func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
 	var res []toolkit.M
+	arguments := setCommandArgument(action)
 	switch action.Type {
-	case ACTION_TYPE_HIVE:
-		res, e = runHive(process, action)
-		break
-	case ACTION_TYPE_HDFS:
-		res, e = runHDFS(process, action)
-		break
-	case ACTION_TYPE_SPARK:
-		res, e = runSpark(process, action)
-		break
-	case ACTION_TYPE_SSH:
-		res, e = runSSH(process, action)
-		break
-	case ACTION_TYPE_EMAIL:
-		// res, e = runSSH(process, action)
-		break
-	case ACTION_TYPE_MAP_REDUCE:
-		res, e = runMapReduce(process, action)
-		break
-	case ACTION_TYPE_JAVA:
-		res, e = runJava(process, action)
-		break
+		case ACTION_TYPE_HIVE:
+			res, e = runHive(process, action, arguments)
+			break
+		case ACTION_TYPE_HDFS:
+			res, e = runHDFS(process, action, arguments)
+			break
+		case ACTION_TYPE_SPARK:
+			res, e = runSpark(process, action, arguments)
+			break
+		case ACTION_TYPE_SSH:
+			res, e = runSSH(process, action, arguments)
+			break
+		case ACTION_TYPE_EMAIL:
+			// res, e = runSSH(process, action)
+			break
+		case ACTION_TYPE_MAP_REDUCE:
+			res, e = runMapReduce(process, action, arguments)
+			break
+		case ACTION_TYPE_JAVA:
+			res, e = runJava(process, action, arguments)
+			break
 	}
 	fmt.Println(res)
 	var msg string
@@ -121,7 +122,7 @@ func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actio
 	return e
 }
 
-func runHive(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runHive(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	action_hive := action.Action.(colonycore.ActionHive)
 	hivex = hive.HiveConfig(action.Server.Host, "", "Username", "Password", "Path")
 
@@ -130,7 +131,7 @@ func runHive(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 	return res, e
 }
 
-func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	server := action.Server
 	setting, _, e := (&server).Connect()
 	hdfs := action.Action.(colonycore.ActionHDFS)
@@ -145,7 +146,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction) (res []t
 	return
 }
 
-func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runSpark(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	spark := action.Action.(colonycore.ActionSpark)
 	args := ""
 
@@ -183,7 +184,7 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction) (res []
 	return
 }
 
-func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runSSH(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	server := action.Server
 	setting, _, e := (&server).Connect()
 	ssh := action.Action.(colonycore.ActionSSH)
@@ -198,7 +199,7 @@ func runSSH(process colonycore.DataFlow, action colonycore.FlowAction) (res []to
 	return
 }
 
-func runShell(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runShell(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	server := action.Server
 	setting, _, e := (&server).Connect()
 	shell := action.Action.(colonycore.ActionShellScript)
@@ -212,7 +213,7 @@ func runShell(process colonycore.DataFlow, action colonycore.FlowAction) (res []
 	return
 }
 
-func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	server := action.Server
 	setting, _, e := (&server).Connect()
 	mr := action.Action.(colonycore.ActionHadoopStreaming)
@@ -245,7 +246,7 @@ func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction) (re
 	return
 }
 
-func runJava(process colonycore.DataFlow, action colonycore.FlowAction) (res []toolkit.M, e error) {
+func runJava(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	server := action.Server
 	setting, _, e := (&server).Connect()
 	java := action.Action.(colonycore.ActionJavaApp)
@@ -446,8 +447,16 @@ func getActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction col
 	return
 }
 
-func setCommandArgument(flow colonycore.DataFlow, action colonycore.FlowAction, ActionBefore []colonycore.FlowAction) (arguments []string) {
-	return nil
+func setCommandArgument(action colonycore.FlowAction) (arguments string) {
+	//decode action output file, convert to toolkit.M, then add into argument as its key
+	res, _ := decodeOutputFile(action)
+	resMap := res.(toolkit.M)
+
+	for key, _ := range action.InputParam {
+		arguments += string(key) + "=" + resMap.GetString(key)
+	}
+
+	return 
 }
 
 func writeActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowAction, msg string) (err error) {
@@ -474,14 +483,14 @@ func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error
 	case "JSON":
 		e = json.Unmarshal(file, &output)
 	case "CSV":
-		break
 		output, e = decodeCSV(file)
+		break
 	case "TSV":
-		break
 		output, e = decodeTSV(file)
-	case "TEXT":
 		break
+	case "TEXT":
 		output, e = decodeText(file)
+		break
 	default:
 		break
 	}
