@@ -159,6 +159,7 @@ wl.saveAndCloseModal = function(_id, datasource) {
 
 wl.addWidget = function() {
 	app.mode("editor");
+	app.showfilter(false);
 	wl.scrapperMode("");
 	wl.getFile();
 };
@@ -228,6 +229,7 @@ wl.editWidget = function(_id, mode) {
 			metadata: res.data.config
 		});
 	});
+	app.showfilter(false);
 };
 
 wl.getFile = function() {
@@ -295,5 +297,5 @@ wl.backToFront = function() {
 $(function (){
 	wl.getWidgetList("");
 	wl.selectAllWidget();
-	app.registerSearchKeyup($('.searchbr'), wl.getWidgetList);
+	app.registerSearchKeyup($('.search'), wl.getWidgetList);
 });
