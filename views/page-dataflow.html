@@ -317,10 +317,16 @@
                             </tr>
                             <!-- ko foreach: input -->
                             <tr>
-                                <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
-                                <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
                                 <td>
-                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamInput(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                                    <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name">
+                                </td>
+                                <td>
+                                    <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value">
+                                </td>
+                                <td>
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);">
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                    </a>
                                 </td>
                             </tr>
                              <!-- /ko -->
@@ -343,10 +349,16 @@
                             </tr>
                             <!-- ko foreach: output.param -->
                             <tr>
-                                <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
-                                <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value"></td> </td>
                                 <td>
-                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                                    <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name">
+                                </td>
+                                <td>
+                                    <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value">
+                                </td>
+                                <td>
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamOutput(event);">
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                    </a>
                                 </td>
                             </tr>
                              <!-- /ko -->

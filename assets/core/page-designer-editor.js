@@ -7,44 +7,38 @@ var widgets = [
     {x: 1, y: 2, width: 4, height: 2}
 ];
 
-var widgetFunc = function (widgets) {
-    var self = this;
+pde.widgets = ko.observableArray(widgets);
+pde.addNewWidget = function () {
+    pde.widgets.push({
+        x: 0,
+        y: 0,
+        width: 4,
+        height: 4,
+        auto_position: true
+    });
 
-    this.widgets = ko.observableArray(widgets);
-
-    this.addNewWidget = function () {
-        this.widgets.push({
-            x: 0,
-            y: 0,
-            width: 4,
-            height: 4,
-            auto_position: true
-        });
-
-        return false;
-    };
-
-    this.deleteWidget = function (item) {
-         swal({
-                title: "Are you sure?",
-                text: "You will delete this widget",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-                cancelButtonText: "No",
-                closeOnConfirm: true,
-                closeOnCancel: true
-              },
-              function(isConfirm){
-                if (isConfirm) {
-                     self.widgets.remove(item);
-                } 
-              });
-       
-        return false;
-    };
+    return false;
 };
-pg.widgetgrid = new widgetFunc(widgets);
+
+pde.deleteWidget = function (item) {
+     swal({
+            title: "Are you sure?",
+            text: "You will delete this widget",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            closeOnConfirm: true,
+            closeOnCancel: true
+          },
+          function(isConfirm){
+            if (isConfirm) {
+                pde.widgets.remove(item);
+            } 
+          });
+   
+    return false;
+};
 
 ko.components.register('widget-grid', {
     viewModel: {
