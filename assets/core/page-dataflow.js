@@ -573,50 +573,7 @@ df.init = function () {
         html : true,
         placement : 'right',
         content: $(".poptitle-content").html()        
-    });
-
-    // $(".pTitle").dblclick(function(e){
-    //     $("#popbtn").popover("hide");
-    //     $("#popGlobalVar").popover("hide");
-    //     $("#poptitle").popover("show");
-    //     $(".popover-title").removeAttr("style");
-    //     $(".popover-title").html("Edit Title");
-    //     $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
-    //     $(".arrow").attr("style","top:46%");
-    //     $(".pop-txt").val(df.Name());
-
-    //     $(".poptitle-close").click(function(e){
-    //         $("#poptitle").popover("hide");
-    //     });
-
-    //     $(".poptitle-save").click(function(e){
-    //         df.Name($(".pop-txt:visible").val());
-    //         $("#poptitle").popover("hide");
-    //     });
-    // });
-
-    // $(".pDesc").dblclick(function(e){
-    //     $("#popbtn").popover("hide");
-    //     $("#popGlobalVar").popover("hide");
-    //     $("#poptitle").popover("show");
-    //     $(".popover-title").removeAttr("style");
-    //     $(".popover-title").html("Edit Desciption");
-    //     $(".popover").attr("style","display: block; top: " +(ymouse-25)+"px; left: "+(xmouse+25)+"px;");
-    //     $(".arrow").attr("style","top:46%");
-    //     $(".pop-txt").val(df.Description());
-   
-
-    //     $(".poptitle-close").click(function(e){
-    //         $("#poptitle").popover("hide");
-    //     });
-
-    //     $(".poptitle-save").click(function(e){
-    //         df.Description($(".pop-txt:visible").val());
-    //         $("#poptitle").popover("hide");
-    //     });
-    // });
-
-  
+    });  
 
     var xmouse = 0;
     var ymouse = 0;
