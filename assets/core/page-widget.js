@@ -17,11 +17,9 @@ wl.searchfield = ko.observable("");
 wl.scrapperMode = ko.observable("");
 wl.previewMode = ko.observable("");
 wl.WidgetColumns = ko.observableArray([
-	{ template: function(d) {
-		id = 'd._id', onclick =''
-	}},
+	{ title: "", width: 50 },
 	{ field: "title", title: "Title" },
-	{ field:"action"}
+	{ title: "", width: 140 }
 ]);
 
 wl.setGridwl = function (){
@@ -33,8 +31,6 @@ wl.setGridwl = function (){
 		dataBound: app.gridBoundTooltipster('.grid-widget'),
 		rowTemplate : kendo.template($("#rowTemplate").html()),
 	}).addClass("grid-soft grid-list grid-unselectable");
-	$('.grid-widget').find("thead").remove();
-	$('.grid-widget').find('.k-grid-header').remove();
 	$('.grid-widget').find('tr:eq(0) td').css("border-top","none");	
 }
 
