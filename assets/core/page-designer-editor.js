@@ -45,7 +45,8 @@ ko.components.register('widget-grid', {
         createViewModel: function (controller, componentInfo) {
             var ViewModel = function (controller, componentInfo) {
                 var grid = null;
-                this.widgets = controller.widgetgrid.widgets;
+                console.log(controller);
+                // this.widgets = controller.widgetgrid.widgets;
 
                 this.afterAddWidget = function (items) {
                     if (grid == null) {
@@ -73,8 +74,8 @@ ko.components.register('widget-grid', {
             '            <div class="panel panel-default">',
             '                <div class="panel-heading wg-panel clearfix">',
             '                  <div class="pull-right">',
-            '                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pg.widgetSetting(\'wp1459947140191\', \'modal\')}" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>',
-            '                    <a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" data-bind="click: pg.widgetgrid.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
+            '                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pde.widgetSetting(\'wp1459947140191\', \'modal\')}" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>',
+            '                    <a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" data-bind="click: pde.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>',
             '                  </div>',
             '               </div>',
             '            </div>',
