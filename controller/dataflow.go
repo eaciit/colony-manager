@@ -51,7 +51,7 @@ func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 	currentDataFlow.Name = tk.ToString(payload["Name"])
 	currentDataFlow.Description = tk.ToString(payload["Description"])
 	currentDataFlow.ID = tk.ToString(payload["ID"])
-	// currentDataFlow.GlobalParam = nil
+	currentDataFlow.GlobalParam = nil
 
 	dataDs := []colonycore.DataFlow{}
 	cursor, err := colonycore.Find(new(colonycore.DataFlow), dbox.Eq("_id", currentDataFlow.ID))
@@ -88,7 +88,7 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 		server := colonycore.Server{}
 		if flowAction["server"] != nil {
 			dsServer := []colonycore.Server{}
-			cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", flowAction["server"].(string)))
+			cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", tk.ToString(flowAction["server"])))
 
 			if err != nil {
 				//
@@ -113,7 +113,7 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 		}
 
 		if flowAction["outputtype"] != nil {
-			outputType = flowAction["outputtype"].(string)
+			outputType = tk.ToString(flowAction["outputtype"])
 		}
 
 		for _, out := range flowAction["outputparam"].([]interface{}) {
@@ -124,19 +124,19 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 		KO := []string{}
 
 		for _, str := range flowAction["OK"].([]interface{}) {
-			OK = append(OK, str.(string))
+			OK = append(OK, tk.ToString(str))
 		}
 
 		for _, str := range flowAction["KO"].([]interface{}) {
-			KO = append(KO, str.(string))
+			KO = append(KO, tk.ToString(str))
 		}
 
-		actionType := flowAction["type"].(string)
+		actionType := tk.ToString(flowAction["type"])
 
 		flow := colonycore.FlowAction{
-			Id:          flowAction["id"].(string),
-			Name:        flowAction["name"].(string) + "-" + flowAction["id"].(string),
-			Description: flowAction["description"].(string),
+			Id:          tk.ToString(flowAction["id"]),
+			Name:        tk.ToString(flowAction["name"]) + "-" + tk.ToString(flowAction["id"]),
+			Description: tk.ToString(flowAction["description"]),
 			Type:        actionType,
 			Server:      server,
 			OK:          OK,
@@ -155,46 +155,47 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 		switch actionType {
 		case dataflow.ACTION_TYPE_SPARK:
 			spark := colonycore.ActionSpark{
-				Master:    dataAction["master"].(string),
-				Mode:      dataAction["mode"].(string),
-				File:      dataAction["appfiles"].(string),
-				MainClass: dataAction["mainclass"].(string),
-				// Args:      dataAction["args"].(string),
+				Master:    tk.ToString(dataAction["master"]),
+				Mode:      tk.ToString(dataAction["mode"]),
+				File:      tk.ToString(dataAction["appfiles"]),
+				MainClass: tk.ToString(dataAction["mainclass"]),
+				Args:      tk.ToString(dataAction["args"]),
 			}
 			flow.Action = spark
 			break
 		case dataflow.ACTION_TYPE_HIVE:
 			hive := colonycore.ActionHive{
-				ScriptPath: dataAction["scriptpath"].(string),
+				ScriptPath: tk.ToString(dataAction),
 				// Params:     ,
 			}
 			flow.Action = hive
 			break
 		case dataflow.ACTION_TYPE_SSH:
 			ssh := colonycore.ActionSSH{
-				Command: dataAction["script"].(string),
+				Command: tk.ToString(dataAction["script"]),
 			}
 			flow.Action = ssh
 			break
 		case dataflow.ACTION_TYPE_HDFS:
 			hdfs := colonycore.ActionHDFS{
-			// Command: dataAction["script"].(string),
+				Command: tk.ToString(dataAction["script"]),
 			}
 			flow.Action = hdfs
 			break
 		case dataflow.ACTION_TYPE_JAVA:
 			java := colonycore.ActionJavaApp{
-				Jar: dataAction["jar"].(string),
+				Jar: tk.ToString(dataAction["jar"]),
 			}
 			flow.Action = java
 			break
 		case dataflow.ACTION_TYPE_MAP_REDUCE:
 			mr := colonycore.ActionHadoopStreaming{
 				// Jar: ,
-				Mapper:  dataAction["mapper"].(string),
-				Reducer: dataAction["reducer"].(string),
-				Input:   dataAction["input"].(string),
-				Output:  dataAction["output"].(string),
+				Mapper:  tk.ToString(dataAction["mapper"]),
+				Reducer: tk.ToString(dataAction["reducer"]),
+				Input:   tk.ToString(dataAction["input"]),
+				Output:  tk.ToString(dataAction["output"]),
+				Params:  tk.ToString(dataAction["params"]),
 			}
 			flow.Action = mr
 			break
@@ -217,11 +218,23 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 		// 	action.Type = dataflow.ACTION_TYPE_FORK
 		// 	break
 		case dataflow.ACTION_TYPE_DECISION:
-			decision := colonycore.ActionDecision{}
+			conditions := []colonycore.Condition{}
+
+			/*for _, val := range dataAction["conditions"].([]interface{}) {
+				condition := val.(colonycore.Condition)
+				conditions = append(conditions, condition)
+			}*/
+
+			decision := colonycore.ActionDecision{
+				Conditions: conditions,
+				// IsFork:     dataAction["isfork"].(bool),
+			}
 			flow.Action = decision
 			break
 		case dataflow.ACTION_TYPE_STOP:
-			stop := colonycore.ActionStop{}
+			stop := colonycore.ActionStop{
+				Message: tk.ToString(dataAction["message"]),
+			}
 			flow.Action = stop
 			break
 		}
