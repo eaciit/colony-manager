@@ -117,7 +117,22 @@
 			<div class="col-md-10 designer">
 				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
 					<div class="col-md-12">
-						<div data-bind="component: {name: 'widget-grid', params: $data}"></div>
+						<div>
+							<div class="grid-stack" id="page-designer-grid-stack" data-bind="foreach: { data: pde.widgets, afterRender: pde.afterAddWidget }">
+							   <div class="grid-stack-item" data-bind="attr: {'data-gs-x': $data.x, 'data-gs-y': $data.y, 'data-gs-width': $data.width, 'data-gs-height': $data.height, 'data-gs-auto-position': $data.auto_position}">
+							       <div class="grid-stack-item-content">
+							            <div class="panel panel-default">
+							                <div class="panel-heading wg-panel clearfix">
+							                  <div class="pull-right">
+							                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pde.widgetSetting('wp1459947140191', 'modal')}" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>
+							                    <a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" data-bind="click: pde.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>
+							                  </div>
+							               </div>
+							            </div>
+							       </div>
+							   </div>
+							</div>
+						</div>
 					</div>
 					<div style="clear:both;"></div>
 				</div>
