@@ -101,7 +101,6 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		pg.setWidgetContainer();
 		setTimeout(function () {
 			ko.mapping.fromJS(res.data, pg.configPageDesigner)
 		},100);
