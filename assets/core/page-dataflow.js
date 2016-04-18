@@ -1270,14 +1270,14 @@ df.deleteGlobalVar = function(e){
 
 df.servers = ko.observableArray([]);
 df.addParamInput = function () {
-    var idy = df.actionDetails().input().length;
-    df.actionDetails().input.push({idy:idy,key:"",value:""});
+    var idx = df.actionDetails().input().length;
+    df.actionDetails().input.push({idx:idx,key:"",value:""});
 }
 
 df.deleteParamInput = function(e){
-    var idy = $(e.target).attr("index");
-    idy = idy == undefined? $(e.target).parent().attr("index"):idy;
-    var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idy == idy });
+    var idx = $(e.target).attr("index");
+    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
+    var dr = Lazy(df.actionDetails().input()).find(function ( d ) { return d.idx == idx });
     df.actionDetails().input.remove(dr);
 }
 
