@@ -259,7 +259,7 @@
         <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
             <tbody>
                 <tr>
-                    <td>To Addresses</td>
+                    <td>To</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:to" placeholder="Comma-separated values">
                     </td>
@@ -305,7 +305,7 @@
                     <table>
                         <tbody>
                             <tr>
-                                <td>When Failed</td>
+                                <td>When failed</td>
                                 <td>
                                     <input type="text" class="inp-decision inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
                                 </td>
@@ -330,7 +330,7 @@
                                     <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value">
                                 </td>
                                 <td>
-                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);">
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamInput(event);">
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </a>
                                 </td>
@@ -381,7 +381,7 @@
                     <td>
                         <input type="text" class="inp-fork inp-left" data-bind="value:stat" placeholder="">
                     </td>
-                    <td>Go To</td>
+                    <td>go to</td>
                     <td>
                         <input type="text" disabled="disabled" class="inp-fork inp-right" data-bind="value:flowaction" placeholder="">
                     </td>
@@ -396,10 +396,10 @@
 
 <div class="divTitleDF" data-bind="with:df">
     <div class="col-md-12">
-        <input class="pTitle inline-edit" data-bind="text:Name" value="Add Title"></input>
+        <input class="pTitle inline-edit" data-bind="value:Name" placeholder="Add Title" ></input>
     </div>
     <div class="col-md-12">
-    	<input class="pDesc inline-edit" data-bind="text:Description" value="Add Description"></input>
+    	<input class="pDesc inline-edit" data-bind="value:Description" placeholder="Add Description" ></input>
     </div>
 </div>
 
