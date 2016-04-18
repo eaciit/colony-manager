@@ -94,6 +94,7 @@ df.arrayconn = ko.observableArray([]);
 df.globalVar = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
+df.isFork = ko.observable(true);
 
 df.outputType = ko.observableArray([
 "json",
@@ -583,13 +584,13 @@ df.init = function () {
 
     $('.pTitle').blur(function(){
         if( !$(this).val() ) {
-            $(".pTitle").val("Add Title");
+            $(".pTitle").val("");
         }
     });
 
     $('.pDesc').blur(function(){
         if( !$(this).val() ) {
-            $(".pDesc").val("Add Description");
+            $(".pDesc").val("");
         }
     });
 
@@ -851,7 +852,12 @@ df.renderDiagram = function(elem,data){
             },
             type: "polyline",
             startCap: "FilledCircle",
-            endCap: "ArrowEnd"
+            endCap: "ArrowEnd",
+            editable:{
+              drag:{},
+              remove:true,
+              tools:[]
+            }
         });
 
         diagram.addConnection(connection);
@@ -1147,7 +1153,10 @@ df.renderActionData = function(){
       case "Decision":
             df.arrayconn([]);
             if(dataItem.DataAction == undefined){
-                 dataItem.DataAction = [];
+                dataItem.DataAction = { conditions : [], isfork : df.isFork()};
+                df.isFork(true);
+            }else{
+                df.isFork(dataItem.DataAction.isfork);
             }
 
             var selected = diagram;
@@ -1179,7 +1188,7 @@ df.renderActionData = function(){
                 $("#popbtn").popover("hide");
             }
 
-            dataItem.DataAction = df.arrayconn();
+            dataItem.DataAction = { conditions : df.arrayconn(), isfork : df.isFork() };
         break;
     }
 
@@ -1200,6 +1209,12 @@ df.selectedServer.subscribe(function(val){
     var diagram = $(".diagram").getKendoDiagram().select()[0];
     var dataItem = diagram.dataItem;
     dataItem.DataAction.server(val);
+});
+
+df.isFork.subscribe(function(val){
+    var diagram = $(".diagram").getKendoDiagram().select()[0];
+    var dataItem = diagram.dataItem;
+    dataItem.DataAction.isfork = val;
 });
 
 df.saveActionData = function(){
@@ -1385,7 +1400,7 @@ res.server =  res.name == "Decision" || res.name == "Stop"?"" : action.server();
 
 var actj = JSON.parse(ko.toJSON(action));
 
-res.action = res.name == "Decision"? {conditions: actj } :actj;
+res.action = actj;
 res.OK = [];
 res.KO = [];
 
