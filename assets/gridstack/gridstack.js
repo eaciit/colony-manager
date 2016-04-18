@@ -535,7 +535,7 @@
                 handle: (opts.handleClass ? '.' + opts.handleClass : (opts.handle ? opts.handle : '')) ||
                     '.grid-stack-item-content',
                 scroll: false,
-                appendTo: 'body',
+                appendTo: 'body'
             }),
             disableDrag: opts.disableDrag || false,
             disableResize: opts.disableResize || false,
@@ -646,6 +646,8 @@
                     if (node.noResize || self.opts.disableResize) {
                         node.el.resizable('disable');
                     }
+
+                    node.el.trigger('resize');
                 });
             } else {
                 if (!oneColumnMode) {
@@ -665,6 +667,8 @@
                     if (!node.noResize && !self.opts.disableResize) {
                         node.el.resizable('enable');
                     }
+
+                    node.el.trigger('resize');
                 });
             }
         };
@@ -775,6 +779,86 @@
                     self._updateContainerHeight();
                     el.data('_gridstack_node', el.data('_gridstack_node_orig'));
                 },
+                // drop: function(event, ui) {
+                //     self.placeholder.detach();
+                //     var node = $(ui.draggable).data('_gridstack_node');
+                //     node._grid = self;
+                //     var el = $(ui.draggable).clone(false);
+                //     el.data('_gridstack_node', node);
+
+                //     var $datagrag = $(ui.draggable).clone();
+
+                //     $(ui.draggable).remove();
+                //     $datagrag.removeClass('placeholder-dash');
+
+                //     $("#sidebar").append($datagrag.draggable({
+                //         handle: '.grid-stack-item-content',
+                //         helper: "clone",
+                //         scroll: true,
+                //         appendTo: 'body',
+                //         revert: true,
+                //         placeholder: function(element) {
+                //             return element.clone().addClass("placeholder");
+                //         },
+                //         start: function( event, ui ) {
+                //               $(this).addClass('placeholder-dash');
+                //         },
+                //         stop: function( event, ui ) {
+                //               $(this).removeClass('placeholder-dash');
+                //               $(this).addClass('list-left'); 
+                //         }
+                //     }));
+
+                //     node.el = el;
+                //     self.placeholder.hide();
+                //     el
+                //         .attr('data-gs-x', node.x)
+                //         .attr('data-gs-y', node.y)
+                //         .attr('data-gs-width', node.width)
+                //         .attr('data-gs-height', node.height)
+                //         .attr('data-pageid', node.pageid)
+                //         .attr('data-id', node.id)
+                //         .attr('data-widgetid', node.widgetid)
+                //         .addClass(self.opts.itemClass)
+                //         .removeAttr('style')
+                //         .enableSelection()
+                //         .removeData('draggable')
+                //         .removeClass('list-left')
+                //         .removeClass('placeholder-dash')
+                //         .removeClass('ui-draggable ui-draggable-dragging ui-draggable-disabled')
+                //         .unbind('drag', onDrag);
+
+                //     self.container.append(el);
+
+                //     var name_widget = el.find($(".grid-stack-item-content")).find("a").html();
+                //     $headerPanel = $('<div class="panel panel-default">'+
+                //                         '<div class="panel-heading wg-panel clearfix">'+
+                //                             '<span>'+name_widget+'</span>'+
+                //                             '<div class="pull-right">'+
+                //                                 ' <a href="#" class="btn btn-default btn-xs btn-tooltip" title="Setting"><span class="glyphicon glyphicon-cog"></span></a> '+
+                //                                 ' <a href="#" class="btn btn-danger btn-xs btn-tooltip" title="Remove"><span class="glyphicon glyphicon-trash"></span></a> '+
+                //                             '</div>'+
+                //                         '</div>'+
+                //                     '</div>');
+                //     el.find('.grid-stack-item-content').parent().removeClass('list-left');
+                //     el.find($(".grid-stack-item-content")).find("a").remove();
+                //     $headerPanel.appendTo(el.find($(".grid-stack-item-content")));
+                //     self._prepareElementByNode(el, node);
+                //     self._updateContainerHeight();
+                //     self._triggerChangeEvent();
+
+                //     self.grid.endUpdate();
+                //     $(".btn-tooltip").tooltipster({
+                //         theme: 'tooltipster-val',
+                //         animation: 'grow',
+                //         delay: 0,
+                //         offsetY: -5,
+                //         touchDevices: false,
+                //         trigger: 'hover',
+                //         position: "top"
+                //     });
+                // }
+                
                 drop: function(event, ui) {
                     self.placeholder.detach();
 
@@ -782,30 +866,7 @@
                     node._grid = self;
                     var el = $(ui.draggable).clone(false);
                     el.data('_gridstack_node', node);
-
-                    var $datagrag = $(ui.draggable).clone();
-
                     $(ui.draggable).remove();
-                    $datagrag.removeClass('placeholder-dash');
-
-                    $("#sidebar").append($datagrag.draggable({
-                        handle: '.grid-stack-item-content',
-                        helper: "clone",
-                        scroll: true,
-                        appendTo: 'body',
-                        revert: true,
-                        placeholder: function(element) {
-                            return element.clone().addClass("placeholder");
-                        },
-                        start: function( event, ui ) {
-                              $(this).addClass('placeholder-dash');
-                        },
-                        stop: function( event, ui ) {
-                              $(this).removeClass('placeholder-dash');
-                              $(this).addClass('list-left'); 
-                        }
-                    }));
-
                     node.el = el;
                     self.placeholder.hide();
                     el
@@ -813,47 +874,18 @@
                         .attr('data-gs-y', node.y)
                         .attr('data-gs-width', node.width)
                         .attr('data-gs-height', node.height)
-                        .attr('data-pageid', pg.pageID)
-                        .attr('data-id', moment().format("YYYYMMDDHHmmssSSS"))
-                        .attr('data-widgetid', "widget-"+moment().format("SSS"))
                         .addClass(self.opts.itemClass)
                         .removeAttr('style')
                         .enableSelection()
                         .removeData('draggable')
-                        .removeClass('list-left')
-                        .removeClass('placeholder-dash')
                         .removeClass('ui-draggable ui-draggable-dragging ui-draggable-disabled')
                         .unbind('drag', onDrag);
-
                     self.container.append(el);
-
-                    var name_widget = el.find($(".grid-stack-item-content")).find("a").html();
-                    $headerPanel = $('<div class="panel panel-default">'+
-                                        '<div class="panel-heading wg-panel clearfix">'+
-                                            '<span>'+name_widget+'</span>'+
-                                            '<div class="pull-right">'+
-                                                ' <a href="#" class="btn btn-default btn-xs btn-tooltip" title="Setting"><span class="glyphicon glyphicon-cog"></span></a> '+
-                                                ' <a href="#" class="btn btn-danger btn-xs btn-tooltip" title="Remove"><span class="glyphicon glyphicon-trash"></span></a> '+
-                                            '</div>'+
-                                        '</div>'+
-                                    '</div>');
-                    el.find('.grid-stack-item-content').parent().removeClass('list-left');
-                    el.find($(".grid-stack-item-content")).find("a").remove();
-                    $headerPanel.appendTo(el.find($(".grid-stack-item-content")));
                     self._prepareElementByNode(el, node);
                     self._updateContainerHeight();
                     self._triggerChangeEvent();
 
                     self.grid.endUpdate();
-                    $(".btn-tooltip").tooltipster({
-                        theme: 'tooltipster-val',
-                        animation: 'grow',
-                        delay: 0,
-                        offsetY: -5,
-                        touchDevices: false,
-                        trigger: 'hover',
-                        position: "top"
-                    });
                 }
             });
         }

@@ -46,7 +46,7 @@
         background-color: #E8EFF7;
         color: #000000;
         border-radius: 3px;
-        cursor: move;
+        cursor: pointer;
         background-repeat: no-repeat;
 		background-size: 30px 30px;
 		background-position: 50% 50%;
@@ -76,7 +76,7 @@
 </style>
 
 <script>
-	pg.pageID = "{{.pageID}}";
+	viewModel.pageID = "{{.pageID}}";
 </script>
 
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: PageDesigner">
@@ -95,18 +95,18 @@
 
 		<div class="row dataflow-content">
 			<div class="col-md-2 sidebar">
-				<div class="list-widget" id="sidebar" >
-		              <div class="list-left grid-stack-item" boolRemove="false">
+				<div class="list-widget" id="sidebar">
+		              <div class="list-left grid-stack-item">
 		              		<div class="grid-stack-item-content">
 		              			<a href="#" class="not-active">Widget 1</a>
 		              		</div>
 		              </div>
-		               <div class="list-left grid-stack-item" boolRemove="false">
+		               <div class="list-left grid-stack-item">
 		              		<div class="grid-stack-item-content">
 		              			<a href="#" class="not-active">Widget 2</a>
 		              		</div>
 		              </div>
-		               <div class="list-left grid-stack-item" boolRemove="false">
+		               <div class="list-left grid-stack-item">
 		              		<div class="grid-stack-item-content">
 		              			<a href="#" class="not-active">Widget 3</a>
 		              		</div>
@@ -117,22 +117,7 @@
 			<div class="col-md-10 designer">
 				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
 					<div class="col-md-12">
-						<div>
-							<div class="grid-stack" id="page-designer-grid-stack" data-bind="foreach: { data: pde.widgets, afterRender: pde.afterAddWidget }">
-							   <div class="grid-stack-item" data-bind="attr: {'data-gs-x': $data.x, 'data-gs-y': $data.y, 'data-gs-width': $data.width, 'data-gs-height': $data.height, 'data-gs-auto-position': $data.auto_position}">
-							       <div class="grid-stack-item-content">
-							            <div class="panel panel-default">
-							                <div class="panel-heading wg-panel clearfix">
-							                  <div class="pull-right">
-							                    <a href="#" class="btn btn-default btn-xs tooltipster" data-bind="click: function(e) {pde.widgetSetting('wp1459947140191', 'modal')}" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>
-							                    <a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" data-bind="click: pde.deleteWidget"><span class="glyphicon glyphicon-trash"></span></a>
-							                  </div>
-							               </div>
-							            </div>
-							       </div>
-							   </div>
-							</div>
-						</div>
+						<div class="grid-stack" id="page-designer-grid-stack"></div>
 					</div>
 					<div style="clear:both;"></div>
 				</div>
