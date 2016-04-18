@@ -6,6 +6,8 @@ pde.widgets = ko.observableArray([
     // {x: 6, y: 0, width: 2, height: 4},
     // {x: 1, y: 2, width: 4, height: 2}
 ]);
+pde.widgetsDrag = ko.observableArray([])
+
 pde.addNewWidget = function () {
     pde.widgets.push({
         x: 0,

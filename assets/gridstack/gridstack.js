@@ -808,14 +808,18 @@
 
                     node.el = el;
                     self.placeholder.hide();
+                    
+                    dataId = moment().format("YYYYMMDDHHmmssSSS");
+                    widgetId = "widget-"+moment().format("SSS");
+
                     el
                         .attr('data-gs-x', node.x)
                         .attr('data-gs-y', node.y)
                         .attr('data-gs-width', node.width)
                         .attr('data-gs-height', node.height)
                         .attr('data-pageid', pg.pageID)
-                        .attr('data-id', moment().format("YYYYMMDDHHmmssSSS"))
-                        .attr('data-widgetid', "widget-"+moment().format("SSS"))
+                        .attr('data-id', dataId)
+                        .attr('data-widgetid', widgetId)
                         .addClass(self.opts.itemClass)
                         .removeAttr('style')
                         .enableSelection()
@@ -854,6 +858,17 @@
                         trigger: 'hover',
                         position: "top"
                     });
+                    pde.widgetsDrag.push({
+                                        x:node.x,
+                                        y:node.y, 
+                                        width:node.width,
+                                        height:node.height,
+                                        pageid:pg.pageID,
+                                        id:dataId,
+                                        widgetid:widgetId,
+                                    })
+                    console.log(pde.widgetsDrag())
+                    
                 }
             });
         }
