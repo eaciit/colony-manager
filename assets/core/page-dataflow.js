@@ -215,94 +215,96 @@ df.newHsModel = function(){
 
 //model same with hdfs UI not yet
 df.sshModel = ko.observable({
- //just in UI
- server : ko.observable(""),
- script:ko.observable(""),
- // userandhost:ko.observable("")
+    //just in UI
+    server : ko.observable(""),
+    script:ko.observable(""),
+    // userandhost:ko.observable("")
 });
 
 df.newSshModel = function(){
-  return {
-    server : ko.observable(""),
-     script:ko.observable(""),
-     // userandhost:ko.observable("")
-  }
+    return {
+        server : ko.observable(""),
+        script:ko.observable(""),
+        // userandhost:ko.observable("")
+    }
 }
 
 //back end not yet
 df.emailModel = ko.observable({
     server : ko.observable(""),
-  to:ko.observable(""),
-  subject:ko.observable(""),
-  body:ko.observable("")
+    to:ko.observable(""),
+    cc:ko.observable(""),
+    subject:ko.observable(""),
+    body:ko.observable("")
 });
 
 df.newEmailModel = function(){
-  return {
-    server : ko.observable(""),
-  to:ko.observable(""),
-  subject:ko.observable(""),
-  body:ko.observable("")
-}
+    return {
+        server : ko.observable(""),
+        to:ko.observable(""),
+        cc:ko.observable(""),
+        subject:ko.observable(""),
+        body:ko.observable("")
+    }
 }
 
 df.hiveModel = ko.observable({
     server : ko.observable(""),
-  scriptpath: ko.observable(""),
-  //UI not yet
-  param:ko.observableArray([]),
-  //back end not yet
-  // hivexml:ko.observable("")
+    scriptpath: ko.observable(""),
+    //UI not yet
+    param:ko.observableArray([]),
+    //back end not yet
+    // hivexml:ko.observable("")
 });
 
 df.newHiveModel = function(){
-  return {
-    server : ko.observable(""),
-  scriptpath: ko.observable(""),
-  //UI not yet
-  param:ko.observableArray([]),
-  //back end not yet
-  // hivexml:ko.observable("")
-}
+    return {
+        server : ko.observable(""),
+        scriptpath: ko.observable(""),
+        //UI not yet
+        param:ko.observableArray([]),
+        //back end not yet
+        // hivexml:ko.observable("")
+    }
 }
 
 //back end not yet
 df.shModel = ko.observable({
     server : ko.observable(""),
-  script : ko.observable("")
+    script : ko.observable("")
 });
 
 df.newShModel = function(){
-  return {
-    server : ko.observable(""),
-    script : ko.observable("")
-  }
+    return {
+        server : ko.observable(""),
+        script : ko.observable("")
+    }
 }
 
 //back end not yet
 df.javaAppModel = ko.observable({
-  server : ko.observable(""),
-  jar : ko.observable(""),
-  // mainclass : ko.observable("")
+    server : ko.observable(""),
+    jar : ko.observable(""),
+    // mainclass : ko.observable("")
 });
 
 df.newJavaAppModel = function(){
     return {
-    server : ko.observable(""),
-    jar : ko.observable(""),
-    // mainclass : ko.observable("")
-  }
+        server : ko.observable(""),
+        jar : ko.observable(""),
+        // mainclass : ko.observable("")
+    }
 }
 
 //back end and UI not yet
 df.stopModel = ko.observable({
-  message: ko.observable("")
+    message: ko.observable("")
 });
 
 df.newStopModel = function(){
     return {
-    message: ko.observable("")
-  }
+        message: ko.observable("")
+    }
 }
 
 //need discuss with all team
@@ -311,9 +313,9 @@ df.decisionModel = ko.observable({
 });
 
 df.newDecisionModel = function(){
-  return{
+    return{
 
-  }
+    }
 }
 
 //need discuss with all team
@@ -323,9 +325,9 @@ df.kafkaModel = ko.observable({
 });
 
 df.newKafkaModel = function(){
-  return{
-    server : ko.observable(""),
-  }
+    return{
+        server : ko.observable(""),
+    }
 }
 
 $.fn.popoverShow = function () {
