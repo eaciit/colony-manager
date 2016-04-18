@@ -24,7 +24,7 @@ wp.PageColumns = ko.observableArray([
 	{ field: "url", title: "Url" },
 	{title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Page Designer' onclick='location.href=\"/web/widgetdesigner?id=" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-eye'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Page Designer' onclick='location.href=\"/web/pagedesigner?id=" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-eye'></span></button>",
 		].join(" ");
 	}}
 ]);
@@ -104,7 +104,7 @@ wp.savePage = function(){
 		if (!app.isFine(res)) {
 			return;
 		}
-		window.location.href="/web/widgetdesigner?id=" + res.data._id.replace(/\|/g, "-");
+		window.location.href="/web/pagedesigner?id=" + res.data._id.replace(/\|/g, "-");
 	});
 };
 wp.addPage = function(){

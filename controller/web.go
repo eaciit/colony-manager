@@ -73,7 +73,7 @@ func (w *WebController) WidgetGrid(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetgrid.html"
+	r.Config.ViewName = "views/museum/page-widgetgrid.html"
 
 	return true
 }
@@ -100,7 +100,7 @@ func (w *WebController) WidgetSelector(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetselector.html"
+	r.Config.ViewName = "views/museum/page-widgetselector.html"
 
 	return true
 }
@@ -109,7 +109,7 @@ func (w *WebController) WidgetChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetchart.html"
+	r.Config.ViewName = "views/museum/page-widgetchart.html"
 
 	return true
 }
@@ -154,7 +154,7 @@ func (w *WebController) WidgetPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetpage.html"
+	r.Config.ViewName = "views/museum/page-widgetpage.html"
 
 	return true
 }
