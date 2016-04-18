@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
@@ -41,7 +40,6 @@ func (w *WebController) PredefinedVariables(params ...toolkit.M) interface{} {
 		}
 	}
 
-	fmt.Println(vars)
 	return vars
 }
 

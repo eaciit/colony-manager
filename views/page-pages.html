@@ -1,3 +1,7 @@
+<script>
+	viewModel.templateModels = JSON.parse("{{.templateModels}}".replace(/\x22/g, '"'));
+</script>
+
 <!-- core -->
 <script src="/res/core/page-pages.js"></script>
 
@@ -36,7 +40,7 @@
 		</nav>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-body">
-		    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: p.pageData, change: p.selectPage, selectable: 'row', columns: p.pageColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div>
+		    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: p.pageData, change: p.selectPage, selectable: 'row', columns: p.pageColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>

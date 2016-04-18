@@ -3,13 +3,7 @@ app.section('pages');
 viewModel.Pages = {}; var p = viewModel.Pages;
 p.pageData = ko.observableArray([]);
 p.searchField = ko.observable('');
-p.templateConfigPage = {
-	_id: "",
-	title: "",
-	url: "",
-	parentMenu:  "",
-	dataSources: [],
-};
+p.templateConfigPage = viewModel.templateModels.PageDetail;
 p.configPage = ko.mapping.fromJS(p.templateConfigPage);
 p.dataSources = ko.observableArray([]);
 
@@ -49,6 +43,17 @@ p.addPage = function () {
 	app.mode("editor");
 	app.showfilter(false);
 };
+p.selectPage = function () {
+	var dataItem = this.dataItem(this.select());
+	app.ajaxPost("/pagedesigner/selectpage", { _id: dataItem._id }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		p.addPage();
+		ko.mapping.fromJS(res.data.pageDetail, p.configPage);
+	});
+}
 p.removePage = function () {
 	var rows = $(".grid-page .select-row:checked").get().map(function (d) {
 		var uid = $(d).closest("tr").attr("data-uid");

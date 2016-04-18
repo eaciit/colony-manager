@@ -4,9 +4,10 @@ import (
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
-	// "github.com/eaciit/toolkit"
+	"github.com/eaciit/toolkit"
 	// "io/ioutil"
 	// "path/filepath"
+	"fmt"
 )
 
 type PageDesignerController struct {
@@ -111,11 +112,26 @@ func (p *PageDesignerController) SelectPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.Page)
-	if err := colonycore.Get(payload, payload.ID); err != nil {
+	if err := r.GetPayload(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, payload, "")
+	page := new(colonycore.Page)
+	if err := colonycore.Get(page, payload.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	pageDetail := new(colonycore.PageDetail)
+	pageDetail.ID = payload.ID
+	pageDetailRes, err := pageDetail.Get()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	fmt.Printf("---- %#v\n", pageDetailRes)
+
+	data := toolkit.M{"page": page, "pageDetail": pageDetailRes}
+	return helper.CreateResult(true, data, "")
 }
 
 func (p *PageDesignerController) SavePage(r *knot.WebContext) interface{} {
