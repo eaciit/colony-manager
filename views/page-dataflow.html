@@ -401,30 +401,18 @@
     <span title="Set Global Variable" class="glyphicon glyphicon-cog"></span>
 </div>
 
-<button style="display:none" data-content="" id="poptitle">
-<div class="poptitle-content">
-	<div class="col-md-8">
-	 	<input type="text" class="form-control pop-txt" placeholder="Type something..">
-	</div>
-	              
-	<div class="col-md-4 mgBottom">
-		<a class="btn btn-sm btn-primary pull-right poptitle-save" data-bind=""><span class="glyphicon glyphicon-floppy-disk"></span></a>
-		<a class="btn btn-sm btn-danger pull-left poptitle-close" data-bind=""><span class="glyphicon glyphicon-remove"></span></a>
-	</div> 
-</div> 
-</button>
 </div>
 
 
 <div class="col-md-12" data-bind="visible:df.Mode()=='Grid'">
-	<ol class="breadcrumb bc-custom">
-			<li>Data Flow</li>
-		</ol>
-        <div class="col-md-12 mgTop15">
-            <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search name, description, create by ..."></input>
-            <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
-        </div>
-		<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
+    <ol class="breadcrumb bc-custom">
+		<li>Data Flow</li>
+	</ol>
+    <div class="col-md-12 mgTop15">
+        <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search name, description, create by ..."></input>
+        <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
+    </div>
+	<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
 </div>
 
 <style>	

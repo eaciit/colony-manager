@@ -578,12 +578,18 @@ df.init = function () {
         placement : 'top',
         content: $("#popover-content-globalvar").html()        
     });
+     
+    $('.pTitle').blur(function(){
+        if( !$(this).val() ) {
+            $(".pTitle").val("Add Title");
+        }
+    });
 
-    $("#poptitle").popover({
-        html : true,
-        placement : 'right',
-        content: $(".poptitle-content").html()        
-    });  
+    $('.pDesc').blur(function(){
+        if( !$(this).val() ) {
+            $(".pDesc").val("Add Description");
+        }
+    });
 
     var xmouse = 0;
     var ymouse = 0;
