@@ -45,7 +45,7 @@ pg.dsWidgetFromPage = ko.observableArray([]);
 pg.widgetSettings = ko.mapping.fromJS(pg.widgetSettingsConfig);
 pg.previewMode = ko.observable("");
 pg.getDataSource = function() {
-	app.ajaxPost("/page/getdatasource", {}, function(res){
+	app.ajaxPost("/pagedesigner/getdatasource", {}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -64,7 +64,7 @@ pg.saveConfig = function() {
 	}
 
 	var param = {_id: pg.pageID, dataSourceId: ko.mapping.toJS(pg.configPageDesigner)["dataSources"]}
-	app.ajaxPost("/page/saveconfigpage", param, function (res) {
+	app.ajaxPost("/pagedesigner/saveconfigpage", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -97,7 +97,7 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 		param = {_id: _id, widgetId: "", widgetPageId: "", mode: ""}
 	}
 	// console.log(param)
-	app.ajaxPost("/page/editpagedesigner", param, function (res) {
+	app.ajaxPost("/pagedesigner/editpagedesigner", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -166,7 +166,7 @@ pg.widgetSetting = function(_id, mode) {
 			widgetID: _id
 		};
 
-		app.ajaxPost("/page/getwidgetsetting", param, function (res) {
+		app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
 			console.log(res);
 		});
 	}
@@ -201,7 +201,7 @@ pg.fieldMapping = function() {
 		});
 	});
 
-	app.ajaxPost("/page/getallfields", param, function (res) {
+	app.ajaxPost("/pagedesigner/getallfields", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

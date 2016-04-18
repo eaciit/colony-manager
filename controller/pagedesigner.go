@@ -9,17 +9,17 @@ import (
 	"path/filepath"
 )
 
-type PageController struct {
+type PageDesignerController struct {
 	App
 }
 
-func CreatePageController(s *knot.Server) *PageController {
-	var controller = new(PageController)
+func CreatePageDesignerController(s *knot.Server) *PageDesignerController {
+	var controller = new(PageDesignerController)
 	controller.Server = s
 	return controller
 }
 
-func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {
+func (p *PageDesignerController) FetchDataSource(ids []string) (toolkit.Ms, error) {
 	widgetData := toolkit.Ms{}
 	for _, _id := range ids {
 		data, err := helper.FetchDataFromDS(_id, 0)
@@ -34,7 +34,7 @@ func (p *PageController) FetchDataSource(ids []string) (toolkit.Ms, error) {
 	return widgetData, nil
 }
 
-func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) GetAllFields(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	type DSMap struct {
 		ID     string   `json:"_id"`
@@ -84,7 +84,7 @@ func (p *PageController) GetAllFields(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, newData, "")
 }
 
-func (p *PageController) GetDataSource(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) GetDataSource(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	data, err := helper.GetDataSourceQuery()
@@ -95,7 +95,7 @@ func (p *PageController) GetDataSource(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (p *PageController) GetPage(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) GetPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]string{}
@@ -109,7 +109,7 @@ func (p *PageController) GetPage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (p *PageController) SavePage(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) SavePage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
@@ -125,7 +125,7 @@ func (p *PageController) SavePage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
-func (p *PageController) EditPage(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) EditPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	data := colonycore.MapPage{}
@@ -139,7 +139,7 @@ func (p *PageController) EditPage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-func (p *PageController) RemovePage(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) RemovePage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := map[string]interface{}{}
@@ -159,7 +159,7 @@ func (p *PageController) RemovePage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
-func (p *PageController) SaveConfigPage(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) SaveConfigPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
@@ -174,7 +174,7 @@ func (p *PageController) SaveConfigPage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
-func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) SaveDesigner(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
@@ -190,7 +190,7 @@ func (p *PageController) SaveDesigner(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
-func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) EditPageDesigner(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
@@ -210,7 +210,7 @@ func (p *PageController) EditPageDesigner(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "")
 }
 
-/*func (p *PageController) PreviewExample(r *knot.WebContext) interface{} {
+/*func (p *PageDesignerController) PreviewExample(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	data := toolkit.M{}

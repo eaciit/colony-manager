@@ -38,7 +38,7 @@ wp.selectPage = function(){
 wp.editPage = function(_id){
 	wp.getDataSource();
 	ko.mapping.fromJS(wp.pageListConfig, wp.configPageList);
-	app.ajaxPost("/page/editpage", {_id: _id}, function(res){
+	app.ajaxPost("/pagedesigner/editpage", {_id: _id}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -76,7 +76,7 @@ wp.removePage = function(){
 		},
 		function() {
 			setTimeout(function () {
-				app.ajaxPost("/page/removepage",{_id: vals}, function () {
+				app.ajaxPost("/pagedesigner/removepage",{_id: vals}, function () {
 					if (!app.isFine) {
 						return;
 					}
@@ -100,7 +100,7 @@ wp.savePage = function(){
 		return;
 	}
 	var param = ko.mapping.toJS(wp.configPageList);
-	app.ajaxPost("/page/savepage", param, function (res) {
+	app.ajaxPost("/pagedesigner/savepage", param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -114,7 +114,7 @@ wp.addPage = function(){
 	app.showfilter(false);
 };
 wp.getPageList = function(){
-	app.ajaxPost("/page/getpage", {search: wp.searchfield()}, function(res){
+	app.ajaxPost("/pagedesigner/getpage", {search: wp.searchfield()}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -126,7 +126,7 @@ wp.getPageList = function(){
 };
 
 wp.getDataSource = function() {
-	app.ajaxPost("/page/getdatasource", {}, function(res){
+	app.ajaxPost("/pagedesigner/getdatasource", {}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}

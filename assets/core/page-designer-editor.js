@@ -25,8 +25,20 @@ pde.deleteWidget = function (o) {
 };
 
 pde.settingWidget = function(o) {
+    var $item = $(o).closest(".grid-stack-item");
+
     app.mode("datasourceMapping");
     pg.previewMode("");
+
+    var param = {
+        pageID: viewModel.pageID,
+        widgetPageID: $item.data("id"),
+        widgetID: $item.data("widgetid"),
+    };
+
+    app.ajaxPost("/widget/getwidgetsetting", param, function (res) {
+        console.log(res);
+    });
 
     $(".modal-widgetsetting").modal({
         backdrop: 'static',

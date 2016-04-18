@@ -215,8 +215,9 @@ func (p *WidgetController) GetWidgetSetting(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := struct {
-		PageID   string `json:"pageID"`
-		WidgetID string `json:"widgetID"`
+		PageID       string `json:"pageID"`
+		WidgetID     string `json:"widgetID"`
+		WidgetPageID string `json:"widgetPageID"`
 	}{}
 
 	widget := new(colonycore.Widget)
