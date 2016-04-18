@@ -1,9 +1,9 @@
 <!-- core -->
-<script src="/res/core/museum/page-widgetpage.js"></script>
+<script src="/res/core/page-pages.js"></script>
 
 <!-- main area -->
-<div class="col-xs-12 col-sm-12" id="content" data-bind="with: WidgetPage">
-	<div class="col-md-12" data-bind="visible: (app.section() == 'widgetpage')">
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: Pages">
+	<div class="col-md-12" data-bind="visible: (app.section() == 'pages')">
 		<h1>Page</h1>
 		<nav class="navbar" id="nav-wigetList" data-bind="visible: (app.mode() == '')">
 		    <button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false) }">
@@ -13,7 +13,7 @@
 		        <span class="glyphicon glyphicon-search"></span>                    
 		    </button>
 		    <div class="btn-group" role="group">
-		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: getPageList">
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: getPages">
 		            <span class="glyphicon glyphicon-refresh"></span> Refresh
 		        </button>
 		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: addPage">
@@ -30,21 +30,13 @@
 		            Search
 		        </label>
 		        <div class="col-md-8">
-		            <input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="" placeholder="Type keyword here" />
+		            <input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="value: searchField" placeholder="Type keyword here" />
 		        </div>
 		    </div>
 		</nav>
 		<div class="panel" data-bind="visible: (app.mode() == '')">
 		    <div class="panel-body">
-		    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15, schema: { 
-					model: { 
-			    		id: 'Field', 
-		    			fields: { 
-		    				title: { editable: false }, 
-		    				url: { editable: false }
-						} 
-					} 
-				} }, data: wp.pageListdata, change: wp.selectPage,selectable: 'row', columns: wp.PageColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div>
+		    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: p.pageData, change: p.selectPage, selectable: 'row', columns: p.pageColumns, editable: true, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div>
 		    </div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
 		</div>
@@ -60,13 +52,12 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 			<div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (scrapperMode() == '') ? 'Create New' : 'Edit'"></span>
-			        	Page
+		        	Create Page
 	        	</h1>
 		    </div>
 		    <div class="clearfix">&nbsp;</div>
 			<div class="panel-body">
-				<form class="form-horizontal form-widget" data-bind="with: configPageList" novalidate>
+				<form class="form-horizontal form-widget" data-bind="with: configPage" novalidate>
 			    	<div class="col-md-12">
 			    		<div class="form-group">
 				    		<label class="col-md-3 databrowser-label">ID</label>
@@ -91,7 +82,7 @@
 			    		<div class="form-group">
 				    		<label class="col-md-3 databrowser-label">Page Data Source</label>
 				    		<div class="col-md-7">
-					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: wp.allDataSources, value: dataSources, placeholder: 'Choose the data source' }" name="datasource" id="datasource"></select>
+					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: p.allDataSources, value: dataSources, placeholder: 'Choose the data source' }" name="datasource" id="datasource"></select>
 							    <span class="k-invalid-msg" data-for="datasource"></span>
 				    		</div>
 			    		</div>

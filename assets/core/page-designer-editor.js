@@ -1,6 +1,19 @@
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
 pde.baseWidgets = ko.observableArray([]);
+pde.templatePage = {
+    _id: "",
+}
+
+pde.preparePage = function () {
+    app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        console.log(res);
+    })
+}
 
 pde.deleteWidget = function (o) {
     var $item = $(o).closest(".grid-stack-item");
@@ -36,7 +49,7 @@ pde.settingWidget = function(o) {
         widgetID: $item.data("widgetid"),
     };
 
-    app.ajaxPost("/widget/getwidgetsetting", param, function (res) {
+    app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
         console.log(res);
     });
 
@@ -129,6 +142,7 @@ pde.addThisWidget = function (o) {
 };
 
 $(function () {
+    pde.preparePage();
     pde.prepareWidget();
     pde.prepareGridStack();
 });
