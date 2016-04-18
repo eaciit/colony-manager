@@ -1420,7 +1420,7 @@ res.server =  res.name == "Fork" || res.name == "Stop"?"" : action.server();
 
 var actj = JSON.parse(ko.toJSON(action));
 
-res.action = res.name == "Fork"? {conditions: actj } :actj;
+res.action = res.name == "Decision"? {conditions: actj } :actj;
 res.OK = [];
 res.KO = [];
 
