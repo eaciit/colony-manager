@@ -43,12 +43,14 @@ const (
 	CMD_SPARK       = "spark-submit %v"
 	CMD_MAP_REDUCE  = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
 	CMD_JAVA        = "java -jar %v"
+	GLOBAL_PARAM_KEYWORD = "global."
 )
 
 //var CurrentAction colonycore.FlowAction
 var hivex *hive.Hive
 var hdfsx *hdfs.WebHdfs
 var act_result_path string
+var globalParam toolkit.M
 
 // Start, to start the flow process
 func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
@@ -264,6 +266,7 @@ func runJava(process colonycore.DataFlow, action colonycore.FlowAction, argument
 // watch, watch the process and mantain the link between the action in the flow
 func watch(process colonycore.DataFlow) (e error) {
 	act_result_path = ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + process.ID
+	globalParam = process.GlobalParam
 
 	var ListCurrentTierAction, ListLastTierAction, ListNextTierAction []colonycore.FlowAction
 
@@ -331,6 +334,15 @@ func watch(process colonycore.DataFlow) (e error) {
 					}
 
 					go runProcess(process, CurrentAction, ActionBefore)
+
+					//update globalParam
+					if CurrentAction.OutputParam != nil {
+						for key, val := range CurrentAction.OutputParam {
+							if strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
+								globalParam.Set(key, val)
+							}
+						}
+					}
 				}
 			}
 
@@ -453,7 +465,11 @@ func setCommandArgument(action colonycore.FlowAction) (arguments string) {
 	resMap := res.(toolkit.M)
 
 	for key, _ := range action.InputParam {
-		arguments += string(key) + "=" + resMap.GetString(key)
+		if !strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
+			arguments += string(key) + "=" + resMap.GetString(key)
+		} else {
+			arguments += string(key) + "=" + globalParam.GetString(key)
+		}
 	}
 
 	return 

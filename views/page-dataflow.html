@@ -78,11 +78,11 @@
 </script>
 
 <script type="text/template" id="popover-content-template">
-    <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Fork' && df.popoverMode() != 'Stop')">
+    <table data-bind="visible: (df.popoverMode() != 'Transitions' && df.popoverMode() != 'Decision' && df.popoverMode() != 'Stop')">
         <tbody>
             <tr>
                 <td>Server</td>
-                <td>  <input type="text" class="inp-fork inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,dataTextField:'_id',dataValueField:'_id' ,value:df.selectedServer }"></td>
+                <td>  <input type="text" class="inp-decision inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,dataTextField:'_id',dataValueField:'_id' ,value:df.selectedServer }"></td>
             </tr>
         </tbody>
     </table>
@@ -288,7 +288,7 @@
                 </tr>
             </tbody>
         </table>
-        <div data-bind="visible: (df.popoverMode() == 'Transitions' && df.detailMode() != 'Fork' && df.detailMode() != 'Stop' )">
+        <div data-bind="visible: (df.popoverMode() == 'Transitions' && df.detailMode() != 'Decision' && df.detailMode() != 'Stop' )">
             <ul class="nav nav-tabs" id="myTab">
               <li class="active"><a href="#transition" data-toggle="tab">Transition</a></li>
               <li><a href="#input" data-toggle="tab">Input</a></li>
@@ -301,7 +301,7 @@
                             <tr>
                                 <td>When Failed</td>
                                 <td>
-                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
+                                    <input type="text" class="inp-decision inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
                                 </td>
                             </tr>                
                         </tbody>
@@ -339,7 +339,7 @@
                             <tr>
                                 <td>Type</td>
                                 <td>
-                                    <input type="text" class="inp-fork inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                    <input type="text" class="inp-decision inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
                                 </td>
                             </tr>
                             <tr>
@@ -368,16 +368,16 @@
             </div>
         </div>
       
-        <table  id= "fork" data-bind="with:df.forkModel, visible: (df.popoverMode() == 'Fork')">
+        <table  id= "decision" data-bind="with:df.decisionModel, visible: (df.popoverMode() == 'Decision')">
             <tbody data-bind = "foreach:df.arrayconn">
                 <tr>
                     <td>If</td>
                     <td>
-                        <input type="text" class="inp-fork inp-left" data-bind="value:condition" placeholder="">
+                        <input type="text" class="inp-decision inp-left" data-bind="value:condition" placeholder="">
                     </td>
                     <td>Go To</td>
                     <td>
-                        <input type="text" disabled="disabled" class="inp-fork inp-right" data-bind="value: name" placeholder="">
+                        <input type="text" disabled="disabled" class="inp-decision inp-right" data-bind="value: name" placeholder="">
                     </td>
                 </tr> 
             </tbody>
@@ -401,30 +401,18 @@
     <span title="Set Global Variable" class="glyphicon glyphicon-cog"></span>
 </div>
 
-<button style="display:none" data-content="" id="poptitle">
-<div class="poptitle-content">
-	<div class="col-md-8">
-	 	<input type="text" class="form-control pop-txt" placeholder="Type something..">
-	</div>
-	              
-	<div class="col-md-4 mgBottom">
-		<a class="btn btn-sm btn-primary pull-right poptitle-save" data-bind=""><span class="glyphicon glyphicon-floppy-disk"></span></a>
-		<a class="btn btn-sm btn-danger pull-left poptitle-close" data-bind=""><span class="glyphicon glyphicon-remove"></span></a>
-	</div> 
-</div> 
-</button>
 </div>
 
 
 <div class="col-md-12" data-bind="visible:df.Mode()=='Grid'">
-	<ol class="breadcrumb bc-custom">
-			<li>Data Flow</li>
-		</ol>
-        <div class="col-md-12 mgTop15">
-            <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search name, description, create by ..."></input>
-            <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
-        </div>
-		<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
+    <ol class="breadcrumb bc-custom">
+		<li>Data Flow</li>
+	</ol>
+    <div class="col-md-12 mgTop15">
+        <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search name, description, create by ..."></input>
+        <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
+    </div>
+	<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
 </div>
 
 <style>	
@@ -515,7 +503,7 @@
             width: 80px!important;
         }
 
-        #fork td:first-child{
+        #decision td:first-child{
             width: 20px!important;
         }
 
@@ -621,7 +609,7 @@
             margin: 5px -2px 5px 5px;
             width: 220px;
         }
-        .inp-fork{
+        .inp-decision{
             margin: 2px 5px;
             width: 180px;
         }
