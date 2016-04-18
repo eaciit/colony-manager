@@ -57,7 +57,7 @@
 		    </div>
 		    <div class="clearfix">&nbsp;</div>
 			<div class="panel-body">
-				<form class="form-horizontal form-widget" data-bind="with: configPage" novalidate>
+				<form class="form-horizontal form-add-page" data-bind="with: configPage" novalidate>
 			    	<div class="col-md-12">
 			    		<div class="form-group">
 				    		<label class="col-md-3 databrowser-label">ID</label>
@@ -76,13 +76,13 @@
 			    		<div class="form-group">
 				    		<label class="col-md-3 databrowser-label">URL</label>
 				    		<div class="col-md-7">
-					    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+					    		<input type="text" class="form-control input-sm" name="url" placeholder="Example /test will become /page/test" data-bind="value: url">
 				    		</div>
 			    		</div>
 			    		<div class="form-group">
-				    		<label class="col-md-3 databrowser-label">Page Data Source</label>
+				    		<label class="col-md-3 databrowser-label">Page Data Sources</label>
 				    		<div class="col-md-7">
-					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: p.allDataSources, value: dataSources, placeholder: 'Choose the data source' }" name="datasource" id="datasource"></select>
+					    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: p.dataSources, value: dataSources, placeholder: 'Choose the data source', dataValueField: '_id', dataTextField: '_id' }" name="datasource" id="datasource"></select>
 							    <span class="k-invalid-msg" data-for="datasource"></span>
 				    		</div>
 			    		</div>

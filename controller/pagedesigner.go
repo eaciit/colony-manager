@@ -118,21 +118,20 @@ func (p *PageDesignerController) SelectPage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, payload, "")
 }
 
-// func (p *PageDesignerController) SavePage(r *knot.WebContext) interface{} {
-// 	r.Config.OutputType = knot.OutputJson
+func (p *PageDesignerController) SavePage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
 
-// 	payload := toolkit.M{}
-// 	err := r.GetPayload(&payload)
-// 	if err != nil {
-// 		return helper.CreateResult(false, nil, err.Error())
-// 	}
+	payload := new(colonycore.PageDetail)
+	if err := r.GetPayload(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-// 	if err := new(colonycore.MapPage).Save(payload); err != nil {
-// 		return helper.CreateResult(false, nil, err.Error())
-// 	}
+	if err := payload.Save(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-// 	return helper.CreateResult(true, payload, "")
-// }
+	return helper.CreateResult(true, payload, "")
+}
 
 // func (p *PageDesignerController) EditPage(r *knot.WebContext) interface{} {
 // 	r.Config.OutputType = knot.OutputJson

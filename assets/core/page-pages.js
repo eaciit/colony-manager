@@ -11,6 +11,7 @@ p.templateConfigPage = {
 	dataSources: [],
 };
 p.configPage = ko.mapping.fromJS(p.templateConfigPage);
+p.dataSources = ko.observableArray([]);
 
 p.pageColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -35,6 +36,15 @@ p.getPages = function () {
 		p.pageData(res.data);
 	});
 };
+p.getDataSources = function () {
+	app.ajaxPost("/datasource/getdatasources", { search: "" }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		p.dataSources(res.data);
+	});
+};
 p.addPage = function () {
 	app.mode("editor");
 	app.showfilter(false);
@@ -47,9 +57,21 @@ p.backToFront = function () {
 	p.getPages();
 };
 p.savePage = function () {
+	if (!app.isFormValid(".form-add-page")) {
+		return;
+	}
 
+	var param = ko.mapping.toJS(p.configPage);
+	app.ajaxPost("/pagedesigner/savepage", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		
+	});
 };
 
 $(function () {
 	p.getPages();
+	p.getDataSources();
 });
