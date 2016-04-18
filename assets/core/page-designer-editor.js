@@ -1,9 +1,14 @@
+app.section("pagedesigner");
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
 pde.baseWidgets = ko.observableArray([]);
 pde.templatePage = {
     _id: "",
-}
+};
+pde.dsMappingConfig = {
+    field: []
+};
+pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 
 pde.preparePage = function () {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
@@ -41,7 +46,7 @@ pde.settingWidget = function(o) {
     var $item = $(o).closest(".grid-stack-item");
 
     app.mode("datasourceMapping");
-    pg.previewMode("");
+    // pde.previewMode("");
 
     var param = {
         pageID: viewModel.pageID,
@@ -139,6 +144,13 @@ pde.addThisWidget = function (o) {
     $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
     $item.data("pageid", viewModel.pageID);
     $item.data("widgetid", $(o).data("id"));
+};
+
+pde.adjustIframe = function () {
+    $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
+};
+pde.showConfigPage = function () {
+    console.log("asdfasdf");
 };
 
 $(function () {

@@ -111,6 +111,8 @@ p.selectAll = function (o) {
 };
 
 $(function () {
-	p.getPages();
-	p.getDataSources();
+	if (document.URL.indexOf("/pages") > -1) {
+		p.getPages();
+		p.getDataSources();
+	}
 });
