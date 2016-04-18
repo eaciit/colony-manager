@@ -247,31 +247,44 @@ window.closeModal = function(){
 	pg.closeWidgetSetting();
 }
 
-// pg.setWidgetContainer = function(){
-// 	app.ajaxPost("/widget/getwidget", {search:""}, function(res){
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
+pg.setWidgetContainer = function(){
+	app.ajaxPost("/widget/getwidget", {search:""}, function(res){
+		if (!app.isFine(res)) {
+			return;
+		}
 
-// 		var data = res.data;
-// 		console.log(JSON.stringify(data));
-// 		$parent = $(".list-widget");
-// 		$.each(data, function(i, items){
-// 			
-// 			$stackItem = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
-// 			$stackItem.appendTo($parent);
-// 			$itemContent = $('<div class="grid-stack-item-content"></div>');
-// 			//$listLeft.appendTo($parent);
-// 			$itemContent.appendTo($stackItem);
-// 			$itemlink =$('<a href="#" class="not-active">'+items.title+'</a>');
-// 			$itemlink.appendTo($itemContent)
-// 		});
-// 	});
-// }
+		var data = res.data;
+
+		$parent = $(".list-widget");
+
+		$.each(data, function(i, items){
+			$stackItem = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
+			$stackItem.appendTo($parent);
+			$itemContent = $('<div class="grid-stack-item-content"></div>');
+			$itemContent.appendTo($stackItem);
+			$itemlink =$('<a href="#" class="not-active">'+items.title+'</a>');
+			$itemlink.appendTo($itemContent);
+			$('#sidebar .grid-stack-item').draggable({
+	            helper: "clone",
+	            handle: '.grid-stack-item-content',
+	            scroll: true,
+	            appendTo: 'body',
+	            revert: true,
+	            start: function( event, ui ) {
+	                  $(this).addClass('placeholder-dash');
+	            },
+	            stop: function( event, ui ) {
+	                  $(this).removeClass('placeholder-dash');
+	                  $(this).addClass('list-left'); 
+	            }
+	        });
+		});
+	});
+}
 
 $(function (){
 	pg.getConfigurationPage(pg.pageID, "", "", "");
 	pg.getAvailableWidget();
 	app.prepareTooltipster();
-	//pg.setWidgetContainer(); 
+	pg.setWidgetContainer(); 
 });
