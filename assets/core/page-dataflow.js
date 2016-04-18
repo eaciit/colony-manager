@@ -4,28 +4,28 @@ viewModel.dataflow = {
         "Name"  :"Spark",
         "Id"    :"1",
         "Image" : "icon_spark.png",
-        "Type"  : "Action",
+        "Type"  : "SPARK",
         "Color" : "#F17B48"
     },
     {
         "Name"  :"HDFS",
         "Id"    :"2",
         "Image" : "icon_hdfs.png",
-        "Type"  : "Action",
+        "Type"  : "HDFS",
         "Color" : "#3087C5"
     },
     {
         "Name"  :"Hive",
         "Id"    :"3",
         "Image" : "icon_hive.png",
-        "Type"  : "Action",
+        "Type"  : "HIVE",
          "Color" : "#CEBF00"
     },
     {
         "Name"  :"SSH Script",
         "Id"    :"4",
         "Image" : "icon_ssh.png",
-        "Type"  : "Action",
+        "Type"  : "SSH",
         "Color" : "brown"
     },
     // {
@@ -39,42 +39,42 @@ viewModel.dataflow = {
         "Name"  :"Kafka",
         "Id"    :"5",
         "Image" : "icon_kafka.png",
-        "Type"  : "Action",
+        "Type"  : "KAFKA",
         "Color" : "#C1C1C1"
     },
     {
         "Name"  :"Map Reduce",
         "Id"    :"6",
         "Image" : "icon_mapreduce.png",
-        "Type"  : "Action",
+        "Type"  : "MR",
         "Color" : "#00B3B3"
     },
      {
         "Name"  :"Java App",
         "Id"    :"7",
         "Image" : "icon_java.png",
-        "Type"  : "Action",
+        "Type"  : "JAVA",
         "Color" : "#D20000"
     },
      {
         "Name"  :"Email",
         "Id"    :"8",
         "Image" : "icon_email.png",
-        "Type"  : "Action",
+        "Type"  : "EMAIL",
         "Color" : "#017932"
     },
      {
         "Name"  :"Fork",
         "Id"    :"9",
         "Image" : "icon_fork.png",
-        "Type"  : "Fork",
+        "Type"  : "DECISION",
         "Color" : "#CF29D8"
     },
      {
         "Name"  :"Stop",
         "Id"    :"10",
         "Image" : "icon_stop.png",
-        "Type"  : "Action",
+        "Type"  : "STOP",
         "Color" : "#FF0000"
     },
     ], 
@@ -1196,15 +1196,16 @@ df.renderActionData = function(){
                     var thisid = selected.id;
 
                         var DAjs = dataItem.DataAction;
-                        var condt = Lazy(DAjs).find(function ( d ) { return d.name == shapename+" - "+shapeid });
+                        var condt = Lazy(DAjs).find(function ( d ) { return d.flowaction == shapename+" - "+shapeid });
+
                        if (condt == undefined && fromid == thisid){
                              df.arrayconn.push({
-                            name: shapename+" - "+shapeid, 
-                            condition: "true"});
+                            flowaction: shapename+" - "+shapeid, 
+                            stat: "true"});
                         }else if(fromid == thisid){
-                               df.arrayconn.push({
-                            name: shapename+" - "+shapeid, 
-                            condition: condt.condition});
+                            df.arrayconn.push({
+                            flowaction: shapename+" - "+shapeid, 
+                            stat: condt.stat});
                         }
                 }
             }
@@ -1419,9 +1420,7 @@ res.server =  res.name == "Fork" || res.name == "Stop"?"" : action.server();
 
 var actj = JSON.parse(ko.toJSON(action));
 
-// delete actj.server
-
-res.action = actj;
+res.action = res.name == "Fork"? {conditions: actj } :actj;
 res.OK = [];
 res.KO = [];
 
