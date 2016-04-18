@@ -1,5 +1,6 @@
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
+pde.onDrag = ko.observable(false);
 pde.widgets = ko.observableArray([
     {x: 0, y: 0, width: 2, height: 2},
     // {x: 2, y: 0, width: 4, height: 2},
@@ -99,11 +100,58 @@ pde.afterAddWidget = function (items) {
 //         ].join('')
 // });
 
-$(function () {
+
+pde.createElement = function(){
     $("#page-designer-grid-stack").gridstack({
         auto: false,
         acceptWidgets: '.grid-stack-item',
     })
+    app.ajaxPost("/widget/getwidget", {search:""}, function(res){
+        if (!app.isFine(res)) {
+            return;
+        }
+        var data = res.data;
+        console.log(JSON.stringify(data));
+        $parent = $(".list-widget");
+        $.each(data, function(i, items){
+            //console.log(JSON.stringify(items.title));
+            $listLeft = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
+            //$stackItem = $('<div class="grid-stack-item"></div>');
+            $itemContent = $('<div class="grid-stack-item-content"></div>');
+            $listLeft.appendTo($parent);
+            //$stackItem.appendTo($listLeft);
+            $itemContent.appendTo($listLeft);
+            $itemlink =$('<a href="#" class="not-active">'+items.title+'</a>');
+            $itemlink.appendTo($itemContent)
+        });
+         
+        $('#sidebar .grid-stack-item').draggable({
+            helper: "clone",
+            handle: '.grid-stack-item-content',
+            scroll: true,
+            appendTo: 'body',
+            revert: true,
+            start: function( event, ui ) {
+                  $(this).addClass('placeholder-dash');
+        
+            },
+            stop: function( event, ui ) {
+                  $(this).removeClass('placeholder-dash');
+                  $(this).addClass('list-left'); 
+
+            }
+        });
+        
+    });
+}
+
+$(function () {
+    // ==========================================
+    // $("#page-designer-grid-stack").gridstack({
+    //     auto: false,
+    //     acceptWidgets: '.grid-stack-item',
+    // })
+    // ==========================================
 	// var options = {
  //        width: 12,
  //        float: false,
@@ -113,23 +161,29 @@ $(function () {
  //        appendTo: 'body'
  //    };
     // $('#panel-designer').gridstack(options);
-	$('#sidebar .grid-stack-item').draggable({
-        helper: "clone",
-	    handle: '.grid-stack-item-content',
-	    scroll: true,
-	    appendTo: 'body',
-        revert: true,
-        start: function( event, ui ) {
-              $(this).addClass('placeholder-dash');
-        },
-        stop: function( event, ui ) {
-              $(this).removeClass('placeholder-dash');
-              $(this).addClass('list-left'); 
-        }
-	});
+
+ //    ===================================================
+	// $('#sidebar .grid-stack-item').draggable({
+ //        helper: "clone",
+	//     handle: '.grid-stack-item-content',
+	//     scroll: true,
+	//     appendTo: 'body',
+ //        revert: true,
+ //        start: function( event, ui ) {
+ //              $(this).addClass('placeholder-dash');
+ //        },
+ //        stop: function( event, ui ) {
+ //              $(this).removeClass('placeholder-dash');
+ //              $(this).addClass('list-left'); 
+ //        }
+	// });
+ //    =====================================================
 	// $('#panel-designer').droppable({
 	// 	drop: function (event, ui) {
 	// 		$('#panel-designer').data("gridstack").addWidget($('<div class="grid-stack-item-content"> Example Widget </div>'), 0, 0);
 	// 	}
 	// });
+
+    pde.createElement();
+    
 });

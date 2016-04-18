@@ -101,7 +101,7 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
+		pg.setWidgetContainer();
 		setTimeout(function () {
 			ko.mapping.fromJS(res.data, pg.configPageDesigner)
 		},100);
@@ -247,31 +247,9 @@ window.closeModal = function(){
 	pg.closeWidgetSetting();
 }
 
-// pg.setWidgetContainer = function(){
-// 	app.ajaxPost("/widget/getwidget", {search:""}, function(res){
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
-
-// 		var data = res.data;
-// 		console.log(JSON.stringify(data));
-// 		$parent = $(".list-widget");
-// 		$.each(data, function(i, items){
-// 			
-// 			$stackItem = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
-// 			$stackItem.appendTo($parent);
-// 			$itemContent = $('<div class="grid-stack-item-content"></div>');
-// 			//$listLeft.appendTo($parent);
-// 			$itemContent.appendTo($stackItem);
-// 			$itemlink =$('<a href="#" class="not-active">'+items.title+'</a>');
-// 			$itemlink.appendTo($itemContent)
-// 		});
-// 	});
-// }
-
 $(function (){
 	pg.getConfigurationPage(pg.pageID, "", "", "");
 	pg.getAvailableWidget();
 	app.prepareTooltipster();
-	//pg.setWidgetContainer(); 
+	
 });
