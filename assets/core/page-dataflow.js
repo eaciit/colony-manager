@@ -1396,8 +1396,8 @@ var res = {};
 
 
 var item = shape.dataItem;
-var action = item.DataAction;
-var details = item.DataActionDetails;
+var action = df.checkObservable(item.DataAction);
+var details = df.checkObservable(item.DataActionDetails);
 
 if(item.name=="Fork"||item.name=="Stop"){
     $(".diagram").getKendoDiagram().select(shape);
@@ -1405,8 +1405,8 @@ if(item.name=="Fork"||item.name=="Stop"){
     df.renderActionData();
     var dtemp =  $(".diagram").getKendoDiagram().select()[0];
     item = dtemp.dataItem;
-    action = item.DataAction;
-    details = item.DataActionDetails;
+    action = df.checkObservable(item.DataAction);
+    details = df.checkObservable(item.DataActionDetails);
 }else if(action==undefined||details==undefined){
     return undefined;
 }
