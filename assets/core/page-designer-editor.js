@@ -1,48 +1,44 @@
+viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
+
 var widgets = [
-        {x: 0, y: 0, width: 2, height: 2},
-        {x: 2, y: 0, width: 4, height: 2},
-        {x: 6, y: 0, width: 2, height: 4},
-        {x: 1, y: 2, width: 4, height: 2}
-    ];
+    {x: 0, y: 0, width: 2, height: 2},
+    {x: 2, y: 0, width: 4, height: 2},
+    {x: 6, y: 0, width: 2, height: 4},
+    {x: 1, y: 2, width: 4, height: 2}
+];
 
-var widgetFunc = function (widgets) {
-    var self = this;
+pde.widgets = ko.observableArray(widgets);
+pde.addNewWidget = function () {
+    pde.widgets.push({
+        x: 0,
+        y: 0,
+        width: 4,
+        height: 4,
+        auto_position: true
+    });
 
-    this.widgets = ko.observableArray(widgets);
-
-    this.addNewWidget = function () {
-        this.widgets.push({
-            x: 0,
-            y: 0,
-            width: 4,
-            height: 4,
-            auto_position: true
-        });
-
-        return false;
-    };
-
-    this.deleteWidget = function (item) {
-         swal({
-                title: "Are you sure?",
-                text: "You will delete this widget",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-                cancelButtonText: "No",
-                closeOnConfirm: true,
-                closeOnCancel: true
-              },
-              function(isConfirm){
-                if (isConfirm) {
-                     self.widgets.remove(item);
-                } 
-              });
-       
-        return false;
-    };
+    return false;
 };
-pg.widgetgrid = new widgetFunc(widgets);
+
+pde.deleteWidget = function (item) {
+     swal({
+            title: "Are you sure?",
+            text: "You will delete this widget",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            closeOnConfirm: true,
+            closeOnCancel: true
+          },
+          function(isConfirm){
+            if (isConfirm) {
+                pde.widgets.remove(item);
+            } 
+          });
+   
+    return false;
+};
 
 ko.components.register('widget-grid', {
     viewModel: {
@@ -99,20 +95,18 @@ $(function () {
  //    };
     // $('#panel-designer').gridstack(options);
 	$('#sidebar .grid-stack-item').draggable({
-	    handle: '.grid-stack-item-content',
-        placeholder: function(element) {
-                            return element.clone().addClass("placeholder");
-        },
         helper: "clone",
+	    handle: '.grid-stack-item-content',
 	    scroll: true,
 	    appendTo: 'body',
-	  //   stop: function(event, ui) {
-
-			// $('#panel-designer').data("gridstack").addWidget($('<div class="grid-stack-item-content"> Example Widget </div>'), 0, 0);
-	  //   }
-	    // drop: function(event){
-			// $('#panel-designer').data("gridstack").addWidget($('<div><div class="grid-stack-item-content" /><div/>'),node.x, node.y, 4, 4);
-		// }
+        revert: true,
+        start: function( event, ui ) {
+              $(this).addClass('placeholder-dash');
+        },
+        stop: function( event, ui ) {
+              $(this).removeClass('placeholder-dash');
+              $(this).addClass('list-left'); 
+        }
 	});
 	// $('#panel-designer').droppable({
 	// 	drop: function (event, ui) {

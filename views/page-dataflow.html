@@ -228,12 +228,12 @@
                         <a class="btn btn-info btn-xs" data-bind="" onclick="df.addFileMapReduce();">Add files</a>
                     </td>
                 </tr>
-                <!-- ko foreach: mapfiles -->
+                <!-- ko foreach: files -->
                 <tr>
                     <td colspan="2">
                         <input class="inp-mapfiles" data-bind="value:path" placeholder="Fill the file path">
                         <button class="btn pd-custom fileChooserBtn">..</button>
-                        <a class="btn btn-danger btn-xs" data-bind="attr:{index:idm}" onclick="df.deleteFileMapReduce(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                        <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteFileMapReduce(event);"><span class="glyphicon glyphicon-trash"></span></a>
                     </td>
                 </tr>
                 <!-- /ko -->

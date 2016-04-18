@@ -9,6 +9,7 @@ wl.widgetListConfig = {
 	config: [],
 	url: "",
 };
+
 wl.widgetListdata = ko.observableArray([]);
 wl.widgetDataSource = ko.observableArray([]);
 wl.configWidgetList = ko.mapping.fromJS(wl.widgetListConfig);
@@ -33,7 +34,8 @@ wl.setGridwl = function (){
 		rowTemplate : kendo.template($("#rowTemplate").html()),
 	}).addClass("grid-soft grid-list grid-unselectable");
 	$('.grid-widget').find("thead").remove();
-	$('.grid-widget').find('.k-grid-header').remove()	
+	$('.grid-widget').find('.k-grid-header').remove();
+	$('.grid-widget').find('tr:eq(0) td').css("border-top","none");	
 }
 
 wl.selectCount = function(e) {
@@ -86,34 +88,39 @@ wl.openWidget = function(_id, mode) {
 
 	// $(".modal-widget-preview").modal("hide");
 	
-	$(".modal-widget-datasource").modal({
+	$(".modal-widget-config").modal({
 		backdrop: 'static',
 		keyboard: true
 	});
 };
 
-wl.previewWidget = function(_id, dataSourceId) {
-	// $(".modal-widget-datasource").modal("hide");
-	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: dataSourceId(), mode: "preview"}, function(res){
+wl.previewWidget = function(_id) {
+	var param = Lazy(wl.widgetListdata()).find({_id:_id});
+	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: param.dataSourceId, mode: "preview"}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
 		if (!res.data) {
 			res.data = [];
 		}
-		// console.log(res.data.container)
 
-		wl.previewMode("preview");
-		var urlprev = "src=\"";
-		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
-		urlprev = "href=\"";
-		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+wl.configWidgetList.url());
-		// console.log(html);
+		$(".modal-widget-preview").modal("show");
+		var widgetBaseURL = baseURL + "res-widget" + res.data.widgetBasePath;
+		var html = res.data.container;
+		html = html.replace(/src\=\"/g, 'src="' + widgetBaseURL);
+		html = html.replace(/href\=\"/g, 'href="' + widgetBaseURL);
+
+		var iWindow = $("#preview")[0].contentWindow;
+
 		$("#preview").off("load").on("load", function(){
 			var setting = wl.confertJsontoSetting($('#settingform').ecForm("getData"));
-			document.getElementById("preview").contentWindow.Render(res.data.dataSource, setting, {});
+			console.log(iWindow.Render);
+			console.log(res.data.dataSource);
+			console.log(setting);
+			iWindow.Render(res.data.dataSource, setting, {});
 		});
-		var contentDoc = $("#preview")[0].contentWindow.document;
+
+		var contentDoc = iWindow.document;
 		contentDoc.open();
 		contentDoc.write(html);
 		contentDoc.close();
@@ -129,7 +136,8 @@ wl.confertJsontoSetting = function(data){
 }
 
 wl.closeModal = function() {
-	$(".modal-widget-datasource").modal("hide");
+	$(".modal-widget-config").modal("hide");
+	$(".modal-widget-preview").modal("hide");
 	wl.previewMode("");
 	wl.backToFront();
 };
@@ -144,13 +152,14 @@ wl.saveAndCloseModal = function(_id, datasource) {
 		}
 		
 		$(".modal-widget-preview").modal("hide");
-		$(".modal-widget-datasource").modal("hide");
+		$(".modal-widget-config").modal("hide");
 		wl.configWidgetList.dataSourceId([]);
 	});
 }
 
 wl.addWidget = function() {
 	app.mode("editor");
+	app.showfilter(false);
 	wl.scrapperMode("");
 	wl.getFile();
 };
@@ -220,6 +229,7 @@ wl.editWidget = function(_id, mode) {
 			metadata: res.data.config
 		});
 	});
+	app.showfilter(false);
 };
 
 wl.getFile = function() {
@@ -250,7 +260,6 @@ wl.removeWidget = function() {
 		vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function () {
 			return this.value;
 		}).get();
-
 		swal({
 		title: "Are you sure?",
 		text: 'Widget(s) with id "' + vals + '" will be deleted',
@@ -288,4 +297,5 @@ wl.backToFront = function() {
 $(function (){
 	wl.getWidgetList("");
 	wl.selectAllWidget();
+	app.registerSearchKeyup($('.search'), wl.getWidgetList);
 });

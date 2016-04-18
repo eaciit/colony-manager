@@ -161,7 +161,14 @@ pg.widgetSetting = function(_id, mode) {
 	app.mode("datasourceMapping");
 	pg.previewMode("");
 	if (mode != "back") {
-		pg.getConfigurationPage(pg.pageID, "settingwidget", _id, "");
+		var param = {
+			pageID: pg.pageID,
+			widgetID: _id
+		};
+
+		app.ajaxPost("/page/getwidgetsetting", param, function (res) {
+			console.log(res);
+		});
 	}
 	// pg.getDataSource();
 	if (mode == "modal") {
@@ -240,8 +247,31 @@ window.closeModal = function(){
 	pg.closeWidgetSetting();
 }
 
+// pg.setWidgetContainer = function(){
+// 	app.ajaxPost("/widget/getwidget", {search:""}, function(res){
+// 		if (!app.isFine(res)) {
+// 			return;
+// 		}
+
+// 		var data = res.data;
+// 		console.log(JSON.stringify(data));
+// 		$parent = $(".list-widget");
+// 		$.each(data, function(i, items){
+// 			
+// 			$stackItem = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
+// 			$stackItem.appendTo($parent);
+// 			$itemContent = $('<div class="grid-stack-item-content"></div>');
+// 			//$listLeft.appendTo($parent);
+// 			$itemContent.appendTo($stackItem);
+// 			$itemlink =$('<a href="#" class="not-active">'+items.title+'</a>');
+// 			$itemlink.appendTo($itemContent)
+// 		});
+// 	});
+// }
+
 $(function (){
 	pg.getConfigurationPage(pg.pageID, "", "", "");
 	pg.getAvailableWidget();
 	app.prepareTooltipster();
+	//pg.setWidgetContainer(); 
 });

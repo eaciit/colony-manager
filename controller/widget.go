@@ -176,9 +176,17 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	widget := new(colonycore.Widget)
+	widget.ID = data.GetString("_id")
+	if err := widget.GetById(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
 	previewData := toolkit.M{}
 	previewData.Set("container", contentstring)
 	previewData.Set("dataSource", widgetData)
+	previewData.Set("widgetBasePath", strings.Replace(getFileIndex, EC_DATA_PATH+toolkit.PathSeparator+"widget", "", -1))
+	previewData.Set("settings", widget.Config)
 
 	if data.Get("mode", "").(string) == "save" {
 		dataWidget := colonycore.Widget{}
@@ -201,4 +209,27 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, previewData, "")
+}
+
+func (p *WidgetController) GetWidgetSetting(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		PageID   string `json:"pageID"`
+		WidgetID string `json:"widgetID"`
+	}{}
+
+	widget := new(colonycore.Widget)
+	widget.ID = payload.WidgetID
+
+	if err := colonycore.Get(widget, widget.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	res, err := widget.GetConfigWidget()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
 }

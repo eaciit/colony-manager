@@ -73,7 +73,7 @@ func (w *WebController) WidgetGrid(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetgrid.html"
+	r.Config.ViewName = "views/museum/page-widgetgrid.html"
 
 	return true
 }
@@ -100,7 +100,7 @@ func (w *WebController) WidgetSelector(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetselector.html"
+	r.Config.ViewName = "views/museum/page-widgetselector.html"
 
 	return true
 }
@@ -109,7 +109,7 @@ func (w *WebController) WidgetChart(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetchart.html"
+	r.Config.ViewName = "views/museum/page-widgetchart.html"
 
 	return true
 }
@@ -154,12 +154,12 @@ func (w *WebController) WidgetPage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-widgetpage.html"
+	r.Config.ViewName = "views/museum/page-widgetpage.html"
 
 	return true
 }
 
-func (w *WebController) WidgetDesigner(r *knot.WebContext) interface{} {
+func (w *WebController) PageDesigner(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -167,7 +167,7 @@ func (w *WebController) WidgetDesigner(r *knot.WebContext) interface{} {
 	payload := map[string]string{}
 	r.GetForms(&payload)
 
-	return toolkit.M{"href": "/widgetdesigner", "pageID": payload["id"]}
+	return toolkit.M{"href": "/pagedesigner", "pageID": payload["id"]}
 }
 
 func (w *WebController) PageView(r *knot.WebContext, args []string) interface{} {
