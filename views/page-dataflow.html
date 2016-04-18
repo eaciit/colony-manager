@@ -259,7 +259,7 @@
         <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
             <tbody>
                 <tr>
-                    <td>To Addresses</td>
+                    <td>To</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:to" placeholder="Comma-separated values">
                     </td>
@@ -396,10 +396,10 @@
 
 <div class="divTitleDF" data-bind="with:df">
     <div class="col-md-12">
-        <input class="pTitle inline-edit" data-bind="value:Name" ></input>
+        <input class="pTitle inline-edit" data-bind="value:Name" placeholder="Add Title" ></input>
     </div>
     <div class="col-md-12">
-    	<input class="pDesc inline-edit" data-bind="value:Description" ></input>
+    	<input class="pDesc inline-edit" data-bind="value:Description" placeholder="Add Description" ></input>
     </div>
 </div>
 

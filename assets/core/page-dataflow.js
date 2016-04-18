@@ -78,8 +78,8 @@ viewModel.dataflow = {
         "Color" : "#FF0000"
     },
     ], 
-    Name: ko.observable("Add Title"),
-    Description: ko.observable("Add Description"),
+    Name: ko.observable(""),
+    Description: ko.observable(""),
     Actions:ko.observableArray([]),
     DataShape:ko.observable({}),
     Mode: ko.observable("Grid"),
@@ -1034,8 +1034,8 @@ df.newDF = function(){
     df.ID("");
     df.Mode("Designer");
     df.DataShape({});
-    df.Name("Add Title");
-    df.Description("Add Description");
+    df.Name("");
+    df.Description("");
     df.globalVar([]);
     df.Reload();
 }
