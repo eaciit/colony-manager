@@ -259,7 +259,7 @@
         <table data-bind="with:df.emailModel, visible: (df.popoverMode() == 'Email')">
             <tbody>
                 <tr>
-                    <td>To Addresses</td>
+                    <td>To</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:to" placeholder="Comma-separated values">
                     </td>
@@ -305,7 +305,7 @@
                     <table>
                         <tbody>
                             <tr>
-                                <td>When Failed</td>
+                                <td>When failed</td>
                                 <td>
                                     <input type="text" class="inp-decision inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
                                 </td>
@@ -330,7 +330,7 @@
                                     <input class="inp-global" data-bind="value:value" placeholder="Fill parameter value">
                                 </td>
                                 <td>
-                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idy}" onclick="df.deleteParamInput(event);">
+                                    <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteParamInput(event);">
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </a>
                                 </td>
@@ -375,17 +375,25 @@
         </div>
       
         <table  id= "decision" data-bind="with:df.decisionModel, visible: (df.popoverMode() == 'Decision')">
-            <tbody data-bind = "foreach:df.arrayconn">
-                <tr>
+            <tbody>
+                 <tr class="forktr">
+                    <td>Is fork</td>
+                    <td>
+                        <input type="checkbox" class="inp-fork inp-left" data-bind="checked:df.isFork" placeholder="">
+                    </td>
+                </tr> 
+                            <!-- ko foreach:df.arrayconn -->
+                <tr data-bind="visible: !df.isFork()" class="dectr">
                     <td>If</td>
                     <td>
                         <input type="text" class="inp-fork inp-left" data-bind="value:stat" placeholder="">
                     </td>
-                    <td>Go To</td>
+                    <td>go to</td>
                     <td>
                         <input type="text" disabled="disabled" class="inp-fork inp-right" data-bind="value:flowaction" placeholder="">
                     </td>
                 </tr> 
+                             <!-- /ko -->
             </tbody>
         </table>
     </div>
@@ -396,10 +404,10 @@
 
 <div class="divTitleDF" data-bind="with:df">
     <div class="col-md-12">
-        <input class="pTitle inline-edit" data-bind="text:Name" value="Add Title"></input>
+        <input class="pTitle inline-edit" data-bind="value:Name" placeholder="Add Title" ></input>
     </div>
     <div class="col-md-12">
-    	<input class="pDesc inline-edit" data-bind="text:Description" value="Add Description"></input>
+    	<input class="pDesc inline-edit" data-bind="value:Description" placeholder="Add Description" ></input>
     </div>
 </div>
 
@@ -422,6 +430,10 @@
 </div>
 
 <style>	
+        .forktr td:first-child{
+            width:50px!important;
+        }
+
         .search-txt{
             border-radius: 1px;
             min-height: 29px;
@@ -509,8 +521,14 @@
             width: 80px!important;
         }
 
-        #decision td:first-child{
+        .dectr td:first-child{
             width: 20px!important;
+        }
+
+        .dectr td:nth-child(3){
+            width: 36px;
+            text-align: center;
+
         }
 
 		.pTitle{
@@ -616,15 +634,15 @@
             width: 220px;
         }
         .inp-decision{
-            margin: 2px 5px;
-            width: 180px;
+            margin: 2px 14px;
+            width: 170px;
         }
         .inp-mapfiles{
-            margin: 5px -2px 5px 8px;
-            width: 270px;
+            margin: 5px -2px 5px 0;
+            width: 278px;
         }
         .inp-global{
-            margin: 5px 2px 5px;
+            margin: 5px 2px 5px 0;
             width: 180px;
         }
         input.inline-edit{
