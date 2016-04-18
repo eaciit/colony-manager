@@ -1,3 +1,8 @@
+<script>
+	viewModel.pageID = "{{.pageID}}";
+	viewModel.templateModels = JSON.parse("{{.templateModels}}".replace(/\x22/g, '"'));
+</script>
+
 <!-- core -->
 <link href="/res/gridstack/gridstack.css" rel="stylesheet">
 <link href="/res/gridstack/gridstack-extra.css" rel="stylesheet">
@@ -74,10 +79,6 @@
     } 
 
 </style>
-
-<script>
-	viewModel.pageID = "{{.pageID}}";
-</script>
 
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: PageDesigner">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'pagedesigner')">
