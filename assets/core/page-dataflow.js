@@ -64,10 +64,10 @@ viewModel.dataflow = {
         "Color" : "#017932"
     },
      {
-        "Name"  :"Fork",
+        "Name"  :"Decision",
         "Id"    :"9",
         "Image" : "icon_fork.png",
-        "Type"  : "Fork",
+        "Type"  : "Decision",
         "Color" : "#CF29D8"
     },
      {
@@ -306,11 +306,11 @@ df.newStopModel = function(){
 }
 
 //need discuss with all team
-df.forkModel = ko.observable({
+df.decisionModel = ko.observable({
 
 });
 
-df.newForkModel = function(){
+df.newDecisionModel = function(){
   return{
 
   }
@@ -345,7 +345,7 @@ function visualTemplate(options) {
             var g = new dataviz.diagram.Group();
             var dataItem = options.dataItem;
 
-                if(dataItem.name == "Fork"){
+                if(dataItem.name == "Decision"){
                      g.append(new dataviz.diagram.Path({
                         width: 120,
                         height: 80,
@@ -357,8 +357,8 @@ function visualTemplate(options) {
                     }));
 
                     g.append(new dataviz.diagram.TextBlock({
-                        x:48,
-                        y:30,
+                        x:35,
+                        y:32,
                         text: dataItem.name,
                         fontSize:13
                     }));
@@ -508,7 +508,7 @@ df.init = function () {
 
                         $btn = $("<button title='Action details' class='btn btn-primary btn-xs pull-right btn-transition'><span class='glyphicon glyphicon-chevron-down'></span></button>")
                         
-                        if(item.dataItem.name!="Fork" && item.dataItem.name!="Stop")
+                        if(item.dataItem.name!="Decision" && item.dataItem.name!="Stop")
                         $(".popover-title").append($btn);
 
                         $btn.click(function(){
@@ -578,7 +578,7 @@ df.init = function () {
         placement : 'top',
         content: $("#popover-content-globalvar").html()        
     });
-     
+
     $('.pTitle').blur(function(){
         if( !$(this).val() ) {
             $(".pTitle").val("Add Title");
@@ -621,7 +621,7 @@ df.init = function () {
                     y:ypos, 
                     dataItem:{name:name,image :image, color:color,type:type} 
                 });
-                if(name!="Fork")
+                if(name!="Decision")
                     df.allAction.push(name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
             }
         },
@@ -684,7 +684,7 @@ df.checkConnection = function(elem){
                 df.counts[sh.id+shto.id] = df.counts[sh.id+shto.id] == undefined?1:df.counts[sh.id+shto.id]+1;
                 df.counts[shto.id+sh.id] = df.counts[shto.id+sh.id] == undefined?1:df.counts[shto.id+sh.id]+1;
 
-            if(sh.dataItem.name !="Fork" ){
+            if(sh.dataItem.name !="Decision" ){
                 df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
                 if(df.counts[sh.id+"-"] >1){
                     diagram.remove(co);
@@ -692,7 +692,7 @@ df.checkConnection = function(elem){
                 }
             }   
 
-            if(shto.dataItem.name !="Fork"){
+            if(shto.dataItem.name !="Decision"){
                 df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
                  if(df.counts["-"+shto.id] >1){
                     diagram.remove(co);
@@ -720,11 +720,11 @@ df.checkFlow = function(elem){
         var sh = co.from.shape == undefined ?co.from: co.from.shape;
         var shto = co.to.shape == undefined ?co.to:co.to.shape;
 
-        if(sh.dataItem.name !="Fork" ){
+        if(sh.dataItem.name !="Decision" ){
             df.counts[sh.id+"-"] =  df.counts[sh.id+"-"] == undefined?1: df.counts[sh.id+"-"]+1;
         }
 
-         if(shto.dataItem.name !="Fork"){
+         if(shto.dataItem.name !="Decision"){
             df.counts["-"+shto.id] =  df.counts["-"+shto.id] == undefined?1: df.counts["-"+shto.id]+1;
         }
     }
@@ -733,7 +733,7 @@ df.checkFlow = function(elem){
     var startfinish = 0;
     var noconnshape = 0;
     for(var c in shap){
-        if(shap[c].dataItem.name=="Fork")
+        if(shap[c].dataItem.name=="Decision")
             continue;
 
         var id = shap[c].id;
@@ -831,7 +831,7 @@ df.renderDiagram = function(elem,data){
         var sh = shapes[c];
         diagram.addShape(sh);
         
-        if(sh.dataItem.name!="Fork")
+        if(sh.dataItem.name!="Decision")
         df.allAction.push(sh.dataItem.name + " - "+ diagram.shapes[diagram.shapes.length-1].id);
     }
 
@@ -1142,7 +1142,7 @@ df.renderActionData = function(){
           dataItem.DataAction = dataItem.DataAction == undefined? df.newSshModel():df.checkObservable(dataItem.DataAction);
           df.sshModel(dataItem.DataAction);
       break;
-      case "Fork":
+      case "Decision":
             df.arrayconn([]);
             if(dataItem.DataAction == undefined){
                  dataItem.DataAction = [];
@@ -1181,7 +1181,7 @@ df.renderActionData = function(){
     }
 
 
-    if(action!="Fork"&&action!="Stop"){
+    if(action!="Decision"&&action!="Stop"){
         setTimeout(function(){
             if(dataItem.DataAction.server() == ""){
                 $(".ddl-server:input").getKendoDropDownList().select(0);
@@ -1236,7 +1236,7 @@ df.saveActionData = function(){
         case "SSH Script":
             dataItem["DataAction"]=df.sshModel();
         break;
-        case "Fork":
+        case "Decision":
             dataItem["DataAction"]=df.arrayconn();
         break;
     }
@@ -1362,7 +1362,7 @@ var item = shape.dataItem;
 var action = item.DataAction;
 var details = item.DataActionDetails;
 
-if(item.name=="Fork"||item.name=="Stop"){
+if(item.name=="Decision"||item.name=="Stop"){
     $(".diagram").getKendoDiagram().select(shape);
     df.popoverMode(item.name);
     df.renderActionData();
@@ -1378,7 +1378,7 @@ res.id = shape.id;
 res.name = item.name;
 res.description = res.id +" - "+res.name;
 res.type = item.type;
-res.server =  res.name == "Fork" || res.name == "Stop"?"" : action.server();
+res.server =  res.name == "Decision" || res.name == "Stop"?"" : action.server();
 
 var actj = JSON.parse(ko.toJSON(action));
 
