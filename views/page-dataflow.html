@@ -375,8 +375,15 @@
         </div>
       
         <table  id= "decision" data-bind="with:df.decisionModel, visible: (df.popoverMode() == 'Decision')">
-            <tbody data-bind = "foreach:df.arrayconn">
-                <tr>
+            <tbody>
+                 <tr class="forktr">
+                    <td>Is fork</td>
+                    <td>
+                        <input type="checkbox" class="inp-fork inp-left" data-bind="checked:df.isFork" placeholder="">
+                    </td>
+                </tr> 
+                            <!-- ko foreach:df.arrayconn -->
+                <tr data-bind="visible: !df.isFork()" class="dectr">
                     <td>If</td>
                     <td>
                         <input type="text" class="inp-fork inp-left" data-bind="value:stat" placeholder="">
@@ -386,6 +393,7 @@
                         <input type="text" disabled="disabled" class="inp-fork inp-right" data-bind="value:flowaction" placeholder="">
                     </td>
                 </tr> 
+                             <!-- /ko -->
             </tbody>
         </table>
     </div>
@@ -422,6 +430,10 @@
 </div>
 
 <style>	
+        .forktr td:first-child{
+            width:50px!important;
+        }
+
         .search-txt{
             border-radius: 1px;
             min-height: 29px;
@@ -509,8 +521,14 @@
             width: 80px!important;
         }
 
-        #decision td:first-child{
+        .dectr td:first-child{
             width: 20px!important;
+        }
+
+        .dectr td:nth-child(3){
+            width: 36px;
+            text-align: center;
+
         }
 
 		.pTitle{
