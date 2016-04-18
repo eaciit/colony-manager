@@ -9,6 +9,7 @@ pde.dsMappingConfig = {
     field: []
 };
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
+pde.widgetCounter = ko.observable(1);
 
 pde.preparePage = function () {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
@@ -85,10 +86,9 @@ pde.prepareGridStack = function () {
     });
 };
 
-pde.prepareGridStackSidebar = function () {
+pde.prepareSidebarDraggable = function () {
     $('#sidebar .grid-stack-item:not(.ui-draggable)').draggable({
         revert: 'invalid',
-        handle: '.grid-stack-item-content',
         scroll: false,
         appendTo: 'body',
         helper: "clone",
@@ -117,6 +117,8 @@ pde.prepareWidget = function () {
             $each.data("id", d._id);
             $each.find("a").html(d.title);
         });
+
+        // pde.prepareSidebarDraggable();
     });
 };
 
@@ -126,6 +128,9 @@ pde.addThisWidget = function (o) {
             '<div class="grid-stack-item-content">',
                 '<div class="panel panel-default">',
                     '<div class="panel-heading wg-panel">',
+                        '<h5></h5>',
+                    '</div>',
+                    '<div class="panel-body">',
                         '<div class="pull-right">',
                             '<a href="#" class="btn btn-default btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>',
                             '<a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></a>',
@@ -144,6 +149,9 @@ pde.addThisWidget = function (o) {
     $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
     $item.data("pageid", viewModel.pageID);
     $item.data("widgetid", $(o).data("id"));
+    $item.find("h5").text("Widget " + pde.widgetCounter());
+
+    pde.widgetCounter(pde.widgetCounter() + 1);
 };
 
 pde.adjustIframe = function () {
