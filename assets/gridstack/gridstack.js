@@ -808,13 +808,15 @@
 
                     node.el = el;
                     self.placeholder.hide();
+                    node.width = (isNaN(node.width)) ? 2 : node.width
+                    var dataid = '';  
                     el
                         .attr('data-gs-x', node.x)
                         .attr('data-gs-y', node.y)
                         .attr('data-gs-width', node.width)
                         .attr('data-gs-height', node.height)
                         .attr('data-pageid', pg.pageID)
-                        .attr('data-id', moment().format("YYYYMMDDHHmmssSSS"))
+                        .attr('data-id', dataid = moment().format("YYYYMMDDHHmmssSSS"))
                         .attr('data-widgetid', "widget-"+moment().format("SSS"))
                         .addClass(self.opts.itemClass)
                         .removeAttr('style')
@@ -824,16 +826,15 @@
                         .removeClass('placeholder-dash')
                         .removeClass('ui-draggable ui-draggable-dragging ui-draggable-disabled')
                         .unbind('drag', onDrag);
-
+                     
                     self.container.append(el);
-
-                    var name_widget = el.find($(".grid-stack-item-content")).find("a").html();
+                    var name_widget = el.find($(".grid-stack-item-content")).find("a").html().replace(" ","&nbsp;");
                     $headerPanel = $('<div class="panel panel-default">'+
                                         '<div class="panel-heading wg-panel clearfix">'+
                                             '<span>'+name_widget+'</span>'+
                                             '<div class="pull-right">'+
                                                 ' <a href="#" class="btn btn-default btn-xs btn-tooltip" title="Setting"><span class="glyphicon glyphicon-cog"></span></a> '+
-                                                ' <a href="#" class="btn btn-danger btn-xs btn-tooltip" title="Remove"><span class="glyphicon glyphicon-trash"></span></a> '+
+                                                ' <a href="#" class="btn btn-danger btn-xs btn-tooltip" title="Remove" onclick = pde.deleteWidget("'+dataid+'","'+name_widget+'")><span class="glyphicon glyphicon-trash"></span></a> '+
                                             '</div>'+
                                         '</div>'+
                                     '</div>');
@@ -852,7 +853,8 @@
                         offsetY: -5,
                         touchDevices: false,
                         trigger: 'hover',
-                        position: "top"
+                        position: "top",
+                        multiple: true
                     });
                 }
             });

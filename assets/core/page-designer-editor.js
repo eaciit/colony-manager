@@ -1,11 +1,11 @@
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
-pde.widgets = ko.observableArray([
+/*pde.widgets = ko.observableArray([
     {x: 0, y: 0, width: 2, height: 2},
-    // {x: 2, y: 0, width: 4, height: 2},
-    // {x: 6, y: 0, width: 2, height: 4},
-    // {x: 1, y: 2, width: 4, height: 2}
-]);
+    {x: 2, y: 0, width: 4, height: 2},
+    {x: 6, y: 0, width: 2, height: 4},
+    {x: 1, y: 2, width: 4, height: 2}
+]);*/
 pde.addNewWidget = function () {
     pde.widgets.push({
         x: 0,
@@ -18,10 +18,11 @@ pde.addNewWidget = function () {
     return false;
 };
 
-pde.deleteWidget = function (item) {
+pde.deleteWidget = function (item, name) {
      swal({
             title: "Are you sure?",
-            text: "You will delete this widget",
+            // text: "You will delete this widget",
+            text: "You will delete "+name,
             type: "warning",
             showCancelButton: true,
             confirmButtonText: "Yes",
@@ -31,7 +32,8 @@ pde.deleteWidget = function (item) {
           },
           function(isConfirm){
             if (isConfirm) {
-                pde.widgets.remove(item);
+                // pde.widgets.remove(item);
+               $("[data-id="+item+"]").remove();
             } 
           });
    
