@@ -147,25 +147,27 @@ func (p *PageDesignerController) SavePage(r *knot.WebContext) interface{} {
 // 	return helper.CreateResult(true, data, "")
 // }
 
-// func (p *PageDesignerController) RemovePage(r *knot.WebContext) interface{} {
-// 	r.Config.OutputType = knot.OutputJson
+func (p *PageDesignerController) RemovePage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
 
-// 	payload := map[string]interface{}{}
-// 	if err := r.GetPayload(&payload); !helper.HandleError(err) {
-// 		return helper.CreateResult(false, nil, err.Error())
-// 	}
-// 	idArray := payload["_id"].([]interface{})
+	payload := struct {
+		IDs []string `json:"ids"`
+	}{}
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-// 	for _, id := range idArray {
-// 		o := new(colonycore.MapPage)
-// 		o.ID = id.(string)
-// 		if err := o.Delete(filepath.Join(EC_APP_PATH, "config", "pages")); err != nil {
-// 			return helper.CreateResult(false, nil, err.Error())
-// 		}
-// 	}
+	for _, id := range payload.IDs {
+		o := new(colonycore.PageDetail)
+		o.ID = id
 
-// 	return helper.CreateResult(true, nil, "")
-// }
+		if err := o.Remove(); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
 
 // func (p *PageDesignerController) SaveConfigPage(r *knot.WebContext) interface{} {
 // 	r.Config.OutputType = knot.OutputJson

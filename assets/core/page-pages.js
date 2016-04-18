@@ -14,9 +14,9 @@ p.configPage = ko.mapping.fromJS(p.templateConfigPage);
 p.dataSources = ko.observableArray([]);
 
 p.pageColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' id='selectall'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' onchange='p.selectAll(this);'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' id='select' class='selecting' name='select[]' value=" + d._id + ">"
+			"<input type='checkbox' class='select-row' value=" + d._id + ">"
 		].join(" ");
 	}},
 	{ field: "title", title: "Title" },
@@ -50,7 +50,34 @@ p.addPage = function () {
 	app.showfilter(false);
 };
 p.removePage = function () {
+	var rows = $(".grid-page .select-row:checked").get().map(function (d) {
+		var uid = $(d).closest("tr").attr("data-uid");
+		var id = $(".grid-page").data("kendoGrid").dataSource.getByUid(uid)._id;
+		return id;
+	});
 
+	if (rows.length == 0) {
+		swal({ title: "Opsss", text: "Select row to remove", type: "warning" });
+		return;
+	}
+
+	swal({
+		title: "Are you sure?",
+		text: 'Data grabber with id '+dg.tempCheckIdDataGrabber().toString()+' will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+	}, function() {
+		app.ajaxPost("/pagedesigner/removepage", { ids: rows }, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			p.getPages();
+		});
+	});
 };
 p.backToFront = function () {
 	app.mode("");
@@ -67,7 +94,14 @@ p.savePage = function () {
 			return;
 		}
 
-		
+		swal({ title: "Page saved", type: "success" });
+		p.backToFront();
+		p.getPages();
+	});
+};
+p.selectAll = function (o) {
+	$(".grid-page .select-row").each(function (i, d) {
+		$(d).prop("checked", o.checked);
 	});
 };
 
