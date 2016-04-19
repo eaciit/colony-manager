@@ -862,6 +862,12 @@
                 drop: function(event, ui) {
                     self.placeholder.detach();
 
+                    if (typeof self.opts.onDragDrop === "function") {
+                        self.opts.onDragDrop(event, ui);
+                        // self.grid.endUpdate();
+                        return;
+                    }
+
                     var node = $(ui.draggable).data('_gridstack_node');
                     node._grid = self;
                     var el = $(ui.draggable).clone(false);
@@ -869,17 +875,19 @@
                     $(ui.draggable).remove();
                     node.el = el;
                     self.placeholder.hide();
+
                     el
-                        .attr('data-gs-x', node.x)
-                        .attr('data-gs-y', node.y)
-                        .attr('data-gs-width', node.width)
-                        .attr('data-gs-height', node.height)
+                        .attr('data-gs-x', isNaN(node.x) ? 0 : node.x)
+                        .attr('data-gs-y', isNaN(node.y) ? 0 : node.y)
+                        .attr('data-gs-width', isNaN(node.width) ? 2 : node.width)
+                        .attr('data-gs-height', isNaN(node.height) ? 2 : node.height)
                         .addClass(self.opts.itemClass)
                         .removeAttr('style')
                         .enableSelection()
                         .removeData('draggable')
                         .removeClass('ui-draggable ui-draggable-dragging ui-draggable-disabled')
                         .unbind('drag', onDrag);
+
                     self.container.append(el);
                     self._prepareElementByNode(el, node);
                     self._updateContainerHeight();
