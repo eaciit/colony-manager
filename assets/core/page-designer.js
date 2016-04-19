@@ -8,8 +8,17 @@ pde.templatePage = {
 pde.dsMappingConfig = {
     field: []
 };
+pde.configMappTemp = {
+	_id : "",
+	dataSources : [],
+	title: "",
+	url : "",
+}
+
+pde.configMap = ko.mapping.fromJS(pde.configMappTemp);
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 pde.widgetCounter = ko.observable(1);
+pde.allDataSources = ko.observableArray([]);
 
 pde.preparePage = function () {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
@@ -159,8 +168,32 @@ pde.adjustIframe = function () {
     $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
 };
 pde.showConfigPage = function () {
-    console.log("asdfasdf");
+    //app.mode("configpage");
+	//pg.getDataSource();
+	//pg.getConfigurationPage(pg.pageID, "configuration", "", "");
+	var id = pde.getUrlParam('id');
+	app.ajaxPost("/pagedesigner/selectpage", { _id: id }, function(res){
+		if (!app.isFine(res)) {
+            return;
+        }
+
+        data = res.data.pageDetail;
+        pde.allDataSources(data.dataSources);
+        pde.configMap._id(data._id);
+        pde.configMap.title(data.title);
+        pde.configMap.url(data.url);
+
+	});
+	$(".modal-config").modal({
+			backdrop: 'static',
+			keyboard: true
+	});
 };
+
+pde.getUrlParam = function(param){
+	var url = new RegExp('[\?&]' + param +'=([^&#]*)').exec(window.location.href);
+	return url[1] || 0;
+}
 
 $(function () {
     pde.preparePage();
