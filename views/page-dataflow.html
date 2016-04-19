@@ -80,7 +80,7 @@
         <tbody>
             <tr>
                 <td>Server</td>
-                <td>  <input type="text" class="inp-decision inp-left ddl-server" data-bind="kendoDropDownList: { data: df.servers,dataTextField:'_id',dataValueField:'_id' ,value:df.selectedServer }"></td>
+                <td>  <input type="text" class="inp-decision  ddl-server" data-bind="kendoDropDownList: { data: df.servers,dataTextField:'_id',dataValueField:'_id' ,value:df.selectedServer }"></td>
             </tr>
         </tbody>
     </table>
@@ -305,7 +305,7 @@
                             <tr>
                                 <td>When failed</td>
                                 <td>
-                                    <input type="text" class="inp-decision inp-left" data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
+                                    <input type="text" class="inp-decision " data-bind="kendoDropDownList: { data: df.allAction, value:whenFailed}">
                                 </td>
                             </tr>                
                         </tbody>
@@ -342,8 +342,8 @@
                         <tbody>
                             <tr>
                                 <td>Type</td>
-                                <td>
-                                    <input type="text" class="inp-decision inp-left" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                <td colspan='2'>
+                                    <input type="text" class="inp-decision mgLeft-17" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
                                 </td>
                             </tr>
                             <tr>
@@ -377,21 +377,21 @@
                  <tr class="forktr">
                     <td>Is fork</td>
                     <td>
-                        <input type="checkbox" class="inp-fork inp-left" data-bind="checked:df.isFork" placeholder="">
+                        <input type="checkbox" class="" data-bind="checked:df.isFork" placeholder="">
                     </td>
                 </tr> 
-                            <!-- ko foreach:df.arrayconn -->
+                <!-- ko foreach:df.arrayconn -->
                 <tr data-bind="visible: !df.isFork()" class="dectr">
                     <td>If</td>
                     <td>
-                        <input type="text" class="inp-fork inp-left" data-bind="value:stat" placeholder="">
+                        <input type="text" class="inp-fork " data-bind="value:stat" placeholder="">
                     </td>
                     <td>go to</td>
                     <td>
                         <input type="text" disabled="disabled" class="inp-fork inp-right" data-bind="value:flowaction" placeholder="">
                     </td>
                 </tr> 
-                             <!-- /ko -->
+                <!-- /ko -->
             </tbody>
         </table>
     </div>
@@ -648,11 +648,15 @@
             width: 278px;
         }
         .inp-global{
-            margin: 5px 2px 5px 0;
+            margin: 5px 5px 5px 0;
             width: 180px;
         }
-        .inp-input{
-            margin-top: 37px;
+        .inp-fork{
+            margin: 5px 5px 2px 0;
+            width: 150px;
+        }
+        .mgLeft-17{
+            margin-left: -17px;
         }
         input.inline-edit{
           border: none;

@@ -11,6 +11,7 @@ import (
 	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/hdc/hive"
 	//"github.com/eaciit/sshclient"
+	"encoding/csv"
 	"encoding/json"
 	"strings"
 	"time"
@@ -39,10 +40,10 @@ const (
 	SSH_OPERATION_MKDIR = "MKDIR"
 	// SSH_OPERATION_* please define
 
-	ACT_RESULT_PATH = "/usr/eaciit/dataflow/result/"
-	CMD_SPARK       = "spark-submit %v"
-	CMD_MAP_REDUCE  = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
-	CMD_JAVA        = "java -jar %v"
+	ACT_RESULT_PATH      = "/usr/eaciit/dataflow/result/"
+	CMD_SPARK            = "spark-submit %v"
+	CMD_MAP_REDUCE       = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
+	CMD_JAVA             = "java -jar %v"
 	GLOBAL_PARAM_KEYWORD = "global."
 )
 
@@ -91,27 +92,27 @@ func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actio
 	var res []toolkit.M
 	arguments := setCommandArgument(action)
 	switch action.Type {
-		case ACTION_TYPE_HIVE:
-			res, e = runHive(process, action, arguments)
-			break
-		case ACTION_TYPE_HDFS:
-			res, e = runHDFS(process, action, arguments)
-			break
-		case ACTION_TYPE_SPARK:
-			res, e = runSpark(process, action, arguments)
-			break
-		case ACTION_TYPE_SSH:
-			res, e = runSSH(process, action, arguments)
-			break
-		case ACTION_TYPE_EMAIL:
-			// res, e = runSSH(process, action)
-			break
-		case ACTION_TYPE_MAP_REDUCE:
-			res, e = runMapReduce(process, action, arguments)
-			break
-		case ACTION_TYPE_JAVA:
-			res, e = runJava(process, action, arguments)
-			break
+	case ACTION_TYPE_HIVE:
+		res, e = runHive(process, action, arguments)
+		break
+	case ACTION_TYPE_HDFS:
+		res, e = runHDFS(process, action, arguments)
+		break
+	case ACTION_TYPE_SPARK:
+		res, e = runSpark(process, action, arguments)
+		break
+	case ACTION_TYPE_SSH:
+		res, e = runSSH(process, action, arguments)
+		break
+	case ACTION_TYPE_EMAIL:
+		// res, e = runSSH(process, action)
+		break
+	case ACTION_TYPE_MAP_REDUCE:
+		res, e = runMapReduce(process, action, arguments)
+		break
+	case ACTION_TYPE_JAVA:
+		res, e = runJava(process, action, arguments)
+		break
 	}
 	fmt.Println(res)
 	var msg string
@@ -472,7 +473,7 @@ func setCommandArgument(action colonycore.FlowAction) (arguments string) {
 		}
 	}
 
-	return 
+	return
 }
 
 func writeActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowAction, msg string) (err error) {
@@ -515,13 +516,59 @@ func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error
 }
 
 func decodeCSV(file []byte) (retVal interface{}, e error) {
+	reader := csv.NewReader(strings.NewReader(string(file)))
+	records, e := reader.ReadAll()
+
+	if e != nil {
+		return
+	}
+
+	var list []interface{}
+
+	for _, row := range records {
+		line := toolkit.M{}
+		for idx, val := range row {
+			line.Set(toolkit.ToString(idx), val)
+		}
+
+		list = append(list, line)
+	}
+
+	if len(list) > 0 {
+		retVal = list[0]
+	}
+
 	return
 }
 
 func decodeTSV(file []byte) (retVal interface{}, e error) {
+	reader := csv.NewReader(strings.NewReader(string(file)))
+	reader.Comma = '\t'
+	records, e := reader.ReadAll()
+
+	if e != nil {
+		return
+	}
+
+	var list []interface{}
+
+	for _, row := range records {
+		line := toolkit.M{}
+		for idx, val := range row {
+			line.Set(toolkit.ToString(idx), val)
+		}
+
+		list = append(list, line)
+	}
+
+	if len(list) > 0 {
+		retVal = list[0]
+	}
+
 	return
 }
 
 func decodeText(file []byte) (retVal interface{}, e error) {
+	retVal = string(file)
 	return
 }
