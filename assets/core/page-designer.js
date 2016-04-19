@@ -16,9 +16,17 @@ pde.preparePage = function () {
         if (!app.isFine(res)) {
             return;
         }
-
         console.log(res);
+        pde.selectedId(res.data);
     })
+}
+
+pde.selectedId = function (data){
+	p.configPage._id(data.pageDetail._id);
+	p.configPage.dataSources(data.pageDetail.dataSources);
+	p.configPage.widgets(data.pageDetail.widgets);
+	p.configPage.parentMenu(data.pageDetail.parentMenu);
+	p.configPage.title(data.pageDetail.title);
 }
 
 pde.deleteWidget = function (o) {
