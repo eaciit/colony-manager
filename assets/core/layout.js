@@ -74,9 +74,17 @@ ly.getLoadMenu = function(){
 		
 		ly.session(res.data.sessionid);
 		if(ly.session() !== '' ){
-			setTimeout(function(){ ly.getLogout(); }, 300000);
 			app.ajaxPost("/login/getusername", {}, function(res){
-				if(!app.isFine(res)){
+				if (!res.success) {
+					if (res.message.indexOf("expired") > -1) {
+						if (document.URL.indexOf("/web/login") == -1) {
+							ly.getLogout();
+							ly.session("");
+						}
+					} else {
+						app.isFine(res);
+					}
+
 					return;
 				}
 
