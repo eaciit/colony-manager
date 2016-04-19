@@ -584,13 +584,15 @@ df.init = function () {
 
     $('.pTitle').blur(function(){
         if( !$(this).val() ) {
-            $(".pTitle").val("");
+            swal("Warning!", "Title cannot be empty !", "warning");
+            // $(".pTitle").focus();
         }
     });
 
     $('.pDesc').blur(function(){
         if( !$(this).val() ) {
-            $(".pDesc").val("");
+            swal("Warning!", "Description cannot be empty !", "warning");
+            // $(".pDesc").focus();
         }
     });
 
@@ -882,21 +884,28 @@ df.Save = function(){
         swal("Warning", "Data not completed!", "warning");
         return;
     }
-
-    app.ajaxPost("/dataflow/save", {
-        ID : df.ID(),
-        Name:df.Name(),
-        Description:df.Description(),
-        Actions: actdt,
-        DataShapes:df.DataShape(),
-        GlobalParam:df.globalVar()
-    }, function(res){
-        if(!app.isFine(res)){
-          return;
-        }else{
-           swal("Success", "Data Saved !", "success");
-        }
-    });
+    var title = $(".pTitle").val().length;
+    var desc = $(".pDesc").val().length;    
+    if (title == 0) {
+        swal("Warning", "Title or Description cannot be empty!", "warning");
+    }else if (desc == 0) {
+        swal("Warning", "Title or Description cannot be empty!", "warning");
+    }else{
+        app.ajaxPost("/dataflow/save", {
+            ID : df.ID(),
+            Name:df.Name(),
+            Description:df.Description(),
+            Actions: actdt,
+            DataShapes:df.DataShape(),
+            GlobalParam:df.globalVar()
+        }, function(res){
+            if(!app.isFine(res)){
+              return;
+            }else{
+               swal("Success", "Data Saved !", "success");
+            }
+        });
+    }
 }
 
 df.clearDiagram = function(){
@@ -1315,6 +1324,7 @@ df.setContext = function(){
     df.closePopover("#popbtn");
 
     $("#popGlobalVar").popover("show");
+    df.draggablePopover();    
 
     if(df.globalVar().length==0)
     df.addGlobalVar();
@@ -1462,5 +1472,5 @@ df.draggablePopover = function(e){
 
 $(function () {
     df.init();
-    app.section('');  
+    app.section('');    
 });
