@@ -1,0 +1,16 @@
+ <!-- core -->
+<script src="/res/core/page-dataflow.js"></script>
+
+ <ul class="nav nav-tabs" id="idxTab">
+              <li class="active"><a href="#dataflow" data-toggle="tab">Data Flow</a></li>
+              <li><a href="#monitoring" data-toggle="tab">Monitoring</a></li>
+</ul>
+
+<div class="tab-content" >
+              <div class="tab-pane active" id="dataflow" >
+              		{{template "page-dataflow.html"}}	
+              </div>
+              <div class="tab-pane" id="monitoring">
+              		{{template "page-dataflow-log.html"}}	
+              </div>
+</div>
