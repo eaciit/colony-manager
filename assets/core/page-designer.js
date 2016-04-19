@@ -37,16 +37,16 @@ pde.widgetPositions = ko.observableArray([
     {value: "fixed", text: "Fixed"}
 ]);
 pde.allDataSources = ko.observableArray([]);
-pde.preparePage = function () {
+pde.preparePage = function (callback) {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
         if (!app.isFine(res)) {
             return;
         }
 
-console.log(res);
         ko.mapping.fromJS(res.data.pageDetail, p.configPage);
-    })
-}
+        callback();
+    });
+};
 
 pde.deleteWidget = function (o) {
     var $item = $(o).closest(".grid-stack-item");
@@ -125,7 +125,7 @@ pde.prepareSidebarDraggable = function () {
     });
 };
 
-pde.prepareWidget = function () {
+pde.prepareWidget = function (callback) {
     var $sidebar = $("#sidebar");
     $sidebar.empty();
     pde.baseWidgets([]);
@@ -148,7 +148,8 @@ pde.prepareWidget = function () {
             $each.find("a").html(d.title);
         });
 
-        pde.prepareSidebarDraggable();
+        // pde.prepareSidebarDraggable();
+        callback();
     });
 };
 
@@ -236,7 +237,6 @@ pde.setWidgetPosition = function () {
         return d;
     });
 
-    console.log(config);
     ko.mapping.fromJS(config, p.configPage);
 };
 pde.save = function () {
@@ -249,10 +249,27 @@ pde.save = function () {
         swal({ title: "Saved", type: "success" });
     });
 };
+pde.mapWidgets = function () {
+    var $gridStack = $("#page-designer-grid-stack").data("gridstack");
+    var config = ko.mapping.toJS(p.configPage);
+
+    (config.widgets == null ? [] : config.widgets).forEach(function (d) {
+        var $item = $(pde.templateWidgetItem);
+        $item.attr("data-id", d._id);
+        $item.data("id", d._id);
+        $item.data("widgetid", d.widgetId);
+        $item.find("h5").text(d.title);
+
+        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
+    });
+};
 $(function () {
     pde.prepareDataSources(function () {
-        pde.preparePage();
-        pde.prepareWidget();
-        pde.prepareGridStack();
+        pde.prepareWidget(function () {
+            pde.preparePage(function () {
+                pde.prepareGridStack();
+                pde.mapWidgets();
+            });
+        });
     });
 });
