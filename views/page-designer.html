@@ -130,7 +130,7 @@
 	                <h4 class="modal-title">Page Configuration</h4>
 	            </div>
 	            <div class="modal-body">
-	               <form class="form-horizontal form-widgetDesigner" data-bind="with: p.configPage" novalidate>
+	               <form class="form-horizontal form-widget-designer" data-bind="with: p.configPage" novalidate>
 	               		<!-- <div class="col-md-12"> -->
 	               			<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">ID</label>
@@ -155,7 +155,7 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Page Data Source</label>
 					    		<div class="col-md-7">
-						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: dataSources }" name="datasource" id="datasource"></select>
+						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: dataSources, dataValueField: '_id', dataTextField: '_id' }" name="datasource" id="datasource"></select>
 						 			<span class="k-invalid-msg" data-for="datasource"></span>
 					    		</div>
 				    		</div>
@@ -166,7 +166,7 @@
 	                <button class="btn btn-sm btn-danger" data-dismiss="modal">
 	                	<span class="glyphicon glyphicon-remove"></span> Cancel
                 	</button>
-	                <button class="btn btn-sm btn-primary" data-bind="click: p.savePage">
+	                <button class="btn btn-sm btn-primary" data-bind="click: pde.savePage">
 	                	<span class="glyphicon glyphicon-save"></span> Save
                 	</button>
 	            </div>
@@ -186,71 +186,71 @@
 
 				<div class="modal-body">
 					<ul class="nav nav-tabs" id="myTab">
-        				<li class="active"><a data-target="#DataSource" data-toggle="tab">Data source</a></li>
+        				<li class="active"><a data-target="#DataSource" data-toggle="tab">General</a></li>
        					<li><a data-target="#WidgetSetting" data-toggle="tab" data-bind="click: pde.fieldMapping">Widget Setting</a></li>
    					</ul>
 					<!--<div data-bind="visible: (app.mode() == 'datasourceMapping')">-->
 					<div class="tab-content">
-        			<div class="tab-pane active" id="DataSource">
-						<div class="form-horizontal" id="dsWidget" data-bind="with: pde.widgetSettings">
-							<div class="form-group">
-								<label for="title" class="col-sm-2 control-label">Title</label>
-								<div class="col-sm-10">
-									<input required type="text" class="form-control" id="title" name="title" placeholder="Title" data-bind="value: title">
-									<span class="k-invalid-msg" data-for="title"></span>
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="position" class="col-sm-2 control-label">Position</label>
-								<div class="col-sm-10">
-									<select required id="position" data-bind="kendoDropDownList: { data: pde.widgetPosition, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position' }"></select>
-									<span class="k-invalid-msg" data-for="position"></span>
-								</div>
-							</div>
-							<div class="form-group" data-bind="visible: (position() != '')">
-								<label for="width" class="col-sm-2 control-label" data-bind="text: (position() == 'fixed')?'Width Column':'Width'">Width</label>
-								<div class="col-sm-10" data-bind="visible: (position() == 'fixed')">
-									<input required type="number" class="" id="width" name="width" min="0", max= "12" placeholder="Width" data-bind="kendoNumericTextBox:{value: width, min: 0, max: 12}">
-									<span class="k-invalid-msg" data-for="width"></span>
-								</div>
-								<div class="col-sm-10" data-bind="visible: (position() == 'absolute')">
-									<input required type="number" class="" id="width" name="width" min="0" placeholder="Width" data-bind="kendoNumericTextBox:{value: width, min: 0}">
-									<span class="k-invalid-msg" data-for="width"></span>
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="height" class="col-sm-2 control-label">Height</label>
-								<div class="col-sm-10">
-									<input required type="number" class="" id="height" name="height" min="0" placeholder="Height" data-bind="kendoNumericTextBox:{value: height, min: 0}">
-									<span class="k-invalid-msg" data-for="height"></span>
-								</div>
-							</div>
-
-							<div data-bind="foreach: pde.dsMapping.field">
+	        			<div class="tab-pane active" id="DataSource">
+							<div class="form-horizontal" id="dsWidget" data-bind="with: pde.widgetSetting">
 								<div class="form-group">
-									<label class="col-sm-2 control-label" data-bind="text: $data.dsWidget"></label>
+									<label for="title" class="col-sm-2 control-label">Title</label>
 									<div class="col-sm-10">
-										<select required id="ds" data-bind="kendoDropDownList: { data: pde.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
-									    <span class="k-invalid-msg" data-for="ds" data-bind="attr: { 'data-for': 'ds' + $index() }"></span>
-								    </div>
+										<input required type="text" class="form-control" id="title" name="title" placeholder="Title" data-bind="value: title">
+										<span class="k-invalid-msg" data-for="title"></span>
+									</div>
 								</div>
-							</div>
-						</div>   	
-		        	</div>
-		        	
-		        	<!--</div>-->
-		        	<div class="tab-pane" id="WidgetSetting">
-					<div class="col-md-12">
-				    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pde.adjustIframe()"></iframe>
-			        </div>
-			       	<div class="clearfix"></div>
-					
+								<div class="form-group">
+									<label for="position" class="col-sm-2 control-label">Position</label>
+									<div class="col-sm-10">
+										<select required id="position" data-bind="kendoDropDownList: { data: pde.widgetPosition, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position' }"></select>
+										<span class="k-invalid-msg" data-for="position"></span>
+									</div>
+								</div>
+								<div class="form-group" data-bind="visible: (position() != '')">
+									<label for="width" class="col-sm-2 control-label" data-bind="text: (position() == 'fixed')?'Width Column':'Width'">Width</label>
+									<div class="col-sm-10" data-bind="visible: (position() == 'fixed')">
+										<input required type="number" class="" id="width" name="width" min="0", max= "12" placeholder="Width" data-bind="kendoNumericTextBox:{value: width, min: 0, max: 12}">
+										<span class="k-invalid-msg" data-for="width"></span>
+									</div>
+									<div class="col-sm-10" data-bind="visible: (position() == 'absolute')">
+										<input required type="number" class="" id="width" name="width" min="0" placeholder="Width" data-bind="kendoNumericTextBox:{value: width, min: 0}">
+										<span class="k-invalid-msg" data-for="width"></span>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="height" class="col-sm-2 control-label">Height</label>
+									<div class="col-sm-10">
+										<input required type="number" class="" id="height" name="height" min="0" placeholder="Height" data-bind="kendoNumericTextBox:{value: height, min: 0}">
+										<span class="k-invalid-msg" data-for="height"></span>
+									</div>
+								</div>
+
+								<div data-bind="foreach: pde.dsMapping.field">
+									<div class="form-group">
+										<label class="col-sm-2 control-label" data-bind="text: $data.dsWidget"></label>
+										<div class="col-sm-10">
+											<select required id="ds" data-bind="kendoDropDownList: { data: pde.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
+										    <span class="k-invalid-msg" data-for="ds" data-bind="attr: { 'data-for': 'ds' + $index() }"></span>
+									    </div>
+									</div>
+								</div>
+							</div>   	
+			        	</div>
+			        	
+			        	<!--</div>-->
+			        	<div class="tab-pane" id="WidgetSetting">
+							<div class="col-md-12">
+					    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pde.adjustIframe()"></iframe>
+					        </div>
+				       		<div class="clearfix"></div>
+						
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-</div>
+	</div>
 </div>
 

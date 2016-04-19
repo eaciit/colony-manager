@@ -41,7 +41,7 @@
 			    	</button> -->
 		    	</div>
 
-				  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;">
+				  <div data-bind="foreach:ActionItems" id="sortable-All" style="min-height: 110px;margin-top: 4px;">
 		              <div data-bind="css: Name,attr:{type: Type, name: Name,image:Image,id:Id,color:Color,title:Name},style:{ 'backgroundImage': 'url(/res/img/'+Image+')' }" class="list-left tooltipster"></div>
 		          </div>
 			</div>
@@ -318,7 +318,7 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <a class="btn btn-info btn-xs" data-bind="" onclick="df.addParamInput();">Add parameter</a>
+                                    <a class="btn btn-info btn-xs inp-input" data-bind="" onclick="df.addParamInput();">Add parameter</a>
                                 </td>
                             </tr>
                             <!-- ko foreach: input -->
@@ -634,8 +634,8 @@
             width: 220px;
         }
         .inp-decision{
-            margin: 2px 14px;
-            width: 170px;
+            margin: 4px;
+            width: 220px;
         }
         .inp-mapfiles{
             margin: 5px -2px 5px 0;
@@ -644,6 +644,9 @@
         .inp-global{
             margin: 5px 2px 5px 0;
             width: 180px;
+        }
+        .inp-input{
+            margin-top: 37px;
         }
         input.inline-edit{
           border: none;
