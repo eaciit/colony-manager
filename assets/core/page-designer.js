@@ -117,6 +117,7 @@ pde.settingWidget = function(o) {
     });
 
     $(".modal-widgetsetting").modal("show");
+    $('a[data-target="#DataSource"]').tab('show');
 };
 pde.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
