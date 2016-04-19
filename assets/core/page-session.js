@@ -64,6 +64,7 @@ ses.setexpired = function (_id,username) {
 		}
 
 		$('.grid-sessions').data('kendoGrid').refresh();
+		location.reload();
 	});
 } 
 
@@ -115,7 +116,8 @@ ses.GenerateGrid = function() {
             pageSizes: 10,
             buttonCount: 5
         },
-        columns: ses.SessionColumns()
+        columns: ses.SessionColumns(),
+        dataBound: app.gridBoundTooltipster('.grid-sessions'), 
     });
 
 }

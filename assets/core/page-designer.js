@@ -2,14 +2,16 @@ app.section("pagedesigner");
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
 pde.baseWidgets = ko.observableArray([]);
-pde.templatePage = {
-    _id: "",
-};
 pde.dsMappingConfig = {
     field: []
 };
+pde.templateWidgetPageDataSource = {
+    namespace: "",
+    dataSource: "",
+};
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
-pde.widgetSetting = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
+pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
+pde.configWidgetPageDataSources = ko.observableArray([]);
 pde.widgetCounter = ko.observable(1);
 pde.templateWidgetItem =  [
     '<div class="grid-stack-item">',
@@ -32,17 +34,21 @@ pde.templateWidgetItem =  [
         '</div>',
     '</div>'
 ].join("");
+pde.widgetPositions = ko.observableArray([
+    {value: "Relative", text: "Relative"},
+    {value: "fixed", text: "Fixed"}
+]);
 pde.allDataSources = ko.observableArray([]);
-pde.preparePage = function () {
+pde.preparePage = function (callback) {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
         if (!app.isFine(res)) {
             return;
         }
 
-console.log(res);
         ko.mapping.fromJS(res.data.pageDetail, p.configPage);
-    })
-}
+        callback();
+    });
+};
 
 pde.deleteWidget = function (o) {
     var $item = $(o).closest(".grid-stack-item");
@@ -68,47 +74,50 @@ pde.deleteWidget = function (o) {
 
 pde.settingWidget = function(o) {
     var $item = $(o).closest(".grid-stack-item");
+    var id = $item.data("id");
+    var widgetID = $item.data("widgetid");
 
-    var param = {
-        pageID: viewModel.pageID,
-        widgetPageID: $item.data("id"),
-        widgetID: $item.data("widgetid"),
-    };
+    var config = ko.mapping.toJS(p.configPage);
+    var widget = Lazy(config.widgets).find({ _id: id });
 
-    app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
-        console.log(res);
+    if (typeof widget === "undefined") {
+        return;
+    }
+
+    ko.mapping.fromJS(widget, pde.configWidgetPage);
+
+    pde.configWidgetPageDataSources([]);
+    app.ajaxPost("/pagedesigner/getwidgetsetting", { _id: widgetID }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        res.data.dataSources.forEach(function (d) {
+            var each = $.extend(true, {}, pde.templateWidgetPageDataSource);
+            each.namespace = ko.observable(d.dataSource);
+            each.dataSource = ko.observable("");
+
+            if (widget.dataSources.hasOwnProperty(d.dataSource)) {
+                each.dataSource(widget.dataSources[d.dataSource]);
+            }
+
+            pde.configWidgetPageDataSources.push(each);
+        });
+
+
     });
 
-    $(".modal-widgetsetting").modal({
-        backdrop: 'static',
-        keyboard: true
-    });
-}
-
-// pde.afterAddWidget = function (items) {
-//     var grid = $("#page-designer-grid-stack").data("gridstack");
-//     if (typeof grid === "undefined") {
-//         return;
-//     }
-
-//     var item = _.find(items, function (i) { return i.nodeType == 1 });
-//     grid.addWidget(item);
-//     ko.utils.domNodeDisposal.addDisposeCallback(item, function () {
-//         grid.removeWidget(item);
-//     });
-// };
-
+    $(".modal-widgetsetting").modal("show");
+};
 pde.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
         float: true,
         // acceptWidgets: '.grid-stack-item',
         onDragDrop: function (event, ui) {
             pde.addThisWidget(ui.draggable);
-        },
-        // resizable: { autoHide: true, handles: 'se' }
+        }
     });
 };
-
 pde.prepareSidebarDraggable = function () {
     $('#sidebar .grid-stack-item:not(.ui-draggable)').draggable({
         // revert: 'invalid',
@@ -117,11 +126,10 @@ pde.prepareSidebarDraggable = function () {
         helper: "clone"
     });
 };
-
-pde.prepareWidget = function () {
+pde.prepareWidget = function (callback) {
     var $sidebar = $("#sidebar");
     $sidebar.empty();
-    pde.baseWidgets();
+    pde.baseWidgets([]);
 
     app.ajaxPost("/widget/getwidget", { search: "" }, function (res) {
         if (!app.isFine(res)) {
@@ -141,16 +149,20 @@ pde.prepareWidget = function () {
             $each.find("a").html(d.title);
         });
 
-        pde.prepareSidebarDraggable();
+        // pde.prepareSidebarDraggable();
+        callback();
     });
 };
-
 pde.addThisWidget = function (o) {
+    var id = moment().format("YYYYMMDDHHmmssSSS");
+    var widgetID = $(o).data("id");
+    var title = "Widget " + pde.widgetCounter();
+
     var $item = $(pde.templateWidgetItem);
-    $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
-    $item.data("pageid", viewModel.pageID);
-    $item.data("widgetid", $(o).data("id"));
-    $item.find("h5").text("Widget " + pde.widgetCounter());
+    $item.attr("data-id", id);
+    $item.data("id", id);
+    $item.data("widgetid", widgetID);
+    $item.find("h5").text(title);
 
     var node = $(o).data('_gridstack_node');
     var nan = function (x, y) { return (typeof node === "undefined") ? y : (isNaN(node[x]) ? y : node[x]); };
@@ -160,8 +172,26 @@ pde.addThisWidget = function (o) {
 
     pde.widgetCounter(pde.widgetCounter() + 1);
     app.prepareTooltipster($item.find(".tooltipster"));
-};
 
+    var widget = {
+        _id: id,
+        widgetId: widgetID,
+        title: title,
+        position: pde.widgetPositions()[0].value,
+        x: nan("x", 0),
+        y: nan("y", 0),
+        height: nan("height", 2),
+        width: nan("width", 2),
+        dataSources: {},
+        config: {}
+    };
+
+    var config = ko.mapping.toJS(p.configPage);
+    config.widgets = (config.widgets == null) ? [] : config.widgets;
+    config.widgets.push(widget);
+    
+    ko.mapping.fromJS(config, p.configPage);
+};
 pde.adjustIframe = function () {
     $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
 };
@@ -193,11 +223,86 @@ pde.savePage = function () {
         $(".modal-config").modal("hide");
     });
 };
+pde.setWidgetPosition = function () {
+    var config = ko.mapping.toJS(p.configPage);
+    config.widgets = config.widgets.map(function (d) {
+        var $el = $(".grid-stack-item[data-id='" + d._id + "']");
+
+        ["x", "y", "width", "height"].forEach(function (p) {
+            d[p] = parseInt($el.attr("data-gs-" + p), 10);
+        });
+
+        return d;
+    });
+
+    ko.mapping.fromJS(config, p.configPage);
+};
+pde.save = function () {
+    pde.setWidgetPosition();
+    app.ajaxPost("/pagedesigner/savepage", p.configPage, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        if ($(".modal-widgetsetting").is(":visible")) {
+            $(".modal-widgetsetting").modal("hide");
+        } else {
+            swal({ title: "Saved", type: "success" });
+        }
+    });
+};
+pde.mapWidgets = function () {
+    var $gridStack = $("#page-designer-grid-stack").data("gridstack");
+    var config = ko.mapping.toJS(p.configPage);
+
+    (config.widgets == null ? [] : config.widgets).forEach(function (d) {
+        var $item = $(pde.templateWidgetItem);
+        $item.attr("data-id", d._id);
+        $item.data("id", d._id);
+        $item.data("widgetid", d.widgetId);
+        $item.find("h5").text(d.title);
+
+        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
+        pde.widgetCounter(pde.widgetCounter() + 1);
+    });
+};
+pde.isDataSourcesInvalid = ko.computed(function () {
+    return Lazy(pde.configWidgetPageDataSources()).filter(function (d) {
+        return d.dataSource() != "";
+    }).toArray().length != pde.configWidgetPageDataSources().length;
+}, pde);
+pde.saveWidgetConfig = function () {
+    var widgetDataSources = ko.mapping.toJS(pde.configWidgetPageDataSources);
+    var config = ko.mapping.toJS(p.configPage);
+    var configWidget = ko.mapping.toJS(pde.configWidgetPage);
+    configWidget.dataSources = (configWidget.dataSources == null) ? {} : configWidget.dataSources;
+
+    widgetDataSources.forEach(function (d) {
+        if (d.dataSource == null || d.dataSource == "") {
+            return;
+        }
+
+        configWidget.dataSources[d.namespace] = d.dataSource;
+    });
+
+    var configWidgetIndex = (function () {
+        var configWidgetIdentical = Lazy(config.widgets).find({ _id: configWidget._id });
+        return config.widgets.indexOf(configWidgetIdentical);
+    }());
+
+    config.widgets[configWidgetIndex] = configWidget;
+    ko.mapping.fromJS(config, p.configPage);
+
+    pde.save();
+};
 
 $(function () {
     pde.prepareDataSources(function () {
-        pde.preparePage();
-        pde.prepareWidget();
-        pde.prepareGridStack();
+        pde.prepareWidget(function () {
+            pde.preparePage(function () {
+                pde.prepareGridStack();
+                pde.mapWidgets();
+            });
+        });
     });
 });
