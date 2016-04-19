@@ -9,7 +9,7 @@ pde.dsMappingConfig = {
     field: []
 };
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
-pde.widgetSetting = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
+pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
 pde.widgetCounter = ko.observable(1);
 pde.templateWidgetItem =  [
     '<div class="grid-stack-item">',
@@ -32,6 +32,10 @@ pde.templateWidgetItem =  [
         '</div>',
     '</div>'
 ].join("");
+pde.widgetPositions = ko.observableArray([
+    {value: "Relative", text: "Relative"},
+    {value: "fixed", text: "Fixed"}
+]);
 pde.allDataSources = ko.observableArray([]);
 pde.preparePage = function () {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
@@ -76,6 +80,9 @@ pde.settingWidget = function(o) {
     };
 
     app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
+        res.data.dataSources.forEach(function (d) {
+            console.log(d);
+        });
         console.log(res);
     });
 
@@ -146,11 +153,14 @@ pde.prepareWidget = function () {
 };
 
 pde.addThisWidget = function (o) {
+    var id = moment().format("YYYYMMDDHHmmssSSS");
+    var widgetID = $(o).data("id");
+    var title = "Widget " + pde.widgetCounter();
+
     var $item = $(pde.templateWidgetItem);
-    $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
-    $item.data("pageid", viewModel.pageID);
-    $item.data("widgetid", $(o).data("id"));
-    $item.find("h5").text("Widget " + pde.widgetCounter());
+    $item.data("id", id);
+    $item.data("widgetid", widgetID);
+    $item.find("h5").text(title);
 
     var node = $(o).data('_gridstack_node');
     var nan = function (x, y) { return (typeof node === "undefined") ? y : (isNaN(node[x]) ? y : node[x]); };
@@ -160,6 +170,26 @@ pde.addThisWidget = function (o) {
 
     pde.widgetCounter(pde.widgetCounter() + 1);
     app.prepareTooltipster($item.find(".tooltipster"));
+
+    var widget = {
+        _id: id,
+        widgetId: widgetID,
+        title: title,
+        position: pde.widgetPositions()[0].value,
+        x: nan("x", 0),
+        y: nan("y", 0),
+        height: nan("height", 2),
+        width: nan("width", 2),
+        dataSources: {},
+        config: {}
+    };
+
+    var config = ko.mapping.toJS(p.configPage);
+    config.widgets = (config.widgets == null) ? [] : config.widgets;
+    config.widgets.push(widget);
+    
+    ko.mapping.fromJS(config, p.configPage);
+    ko.mapping.fromJS(widget, pde.configWidgetPage);
 };
 
 pde.adjustIframe = function () {

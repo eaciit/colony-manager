@@ -192,7 +192,7 @@
 					<!--<div data-bind="visible: (app.mode() == 'datasourceMapping')">-->
 					<div class="tab-content">
 	        			<div class="tab-pane active" id="DataSource">
-							<div class="form-horizontal" id="dsWidget" data-bind="with: pde.widgetSetting">
+							<div class="form-horizontal" id="dsWidget" data-bind="with: pde.configWidgetPage">
 								<div class="form-group">
 									<label for="title" class="col-sm-2 control-label">Title</label>
 									<div class="col-sm-10">
@@ -203,7 +203,7 @@
 								<div class="form-group">
 									<label for="position" class="col-sm-2 control-label">Position</label>
 									<div class="col-sm-10">
-										<select required id="position" data-bind="kendoDropDownList: { data: pde.widgetPosition, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position' }"></select>
+										<select required id="position" data-bind="kendoDropDownList: { data: pde.widgetPositions, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position', enabled: false }"></select>
 										<span class="k-invalid-msg" data-for="position"></span>
 									</div>
 								</div>
