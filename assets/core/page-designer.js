@@ -128,7 +128,7 @@ pde.prepareSidebarDraggable = function () {
 pde.prepareWidget = function () {
     var $sidebar = $("#sidebar");
     $sidebar.empty();
-    pde.baseWidgets();
+    pde.baseWidgets([]);
 
     app.ajaxPost("/widget/getwidget", { search: "" }, function (res) {
         if (!app.isFine(res)) {
@@ -158,6 +158,7 @@ pde.addThisWidget = function (o) {
     var title = "Widget " + pde.widgetCounter();
 
     var $item = $(pde.templateWidgetItem);
+    $item.attr("data-id", id);
     $item.data("id", id);
     $item.data("widgetid", widgetID);
     $item.find("h5").text(title);
@@ -223,7 +224,31 @@ pde.savePage = function () {
         $(".modal-config").modal("hide");
     });
 };
+pde.setWidgetPosition = function () {
+    var config = ko.mapping.toJS(p.configPage);
+    config.widgets = config.widgets.map(function (d) {
+        var $el = $(".grid-stack-item[data-id='" + d._id + "']");
 
+        ["x", "y", "width", "height"].forEach(function (p) {
+            d[p] = parseInt($el.attr("data-gs-" + p), 10);
+        });
+
+        return d;
+    });
+
+    console.log(config);
+    ko.mapping.fromJS(config, p.configPage);
+};
+pde.save = function () {
+    pde.setWidgetPosition();
+    app.ajaxPost("/pagedesigner/savepage", p.configPage, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        swal({ title: "Saved", type: "success" });
+    });
+};
 $(function () {
     pde.prepareDataSources(function () {
         pde.preparePage();
