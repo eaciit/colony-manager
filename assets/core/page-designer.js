@@ -1,277 +1,169 @@
-app.section('pagedesigner');
+app.section("pagedesigner");
+viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
-viewModel.PageDesigner = {}; var pg = viewModel.PageDesigner;
-
-pg.wdigetDesignerConfig = {
-	_id: "",
-	title: "",
-	url: "",
-	widget: [],
-	dataSources: []
+pde.baseWidgets = ko.observableArray([]);
+pde.templatePage = {
+    _id: "",
 };
-pg.widgetSettingsConfig = {
-	_id: "",
-	widgetId: "",
-	height: 0,
-	width: 0,
-	position: "",
-	title: "",
-	dataSources: [],
-	configDefault: []
-}
-pg.mappings = {
-	dsWidget: "",
-	dsColony: ""
-}
-pg.dsMappingConfig = {
-	field: []
-}
-pg.widgetAvailableConfig = {
-	_id: "",
-	title: ""
+pde.dsMappingConfig = {
+    field: []
 };
-pg.allWidget = {
-	widgets: []
-}
-pg.widgetPosition = ko.observableArray([
-	{value: "fixed", text: "Fixed"},
-	{value: "absolute", text: "Absolute"}
-]);
-pg.allDataSources = ko.observableArray([]);
-pg.availableWidget = ko.mapping.fromJS(pg.allWidget);
-pg.configPageDesigner = ko.mapping.fromJS(pg.wdigetDesignerConfig);
-pg.dsMapping = ko.mapping.fromJS(pg.dsMappingConfig);
-pg.dsWidgetFromPage = ko.observableArray([]);
-pg.widgetSettings = ko.mapping.fromJS(pg.widgetSettingsConfig);
-pg.previewMode = ko.observable("");
-pg.getDataSource = function() {
-	app.ajaxPost("/page/getdatasource", {}, function(res){
-		if(!app.isFine(res)){
-			return;
-		}
-		if (!res.data) {
-			res.data = [];
-		}
-		
-		$.each(res.data, function(key,val) {
-			pg.allDataSources.push(val._id)	
-		});
-	});
-}
-pg.saveConfig = function() {
-	if (!app.isFormValid(".form-widgetDesigner")) {
-		return;
-	}
+pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
+pde.widgetCounter = ko.observable(1);
 
-	var param = {_id: pg.pageID, dataSourceId: ko.mapping.toJS(pg.configPageDesigner)["dataSources"]}
-	app.ajaxPost("/page/saveconfigpage", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		pg.backToConfig();
-		$('.modal-config').modal('hide');
-		swal({title: "Your configuration saved", type: "success"});
-	});
-}
-pg.getAvailableWidget = function() {
-	app.ajaxPost("/widget/getwidget", {search: ""}, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		
-		$.each(res.data, function(key, val) {
-			var property = $.extend(true, {}, ko.mapping.toJS(pg.availableWidget));
-			var mapping = pg.widgetAvailableConfig;
-			mapping._id = val._id;
-			mapping.title = val.title;
-			property.widgets.push(mapping);
-			ko.mapping.fromJS(property, pg.availableWidget);
-		});
-	});
-};
-pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
-	var param
-	if (mode == "new widget") {
-		param = {_id: _id, widgetId: widgetId, widgetPageId: widgetPageId, mode: mode}
-	} else {
-		param = {_id: _id, widgetId: "", widgetPageId: "", mode: ""}
-	}
-	// console.log(param)
-	app.ajaxPost("/page/editpagedesigner", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		
-		setTimeout(function () {
-			ko.mapping.fromJS(res.data, pg.configPageDesigner)
-		},100);
-		
-		if (mode == "settingwidget") {
-			var datavalue = [];
-			if (res.data.dataSources != null) {
-				$.each(res.data.dataSources, function(key, val) {
-					data = {};
-					data.value = val;
-					data.text = val;
-					datavalue.push(data)
-				});
-				pg.dsWidgetFromPage(datavalue)
+pde.preparePage = function () {
+    app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
 
-				$.each(res.data.widget, function(keys, values) {
-					if (widgetId == values._id) {
-						ko.mapping.fromJS(values, pg.widgetSettings);
-						$.each(values.dataSources, function(key, value) {
-							$.each(value, function(k, v) {
-								if (k != "fields") {
-									var property = $.extend(true, {}, ko.mapping.toJS(pg.dsMapping));
-									var mapping = pg.mappings;
-									mapping.dsWidget = k;
-									mapping.dsColony = v;
-									property.field.push(mapping);
-									ko.mapping.fromJS(property, pg.dsMapping);
-								}
-							});
-						});
-					}
-				});
-			} else {
-				swal({
-				title: "Oops...",
-				text: 'Datasource is empty, please add datasource first on configuration button.',
-				type: "error",
-				closeOnConfirm: true
-				},
-				function() {
-					pg.closeWidgetSetting();
-				});
-			}
-		}
-	});
-}
-pg.configPage = function() {
-	app.mode("configpage");
-	pg.getDataSource();
-	pg.getConfigurationPage(pg.pageID, "configuration", "", "");
-	$(".modal-config").modal({
-			backdrop: 'static',
-			keyboard: true
-	});
-};
-pg.widgetSetting = function(_id, mode) {
-	app.mode("datasourceMapping");
-	pg.previewMode("");
-	if (mode != "back") {
-		var param = {
-			pageID: pg.pageID,
-			widgetID: _id
-		};
-
-		app.ajaxPost("/page/getwidgetsetting", param, function (res) {
-			console.log(res);
-		});
-	}
-	// pg.getDataSource();
-	if (mode == "modal") {
-		$(".modal-widgetsetting").modal({
-			backdrop: 'static',
-			keyboard: true
-		});
-	}
-}
-pg.fieldMapping = function() {
-	if (!app.isFormValid("#dsWidget")) {
-		return;
-	}
-	$( "#formSetting" ).empty();
-	var prop = ko.mapping.toJS(pg.widgetSettings)
-	var param = {
-		pageId: pg.pageID,
-		widgetId: prop.widgetId,
-		datasource: ko.mapping.toJS(pg.dsMapping.field)
-	};
-
-	$.each(ko.mapping.toJS(pg.dsMapping.field), function(key, val) {
-		$.each(val, function(a,b) {
-			$.each(prop.dataSources[key], function(x,y) {
-				if (b == x){
-					prop.dataSources[key][x] = val.dsColony
-					// console.log(prop, prop.dataSources)
-				}
-			});
-		});
-	});
-
-	app.ajaxPost("/page/getallfields", param, function (res) {
-		if (!app.isFine(res)) {
-			return;
-		}
-		app.mode("fieldMapping");
-		pg.previewMode("fieldMapping");
-
-		var urlprev = "src=\"";
-		var html = res.data.container.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+res.data.url);
-		urlprev = "href=\"";
-		html = html.replace(new RegExp(urlprev, 'g'), urlprev+"http://"+res.data.url);
-		$("#formSetting").off("load").on("load", function(){
-			window.frames[0].frameElement.contentWindow.DsFields(res.data.fieldDs, res.data.pageId, prop);
-		});
-		var contentDoc = $("#formSetting")[0].contentWindow.document;
-		contentDoc.open('text/html', 'replace');
-		contentDoc.write(html);
-		contentDoc.close();
-	});
-}
-pg.closeWidgetSetting = function() {
-	$(".modal-widgetsetting").modal("hide");
-	pg.backToConfig();
-}
-pg.backToConfig = function() {
-	app.mode("");
-	pg.allDataSources([]);
-	ko.mapping.fromJS(pg.dsMappingConfig, pg.dsMapping)
-	ko.mapping.fromJS(pg.wdigetDesignerConfig, pg.configPageDesigner)
+        console.log(res);
+    })
 }
 
-//temp button
-pg.widgetPage = function(pageId, widgetPageId, widgetId, mode) {
-	pg.getConfigurationPage(pageId, mode, widgetId, widgetPageId)
+pde.deleteWidget = function (o) {
+    var $item = $(o).closest(".grid-stack-item");
+
+    swal({
+        title: "Are you sure?",
+        text: "You will delete this widget",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    }, function (isConfirm) {
+        if (isConfirm) {
+            var grid = $("#page-designer-grid-stack").data("gridstack");
+            grid.removeWidget($item[0]);
+        } 
+    });
+
+    return false;
 };
 
-pg.adjustIframe = function() {
-	document.getElementById("formSetting").style.height = document.getElementById("formSetting").contentWindow.document.body.scrollHeight + "px";
-};
+pde.settingWidget = function(o) {
+    var $item = $(o).closest(".grid-stack-item");
 
-pg.AdjustIframeHeight = function(i) { document.getElementById("formSetting").style.height = parseInt(i) + "px"; }
+    var param = {
+        pageID: viewModel.pageID,
+        widgetPageID: $item.data("id"),
+        widgetID: $item.data("widgetid"),
+    };
 
-window.closeModal = function(){
-	pg.closeWidgetSetting();
+    app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
+        console.log(res);
+    });
+
+    $(".modal-widgetsetting").modal({
+        backdrop: 'static',
+        keyboard: true
+    });
 }
 
-// pg.setWidgetContainer = function(){
-// 	app.ajaxPost("/widget/getwidget", {search:""}, function(res){
-// 		if (!app.isFine(res)) {
-// 			return;
-// 		}
+// pde.afterAddWidget = function (items) {
+//     var grid = $("#page-designer-grid-stack").data("gridstack");
+//     if (typeof grid === "undefined") {
+//         return;
+//     }
 
-// 		var data = res.data;
-// 		console.log(JSON.stringify(data));
-// 		$parent = $(".list-widget");
-// 		$.each(data, function(i, items){
-// 			
-// 			$stackItem = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
-// 			$stackItem.appendTo($parent);
-// 			$itemContent = $('<div class="grid-stack-item-content"></div>');
-// 			//$listLeft.appendTo($parent);
-// 			$itemContent.appendTo($stackItem);
-// 			$itemlink =$('<a href="#" class="not-active">'+items.title+'</a>');
-// 			$itemlink.appendTo($itemContent)
-// 		});
-// 	});
-// }
+//     var item = _.find(items, function (i) { return i.nodeType == 1 });
+//     grid.addWidget(item);
+//     ko.utils.domNodeDisposal.addDisposeCallback(item, function () {
+//         grid.removeWidget(item);
+//     });
+// };
 
-$(function (){
-	pg.getConfigurationPage(pg.pageID, "", "", "");
-	pg.getAvailableWidget();
-	app.prepareTooltipster();
-	//pg.setWidgetContainer(); 
+pde.prepareGridStack = function () {
+    $("#page-designer-grid-stack").gridstack({
+        float: true,
+        // acceptWidgets: '.grid-stack-item',
+        // resizable: { autoHide: true, handles: 'se' }
+    });
+};
+
+pde.prepareSidebarDraggable = function () {
+    $('#sidebar .grid-stack-item:not(.ui-draggable)').draggable({
+        revert: 'invalid',
+        scroll: false,
+        appendTo: 'body',
+        helper: "clone",
+    });
+};
+
+pde.prepareWidget = function () {
+    var $sidebar = $("#sidebar");
+    $sidebar.empty();
+    pde.baseWidgets();
+
+    app.ajaxPost("/widget/getwidget", { search: "" }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        pde.baseWidgets(res.data);
+        res.data.forEach(function (d) {
+            var els = [
+                '<div class="list-left grid-stack-item" onclick="pde.addThisWidget(this);">',
+                    '<a href="#" class="not-active"></a>',
+                '</div>'
+            ].join("");
+
+            var $each = $(els).appendTo($sidebar);
+            $each.data("id", d._id);
+            $each.find("a").html(d.title);
+        });
+
+        // pde.prepareSidebarDraggable();
+    });
+};
+
+pde.addThisWidget = function (o) {
+    var els = [
+        '<div class="grid-stack-item">',
+            '<div class="grid-stack-item-content">',
+                '<div class="panel panel-default">',
+                    '<div class="panel-heading wg-panel">',
+                        '<div class="pull-left">',
+                            '<h5></h5>',
+                        '</div>',
+                        '<div class="pull-right">',
+                            '<div class="nav">',
+                                '<button class="btn btn-primary btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></button>',
+                                '&nbsp;',
+                                '<button class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></button>',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="clearfix"></div>',
+                '</div>',
+            '</div>',
+        '</div>'
+    ].join("");
+
+    var $item = $(els);
+    $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
+    $item.data("pageid", viewModel.pageID);
+    $item.data("widgetid", $(o).data("id"));
+    $item.find("h5").text("Widget " + pde.widgetCounter());
+
+    var $gridStack = $("#page-designer-grid-stack").data("gridstack");
+    $gridStack.addWidget($item, 0, 0, 2, 2);
+
+    pde.widgetCounter(pde.widgetCounter() + 1);
+    app.prepareTooltipster($item.find(".tooltipster"));
+};
+
+pde.adjustIframe = function () {
+    $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
+};
+pde.showConfigPage = function () {
+    console.log("asdfasdf");
+};
+
+$(function () {
+    pde.preparePage();
+    pde.prepareWidget();
+    pde.prepareGridStack();
 });
