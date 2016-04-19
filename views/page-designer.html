@@ -130,32 +130,32 @@
 	                <h4 class="modal-title">Page Configuration</h4>
 	            </div>
 	            <div class="modal-body">
-	               <form class="form-horizontal form-widgetDesigner" data-bind="with: p.configPage" novalidate>
+	               <form class="form-horizontal form-widgetDesigner" novalidate>
 	               		<!-- <div class="col-md-12"> -->
 	               			<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">ID</label>
 					    		<div class="col-md-7">
-						    		<input required type="text" class="form-control input-sm" name="_id" placeholder="Type the page id Here" data-bind="value: _id" readonly>
+						    		<input required type="text" class="form-control input-sm" name="_id" placeholder="Type the page id Here" data-bind="value: pde.configMap._id" readonly>
 									<span class="k-invalid-msg" data-for="_id"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Title</label>
 					    		<div class="col-md-7">
-						    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: title">
+						    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: pde.configMap.title">
 									<span class="k-invalid-msg" data-for="title"></span>
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">URL</label>
 					    		<div class="col-md-7">
-						    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+						    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: pde.configMap.url">
 					    		</div>
 				    		</div>
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Page Data Source</label>
 					    		<div class="col-md-7">
-						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: dataSources }" name="datasource" id="datasource"></select>
+						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: pde.configMap.dataSources }" name="datasource" id="datasource"></select>
 						 			<span class="k-invalid-msg" data-for="datasource"></span>
 					    		</div>
 				    		</div>
@@ -166,7 +166,7 @@
 	                <button class="btn btn-sm btn-danger" data-dismiss="modal">
 	                	<span class="glyphicon glyphicon-remove"></span> Cancel
                 	</button>
-	                <button class="btn btn-sm btn-primary" data-bind="click: p.savePage">
+	                <button class="btn btn-sm btn-primary">
 	                	<span class="glyphicon glyphicon-save"></span> Save
                 	</button>
 	            </div>
