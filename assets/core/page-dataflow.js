@@ -449,6 +449,18 @@ df.init = function () {
             subtype: "radial"
         },
         shapeDefaults: {
+              connectorDefaults:{
+                hover:{
+                    stroke:{
+                        width:30,
+                        color:"grey",
+                    }
+                },
+                stroke:{
+                    width:10,
+                    color:"#000000"
+                }
+            },
             visual: visualTemplate,
             // content: {
             //     template: function (d) {
@@ -958,7 +970,7 @@ df.createGrid = function(search){
                         },
                     },
                     {field:"createdby",width:200,title:"Created By"},
-                    {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-wrench'></span></button>"},
+                    {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-cog'></span></button>"},
                     {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"}
                 ],
                 dataBound:function(){
@@ -992,6 +1004,10 @@ df.goToDesigner = function(Id){
     df.Name(selected.name);
     df.Description(selected.description);
     df.globalVar([]);
+    var gbl = selected.globalparam;
+    for(var i in gbl){
+        df.addGlobalVar(i,gbl[i]);
+    }
     df.Reload();
 
     $(".glyphicon-cog").tooltipster({
@@ -1272,9 +1288,14 @@ df.deleteParamOutput = function(e){
     df.actionDetails().output.param.remove(dt);
 }
 
-df.addGlobalVar = function () {
+df.addGlobalVar = function (key,val) {
     var idx = df.globalVar().length;
-   df.globalVar.push({idx:idx,key:"",value:""});
+    var k = "";
+    var v = "";
+    k = key != undefined? key:k;
+    v = val != undefined?val:v;
+
+   df.globalVar.unshift({idx:idx,key:k,value:v});
 }
 
 df.deleteGlobalVar = function(e){
