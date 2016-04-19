@@ -2,14 +2,16 @@ app.section("pagedesigner");
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
 pde.baseWidgets = ko.observableArray([]);
-pde.templatePage = {
-    _id: "",
-};
 pde.dsMappingConfig = {
     field: []
 };
+pde.templateWidgetPageDataSource = {
+    namespace: "",
+    dataSource: "",
+};
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
+pde.configWidgetPageDataSources = ko.observableArray([]);
 pde.widgetCounter = ko.observable(1);
 pde.templateWidgetItem =  [
     '<div class="grid-stack-item">',
@@ -72,18 +74,16 @@ pde.deleteWidget = function (o) {
 
 pde.settingWidget = function(o) {
     var $item = $(o).closest(".grid-stack-item");
-
-    var param = {
-        pageID: viewModel.pageID,
-        widgetPageID: $item.data("id"),
-        widgetID: $item.data("widgetid"),
-    };
+    var param = { _id: $item.data("widgetid") };
+    pde.configWidgetPageDataSources([]);
 
     app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
         res.data.dataSources.forEach(function (d) {
-            console.log(d);
+            var each = $.extend(true, {}, pde.templateWidgetPageDataSource);
+            each.namespace = ko.observable(d.dataSource);
+            each.dataSource = ko.observable("");
+            pde.configWidgetPageDataSources.push(each);
         });
-        console.log(res);
     });
 
     $(".modal-widgetsetting").modal({
@@ -261,8 +261,15 @@ pde.mapWidgets = function () {
         $item.find("h5").text(d.title);
 
         $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
+        pde.widgetCounter(pde.widgetCounter() + 1);
     });
 };
+pde.isDataSourcesInvalid = ko.computed(function () {
+    return Lazy(pde.configWidgetPageDataSources()).filter(function (d) {
+        return d.dataSource() != "";
+    }).toArray().length != pde.configWidgetPageDataSources().length;
+}, pde);
+
 $(function () {
     pde.prepareDataSources(function () {
         pde.prepareWidget(function () {
