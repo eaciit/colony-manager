@@ -74,6 +74,7 @@ ly.getLoadMenu = function(){
 		
 		ly.session(res.data.sessionid);
 		if(ly.session() !== '' ){
+			setTimeout(function(){ ly.getLogout(); }, 300000);
 			app.ajaxPost("/login/getusername", {}, function(res){
 				if(!app.isFine(res)){
 					return;
@@ -95,9 +96,11 @@ ly.getLoadMenu = function(){
 	}, function () {
 		ly.element([]);
 	});
+	//setTimeout(function(){ ly.getLogout(); }, 3000);
 }
 
 
 $(function (){
 	ly.getLoadMenu();
+
 });
