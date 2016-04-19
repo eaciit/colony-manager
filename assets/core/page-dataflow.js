@@ -651,12 +651,21 @@ df.init = function () {
 };
 df.dataRow = ko.observableArray([]);
 df.run = function () {
-    app.ajaxPost("/dataflow/start", {}, function (res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        
-    });
+    var call = function(ID){
+        app.ajaxPost("/dataflow/start", {
+            globalParam:df.globalVar(),
+            dataFlowId:ID
+        }, function(res){
+            if(!app.isFine(res)){
+              return;
+            }else{
+               swal("Data Flow Started", "Click dataflow history for details", "success");
+               df.backToGrid();
+            }
+        });
+     }
+
+     df.Save(call);
 }
 
 df.counts = {};
@@ -881,7 +890,7 @@ df.Reload = function(){
     df.renderDiagram(".diagram",df.DataShape());
 }
 
-df.Save = function(){
+df.Save = function(callback){
     var ch = df.checkFlow(".diagram");
     if(ch){
         df.DataShape(df.getShapeData(".diagram"));
@@ -906,7 +915,12 @@ df.Save = function(){
         if(!app.isFine(res)){
           return;
         }else{
-           swal("Success", "Data Saved !", "success");
+            df.ID(res.data._id);
+           if(callback!=undefined){
+            callback(df.ID());
+           }else{
+             swal("Success", "Data Saved !", "success");
+           }
         }
     });
 }

@@ -113,7 +113,7 @@ func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	return helper.CreateResult(true, nil, "success")
+	return helper.CreateResult(true, currentDataFlow, "success")
 }
 
 func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
