@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+	"reflect"
 
 	"github.com/eaciit/toolkit"
 )
@@ -312,6 +313,21 @@ func watch(process colonycore.DataFlow) (e error) {
 				}
 			}
 
+			var v reflect.Type
+			v= reflect.TypeOf(CurrentAction.Action).Elem()
+
+			isFork := false
+			isForkAction := false
+			if v.Kind() == reflect.Struct {
+				for i:= 0; i < v.NumField(); i++ {
+					if strings.ToLower( v.Field(i).Name) == "isfork"{
+						isFork = reflect.ValueOf(CurrentAction.Action).Elem().Field(i).Interface()
+						isForkAction = true
+						break
+					}
+				}
+			}
+
 			//read previous action result status to get next process ID || get last tier action for next result check || run current action
 			if len(filenames) > 0 {
 				for _, fname := range filenames {
@@ -321,16 +337,35 @@ func watch(process colonycore.DataFlow) (e error) {
 						return e
 					}
 
-					if strings.Contains(string(files), "OK") {
-						for _, ok := range CurrentAction.OK {
-							ListLastTierAction = append(ListLastTierAction, CurrentAction)
-							nextIdx = append(nextIdx, GetAction(process, ok).Id)
+					// if action
+					if isForkAction {
+						if isFork {
+							if strings.Contains(string(files), "OK") {
+								for _, ok := range CurrentAction.OK {
+									ListLastTierAction = append(ListLastTierAction, CurrentAction)
+									nextIdx = append(nextIdx, GetAction(process, ok).Id)
+								}
+							} else {
+								for _, nok := range CurrentAction.KO {
+									ListLastTierAction = append(ListLastTierAction, CurrentAction)
+									nextIdx = append(nextIdx, GetAction(process, nok).Id)
+								}
+							}
+						} else {
+																					
 						}
 					} else {
-						for _, nok := range CurrentAction.KO {
-							ListLastTierAction = append(ListLastTierAction, CurrentAction)
-							nextIdx = append(nextIdx, GetAction(process, nok).Id)
-						}
+						if strings.Contains(string(files), "OK") {
+								for _, ok := range CurrentAction.OK {
+									ListLastTierAction = append(ListLastTierAction, CurrentAction)
+									nextIdx = append(nextIdx, GetAction(process, ok).Id)
+								}
+							} else {
+								for _, nok := range CurrentAction.KO {
+									ListLastTierAction = append(ListLastTierAction, CurrentAction)
+									nextIdx = append(nextIdx, GetAction(process, nok).Id)
+								}
+							}
 					}
 
 					go runProcess(process, CurrentAction, ActionBefore)
