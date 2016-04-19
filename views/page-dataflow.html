@@ -27,7 +27,7 @@
 				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
 				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
 				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-				<button class="btn btn-success mgLeft btn-tooltip" title="Run" data-bind="click: df.run">
+				<button class="btn btn-success mgLeft btn-tooltip" title="Save & Run" onclick="df.run();" >
 			    		<span class="glyphicon glyphicon-play"></span>
 			    </button>
 			</div>
@@ -610,17 +610,17 @@
         }
 
         circle{
-            stroke: #000000!important;
-            stroke-width: 9px!important;
-            opacity: 0.4;
+           /* stroke: #000000!important;
+            stroke-width: 9px!important;*/
+            opacity: 0.4!important;
         }
 
         circle:hover{
-            stroke: #000000;
+     /*       stroke: #000000;
             stroke-width: 20px!important;
             height: 120%!important;
-            width: 120%!important;
-            opacity: 0.75;
+            width: 120%!important;*/
+            opacity: 0.75!important;
         }
         .ct-custom{
             font-size: 12px;
@@ -661,5 +661,15 @@
              -moz-transition: background-color 0.5s;
               -ie-transition: background-color 0.5s;
                   transition: background-color 0.5s;
+        }
+
+        .glyphicon-cog {
+          border-radius: 50%;
+          -webkit-transition: -webkit-transform .8s ease-in-out;
+          transition: transform .8s ease-in-out;
+        }
+        .glyphicon-cog:hover {
+          -webkit-transform: rotate(180deg);
+          transform: rotate(180deg);
         }
 </style>
