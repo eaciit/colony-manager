@@ -64,6 +64,15 @@ pde.deleteWidget = function (o) {
         closeOnCancel: true
     }, function (isConfirm) {
         if (isConfirm) {
+            var config = ko.mapping.toJS(p.configPage);
+            var widget = Lazy(config.widgets).find({ _id: $item.data("id") });
+            if (typeof widget === "undefined") {
+                return;
+            }
+
+            config.widgets.splice(config.widgets.indexOf(widget), 1);
+            ko.mapping.fromJS(config, p.configPage);
+
             var grid = $("#page-designer-grid-stack").data("gridstack");
             grid.removeWidget($item[0]);
         } 
