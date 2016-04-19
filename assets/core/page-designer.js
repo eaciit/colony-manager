@@ -2,6 +2,8 @@ app.section("pagedesigner");
 viewModel.PageDesignerEditor = {}; var pde = viewModel.PageDesignerEditor;
 
 pde.baseWidgets = ko.observableArray([]);
+pde.widgets = ko.observableArray([])
+
 pde.templatePage = {
     _id: "",
 };
@@ -153,6 +155,13 @@ pde.addThisWidget = function (o) {
 
     pde.widgetCounter(pde.widgetCounter() + 1);
     app.prepareTooltipster($item.find(".tooltipster"));
+    
+    pde.widgets.push({
+            id : $item.data("id"),
+            pageid :$item.data("pageid"),
+            widgetid : $item.data("widgetid")
+    })
+   
 };
 
 pde.adjustIframe = function () {
@@ -161,7 +170,23 @@ pde.adjustIframe = function () {
 pde.showConfigPage = function () {
     console.log("asdfasdf");
 };
-
+pde.setWidgets = function(){
+    selector_length = $(".ui-resizable").length
+    widgets = pde.widgets()
+    widgetAttr = {}
+    for(i=0; i<selector_length; i++){
+        widgetAttr["x"] = $(".ui-resizable")[i].getAttribute("data-gs-x")
+        widgetAttr["y"]  = $(".ui-resizable")[i].getAttribute("data-gs-y")
+        widgetAttr["width"]  = $(".ui-resizable")[i].getAttribute("data-gs-width")
+        widgetAttr["height"]  = $(".ui-resizable")[i].getAttribute("data-gs-height")
+        $.extend(widgets[i],widgetAttr)
+    }
+    p.configPage.widgets(widgets)
+}
+pde.save = function(){
+    pde.setWidgets();
+    app.ajaxPost("/pagedesigner/savepage", p.configPage);
+};
 $(function () {
     pde.preparePage();
     pde.prepareWidget();
