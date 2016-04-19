@@ -1,13 +1,18 @@
+<script>
+	viewModel.pageID = "{{.pageID}}";
+	viewModel.templateModels = JSON.parse("{{.templateModels}}".replace(/\x22/g, '"'));
+</script>
+
 <!-- core -->
 <link href="/res/gridstack/gridstack.css" rel="stylesheet">
 <link href="/res/gridstack/gridstack-extra.css" rel="stylesheet">
 
+<script src="/res/core/page-pages.js"></script>
 <script src="/res/core/page-designer.js"></script>
-<script src="/res/core/page-designer-editor.js"></script>
 <script src="/res/gridstack/gridstack.js"></script>
 
-<style type="text/css">
-	.k-widget.k-dropdown, .k-widget.k-numerictextbox{
+<style>
+	/*.k-widget.k-dropdown, .k-widget.k-numerictextbox{
 		width: 100%;
 	}
 	ul, li {list-style-type: none;}
@@ -71,23 +76,19 @@
 	.not-active {
        pointer-events: none;
        cursor: move;
-    } 
+    } */
 
 </style>
 
-<script>
-	viewModel.pageID = "{{.pageID}}";
-</script>
-
-<div class="col-xs-12 col-sm-12" id="content" data-bind="with: PageDesigner">
+<div class="col-xs-12 col-sm-12" id="content" data-bind="with: PageDesignerEditor">
 	<div class="col-md-12" data-bind="visible: (app.section() == 'pagedesigner')">
 		<ol class="breadcrumb bc-custom">
 			<li>Page Designer</li>
 			<div class="pull-right">
-				<button class="btn mgRight tooltipster" title="Back" onclick="location.href='/web/widgetpage'"><span class="glyphicon glyphicon-arrow-left"></span></button>
+				<button class="btn mgRight tooltipster" title="Back" onclick="location.href='/web/pages'"><span class="glyphicon glyphicon-arrow-left"></span></button>
 				<button class="btn btn-primary tooltipster" title="Save" onclick=""><span class="glyphicon glyphicon-floppy-disk"></span></button>
 				<button class="btn btn-primary tooltipster" title="Preview" onclick=""><span class="glyphicon glyphicon-eye-open"></span></button>
-				<button class="btn mgLeft tooltipster" title="Configuration" data-bind="click: configPage">
+				<button class="btn mgLeft tooltipster" title="Configuration" data-bind="click: showConfigPage">
 			    		<span class="glyphicon glyphicon-cog"></span>
 			    </button>
 			</div>
@@ -114,12 +115,9 @@
 		        </div>
 			</div>
 			
-			<div class="col-md-10 designer">
+			<div class="col-md-10 row designer">
 				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
-					<div class="col-md-12">
-						<div class="grid-stack" id="page-designer-grid-stack"></div>
-					</div>
-					<div style="clear:both;"></div>
+					<div class="grid-stack" id="page-designer-grid-stack"></div>
 				</div>
 			</div>
 		</div>
@@ -132,7 +130,7 @@
 	                <h4 class="modal-title">Page Configuration</h4>
 	            </div>
 	            <div class="modal-body">
-	               <form class="form-horizontal form-widgetDesigner" data-bind="with: configPageDesigner" novalidate>
+	               <form class="form-horizontal form-widgetDesigner" data-bind="with: p.configPage" novalidate>
 	               		<!-- <div class="col-md-12"> -->
 	               			<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">ID</label>
@@ -157,7 +155,7 @@
 				    		<div class="form-group">
 					    		<label class="col-md-3 databrowser-label">Page Data Source</label>
 					    		<div class="col-md-7">
-						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pg.allDataSources, value: dataSources }" name="datasource" id="datasource"></select>
+						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: dataSources }" name="datasource" id="datasource"></select>
 						 			<span class="k-invalid-msg" data-for="datasource"></span>
 					    		</div>
 				    		</div>
@@ -165,8 +163,12 @@
 				   </form>
 	            </div>
 	            <div class="modal-footer">
-	                <button class="btn btn-sm btn-danger" data-dismiss="modal" data-bind="click: backToConfig"><span class="glyphicon glyphicon-remove"></span>  Cancel</button>
-	                <button class="btn btn-sm btn-primary" data-bind="click: saveConfig"><span class="glyphicon glyphicon-save"></span> Save</button>
+	                <button class="btn btn-sm btn-danger" data-dismiss="modal">
+	                	<span class="glyphicon glyphicon-remove"></span> Cancel
+                	</button>
+	                <button class="btn btn-sm btn-primary" data-bind="click: p.savePage">
+	                	<span class="glyphicon glyphicon-save"></span> Save
+                	</button>
 	            </div>
 	        </div>
 	    </div>
@@ -176,7 +178,7 @@
 		<div class="modal-dialog" style="width: 50%;">
 			<div class="modal-content" data-bind="with: dsMapping">
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: pg.closeWidgetSetting">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" data-bind="click: pde.closeWidgetSetting">
 						<span aria-hidden="true">&times;</span>
 					</button>
 					<h4 class="modal-title">Widget Setting</h4>
@@ -185,12 +187,12 @@
 				<div class="modal-body">
 					<ul class="nav nav-tabs" id="myTab">
         				<li class="active"><a data-target="#DataSource" data-toggle="tab">Data source</a></li>
-       					<li><a data-target="#WidgetSetting" data-toggle="tab" data-bind="click: pg.fieldMapping">Widget Setting</a></li>
+       					<li><a data-target="#WidgetSetting" data-toggle="tab" data-bind="click: pde.fieldMapping">Widget Setting</a></li>
    					</ul>
 					<!--<div data-bind="visible: (app.mode() == 'datasourceMapping')">-->
 					<div class="tab-content">
         			<div class="tab-pane active" id="DataSource">
-						<div class="form-horizontal" id="dsWidget" data-bind="with: pg.widgetSettings">
+						<div class="form-horizontal" id="dsWidget" data-bind="with: pde.widgetSettings">
 							<div class="form-group">
 								<label for="title" class="col-sm-2 control-label">Title</label>
 								<div class="col-sm-10">
@@ -201,7 +203,7 @@
 							<div class="form-group">
 								<label for="position" class="col-sm-2 control-label">Position</label>
 								<div class="col-sm-10">
-									<select required id="position" data-bind="kendoDropDownList: { data: pg.widgetPosition, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position' }"></select>
+									<select required id="position" data-bind="kendoDropDownList: { data: pde.widgetPosition, dataValueField: 'value', dataTextField: 'text', value: position, optionLabel: 'Select Position' }"></select>
 									<span class="k-invalid-msg" data-for="position"></span>
 								</div>
 							</div>
@@ -224,11 +226,11 @@
 								</div>
 							</div>
 
-							<div data-bind="foreach: pg.dsMapping.field">
+							<div data-bind="foreach: pde.dsMapping.field">
 								<div class="form-group">
 									<label class="col-sm-2 control-label" data-bind="text: $data.dsWidget"></label>
 									<div class="col-sm-10">
-										<select required id="ds" data-bind="kendoDropDownList: { data: pg.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
+										<select required id="ds" data-bind="kendoDropDownList: { data: pde.dsWidgetFromPage, dataValueField: 'value', dataTextField: 'text', value: $data.dsColony, optionLabel: 'Select one' }, attr: { id: 'ds' + $index(), name: 'ds' + $index()}"></select>
 									    <span class="k-invalid-msg" data-for="ds" data-bind="attr: { 'data-for': 'ds' + $index() }"></span>
 								    </div>
 								</div>
@@ -239,7 +241,7 @@
 		        	<!--</div>-->
 		        	<div class="tab-pane" id="WidgetSetting">
 					<div class="col-md-12">
-				    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pg.adjustIframe()"></iframe>
+				    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pde.adjustIframe()"></iframe>
 			        </div>
 			       	<div class="clearfix"></div>
 					
