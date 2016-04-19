@@ -9,15 +9,38 @@ pde.dsMappingConfig = {
     field: []
 };
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
+pde.widgetSetting = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
 pde.widgetCounter = ko.observable(1);
-
+pde.templateWidgetItem =  [
+    '<div class="grid-stack-item">',
+        '<div class="grid-stack-item-content">',
+            '<div class="panel panel-default">',
+                '<div class="panel-heading wg-panel">',
+                    '<div class="pull-left">',
+                        '<h5></h5>',
+                    '</div>',
+                    '<div class="pull-right">',
+                        '<div class="nav">',
+                            '<button class="btn btn-primary btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></button>',
+                            '&nbsp;',
+                            '<button class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></button>',
+                        '</div>',
+                    '</div>',
+                '</div>',
+                '<div class="clearfix"></div>',
+            '</div>',
+        '</div>',
+    '</div>'
+].join("");
+pde.allDataSources = ko.observableArray([]);
 pde.preparePage = function () {
     app.ajaxPost("/pagedesigner/selectpage", { _id: viewModel.pageID }, function (res) {
         if (!app.isFine(res)) {
             return;
         }
 
-        console.log(res);
+console.log(res);
+        ko.mapping.fromJS(res.data.pageDetail, p.configPage);
     })
 }
 
@@ -79,16 +102,19 @@ pde.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
         float: true,
         // acceptWidgets: '.grid-stack-item',
+        onDragDrop: function (event, ui) {
+            pde.addThisWidget(ui.draggable);
+        },
         // resizable: { autoHide: true, handles: 'se' }
     });
 };
 
 pde.prepareSidebarDraggable = function () {
     $('#sidebar .grid-stack-item:not(.ui-draggable)').draggable({
-        revert: 'invalid',
+        // revert: 'invalid',
         scroll: false,
-        appendTo: 'body',
-        helper: "clone",
+        appendTo: $(".grid-stack"),
+        helper: "clone"
     });
 };
 
@@ -115,41 +141,22 @@ pde.prepareWidget = function () {
             $each.find("a").html(d.title);
         });
 
-        // pde.prepareSidebarDraggable();
+        pde.prepareSidebarDraggable();
     });
 };
 
 pde.addThisWidget = function (o) {
-    var els = [
-        '<div class="grid-stack-item">',
-            '<div class="grid-stack-item-content">',
-                '<div class="panel panel-default">',
-                    '<div class="panel-heading wg-panel">',
-                        '<div class="pull-left">',
-                            '<h5></h5>',
-                        '</div>',
-                        '<div class="pull-right">',
-                            '<div class="nav">',
-                                '<button class="btn btn-primary btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></button>',
-                                '&nbsp;',
-                                '<button class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></button>',
-                            '</div>',
-                        '</div>',
-                    '</div>',
-                    '<div class="clearfix"></div>',
-                '</div>',
-            '</div>',
-        '</div>'
-    ].join("");
-
-    var $item = $(els);
+    var $item = $(pde.templateWidgetItem);
     $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
     $item.data("pageid", viewModel.pageID);
     $item.data("widgetid", $(o).data("id"));
     $item.find("h5").text("Widget " + pde.widgetCounter());
 
+    var node = $(o).data('_gridstack_node');
+    var nan = function (x, y) { return (typeof node === "undefined") ? y : (isNaN(node[x]) ? y : node[x]); };
+
     var $gridStack = $("#page-designer-grid-stack").data("gridstack");
-    $gridStack.addWidget($item, 0, 0, 2, 2);
+    $gridStack.addWidget($item, nan("x", 0), nan("y", 0), nan("width", 2), nan("height", 2));
 
     pde.widgetCounter(pde.widgetCounter() + 1);
     app.prepareTooltipster($item.find(".tooltipster"));
@@ -159,11 +166,38 @@ pde.adjustIframe = function () {
     $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
 };
 pde.showConfigPage = function () {
-    console.log("asdfasdf");
+    $(".modal-config").modal("show");
+};
+pde.prepareDataSources = function (callback) {
+    app.ajaxPost("/datasource/getdatasources", { search: "" }, function (res) {
+        if (!app.isFine(res)) {
+            location.href = "/web/pages";
+            return;
+        }
+
+        pde.allDataSources(res.data);
+        callback();
+    });
+};
+pde.savePage = function () {
+    if (!app.isFormValid(".form-widget-designer")) {
+        return;
+    }
+
+    var param = ko.mapping.toJS(p.configPage);
+    app.ajaxPost("/pagedesigner/savepage", param, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        $(".modal-config").modal("hide");
+    });
 };
 
 $(function () {
-    pde.preparePage();
-    pde.prepareWidget();
-    pde.prepareGridStack();
+    pde.prepareDataSources(function () {
+        pde.preparePage();
+        pde.prepareWidget();
+        pde.prepareGridStack();
+    });
 });
