@@ -74,48 +74,50 @@ pde.deleteWidget = function (o) {
 
 pde.settingWidget = function(o) {
     var $item = $(o).closest(".grid-stack-item");
-    var param = { _id: $item.data("widgetid") };
-    pde.configWidgetPageDataSources([]);
+    var id = $item.data("id");
+    var widgetID = $item.data("widgetid");
 
-    app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
+    var config = ko.mapping.toJS(p.configPage);
+    var widget = Lazy(config.widgets).find({ _id: id });
+
+    if (typeof widget === "undefined") {
+        return;
+    }
+
+    ko.mapping.fromJS(widget, pde.configWidgetPage);
+
+    pde.configWidgetPageDataSources([]);
+    app.ajaxPost("/pagedesigner/getwidgetsetting", { _id: widgetID }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
         res.data.dataSources.forEach(function (d) {
             var each = $.extend(true, {}, pde.templateWidgetPageDataSource);
             each.namespace = ko.observable(d.dataSource);
             each.dataSource = ko.observable("");
+
+            if (widget.dataSources.hasOwnProperty(d.dataSource)) {
+                each.dataSource(widget.dataSources[d.dataSource]);
+            }
+
             pde.configWidgetPageDataSources.push(each);
         });
+
+
     });
 
-    $(".modal-widgetsetting").modal({
-        backdrop: 'static',
-        keyboard: true
-    });
-}
-
-// pde.afterAddWidget = function (items) {
-//     var grid = $("#page-designer-grid-stack").data("gridstack");
-//     if (typeof grid === "undefined") {
-//         return;
-//     }
-
-//     var item = _.find(items, function (i) { return i.nodeType == 1 });
-//     grid.addWidget(item);
-//     ko.utils.domNodeDisposal.addDisposeCallback(item, function () {
-//         grid.removeWidget(item);
-//     });
-// };
-
+    $(".modal-widgetsetting").modal("show");
+};
 pde.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
         float: true,
         // acceptWidgets: '.grid-stack-item',
         onDragDrop: function (event, ui) {
             pde.addThisWidget(ui.draggable);
-        },
-        // resizable: { autoHide: true, handles: 'se' }
+        }
     });
 };
-
 pde.prepareSidebarDraggable = function () {
     $('#sidebar .grid-stack-item:not(.ui-draggable)').draggable({
         // revert: 'invalid',
@@ -124,7 +126,6 @@ pde.prepareSidebarDraggable = function () {
         helper: "clone"
     });
 };
-
 pde.prepareWidget = function (callback) {
     var $sidebar = $("#sidebar");
     $sidebar.empty();
@@ -152,7 +153,6 @@ pde.prepareWidget = function (callback) {
         callback();
     });
 };
-
 pde.addThisWidget = function (o) {
     var id = moment().format("YYYYMMDDHHmmssSSS");
     var widgetID = $(o).data("id");
@@ -191,9 +191,7 @@ pde.addThisWidget = function (o) {
     config.widgets.push(widget);
     
     ko.mapping.fromJS(config, p.configPage);
-    ko.mapping.fromJS(widget, pde.configWidgetPage);
 };
-
 pde.adjustIframe = function () {
     $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
 };
@@ -246,7 +244,11 @@ pde.save = function () {
             return;
         }
 
-        swal({ title: "Saved", type: "success" });
+        if ($(".modal-widgetsetting").is(":visible")) {
+            $(".modal-widgetsetting").modal("hide");
+        } else {
+            swal({ title: "Saved", type: "success" });
+        }
     });
 };
 pde.mapWidgets = function () {
@@ -269,6 +271,30 @@ pde.isDataSourcesInvalid = ko.computed(function () {
         return d.dataSource() != "";
     }).toArray().length != pde.configWidgetPageDataSources().length;
 }, pde);
+pde.saveWidgetConfig = function () {
+    var widgetDataSources = ko.mapping.toJS(pde.configWidgetPageDataSources);
+    var config = ko.mapping.toJS(p.configPage);
+    var configWidget = ko.mapping.toJS(pde.configWidgetPage);
+    configWidget.dataSources = (configWidget.dataSources == null) ? {} : configWidget.dataSources;
+
+    widgetDataSources.forEach(function (d) {
+        if (d.dataSource == null || d.dataSource == "") {
+            return;
+        }
+
+        configWidget.dataSources[d.namespace] = d.dataSource;
+    });
+
+    var configWidgetIndex = (function () {
+        var configWidgetIdentical = Lazy(config.widgets).find({ _id: configWidget._id });
+        return config.widgets.indexOf(configWidgetIdentical);
+    }());
+
+    config.widgets[configWidgetIndex] = configWidget;
+    ko.mapping.fromJS(config, p.configPage);
+
+    pde.save();
+};
 
 $(function () {
     pde.prepareDataSources(function () {
