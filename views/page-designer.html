@@ -11,8 +11,8 @@
 <script src="/res/core/page-designer.js"></script>
 <script src="/res/gridstack/gridstack.js"></script>
 
-<style type="text/css">
-	.k-widget.k-dropdown, .k-widget.k-numerictextbox{
+<style>
+	/*.k-widget.k-dropdown, .k-widget.k-numerictextbox{
 		width: 100%;
 	}
 	ul, li {list-style-type: none;}
@@ -76,7 +76,7 @@
 	.not-active {
        pointer-events: none;
        cursor: move;
-    } 
+    } */
 
 </style>
 
@@ -115,12 +115,9 @@
 		        </div>
 			</div>
 			
-			<div class="col-md-10 designer">
+			<div class="col-md-10 row designer">
 				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
-					<div class="col-md-12">
-						<div class="grid-stack" id="page-designer-grid-stack"></div>
-					</div>
-					<div style="clear:both;"></div>
+					<div class="grid-stack" id="page-designer-grid-stack"></div>
 				</div>
 			</div>
 		</div>

@@ -46,9 +46,6 @@ pde.deleteWidget = function (o) {
 pde.settingWidget = function(o) {
     var $item = $(o).closest(".grid-stack-item");
 
-    app.mode("datasourceMapping");
-    // pde.previewMode("");
-
     var param = {
         pageID: viewModel.pageID,
         widgetPageID: $item.data("id"),
@@ -65,24 +62,24 @@ pde.settingWidget = function(o) {
     });
 }
 
-pde.afterAddWidget = function (items) {
-    var grid = $("#page-designer-grid-stack").data("gridstack");
-    if (typeof grid === "undefined") {
-        return;
-    }
+// pde.afterAddWidget = function (items) {
+//     var grid = $("#page-designer-grid-stack").data("gridstack");
+//     if (typeof grid === "undefined") {
+//         return;
+//     }
 
-    var item = _.find(items, function (i) { return i.nodeType == 1 });
-    grid.addWidget(item);
-    ko.utils.domNodeDisposal.addDisposeCallback(item, function () {
-        grid.removeWidget(item);
-    });
-};
+//     var item = _.find(items, function (i) { return i.nodeType == 1 });
+//     grid.addWidget(item);
+//     ko.utils.domNodeDisposal.addDisposeCallback(item, function () {
+//         grid.removeWidget(item);
+//     });
+// };
 
 pde.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
-        float: false,
-        acceptWidgets: '.grid-stack-item',
-        resizable: { autoHide: true, handles: 'se' }
+        float: true,
+        // acceptWidgets: '.grid-stack-item',
+        // resizable: { autoHide: true, handles: 'se' }
     });
 };
 
@@ -128,30 +125,34 @@ pde.addThisWidget = function (o) {
             '<div class="grid-stack-item-content">',
                 '<div class="panel panel-default">',
                     '<div class="panel-heading wg-panel">',
-                        '<h5></h5>',
-                    '</div>',
-                    '<div class="panel-body">',
+                        '<div class="pull-left">',
+                            '<h5></h5>',
+                        '</div>',
                         '<div class="pull-right">',
-                            '<a href="#" class="btn btn-default btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></a>',
-                            '<a href="#" class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></a>',
+                            '<div class="nav">',
+                                '<button class="btn btn-primary btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></button>',
+                                '&nbsp;',
+                                '<button class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></button>',
                             '</div>',
                         '</div>',
                     '</div>',
                     '<div class="clearfix"></div>',
                 '</div>',
             '</div>',
-        '</div> '
+        '</div>'
     ].join("");
 
     var $item = $(els);
-    var $gridStack = $("#page-designer-grid-stack").data("gridstack");
-    $gridStack.addWidget($item, 0, 0, 2, 2);
     $item.data("id", moment().format("YYYYMMDDHHmmssSSS"));
     $item.data("pageid", viewModel.pageID);
     $item.data("widgetid", $(o).data("id"));
     $item.find("h5").text("Widget " + pde.widgetCounter());
 
+    var $gridStack = $("#page-designer-grid-stack").data("gridstack");
+    $gridStack.addWidget($item, 0, 0, 2, 2);
+
     pde.widgetCounter(pde.widgetCounter() + 1);
+    app.prepareTooltipster($item.find(".tooltipster"));
 };
 
 pde.adjustIframe = function () {

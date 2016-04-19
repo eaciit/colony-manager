@@ -521,11 +521,6 @@ table.table tr:hover td {
   padding: 13px 15px;
   color: #5F5F5F; }
 
-.grid-stack {
-  min-height: 500px; }
-  .grid-stack .grid-stack-item-content {
-    background-color: #94D5EB; }
-
 /** structured stylesheet */
 body {
   padding-top: 86px;
@@ -568,8 +563,6 @@ body {
     display: block;
     padding: 10px 15px;
     text-decoration: none; }
-  body .nav > li.grid-stack-item:hover {
-    background-color: #eee; }
   body #content {
     padding: 0px; }
     body #content > .col-md-12 > h1 {
@@ -858,5 +851,51 @@ body {
   color: inherit; }
 .k-grid.grid-unselectable table tr:hover {
   background-color: rgba(58, 139, 223, 0.03); }
+
+body #content > .col-md-12 .designer .panel {
+  border-color: #E8E8E8;
+  border-radius: 0px; }
+body #content > .col-md-12 .designer .content-designer {
+  margin-top: 15px;
+  margin-bottom: 15px; }
+  body #content > .col-md-12 .designer .content-designer .grid-stack {
+    min-height: 500px;
+    margin-top: 10px;
+    margin-bottom: 10px; }
+    body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel {
+      margin-bottom: 0px;
+      height: 100%;
+      border-color: #E8E8E8; }
+      body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading {
+        padding: 0px;
+        margin: 0px;
+        text-align: center;
+        padding-left: 5px;
+        padding-right: 5px;
+        min-height: 36px;
+        border-bottom: 1px solid #E8E8E8; }
+        body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading h1, body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading h2, body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading h3, body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading h4, body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading h5 {
+          margin: 0px;
+          padding-top: 10px; }
+        body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .panel-heading .nav {
+          padding-top: 7px; }
+body #sidebar.list-widget {
+  margin-top: 15px;
+  border: 1px solid #E8E8E8; }
+  body #sidebar.list-widget .grid-stack-item:last-child a {
+    border-bottom: none; }
+  body #sidebar.list-widget .grid-stack-item a {
+    padding: 10px 10px;
+    border-bottom: 1px solid #E8E8E8;
+    background-color: #F9F9F9;
+    width: 100%;
+    display: block;
+    color: #333;
+    font-weight: bold;
+    text-transform: capitalize; }
+    body #sidebar.list-widget .grid-stack-item a:hover, body #sidebar.list-widget .grid-stack-item a:focus {
+      text-decoration: none; }
+    body #sidebar.list-widget .grid-stack-item a:hover {
+      background-color: #FFF; }
 
 /*# sourceMappingURL=style.css.map */
