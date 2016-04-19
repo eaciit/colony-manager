@@ -25,12 +25,41 @@ func CreateDataFlowController(s *knot.Server) *DataFlowController {
 	return controller
 }
 
-func Start(r *knot.WebContext) interface{} {
+func (a *DataFlowController) Start(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	// dataf.Start("test")
+	payload := map[string]interface{}{}
+	err := r.GetPayload(&payload)
 
-	return helper.CreateResult(true, nil, "")
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	dataFlowId := tk.ToString(payload["dataFlowId"])
+	globalParam := tk.M{}
+
+	for _, val := range payload["globalParam"].([]interface{}) {
+		tmp := val.(map[string]interface{})
+		globalParam.Set(tk.ToString(tmp["key"]), tk.ToString(tmp["value"]))
+	}
+
+	dataDs := []colonycore.DataFlow{}
+	cursor, err := colonycore.Find(new(colonycore.DataFlow), dbox.Eq("_id", dataFlowId))
+	if cursor != nil {
+		cursor.Fetch(&dataDs, 0, false)
+		defer cursor.Close()
+	}
+	if err != nil && cursor != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if len(dataDs) > 0 {
+		dataflow.Start(dataDs[0], "user test", globalParam)
+	} else {
+		return helper.CreateResult(false, nil, "Flow Not Found")
+	}
+
+	return helper.CreateResult(true, nil, "success")
 }
 
 func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
@@ -51,7 +80,12 @@ func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 	currentDataFlow.Name = tk.ToString(payload["Name"])
 	currentDataFlow.Description = tk.ToString(payload["Description"])
 	currentDataFlow.ID = tk.ToString(payload["ID"])
-	currentDataFlow.GlobalParam = nil
+	currentDataFlow.GlobalParam = tk.M{}
+
+	for _, val := range payload["GlobalParam"].([]interface{}) {
+		tmp := val.(map[string]interface{})
+		currentDataFlow.GlobalParam.Set(tk.ToString(tmp["key"]), tk.ToString(tmp["value"]))
+	}
 
 	dataDs := []colonycore.DataFlow{}
 	cursor, err := colonycore.Find(new(colonycore.DataFlow), dbox.Eq("_id", currentDataFlow.ID))
