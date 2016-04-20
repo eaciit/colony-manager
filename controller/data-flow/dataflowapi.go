@@ -45,6 +45,10 @@ const (
 	CMD_MAP_REDUCE       = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
 	CMD_JAVA             = "java -jar %v"
 	GLOBAL_PARAM_KEYWORD = "global."
+
+	PROCESS_STATUS_RUN     = "RUN"
+	PROCESS_STATUS_SUCCESS = "SUCCESS"
+	PROCESS_STATUS_ERROR   = "ERROR"
 )
 
 //var CurrentAction colonycore.FlowAction
@@ -55,8 +59,17 @@ var globalParam toolkit.M
 
 // Start, to start the flow process
 func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
-	var steps []colonycore.FlowAction
-	// steps = append(steps, flow.Actions[0].(colonycore.FlowAction))
+	var steps []interface{}
+
+	var stepAction []interface{}
+
+	for _, action := range flow.Actions {
+		if action.FirstAction {
+			stepAction = append(stepAction, action)
+		}
+	}
+
+	steps = append(steps, stepAction)
 
 	process := colonycore.DataFlowProcess{
 		Id:          generateProcessID(flow.ID),
@@ -65,6 +78,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 		StartedBy:   user,
 		Steps:       steps,
 		GlobalParam: globalParam,
+		Status:      PROCESS_STATUS_RUN,
 	}
 
 	// save the DataFlowProcess
@@ -263,6 +277,21 @@ func runJava(process colonycore.DataFlow, action colonycore.FlowAction, argument
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
+
+/*func runMail(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
+	server := action.Server
+	setting, _, e := (&server).Connect()
+	java := action.Action.(colonycore.ActionJavaApp)
+	cmd := fmt.Sprintf(CMD_JAVA, java.Jar)
+	result, e := setting.GetOutputCommandSsh(cmd)
+
+	if e != nil {
+		return res, e
+	}
+
+	res = append(res, toolkit.M{}.Set("result_stdout", result))
+	return
+}*/
 
 // watch, watch the process and mantain the link between the action in the flow
 func watch(process colonycore.DataFlow) (e error) {

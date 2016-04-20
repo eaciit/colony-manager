@@ -5,6 +5,10 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"regexp"
 	// "io/ioutil"
 	// "path/filepath"
 	// "fmt"
@@ -197,6 +201,49 @@ func (p *PageDesignerController) GetWidgetSetting(r *knot.WebContext) interface{
 	}
 
 	return helper.CreateResult(true, config, "")
+}
+func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := toolkit.M{}
+	if err := r.GetPayload(&data); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	var str string
+
+	widgetBasePath := filepath.Join(os.Getenv("EC_DATA_PATH"), "widget", data.Get("widgetId", "").(string))
+	err := filepath.Walk(widgetBasePath, func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			return err
+		}
+		if info.Name() == "config-widget.html" {
+			bytes, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			str = string(bytes)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	regex, err := regexp.Compile(`assets/`)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	var result = regex.ReplaceAllStringFunc(str, func(each string) string {
+		if each == "assets/" {
+			return "localhost:3000/res/"
+		}
+		return each
+	})
+
+	return helper.CreateResult(true, result, "")
 }
 
 // func (p *PageDesignerController) SaveConfigPage(r *knot.WebContext) interface{} {

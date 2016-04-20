@@ -239,10 +239,10 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 			break
 		case dataflow.ACTION_TYPE_EMAIL:
 			email := colonycore.ActionEmail{
-			// To:,
-			//   CC:,
-			//   Subject:,
-			//   Body:,
+				To:      tk.ToString(dataAction["to"]),
+				Cc:      tk.ToString(dataAction["cc"]),
+				Subject: tk.ToString(dataAction["subject"]),
+				Body:    tk.ToString(dataAction["body"]),
 			}
 			flow.Action = email
 			break
