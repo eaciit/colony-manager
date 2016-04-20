@@ -14,11 +14,12 @@ import (
 	//"github.com/eaciit/sshclient"
 	"encoding/csv"
 	"encoding/json"
+	"reflect"
 	"strings"
 	"time"
-	"reflect"
-	"github.com/novalagung/golpal"
+
 	"github.com/eaciit/toolkit"
+	"github.com/novalagung/golpal"
 )
 
 const (
@@ -76,10 +77,10 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 	steps = append(steps, stepAction)*/
 
 	process := colonycore.DataFlowProcess{
-		Id:          generateProcessID(flow.ID),
-		Flow:        flow,
-		StartDate:   time.Now(),
-		StartedBy:   user,
+		Id:        generateProcessID(flow.ID),
+		Flow:      flow,
+		StartDate: time.Now(),
+		StartedBy: user,
 		//Steps:       steps,
 		GlobalParam: globalParam,
 		Status:      PROCESS_STATUS_RUN,
@@ -87,7 +88,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 
 	// save the DataFlowProcess
 	e = colonycore.Save(&process)
-	
+
 	if e != nil {
 		return
 	}
@@ -99,12 +100,12 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 	process, e = watch(flow)
 
 	process.EndDate = time.Now()
-	if e!= nil {
+	if e != nil {
 		process.Status = PROCESS_STATUS_SUCCESS
 	} else {
 		process.Status = PROCESS_STATUS_ERROR
 	}
-	
+
 	e = colonycore.Save(&process)
 
 	return
@@ -373,19 +374,19 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 
 				if isFound && ActionBefore != nil {
 					for _, actx := range ActionBefore {
-						flowprocess.Steps = append (flowprocess.Steps, actx)
+						flowprocess.Steps = append(flowprocess.Steps, actx)
 					}
 				}
 			}
 
 			var v reflect.Type
-			v= reflect.TypeOf(CurrentAction.Action).Elem()
+			v = reflect.TypeOf(CurrentAction.Action).Elem()
 
 			isFork := false
 			isForkAction := false
 			if v.Kind() == reflect.Struct {
-				for i:= 0; i < v.NumField(); i++ {
-					if strings.ToLower( v.Field(i).Name) == "isfork"{
+				for i := 0; i < v.NumField(); i++ {
+					if strings.ToLower(v.Field(i).Name) == "isfork" {
 						isFork = reflect.ValueOf(CurrentAction.Action).Elem().Field(i).Bool()
 						isForkAction = true
 						break
@@ -422,22 +423,22 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 							ThisAction := CurrentAction.Action.(*colonycore.ActionDecision)
 							var DecisionClause []string
 
-							for _, actionbefore := range ActionBefore{
+							for _, actionbefore := range ActionBefore {
 								//get previous action's result
 								outres, e := decodeOutputFile(actionbefore)
-							
+								_ = e
 								//replace decision variable with result value
 								for _, condition := range ThisAction.Conditions {
-									for _, outdet := range outres{
+									for _, outdet := range outres {
 										for key, val := range outdet {
 											strings.Replace(condition.Stat, string(key), val.(string), -1)
-										}		
+										}
 									}
 
-									DecisionClause = append(DecisionClause, "if " + condition.Stat + " {return \"true\"} else {return \"false\"} ")
+									DecisionClause = append(DecisionClause, "if "+condition.Stat+" {return \"true\"} else {return \"false\"} ")
 								}
 							}
-							
+
 							//set nextID as per applied condition
 							condIdx := 0
 							for _, clause := range DecisionClause {
@@ -447,15 +448,16 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 									}
 								`
 								resultExec, e := golpal.New().Execute(goClause)
+								_ = e
 								if resultExec == "true" {
-									destAction := strings.Split(ThisAction.Conditions[condIdx].FlowAction, ",") 
+									destAction := strings.Split(ThisAction.Conditions[condIdx].FlowAction, ",")
 
 									for _, dest := range destAction {
 										nextIdx = append(nextIdx, dest)
 									}
 								}
 
-								condIdx ++
+								condIdx++
 							}
 						}
 					} else {
@@ -602,7 +604,7 @@ func getActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction col
 func setCommandArgument(action colonycore.FlowAction) (arguments string) {
 	//decode action output file, convert to toolkit.M, then add into argument as its key
 	res, _ := decodeOutputFile(action)
-	
+
 	for key, _ := range action.InputParam {
 		if !strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
 			arguments += string(key) + "=" + res[0].GetString(key)
@@ -653,7 +655,7 @@ func decodeOutputFile(action colonycore.FlowAction) (output []toolkit.M, e error
 	return
 }
 
-func decodeSV(file []byte, format string) (retVal interface{}, e error) {
+func decodeSV(file []byte, format string) (retVal []toolkit.M, e error) {
 	reader := csv.NewReader(strings.NewReader(string(file)))
 
 	if format == "TSV" {
@@ -666,90 +668,19 @@ func decodeSV(file []byte, format string) (retVal interface{}, e error) {
 		return
 	}
 
-	var list []interface{}
-
 	for _, row := range records {
 		line := toolkit.M{}
 		for idx, val := range row {
 			line.Set(toolkit.ToString(idx), val)
 		}
 
-		list = append(list, line)
-	}
-
-	if len(list) > 0 {
-		retVal = list[0]
+		retVal = append(retVal, line)
 	}
 
 	return
 }
 
-/*func DecodeX(str string) interface{} {
-	bt := []byte(str)
-	val, _ := decodeSV(bt, "CSV")
-	return val
-}
-
-func DecodeY(str string) interface{} {
-	bt := []byte(str)
-	val, _ := decodeSV(bt, "TSV")
-	return val
-}*/
-
-/*func decodeCSV(file []byte) (retVal interface{}, e error) {
-	reader := csv.NewReader(strings.NewReader(string(file)))
-	records, e := reader.ReadAll()
-
-	if e != nil {
-		return
-	}
-
-	var list []interface{}
-
-	for _, row := range records {
-		line := toolkit.M{}
-		for idx, val := range row {
-			line.Set(toolkit.ToString(idx), val)
-		}
-
-		list = append(list, line)
-	}
-
-	if len(list) > 0 {
-		retVal = list[0]
-	}
-
-	return
-}
-
-func decodeTSV(file []byte) (retVal interface{}, e error) {
-	reader := csv.NewReader(strings.NewReader(string(file)))
-	reader.Comma = '\t'
-	records, e := reader.ReadAll()
-
-	if e != nil {
-		return
-	}
-
-	var list []interface{}
-
-	for _, row := range records {
-		line := toolkit.M{}
-		for idx, val := range row {
-			line.Set(toolkit.ToString(idx), val)
-		}
-
-		list = append(list, line)
-	}
-
-	if len(list) > 0 {
-		retVal = list[0]
-	}
-
-	return
-}*/
-
-func decodeText(file []byte) (retVal interface{}, e error) {
-	retVal = string(file)
+func decodeText(file []byte) (retVal []toolkit.M, e error) {
+	retVal = append(retVal, toolkit.M{}.Set("text", string(file)))
 	return
 }
