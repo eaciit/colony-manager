@@ -487,6 +487,7 @@ df.init = function () {
             df.closePopover("#poptitle");
             df.closePopover("#popbtn");
             df.closePopover("#popGlobalVar");
+            df.closePopover("#popRun");
         },
         click:function(e){
             var diagram = kendo.dataviz.diagram;
@@ -502,6 +503,7 @@ df.init = function () {
                       if(clickonshape == 2) {
                         df.closePopover("#poptitle");
                         df.closePopover("#popGlobalVar");
+                        df.closePopover("#popRun");
 
                         $("#popbtn").popoverShow();
 
@@ -592,6 +594,12 @@ df.init = function () {
         html : true,
         placement : 'top',
         content: $("#popover-content-globalvar").html()        
+    });
+
+      $("#popRun").popover({
+        html : true,
+        placement : 'bottom',
+        content: $("#popover-content-poprun").html()        
     });
 
     $('.pTitle').blur(function(){
@@ -939,6 +947,7 @@ df.clearDiagram = function(){
     df.closePopover("#popbtn");
     df.closePopover("#poptitle");
     df.closePopover("#popGlobalVar");
+    df.closePopover("#popRun");
 
     $(".diagram").getKendoDiagram().clear();
 }
@@ -1046,10 +1055,11 @@ df.goToDesigner = function(Id){
 
     $("svg").click(function(){
         if($(".popover-title").html()=="Add Global Variables"){
-        df.closePopover("#poptitle");
-        df.closePopover("#popbtn");
-        df.closePopover("#popGlobalVar");
-    }
+            df.closePopover("#poptitle");
+            df.closePopover("#popbtn");
+            df.closePopover("#popGlobalVar");
+            df.closePopover("#popRun");
+        }
     });
 }
 
@@ -1074,6 +1084,7 @@ df.newDF = function(){
             df.closePopover("#poptitle");
             df.closePopover("#popbtn");
             df.closePopover("#popGlobalVar");
+            df.closePopover("#popRun");
         }
     });
 
@@ -1358,6 +1369,7 @@ df.setContext = function(){
 
     df.closePopover("#poptitle");
     df.closePopover("#popbtn");
+    df.closePopover("#popRun");
 
     $("#popGlobalVar").popover("show");
     df.draggablePopover();    
@@ -1504,6 +1516,16 @@ df.draggablePopover = function(e){
     }).mouseup(function(e) {
         draggableDiv.draggable('disable');
     });
+}
+
+df.popRun = function(){
+    df.closePopover("#popbtn");
+    df.closePopover("#poptitle");
+    df.closePopover("#popGlobalVar");
+    $("#popRun").popover("show");
+    $(".popover-title").removeAttr("style");
+    $(".popover-title").html("Edit Global Variables");
+    df.draggablePopover();
 }
 
 $(function () {

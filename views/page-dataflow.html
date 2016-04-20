@@ -27,7 +27,7 @@
 				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
 				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
 				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-				<button class="btn btn-success mgLeft btn-tooltip" title="Save & Run" onclick="df.run();" >
+				<button class="btn btn-success mgLeft btn-tooltip" title="Save & Run" id="popRun" onclick="df.popRun()" >
 			    		<span class="glyphicon glyphicon-play"></span>
 			    </button>
 			</div>
@@ -55,6 +55,20 @@
 
 <button style="display:none" data-content="" id="popbtn"></button>
 <button style="display:none" data-content="" id="popGlobalVar"></button>
+
+<script type="text/template" id="popover-content-poprun">
+<table>
+    <tbody>
+        
+        <!-- ko foreach: df.globalVar -->
+        <tr>
+            <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
+            <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter default value"></td> </td>            
+        </tr>
+         <!-- /ko -->
+    </tbody>
+</table>
+</script>
 
 <script type="text/template" id="popover-content-globalvar">
 <table>
