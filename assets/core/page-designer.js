@@ -305,7 +305,25 @@ pde.saveWidgetConfig = function () {
 
     pde.save();
 };
+pde.fieldMapping = function() {
+    var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage);
+    
+    app.ajaxPost("/pagedesigner/widgetpreview", { widgetId: configWidgetPage.widgetId }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
 
+        $("#formSetting").off("load").on("load", function(){
+            window.frames[0].frameElement.contentWindow.DsFields(res.data, viewModel.pageID);
+        });
+        var contentDoc = $("#formSetting")[0].contentWindow.document;
+        contentDoc.open('text/html', 'replace');
+        contentDoc.write(res.data);
+        contentDoc.close();
+    });
+}
+
+pde.AdjustIframeHeight = function(i) { document.getElementById("formSetting").style.height = parseInt(i) + "px"; }
 $(function () {
     pde.prepareDataSources(function () {
         pde.prepareWidget(function () {
