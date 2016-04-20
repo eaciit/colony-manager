@@ -355,8 +355,11 @@ func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
 		filter = dbox.Eq("status", status)
 	}
 
+	take := tk.ToInt(payload["take"], tk.RoundingAuto)
+	skip := tk.ToInt(payload["skip"], tk.RoundingAuto)
+
 	dataDs := []colonycore.DataFlowProcess{}
-	cursor, err := colonycore.Find(new(colonycore.DataFlowProcess), filter)
+	cursor, err := colonycore.Finds(new(colonycore.DataFlowProcess), filter, tk.M{}.Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
 
 	if cursor != nil {
 		cursor.Fetch(&dataDs, 0, false)
@@ -367,5 +370,9 @@ func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, dataDs, "success")
+	res := tk.M{}
+	res.Set("data", dataDs)
+	res.Set("total", cursor.Count())
+
+	return helper.CreateResult(true, res, "success")
 }
