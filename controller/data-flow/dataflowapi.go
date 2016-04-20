@@ -8,6 +8,7 @@ import (
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	//"github.com/eaciit/dbox"
+	"github.com/eaciit/gomail"
 	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/hdc/hive"
 	//"github.com/eaciit/sshclient"
@@ -21,6 +22,8 @@ import (
 )
 
 const (
+	DATA_FLOW_MAIL_ADDR = "ecdf@eaciit.com"
+
 	ACTION_TYPE_HIVE     = "HIVE"
 	ACTION_TYPE_HDFS     = "HDFS"
 	ACTION_TYPE_SPARK    = "SPARK"
@@ -46,7 +49,10 @@ const (
 	CMD_MAP_REDUCE       = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
 	CMD_JAVA             = "java -jar %v"
 	GLOBAL_PARAM_KEYWORD = "global."
-	LOGIC_OPERATOR = "=="
+
+	PROCESS_STATUS_RUN     = "RUN"
+	PROCESS_STATUS_SUCCESS = "SUCCESS"
+	PROCESS_STATUS_ERROR   = "ERROR"
 )
 
 //var CurrentAction colonycore.FlowAction
@@ -57,8 +63,17 @@ var globalParam toolkit.M
 
 // Start, to start the flow process
 func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
-	var steps []colonycore.FlowAction
-	// steps = append(steps, flow.Actions[0].(colonycore.FlowAction))
+	var steps []interface{}
+
+	var stepAction []interface{}
+
+	for _, action := range flow.Actions {
+		if action.FirstAction {
+			stepAction = append(stepAction, action)
+		}
+	}
+
+	steps = append(steps, stepAction)
 
 	process := colonycore.DataFlowProcess{
 		Id:          generateProcessID(flow.ID),
@@ -67,6 +82,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 		StartedBy:   user,
 		Steps:       steps,
 		GlobalParam: globalParam,
+		Status:      PROCESS_STATUS_RUN,
 	}
 
 	// save the DataFlowProcess
@@ -144,7 +160,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction, argument
 	result, e := setting.GetOutputCommandSsh(hdfs.Command)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -182,7 +198,7 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction, argumen
 	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -197,7 +213,7 @@ func runSSH(process colonycore.DataFlow, action colonycore.FlowAction, arguments
 	result, e := setting.GetOutputCommandSsh(ssh.Command)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -211,7 +227,7 @@ func runShell(process colonycore.DataFlow, action colonycore.FlowAction, argumen
 	result, e := setting.GetOutputCommandSsh(shell.Script)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -244,7 +260,7 @@ func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction, arg
 	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -259,10 +275,39 @@ func runJava(process colonycore.DataFlow, action colonycore.FlowAction, argument
 	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
+	return
+}
+
+func runMail(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
+	actionEmail := action.Action.(colonycore.ActionEmail)
+	/*emailTo := []string{}
+	for _, mail := range strings.Split(actionEmail.To, ",") {
+		emailTo = append(emailTo, mail)
+	}*/
+
+	m := gomail.NewMessage()
+
+	for _, mail := range strings.Split(actionEmail.Cc, ",") {
+		m.SetAddressHeader("Cc", mail, "")
+	}
+
+	m.SetHeader("From", DATA_FLOW_MAIL_ADDR)
+	m.SetHeader("To", actionEmail.To)
+	m.SetHeader("Subject", actionEmail.Subject)
+	m.SetBody("text/html", actionEmail.Body)
+
+	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "B920Support")
+	e = d.DialAndSend(m)
+
+	if e != nil {
+		return
+	}
+
+	res = append(res, toolkit.M{}.Set("result_stdout", ""))
 	return
 }
 
