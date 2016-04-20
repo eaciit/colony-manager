@@ -63,7 +63,7 @@ var globalParam toolkit.M
 
 // Start, to start the flow process
 func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
-	var steps []interface{}
+	/*var steps []interface{}
 
 	var stepAction []interface{}
 
@@ -73,20 +73,21 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 		}
 	}
 
-	steps = append(steps, stepAction)
+	steps = append(steps, stepAction)*/
 
 	process := colonycore.DataFlowProcess{
 		Id:          generateProcessID(flow.ID),
 		Flow:        flow,
 		StartDate:   time.Now(),
 		StartedBy:   user,
-		Steps:       steps,
+		//Steps:       steps,
 		GlobalParam: globalParam,
 		Status:      PROCESS_STATUS_RUN,
 	}
 
 	// save the DataFlowProcess
 	e = colonycore.Save(&process)
+	
 	if e != nil {
 		return
 	}
@@ -94,7 +95,17 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 	processID = process.Id
 
 	// run the watcher and run the process, please update regardingly
-	go watch(flow, process)
+	//go watch(flow, process)
+	process, e = watch(flow)
+
+	process.EndDate = time.Now()
+	if e!= nil {
+		process.Status = PROCESS_STATUS_SUCCESS
+	} else {
+		process.Status = PROCESS_STATUS_ERROR
+	}
+	
+	e = colonycore.Save(&process)
 
 	return
 }
@@ -106,7 +117,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 }*/
 
 // runProcess, process the flow
-func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
+func runProcess(process colonycore.DataFlow, action colonycore.FlowAction) (e error) {
 	var res []toolkit.M
 	arguments := setCommandArgument(action)
 	switch action.Type {
@@ -312,9 +323,10 @@ func runMail(process colonycore.DataFlow, action colonycore.FlowAction, argument
 }
 
 // watch, watch the process and mantain the link between the action in the flow
-func watch(process colonycore.DataFlow, flowprocess colonycore.DataFlowProcess) (e error) {
+func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess, e error) {
 	act_result_path = ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + process.ID
 	globalParam = process.GlobalParam
+	flowprocess.GlobalParam = globalParam
 
 	var ListCurrentTierAction, ListLastTierAction, ListNextTierAction []colonycore.FlowAction
 
@@ -358,6 +370,12 @@ func watch(process colonycore.DataFlow, flowprocess colonycore.DataFlowProcess) 
 				} else {
 					isFound = true
 				}
+
+				if isFound && ActionBefore != nil {
+					for _, actx := range ActionBefore {
+						flowprocess.Steps = append (flowprocess.Steps, actx)
+					}
+				}
 			}
 
 			var v reflect.Type
@@ -381,7 +399,7 @@ func watch(process colonycore.DataFlow, flowprocess colonycore.DataFlowProcess) 
 					files, e := ioutil.ReadFile(fname)
 
 					if e != nil {
-						return e
+						return flowprocess, e
 					}
 
 					// if action
@@ -454,13 +472,14 @@ func watch(process colonycore.DataFlow, flowprocess colonycore.DataFlowProcess) 
 						}
 					}
 
-					go runProcess(process, CurrentAction, ActionBefore)
+					go runProcess(process, CurrentAction)
 
 					//update globalParam
 					if CurrentAction.OutputParam != nil {
 						for key, val := range CurrentAction.OutputParam {
 							if strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
 								globalParam.Set(key, val)
+								flowprocess.GlobalParam = globalParam
 							}
 						}
 					}
