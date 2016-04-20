@@ -157,6 +157,11 @@ pg.configPage = function() {
 			keyboard: true
 	});
 };
+
+pg.getUrlParam = function(param){
+	var url = new RegExp('[\?&]' + param +'=([^&#]*)').exec(window.location.href);
+	return url[1] || 0;
+}
 pg.widgetSetting = function(_id, mode) {
 	app.mode("datasourceMapping");
 	pg.previewMode("");
@@ -268,6 +273,7 @@ window.closeModal = function(){
 // 		});
 // 	});
 // }
+
 
 $(function (){
 	pg.getConfigurationPage(pg.pageID, "", "", "");
