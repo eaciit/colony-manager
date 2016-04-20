@@ -11,7 +11,7 @@ $(document).ready(function(){
         serverSource:{
              url: '/filebrowser/getservers',
              call: 'POST',
-             dataTextField:"_id",
+             dataTextField:"serverAlias",
              dataValueField:"_id"
         }
     });
