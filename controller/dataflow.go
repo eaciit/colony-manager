@@ -62,6 +62,18 @@ func (a *DataFlowController) Start(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "success")
 }
 
+/*func (a *DataFlowController) DecodeX(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	x := dataflow.DecodeX("abc,def,ghi,jkl")
+	y := dataflow.DecodeY("abc\tdef\tghi\tjkl")
+	// x := dataflow.DecodeX(`"abc","def","ghi","jkl"`)
+
+	fmt.Printf("x ==> %#v \n", x)
+	fmt.Printf("y ==> %#v \n", y)
+
+	return helper.CreateResult(true, nil, "success")
+}*/
+
 func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -246,22 +258,21 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 			}
 			flow.Action = email
 			break
-		// case "Fork":
-		// 	fork := colonycore.ActionFork{}
-		// 	action.Action = fork
-		// 	action.Type = dataflow.ACTION_TYPE_FORK
-		// 	break
 		case dataflow.ACTION_TYPE_DECISION:
 			conditions := []colonycore.Condition{}
 
-			/*for _, val := range dataAction["conditions"].([]interface{}) {
-				condition := val.(colonycore.Condition)
+			for _, val := range dataAction["conditions"].([]interface{}) {
+				tmp := val.(map[string]interface{})
+				condition := colonycore.Condition{
+					FlowAction: tk.ToString(tmp["flowaction"]),
+					Stat:       tk.ToString(tmp["stat"]),
+				}
 				conditions = append(conditions, condition)
-			}*/
+			}
 
 			decision := colonycore.ActionDecision{
 				Conditions: conditions,
-				// IsFork:     dataAction["isfork"].(bool),
+				IsFork:     dataAction["isfork"].(bool),
 			}
 			flow.Action = decision
 			break

@@ -638,10 +638,10 @@ func decodeOutputFile(action colonycore.FlowAction) (output []toolkit.M, e error
 	case "JSON":
 		e = json.Unmarshal(file, &output)
 	case "CSV":
-		output, e = decodeCSV(file)
+		output, e = decodeSV(file, "CSV")
 		break
 	case "TSV":
-		output, e = decodeTSV(file)
+		output, e = decodeSV(file, "TSV")
 		break
 	case "TEXT":
 		output, e = decodeText(file)
@@ -653,7 +653,50 @@ func decodeOutputFile(action colonycore.FlowAction) (output []toolkit.M, e error
 	return
 }
 
-func decodeCSV(file []byte) (retVal interface{}, e error) {
+func decodeSV(file []byte, format string) (retVal interface{}, e error) {
+	reader := csv.NewReader(strings.NewReader(string(file)))
+
+	if format == "TSV" {
+		reader.Comma = '\t'
+	}
+
+	records, e := reader.ReadAll()
+
+	if e != nil {
+		return
+	}
+
+	var list []interface{}
+
+	for _, row := range records {
+		line := toolkit.M{}
+		for idx, val := range row {
+			line.Set(toolkit.ToString(idx), val)
+		}
+
+		list = append(list, line)
+	}
+
+	if len(list) > 0 {
+		retVal = list[0]
+	}
+
+	return
+}
+
+/*func DecodeX(str string) interface{} {
+	bt := []byte(str)
+	val, _ := decodeSV(bt, "CSV")
+	return val
+}
+
+func DecodeY(str string) interface{} {
+	bt := []byte(str)
+	val, _ := decodeSV(bt, "TSV")
+	return val
+}*/
+
+/*func decodeCSV(file []byte) (retVal interface{}, e error) {
 	reader := csv.NewReader(strings.NewReader(string(file)))
 	records, e := reader.ReadAll()
 
@@ -704,7 +747,7 @@ func decodeTSV(file []byte) (retVal interface{}, e error) {
 	}
 
 	return
-}
+}*/
 
 func decodeText(file []byte) (retVal interface{}, e error) {
 	retVal = string(file)
