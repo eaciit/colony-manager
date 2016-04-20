@@ -5,9 +5,10 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	//"github.com/eaciit/dbox"
 	// "io/ioutil"
 	// "path/filepath"
-	// "fmt"
+	"fmt"
 )
 
 type PageDesignerController struct {
@@ -307,3 +308,24 @@ func (p *PageDesignerController) GetWidgetSetting(r *knot.WebContext) interface{
 
 	return helper.CreateResult(true, previewData, "")
 }*/
+
+func (p *PageDesignerController) PageView(r *knot.WebContext) interface{}{
+	r.Config.OutputType = knot.OutputJson
+	payload := toolkit.M{}
+	err := r.GetPayload(&payload)
+	if err != nil{
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	ID := payload["title"].(string)
+
+	gv := new(colonycore.PageDetail)
+	gv.ID = ID
+	data, err := gv.Get()
+	if(err != nil){
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	fmt.Println(" ------------ data", data)
+
+	return helper.CreateResult(true, data, "success")
+}
