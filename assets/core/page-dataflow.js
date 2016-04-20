@@ -449,6 +449,18 @@ df.init = function () {
             subtype: "radial"
         },
         shapeDefaults: {
+              connectorDefaults:{
+                hover:{
+                    stroke:{
+                        width:30,
+                        color:"grey",
+                    }
+                },
+                stroke:{
+                    width:10,
+                    color:"#000000"
+                }
+            },
             visual: visualTemplate,
             // content: {
             //     template: function (d) {
@@ -536,8 +548,8 @@ df.init = function () {
                         df.popoverMode(item.dataItem.name);
                         $(".popover").attr("style","display: block; top: " +(ymouse-320)+"px; left: "+(xmouse-30)+"px;");
                       df.renderActionData();
-                      }
                       df.draggablePopover();
+                      }
                       clickonshape = 0;
                     }, 300);
                 
@@ -584,13 +596,15 @@ df.init = function () {
 
     $('.pTitle').blur(function(){
         if( !$(this).val() ) {
-            $(".pTitle").val("");
+            swal("Warning!", "Name cannot be empty !", "warning");
+            // $(".pTitle").focus();
         }
     });
 
     $('.pDesc').blur(function(){
         if( !$(this).val() ) {
-            $(".pDesc").val("");
+            swal("Warning!", "Description cannot be empty !", "warning");
+            // $(".pDesc").focus();
         }
     });
 
@@ -616,7 +630,7 @@ df.init = function () {
             var posdiag = $(".diagram")[0].getBoundingClientRect();
             var xpos = (xmouse - posdiag.left);
             var ypos = (ymouse - posdiag.top);
-            ypos = (screen.height - 200)<ypos?(ypos - 200):ypos; 
+            ypos = (screen.height - 400)<ypos?(ypos - 200):ypos; 
             if(xpos>0&&ypos>0){
                 var diagram = $(".diagram").data("kendoDiagram");
                 diagram.addShape({ 
@@ -639,12 +653,20 @@ df.init = function () {
 };
 df.dataRow = ko.observableArray([]);
 df.run = function () {
-    app.ajaxPost("/dataflow/start", {}, function (res) {
-        if (!app.isFine(res)) {
-            return;
-        }
-        
-    });
+    var call = function(ID){
+        app.ajaxPost("/dataflow/start", {
+            globalParam:df.globalVar(),
+            dataFlowId:ID
+        }, function(res){
+            if(!app.isFine(res)){
+              return;
+            }else{
+               swal("Data Flow Started", "Check monitoring tab for details", "success");
+            }
+        });
+     }
+
+     df.Save(call);
 }
 
 df.counts = {};
@@ -869,7 +891,7 @@ df.Reload = function(){
     df.renderDiagram(".diagram",df.DataShape());
 }
 
-df.Save = function(){
+df.Save = function(callback){
     var ch = df.checkFlow(".diagram");
     if(ch){
         df.DataShape(df.getShapeData(".diagram"));
@@ -882,21 +904,34 @@ df.Save = function(){
         swal("Warning", "Data not completed!", "warning");
         return;
     }
-
-    app.ajaxPost("/dataflow/save", {
-        ID : df.ID(),
-        Name:df.Name(),
-        Description:df.Description(),
-        Actions: actdt,
-        DataShapes:df.DataShape(),
-        GlobalParam:df.globalVar()
-    }, function(res){
-        if(!app.isFine(res)){
-          return;
-        }else{
-           swal("Success", "Data Saved !", "success");
-        }
-    });
+    
+    var title = $(".pTitle").val().length;
+    var desc = $(".pDesc").val().length;    
+    if (title == 0) {
+        swal("Warning", "Name or Description cannot be empty!", "warning");
+    }else if (desc == 0) {
+        swal("Warning", "Name or Description cannot be empty!", "warning");
+    }else{
+        app.ajaxPost("/dataflow/save", {
+            ID : df.ID(),
+            Name:df.Name(),
+            Description:df.Description(),
+            Actions: actdt,
+            DataShapes:df.DataShape(),
+            GlobalParam:df.globalVar()
+        }, function(res){
+            if(!app.isFine(res)){
+              return;
+            }else{
+                df.ID(res.data._id);
+               if(callback!=undefined){
+                callback(df.ID());
+               }else{
+                 swal("Success", "Data Saved !", "success");
+               }
+            }
+        });
+    }
 }
 
 df.clearDiagram = function(){
@@ -958,8 +993,9 @@ df.createGrid = function(search){
                         },
                     },
                     {field:"createdby",width:200,title:"Created By"},
-                    {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-wrench'></span></button>"},
-                    {width:50,template:"<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"}
+                    {width:100, title:"Actions",
+                        template:"<button class='btn btn-sm tooltipster-grid mgRight10' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-cog'></span></button>"+
+                    "<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"},
                 ],
                 dataBound:function(){
                     $(".tooltipster-grid").tooltipster({
@@ -992,6 +1028,10 @@ df.goToDesigner = function(Id){
     df.Name(selected.name);
     df.Description(selected.description);
     df.globalVar([]);
+    var gbl = selected.globalparam;
+    for(var i in gbl){
+        df.addGlobalVar(i,gbl[i]);
+    }
     df.Reload();
 
     $(".glyphicon-cog").tooltipster({
@@ -1272,9 +1312,14 @@ df.deleteParamOutput = function(e){
     df.actionDetails().output.param.remove(dt);
 }
 
-df.addGlobalVar = function () {
+df.addGlobalVar = function (key,val) {
     var idx = df.globalVar().length;
-   df.globalVar.push({idx:idx,key:"",value:""});
+    var k = "";
+    var v = "";
+    k = key != undefined? key:k;
+    v = val != undefined?val:v;
+
+   df.globalVar.unshift({idx:idx,key:k,value:v});
 }
 
 df.deleteGlobalVar = function(e){
@@ -1315,6 +1360,7 @@ df.setContext = function(){
     df.closePopover("#popbtn");
 
     $("#popGlobalVar").popover("show");
+    df.draggablePopover();    
 
     if(df.globalVar().length==0)
     df.addGlobalVar();
@@ -1462,5 +1508,5 @@ df.draggablePopover = function(e){
 
 $(function () {
     df.init();
-    app.section('');  
+    app.section('');    
 });

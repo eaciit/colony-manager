@@ -31,6 +31,7 @@ func (w *WebController) PredefinedVariables(params ...toolkit.M) interface{} {
 		"Server":              colonycore.Server{},
 		"WebGrabber":          colonycore.WebGrabber{},
 		"Widget":              colonycore.Widget{},
+		"WidgetPage":          colonycore.WidgetPage{},
 	})
 
 	vars := toolkit.M{"templateModels": string(templateModels)}
@@ -173,7 +174,7 @@ func (w *WebController) DataFlow(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "views/page-dataflow.html"
+	r.Config.ViewName = "views/page-dataflow-index.html"
 
 	return w.PredefinedVariables()
 }
