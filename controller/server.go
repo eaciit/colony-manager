@@ -31,7 +31,6 @@ import (
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
-	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
 	"github.com/eaciit/toolkit"
@@ -588,27 +587,16 @@ func (s *ServerController) PingServer(r *knot.WebContext) interface{} {
 	isHDFSOK := true
 
 	(func() {
-		if _, err := payload.Ping(); err != nil {
+		if _, err := payload.Ping("node"); err != nil {
 			isNodeOK = false
 			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on node server: %s", err.Error()))
 		}
 	}())
 
 	(func() {
-		hdfsConfig := hdfs.NewHdfsConfig(payload.ServiceHDFS.Host, payload.ServiceHDFS.User)
-		hdfsConfig.Password = payload.ServiceHDFS.Pass
-		hadeepes, err := hdfs.NewWebHdfs(hdfsConfig)
-		if err != nil {
+		if _, err := payload.Ping("hdfs"); err != nil {
 			isNodeOK = false
-			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on hdfs server: %s", err.Error()))
-			return
-		}
-
-		_, err = hadeepes.List("/")
-		if err != nil {
-			isNodeOK = false
-			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on hdfs server: %s", err.Error()))
-			return
+			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on node server: %s", err.Error()))
 		}
 	}())
 

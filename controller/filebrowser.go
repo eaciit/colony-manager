@@ -49,19 +49,13 @@ func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
 
 func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	cursor, err := colonycore.Find(new(colonycore.Server), nil)
+
+	servers, err := new(colonycore.Server).GetByType()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data := []colonycore.Server{}
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	return helper.CreateResult(true, data, "")
+	return helper.CreateResult(true, servers, "")
 }
 
 func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
@@ -547,7 +541,7 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 	return helper.CreateResult(false, nil, "")
 }
 
-func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server, payload colonycore.FileBrowserPayload, err error) {
+func getMultipart(r *knot.WebContext, fileName string) (server colonycore.ServerByType, payload colonycore.FileBrowserPayload, err error) {
 	var tmp map[string]interface{}
 	_, s, err := r.GetPayloadMultipart(&tmp)
 
@@ -555,6 +549,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 		return
 	}
 	payload.ServerId = s["serverId"][0]
+	payload.ServerType = s["serverType"][0]
 	payload.Path = s["path"][0]
 
 	err = r.Request.ParseMultipartForm(100000)
@@ -587,7 +582,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 		return
 	}
 
-	data := []colonycore.Server{}
+	data := []colonycore.ServerByType{}
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return
@@ -596,6 +591,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 
 	if len(data) != 0 {
 		server = data[0]
+		server.ServerType = payload.ServerType
 	}
 
 	return
@@ -611,7 +607,6 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil {
-
 		if payload.Path != "" && payload.File != nil {
 			if server.ServerType == SERVER_NODE {
 				setting, _, err := (&server).Connect()
@@ -754,7 +749,7 @@ func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
 	return helper.CreateResult(false, nil, "")
 }
 
-func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload colonycore.FileBrowserPayload, err error) {
+func getServer(r *knot.WebContext, tp string) (server colonycore.ServerByType, payload colonycore.FileBrowserPayload, err error) {
 	if tp == "FORM" {
 		err = r.GetForms(&payload)
 	} else if tp == "PAYLOAD" {
@@ -777,7 +772,7 @@ func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload
 		return
 	}
 
-	data := []colonycore.Server{}
+	data := []colonycore.ServerByType{}
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return
@@ -786,6 +781,7 @@ func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload
 
 	if len(data) != 0 {
 		server = data[0]
+		server.ServerType = payload.ServerType
 	}
 
 	return
