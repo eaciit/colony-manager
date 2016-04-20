@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
@@ -9,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	// "io/ioutil"
 	// "path/filepath"
 	// "fmt"
@@ -210,7 +210,7 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var result string
+	var str string
 
 	widgetBasePath := filepath.Join(os.Getenv("EC_DATA_PATH"), "widget", data.Get("widgetId", "").(string))
 	err := filepath.Walk(widgetBasePath, func(path string, info os.FileInfo, err error) error {
@@ -223,7 +223,7 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 			if err != nil {
 				return err
 			}
-			result = string(bytes)
+			str = string(bytes)
 		}
 		return nil
 	})
@@ -231,6 +231,17 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	regex, err := regexp.Compile(`assets/`)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	var result = regex.ReplaceAllStringFunc(str, func(each string) string {
+		if each == "assets/" {
+			return "localhost:3000/assets/"
+		}
+		return each
+	})
 
 	return helper.CreateResult(true, result, "")
 }
