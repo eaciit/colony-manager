@@ -4,7 +4,59 @@
 		</ol>
 </div>
 <div id="content">
-	<div class="col-md-12">
-		Monitoring Grid
+	<div class="col-md-12 mgTop15">
+
+<div class="modal fade modal-request-leave modal-wide" id="PopUpDetail" tabindex="-1" role="dialog"
+        aria-labelledby="myLargeModalLabel" aria-hidden="true"
+        id="divSatria" data-controls-modal="your_div_id"
+        data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg" style="width:800px">
+            <div class="modal-content" >
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="TitleWorkflow">Details</h4>
+                    <div aria-labelledby="dropdownMenuDivider"></div>
+                </div>
+                  <div class="modal-body">
+                      <div class="col-md-12"> 
+                            <div class="panel-body" style="padding:0px;padding-top:5px" id="DetailGridContainer">
+                            	<div class="row">
+                                <div id="MonitoringDetailGrid" ></div>
+                                </div>
+                            </div>
+                    </div>
+                  </div>
+            </div>
+        </div>
+</div>
+
+
+<div class="panel panel-default itemactive">
+	<div class="panel-heading">
+		<h4 class="box-title">
+			<span class=""> <span class="fa fa-cogs"></span>&nbsp;
+				Running
+			</span> 
+		</h4>
+	</div>
+	<div class="panel-body" style="padding:0px;margin-top: 5px;">
+			<div id="RunGrid"></div>
+	</div>
+</div>
+
+<div class="panel panel-default itemactive">
+	<div class="panel-heading">
+		<h4 class="box-title">
+			<span class=""> <span class="fa fa-check-circle"></span>&nbsp;
+				Completed
+			</span> 
+		</h4>
+	</div>
+	<div class="panel-body" style="padding:0px;margin-top: 5px;">
+			<div id="ComGrid"></div>
+	</div>
+</div>
 	</div>
 </div>
