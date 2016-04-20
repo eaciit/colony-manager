@@ -334,3 +334,38 @@ func (a *DataFlowController) Delete(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, nil, "success")
 }
+
+func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	e := r.GetPayload(&payload)
+	if e != nil {
+		return helper.CreateResult(false, nil, e.Error())
+	}
+
+	status := tk.ToString(payload["status"])
+
+	var filter *dbox.Filter
+	filter = new(dbox.Filter)
+
+	if strings.ToLower(status) != "running" {
+		filter = dbox.Ne("status", "Running")
+	} else {
+		filter = dbox.Eq("status", status)
+	}
+
+	dataDs := []colonycore.DataFlowProcess{}
+	cursor, err := colonycore.Find(new(colonycore.DataFlowProcess), filter)
+
+	if cursor != nil {
+		cursor.Fetch(&dataDs, 0, false)
+		defer cursor.Close()
+	}
+
+	if err != nil && cursor != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, dataDs, "success")
+}

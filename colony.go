@@ -12,10 +12,10 @@ import (
 
 	"github.com/eaciit/acl"
 	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/colony-manager/controller"
 	"github.com/eaciit/colony-manager/installation"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/yanda15/colony-manager/controller"
 )
 
 var (
