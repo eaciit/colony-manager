@@ -237,7 +237,6 @@ apl.srvapplicationColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ field: "host", title: "Host" },
-	{ field: "sshtype", title: "SSH Type" },
 	{ title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
 		return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="apl.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
 	} },

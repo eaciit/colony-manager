@@ -233,8 +233,8 @@ func unzip(src string) (result *colonycore.TreeSource, zipName string, err error
 }
 
 func (a *ApplicationController) GetServerPathSeparator(server *colonycore.Server) string {
-	if server.ServerType == "windows" {
-		return "\\\\"
+	if server.OS == "windows" {
+		return `\\`
 	}
 
 	return `/`

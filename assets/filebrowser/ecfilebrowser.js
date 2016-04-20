@@ -49,7 +49,10 @@ var templatetree = "#: item.text# "+
              "<a style='display:none' path=\"#:item.pathf #\" name=\"#:item.text #\" permission=\"#:item.permissions#\"></a> ";
 
 var methodsFB = {
+	self:null,
 	init:function(options){
+		methodsFB.self = this;
+
 		var settings = $.extend({}, Settings_EcFileBrowser, options || {});
 		var settingsSource = $.extend({}, Setting_DataSource, settings['dataSource'] || {});
 		var serverSource = $.extend({}, Setting_ServerSource, settings['serverSource'] || {});
@@ -73,10 +76,14 @@ var methodsFB = {
 		}
 		return 
 	},
-BuildFileExplorer:function(elem,options){
+	GetCurrentServerItem: function () {
+		return $($(methodsFB.self).find("input.fb-server")).data("kendoDropDownList").dataItem();
+	},
+	BuildFileExplorer:function(elem,options){
 		var $ox = $(elem), $container = $ox.parent(), idLookup = $ox.attr('id');
 		var data = options.dataSource.data;
 		var serverId = "";
+		var serverType = "";
 
 		strcont = "<div class='col-md-12 fb-container'></div>";
 		$strcont = $(strcont);
@@ -133,13 +140,13 @@ BuildFileExplorer:function(elem,options){
 				var type = methodsFB.DetectType($(elem).find(".k-state-selected"),name,elem);
 
 				if(type == "folder"){
-					methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
+					methodsFB.ThumbnailView(elem,options,{serverId: serverId, serverType: serverType, path:SelectedPath});
 				}else{
 					var parentDir = SelectedPath.substring(SelectedPath.indexOf('/'), SelectedPath.lastIndexOf('/'));
-					methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:parentDir});
+					methodsFB.ThumbnailView(elem,options,{serverId: serverId, serverType: serverType, path:parentDir});
 				}
 			}else{
-				methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:SelectedPath});
+				methodsFB.ThumbnailView(elem,options,{serverId: serverId, serverType: serverType, path:SelectedPath});
 			}
 			
 			
@@ -223,9 +230,10 @@ BuildFileExplorer:function(elem,options){
 			change: function(){
 					app.miniloader(true);
 					serverId = this.value();
+					serverType = methodsFB.GetCurrentServerItem().serverType;
             		$($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 					$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
-					methodsFB.ThumbnailView(elem,options,{serverId: this.value(), path:null});
+					methodsFB.ThumbnailView(elem,options,{serverId: serverId, serverType: serverType, path:null});
 
 			}
 		});
@@ -292,6 +300,7 @@ BuildFileExplorer:function(elem,options){
 	            		dt["action"] = $(elem).data("ecFileBrowser").dataSource.GetDirAction;
 	            		if (dt["action"]=="GetDir"){
 	            			dt["serverId"] = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+	            			dt["serverType"] = methodsFB.GetCurrentServerItem().serverType;
 	            			dt["search"] = $($(elem).find(".fb-txt-search")).val();
 	            		}else{
 	            			//dt["search"] = $($(elem).find(".fb-txt-search")).val();
@@ -317,7 +326,7 @@ BuildFileExplorer:function(elem,options){
 			dataTextField: options.dataSource.nameField
 		});		
 		$(elem).find(".fb-thumbview").hide();
-		methodsFB.ThumbnailView(elem,options,{serverId: serverId, path:null});
+		methodsFB.ThumbnailView(elem,options,{serverId: serverId, serverType: serverType, path:null});
 		methodsFB.BuildEditor(elem,options);
 		methodsFB.BuildPopUp(elem,options);		
 	},
@@ -332,11 +341,13 @@ BuildFileExplorer:function(elem,options){
 		var call = ds.call;
 		var serverId =  $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
 		data.serverId = (data.serverId === '' ? serverId : data.serverId);
+		data.serverType = methodsFB.GetCurrentServerItem().serverType;
 
 		var dt = {
 			action : $(elem).data("ecFileBrowser").dataSource.GetDirAction,
 			search	: $($(elem).find(".fb-txt-search")).val(),
 			serverId : data.serverId,
+			serverType: data.serverType,
 			path: data.path
 		}
 
@@ -358,7 +369,7 @@ BuildFileExplorer:function(elem,options){
 		        $libreadcrumbs.appendTo($breadcrumbs);
 
 		        $strthumb.find("span[home]").click(function(e){
-		        	methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path:null});
+		        	methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, serverType: data.serverType, path:null});
 		        });
 
 		        if(data.path !== null){
@@ -378,7 +389,7 @@ BuildFileExplorer:function(elem,options){
 		        	  	$libreadcrumbs.appendTo($breadcrumbs);
 		        	  	$libreadcrumbs.click(function(){
 		        	  		var path = $(this).find("a").attr("path");
-							methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path: path});
+							methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, serverType: data.serverType, path: path});
 						});
 		        	  }
 		        	  parrentId = "/"+ pathArray[1];
@@ -407,7 +418,7 @@ BuildFileExplorer:function(elem,options){
 					    }).dblclick(function(e){
 					    	$strprecont.find("a").removeClass("thumb-selected");
 					    	if(results[index].isdir == true){
-					    		methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, path:results[index].path});
+					    		methodsFB.ThumbnailView(elem,options,{serverId: data.serverId, serverType: data.serverType, path:results[index].path});
 					    	}else{
 					    		var path = $(this).find('a').attr("path");
 					    		$(this).find("a").addClass("thumb-selected");
@@ -805,7 +816,7 @@ BuildFileExplorer:function(elem,options){
 			$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
             $($(elem).find('.k-treeview')).getKendoTreeView().dataSource.transport.options.read.url =  methodsFB.SetUrl(elem,$(elem).data("ecFileBrowser").dataSource.GetDirAction)			
 			$($(elem).find(".k-treeview")).data("kendoTreeView").dataSource.read();
-			methodsFB.ThumbnailView(elem, options,{serverId: $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value(), path:null});
+			methodsFB.ThumbnailView(elem, options,{serverId: $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value(), serverType: methodsFB.GetCurrentServerItem().serverType, path:null});
 			return;
 		}else if(content.action=="Download"){
 			content.path = SelectedPath;
@@ -860,6 +871,7 @@ BuildFileExplorer:function(elem,options){
        
         formdata.append('path', param.path);
         formdata.append('serverId', param.serverId);
+        formdata.append('serverType', param.serverType);
 
         app.miniloader(true);
 
@@ -874,7 +886,7 @@ BuildFileExplorer:function(elem,options){
             app.miniloader(false);
             $(elem).find(".modal-fb").modal("hide");
             methodsFB.RefreshTreeView(elem,param);
-           methodsFB.ThumbnailView(elem, $(elem).data("ecFileBrowser"),{serverId: param.serverId, path:param.path});
+           methodsFB.ThumbnailView(elem, $(elem).data("ecFileBrowser"),{serverId: param.serverId, serverType: param.serverType, path:param.path});
 	        swal("Saved!", "Your request has been processed !", "success");
         }
         
@@ -896,6 +908,7 @@ BuildFileExplorer:function(elem,options){
 	},
 	SendActionRequest:function(elem,param){
 		param.serverId = $($(elem).find("input[class='fb-server']")).getKendoDropDownList().value();
+		param.serverType = methodsFB.GetCurrentServerItem().serverType;
 		
 		var ds = $(elem).data("ecFileBrowser").dataSource;
 		var url = ds.url;
@@ -949,7 +962,7 @@ BuildFileExplorer:function(elem,options){
 
                 	}else if(param.action!="Edit"){
                 		if($($(elem).find(".thumb-selected")).length > 0){
-                			methodsFB.ThumbnailView(elem, $(elem).data("ecFileBrowser"),{serverId: param.serverId, path:parentDir});
+                			methodsFB.ThumbnailView(elem, $(elem).data("ecFileBrowser"),{serverId: param.serverId, serverType: param.serverType, path:parentDir});
                 		}else{
                 			methodsFB.RefreshTreeView(elem,param);
                 		}

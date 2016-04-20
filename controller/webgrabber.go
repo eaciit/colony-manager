@@ -1091,10 +1091,10 @@ func (w *WebGrabberController) ConnectToSedotanServer() (*SshSetting, *colonycor
 	server := data[0]
 
 	var client SshSetting
-	client.SSHHost = server.Host
+	client.SSHHost = server.ServiceSSH.Host
 	client.SSHAuthType = SSHAuthType_Password
-	client.SSHUser = server.SSHUser
-	client.SSHPassword = server.SSHPass
+	client.SSHUser = server.ServiceSSH.User
+	client.SSHPassword = server.ServiceSSH.Pass
 
 	return &client, &server, nil
 }

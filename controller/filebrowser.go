@@ -49,24 +49,19 @@ func CreateFileBrowserController(s *knot.Server) *FileBrowserController {
 
 func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-	cursor, err := colonycore.Find(new(colonycore.Server), nil)
+
+	servers, err := new(colonycore.Server).GetByType()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data := []colonycore.Server{}
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursor.Close()
-
-	return helper.CreateResult(true, data, "")
+	return helper.CreateResult(true, servers, "")
 }
 
 func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	server, payload, err := getServer(r, "FORM")
+	fmt.Println(server)
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -152,7 +147,8 @@ func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 				}
 			}
 		} else if server.ServerType == SERVER_HDFS {
-			h := setHDFSConnection(server.Host, server.SSHUser)
+			fmt.Println("=----", server.ServiceHDFS)
+			h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
 			//check whether SourcePath type is directory or file
 			var depth = 1
@@ -294,9 +290,9 @@ func (s *FileBrowserController) GetContent(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, result, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
-				err := h.GetToLocal(path, strings.Replace(GetHomeDir()+"/", "//", "/", -1)+strings.Split(path, "/")[len(strings.Split(path, "/"))-1], "", &server)
+				err := h.GetToLocal(path, strings.Replace(GetHomeDir()+"/", "//", "/", -1)+strings.Split(path, "/")[len(strings.Split(path, "/"))-1], "", (&server).ServiceHDFS.HostAlias)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -344,8 +340,8 @@ func (s *FileBrowserController) Edit(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 
-				h := setHDFSConnection(server.Host, server.SSHUser)
-				err = h.Put(SourcePath, DestPath, "", map[string]string{"overwrite": "true"}, &server)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
+				err = h.Put(SourcePath, DestPath, "", map[string]string{"overwrite": "true"}, (&server).ServiceHDFS.HostAlias)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -382,7 +378,7 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
 				//create file on local
 				tempPath := strings.Replace(GetHomeDir()+"/", "//", "/", -1)
@@ -399,7 +395,7 @@ func (s *FileBrowserController) NewFile(r *knot.WebContext) interface{} {
 				defer file.Close()
 
 				//put new file to hdfs
-				err = h.Put(tempPath+FileName, strings.Replace(payload.Path+"/", "//", "/", -1), "", nil, &server)
+				err = h.Put(tempPath+FileName, strings.Replace(payload.Path+"/", "//", "/", -1), "", nil, (&server).ServiceHDFS.HostAlias)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -442,7 +438,7 @@ func (s *FileBrowserController) NewFolder(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
 				//create new directory on hdfs
 				err = h.MakeDir(payload.Path, "")
@@ -482,7 +478,7 @@ func (s *FileBrowserController) Delete(r *knot.WebContext) interface{} {
 				}
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
 				errs := h.Delete(true, payload.Path)
 				if errs != nil {
@@ -527,7 +523,7 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
 				permission, err := helper.ConstructPermission(payload.Permission)
 
@@ -545,7 +541,7 @@ func (s *FileBrowserController) Permission(r *knot.WebContext) interface{} {
 	return helper.CreateResult(false, nil, "")
 }
 
-func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server, payload colonycore.FileBrowserPayload, err error) {
+func getMultipart(r *knot.WebContext, fileName string) (server colonycore.ServerByType, payload colonycore.FileBrowserPayload, err error) {
 	var tmp map[string]interface{}
 	_, s, err := r.GetPayloadMultipart(&tmp)
 
@@ -553,6 +549,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 		return
 	}
 	payload.ServerId = s["serverId"][0]
+	payload.ServerType = s["serverType"][0]
 	payload.Path = s["path"][0]
 
 	err = r.Request.ParseMultipartForm(100000)
@@ -585,7 +582,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 		return
 	}
 
-	data := []colonycore.Server{}
+	data := []colonycore.ServerByType{}
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return
@@ -594,6 +591,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 
 	if len(data) != 0 {
 		server = data[0]
+		server.ServerType = payload.ServerType
 	}
 
 	return
@@ -609,7 +607,6 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 	}
 
 	if server.RecordID() != nil {
-
 		if payload.Path != "" && payload.File != nil {
 			if server.ServerType == SERVER_NODE {
 				setting, _, err := (&server).Connect()
@@ -642,9 +639,9 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 						return helper.CreateResult(false, nil, err.Error())
 					}
 
-					h := setHDFSConnection(server.Host, server.SSHUser)
+					h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
-					err = h.Put(SourcePath, DestPath, "", nil, &server)
+					err = h.Put(SourcePath, DestPath, "", nil, (&server).ServiceHDFS.HostAlias)
 					if err != nil {
 						return helper.CreateResult(false, nil, err.Error())
 					}
@@ -687,9 +684,9 @@ func (s *FileBrowserController) Download(r *knot.WebContext) interface{} {
 				return ""
 			} else if server.ServerType == SERVER_HDFS {
 				//get hdfs file to server.apppath
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
-				err := h.GetToLocal(payload.Path, strings.Replace(GetHomeDir()+"/", "//", "/", -1)+strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1], "", &server)
+				err := h.GetToLocal(payload.Path, strings.Replace(GetHomeDir()+"/", "//", "/", -1)+strings.Split(payload.Path, "/")[len(strings.Split(payload.Path, "/"))-1], "", (&server).ServiceHDFS.HostAlias)
 				if err != nil {
 					return helper.CreateResult(false, nil, err.Error())
 				}
@@ -736,7 +733,7 @@ func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 			} else if server.ServerType == SERVER_HDFS {
-				h := setHDFSConnection(server.Host, server.SSHUser)
+				h := setHDFSConnection(server.ServiceHDFS.Host, server.ServiceHDFS.User)
 
 				err := h.Rename(payload.Path, newPath)
 				if err != nil {
@@ -752,7 +749,7 @@ func (s *FileBrowserController) Rename(r *knot.WebContext) interface{} {
 	return helper.CreateResult(false, nil, "")
 }
 
-func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload colonycore.FileBrowserPayload, err error) {
+func getServer(r *knot.WebContext, tp string) (server colonycore.ServerByType, payload colonycore.FileBrowserPayload, err error) {
 	if tp == "FORM" {
 		err = r.GetForms(&payload)
 	} else if tp == "PAYLOAD" {
@@ -775,7 +772,7 @@ func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload
 		return
 	}
 
-	data := []colonycore.Server{}
+	data := []colonycore.ServerByType{}
 	err = cursor.Fetch(&data, 0, false)
 	if err != nil {
 		return
@@ -784,6 +781,7 @@ func getServer(r *knot.WebContext, tp string) (server colonycore.Server, payload
 
 	if len(data) != 0 {
 		server = data[0]
+		server.ServerType = payload.ServerType
 	}
 
 	return
