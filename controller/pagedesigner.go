@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
@@ -238,7 +239,7 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 	}
 	var result = regex.ReplaceAllStringFunc(str, func(each string) string {
 		if each == "assets/" {
-			return "localhost:3000/res/"
+			return fmt.Sprintf("localhost:3000/res-widget/%s/assets/", data.Get("widgetId", "").(string))
 		}
 		return each
 	})
