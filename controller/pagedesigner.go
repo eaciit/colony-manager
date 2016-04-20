@@ -238,7 +238,7 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 	}
 	var result = regex.ReplaceAllStringFunc(str, func(each string) string {
 		if each == "assets/" {
-			return "localhost:3000/assets/"
+			return "localhost:3000/res/"
 		}
 		return each
 	})
