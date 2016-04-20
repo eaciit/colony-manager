@@ -45,6 +45,7 @@ const (
 	CMD_MAP_REDUCE  = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
 	CMD_JAVA        = "java -jar %v"
 	GLOBAL_PARAM_KEYWORD = "global."
+	LOGIC_OPERATOR = "=="
 )
 
 //var CurrentAction colonycore.FlowAction
@@ -321,7 +322,7 @@ func watch(process colonycore.DataFlow) (e error) {
 			if v.Kind() == reflect.Struct {
 				for i:= 0; i < v.NumField(); i++ {
 					if strings.ToLower( v.Field(i).Name) == "isfork"{
-						isFork = reflect.ValueOf(CurrentAction.Action).Elem().Field(i).Interface()
+						isFork = reflect.ValueOf(CurrentAction.Action).Elem().Field(i).Bool()
 						isForkAction = true
 						break
 					}
@@ -352,20 +353,39 @@ func watch(process colonycore.DataFlow) (e error) {
 								}
 							}
 						} else {
-																					
+							//decision logic :
+							ActionBefore = getActionBefore(ListLastTierAction, CurrentAction)
+							ThisAction := CurrentAction.Action.(*colonycore.ActionDecision)
+
+							for _, condition := range ThisAction.Conditions {
+								node := strings.Split(condition.Stat, LOGIC_OPERATOR)[0]
+								nodevalue := strings.Split(condition.Stat, LOGIC_OPERATOR)[1]
+
+								for _, actionbefore := range ActionBefore{
+									//get previous action's result
+							outres, e := decodeOutputFile(actionbefore)
+							
+									//compare its result with mentioned condition
+									for _, outdet := range outres{
+										
+									}
+								}
+							}
+							
+							//set nextID as per applied condition
 						}
 					} else {
 						if strings.Contains(string(files), "OK") {
-								for _, ok := range CurrentAction.OK {
-									ListLastTierAction = append(ListLastTierAction, CurrentAction)
-									nextIdx = append(nextIdx, GetAction(process, ok).Id)
-								}
-							} else {
-								for _, nok := range CurrentAction.KO {
-									ListLastTierAction = append(ListLastTierAction, CurrentAction)
-									nextIdx = append(nextIdx, GetAction(process, nok).Id)
-								}
+							for _, ok := range CurrentAction.OK {
+								ListLastTierAction = append(ListLastTierAction, CurrentAction)
+								nextIdx = append(nextIdx, GetAction(process, ok).Id)
 							}
+						} else {
+							for _, nok := range CurrentAction.KO {
+								ListLastTierAction = append(ListLastTierAction, CurrentAction)
+								nextIdx = append(nextIdx, GetAction(process, nok).Id)
+							}
+						}
 					}
 
 					go runProcess(process, CurrentAction, ActionBefore)
@@ -497,11 +517,10 @@ func getActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction col
 func setCommandArgument(action colonycore.FlowAction) (arguments string) {
 	//decode action output file, convert to toolkit.M, then add into argument as its key
 	res, _ := decodeOutputFile(action)
-	resMap := res.(toolkit.M)
-
+	
 	for key, _ := range action.InputParam {
 		if !strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
-			arguments += string(key) + "=" + resMap.GetString(key)
+			arguments += string(key) + "=" + res[0].GetString(key)
 		} else {
 			arguments += string(key) + "=" + globalParam.GetString(key)
 		}
@@ -522,7 +541,7 @@ func getActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowActio
 	return res, err
 }
 
-func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error) {
+func decodeOutputFile(action colonycore.FlowAction) (output []toolkit.M, e error) {
 	outputPath := action.OutputPath
 
 	file, e := ioutil.ReadFile(outputPath)
@@ -549,14 +568,14 @@ func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error
 	return
 }
 
-func decodeCSV(file []byte) (retVal interface{}, e error) {
+func decodeCSV(file []byte) (retVal []toolkit.M, e error) {
 	return
 }
 
-func decodeTSV(file []byte) (retVal interface{}, e error) {
+func decodeTSV(file []byte) (retVal []toolkit.M, e error) {
 	return
 }
 
-func decodeText(file []byte) (retVal interface{}, e error) {
+func decodeText(file []byte) (retVal []toolkit.M, e error) {
 	return
 }
