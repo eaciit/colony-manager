@@ -12,7 +12,6 @@ import (
 	"regexp"
 	// "io/ioutil"
 	// "path/filepath"
-	// "fmt"
 )
 
 type PageDesignerController struct {
@@ -355,3 +354,23 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, previewData, "")
 }*/
+
+func (p *PageDesignerController) PageView(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := toolkit.M{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	ID := payload["title"].(string)
+
+	gv := new(colonycore.PageDetail)
+	gv.ID = ID
+	data, err := gv.Get()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "success")
+}
