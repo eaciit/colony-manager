@@ -10,7 +10,10 @@
 <div class="col-md-12">
 
 <h1>File Browser</h1>
-<div id="FileBrowser"></div>
+{{template "_miniloader.html"}}	
+<div data-bind="visible: !app.miniloader()">
+	<div id="FileBrowser"></div>
+</div>
 </div>
 
 </div>
