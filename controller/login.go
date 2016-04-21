@@ -63,7 +63,7 @@ func (l *LoginController) GetUserName(r *knot.WebContext) interface{} {
 	tUser, err := GetUser(r)
 
 	if err != nil {
-		return helper.CreateResult(false, "", "Get username failed")
+		return helper.CreateResult(true, "", "Get username failed")
 	}
 
 	return helper.CreateResult(true, toolkit.M{}.Set("username", tUser.LoginID), "")

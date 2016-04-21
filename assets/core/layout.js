@@ -56,12 +56,12 @@ ly.element = function(data){
 }
 
 ly.getLogout = function(){
-	ly.account(false);
+	
 	app.ajaxPost("/login/logout", {logout: true}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
-		
+		ly.account(false);	
 		alert('logout');
 		window.location = "/web/login"
 	});
@@ -96,31 +96,41 @@ ly.getLoadMenu = function(){
 	// 		});
 	// 	}
 	// });
-	
+	var a ;
 	app.ajaxPost("/login/getaccessmenu", {}, function(res){
+		
 		if (!res.success || res.message.indexOf("Found") > -1) {
 			ly.element([]);
 			ly.account(false);
 		}else{
+			//ly.account(true);
 			app.ajaxPost("/login/getusername", {}, function(res){
 				if (!res.success || res.message.indexOf("Found") > -1) {
 					ly.element([]);
 					ly.account(false);
 					if (res.message.indexOf("expired") > -1 || res.message.indexOf("failed") > -1 ) {
 						if (document.URL.indexOf("/web/login") == -1) {
-							ly.getLogout();
+							ly.account(false);
+							a = false;
 						}
 					} else {
-						app.isFine(res);	
+						app.isFine(res);
+							
+
 					}
 					return;
 				}
-				ly.username(" Hi' "+res.data.username);
-				ly.account(true);
+				if(res.data != "" ){
+					ly.username(" Hi' "+res.data.username);
+					ly.account(true);
+				}
+				
+				
 			});
 		}
 		app.isFine(res);
 		ly.element(res.data);
+		//ly.account(true);
 
 	}, function () {
 		ly.element([]);
