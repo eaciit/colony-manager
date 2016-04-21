@@ -371,19 +371,20 @@ func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
 
 	dataDs := []colonycore.DataFlowProcess{}
 	cursor, err := colonycore.Finds(new(colonycore.DataFlowProcess), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
-
+	res := tk.M{}
 	if cursor != nil {
 		cursor.Fetch(&dataDs, 0, false)
 		defer cursor.Close()
+		res.Set("total", cursor.Count())
+	} else {
+		res.Set("total", 0)
 	}
 
 	if err != nil && cursor != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	res := tk.M{}
 	res.Set("data", dataDs)
-	res.Set("total", cursor.Count())
 
 	return helper.CreateResult(true, res, "success")
 }

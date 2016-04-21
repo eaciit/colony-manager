@@ -17,6 +17,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"os"
+	"path/filepath"
 
 	"github.com/eaciit/toolkit"
 	"github.com/novalagung/golpal"
@@ -45,7 +47,7 @@ const (
 	SSH_OPERATION_MKDIR = "MKDIR"
 	// SSH_OPERATION_* please define
 
-	ACT_RESULT_PATH      = "/usr/eaciit/dataflow/result/"
+	//ACT_RESULT_PATH      = "/usr/eaciit/dataflow/result/"
 	CMD_SPARK            = "spark-submit %v"
 	CMD_MAP_REDUCE       = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
 	CMD_JAVA             = "java -jar %v"
@@ -61,9 +63,11 @@ var hivex *hive.Hive
 var hdfsx *hdfs.WebHdfs
 var act_result_path string
 var globalParam toolkit.M
+var ACT_RESULT_PATH string
 
 // Start, to start the flow process
-func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
+//func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
+func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
 	/*var steps []interface{}
 
 	var stepAction []interface{}
@@ -74,14 +78,14 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 		}
 	}
 
-	steps = append(steps, stepAction)*/
+	steps = append(steps, stepAction)
 
 	process := colonycore.DataFlowProcess{
 		Id:        generateProcessID(flow.ID),
 		Flow:      flow,
 		StartDate: time.Now(),
 		StartedBy: user,
-		//Steps:       steps,
+		Steps:       steps,
 		GlobalParam: globalParam,
 		Status:      PROCESS_STATUS_RUN,
 	}
@@ -93,13 +97,13 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 		return
 	}
 
-	processID = process.Id
+	processID = process.Id*/
 
 	// run the watcher and run the process, please update regardingly
 	//go watch(flow, process)
-	process, e = watch(flow)
+	e = watch(flow, user)
 
-	process.EndDate = time.Now()
+	/*process.EndDate = time.Now()
 	if e != nil {
 		process.Status = PROCESS_STATUS_SUCCESS
 	} else {
@@ -107,7 +111,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 	}
 
 	e = colonycore.Save(&process)
-
+*/
 	return
 }
 
@@ -324,11 +328,24 @@ func runMail(process colonycore.DataFlow, action colonycore.FlowAction, argument
 }
 
 // watch, watch the process and mantain the link between the action in the flow
-func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess, e error) {
-	act_result_path = ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + process.ID
+func watch(process colonycore.DataFlow, user string) (e error) {
+	flowprocess := colonycore.DataFlowProcess{
+		Id:        generateProcessID(process.ID),
+		Flow:      process,
+		StartDate: time.Now(),
+		StartedBy: user,
+		Status:      PROCESS_STATUS_RUN,
+	}
+
 	globalParam = process.GlobalParam
 	flowprocess.GlobalParam = globalParam
+	saveFlowProcess(flowprocess, e)
 
+	ACT_RESULT_PATH, e = filepath.Abs(filepath.Dir(os.Args[0]))
+	if e != nil {
+		saveFlowProcess(flowprocess, e)
+	}
+	act_result_path = ACT_RESULT_PATH + "/eaciit/dataflow/result/" + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + process.ID
 	var ListCurrentTierAction, ListLastTierAction, ListNextTierAction []colonycore.FlowAction
 
 	//get initial current tier action
@@ -355,7 +372,7 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 					for _, actx := range ActionBefore {
 						files, e = getActionResultStatus(process, actx)
 						if e != nil {
-							return
+							saveFlowProcess(flowprocess, e)
 							break
 						}
 						if files != nil {
@@ -375,6 +392,7 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 				if isFound && ActionBefore != nil {
 					for _, actx := range ActionBefore {
 						flowprocess.Steps = append(flowprocess.Steps, actx)
+						saveFlowProcess(flowprocess, e)
 					}
 				}
 			}
@@ -400,7 +418,8 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 					files, e := ioutil.ReadFile(fname)
 
 					if e != nil {
-						return flowprocess, e
+						saveFlowProcess(flowprocess, e)
+						break
 					}
 
 					// if action
@@ -422,6 +441,9 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 							ActionBefore = getActionBefore(ListLastTierAction, CurrentAction)
 							ThisAction := CurrentAction.Action.(*colonycore.ActionDecision)
 							var DecisionClause []string
+
+							flowprocess.Steps = append(flowprocess.Steps, ThisAction)
+							saveFlowProcess(flowprocess, e)
 
 							for _, actionbefore := range ActionBefore {
 								//get previous action's result
@@ -448,7 +470,11 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 									}
 								`
 								resultExec, e := golpal.New().Execute(goClause)
-								_ = e
+
+								if e!= nil {
+									saveFlowProcess(flowprocess, e)
+								}
+
 								if resultExec == "true" {
 									destAction := strings.Split(ThisAction.Conditions[condIdx].FlowAction, ",")
 
@@ -482,6 +508,7 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 							if strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
 								globalParam.Set(key, val)
 								flowprocess.GlobalParam = globalParam
+								saveFlowProcess(flowprocess, e)
 							}
 						}
 					}
@@ -510,6 +537,17 @@ func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess,
 	}
 
 	return
+}
+
+func saveFlowProcess(flowprocess colonycore.DataFlowProcess, e error){
+	flowprocess.EndDate = time.Now()
+	if e != nil {
+		flowprocess.Status = PROCESS_STATUS_SUCCESS
+	} else {
+		flowprocess.Status = PROCESS_STATUS_ERROR
+	}
+
+	_ = colonycore.Save(&flowprocess)
 }
 
 //  generateProcessID generate the ID
