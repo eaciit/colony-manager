@@ -10,7 +10,10 @@ pv.templateWidgetItem =  [
 ].join("");
 
 pv.prepareGridStack = function () {
-    $("#page-designer-grid-stack").gridstack();
+    $("#page-designer-grid-stack").gridstack({
+    	disableDrag: true,
+        disableResize: true,
+    });
 };
 
 pv.mapWidgets = function(){
