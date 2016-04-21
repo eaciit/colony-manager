@@ -673,6 +673,7 @@ df.run = function () {
             if(!app.isFine(res)){
               return;
             }else{
+                $('#myModal').modal('hide');
                swal("Data Flow Started", "Check monitoring tab for details", "success");
             }
         });
@@ -1731,10 +1732,10 @@ function BuildComGrid(){
             { field: "MonthStrEnd", title: "Finish Time", width: "130px" },
             { field: "status"
                 , title: "Status"
-                , width: "130px" 
+                , width: "100px" 
                 ,template: "#if (status == 'Success') { #   <button class='btn btn-sm btn-success disabled'>Success</button> # } else {#  <button class='btn btn-sm btn-danger disabled'>Failed</button>  #}  #"
                 },
-            { field: "Message", title: "Description", width: "130px"},
+            { field: "Message", title: "Description", width: "260px"},
             { field: "Duration", title: "Duration", width: "130px"},
             // { title: "Details", width: "50px", template: "<button onclick='GetDetails(\"#=_id#\")' class='btn btn-sm btn-primary'>Details</button>"       },
         ]
