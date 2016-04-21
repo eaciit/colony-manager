@@ -649,7 +649,6 @@ srv.ping = function () {
 					for (var key in res.data) {
 						if (res.data.hasOwnProperty(key)) {
 							var $td = $tr.find("td." + key + "-status");
-							console.log(key, res.data[key], $td);
 
 							if (res.data[key].isUP) {
 								$td.addClass("started");
