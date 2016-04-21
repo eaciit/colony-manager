@@ -26,13 +26,11 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
-	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
 	"github.com/eaciit/toolkit"
@@ -52,10 +50,8 @@ func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := struct {
-		Search     string `json:"search"`
-		ServerOS   string `json:"serverOS"`
-		ServerType string `json:"serverType"`
-		SSHType    string `json:"sshType"`
+		Search   string `json:"search"`
+		ServerOS string `json:"serverOS"`
 	}{}
 	err := r.GetPayload(&payload)
 	if err != nil {
@@ -68,18 +64,10 @@ func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 			dbox.Contains("_id", payload.Search),
 			dbox.Contains("os", payload.Search),
 			dbox.Contains("host", payload.Search),
-			dbox.Contains("serverType", payload.Search),
-			dbox.Contains("sshtype", payload.Search),
 		))
 	}
 	if payload.ServerOS != "" {
 		filters = append(filters, dbox.Eq("os", payload.ServerOS))
-	}
-	if payload.ServerType != "" {
-		filters = append(filters, dbox.Eq("serverType", payload.ServerType))
-	}
-	if payload.SSHType != "" {
-		filters = append(filters, dbox.Eq("sshtype", payload.SSHType))
 	}
 
 	var query *dbox.Filter
@@ -109,7 +97,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-1504")
 
 	data := new(colonycore.Server)
-	if r.Request.FormValue("sshtype") == "File" {
+	if r.Request.FormValue("serviceSSH[type]") == "File" {
 		log.AddLog("Get forms", "INFO")
 		dataRaw := map[string]interface{}{}
 		err := r.GetForms(&dataRaw)
@@ -133,7 +121,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	}
 
-	if data.SSHType == "File" {
+	if data.ServiceSSH.Type == "File" {
 		log.AddLog("Fetching public key", "INFO")
 		reqFileName := "privatekey"
 		file, _, err := r.Request.FormFile(reqFileName)
@@ -144,8 +132,8 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 		if file != nil {
 			log.AddLog("Saving public key", "INFO")
-			data.SSHFile = filepath.Join(EC_DATA_PATH, "server", "privatekeys", data.ID)
-			_, _, err = helper.FetchThenSaveFile(r.Request, reqFileName, data.SSHFile)
+			data.ServiceSSH.File = filepath.Join(EC_DATA_PATH, "server", "privatekeys", data.ID)
+			_, _, err = helper.FetchThenSaveFile(r.Request, reqFileName, data.ServiceSSH.File)
 			if err != nil {
 				log.AddLog(err.Error(), "ERROR")
 				return helper.CreateResult(false, nil, err.Error())
@@ -169,24 +157,24 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	}
 
-	if data.ServerType == "hdfs" {
-		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
-		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
-		if err != nil {
-			log.AddLog(err.Error(), "ERROR")
-			return helper.CreateResult(false, nil, err.Error())
-		}
+	// if data.ServerType == "hdfs" {
+	// 	log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
+	// 	hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
+	// 	if err != nil {
+	// 		log.AddLog(err.Error(), "ERROR")
+	// 		return helper.CreateResult(false, nil, err.Error())
+	// 	}
 
-		_, err = hadeepes.List("/")
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
+	// 	_, err = hadeepes.List("/")
+	// 	if err != nil {
+	// 		return helper.CreateResult(false, nil, err.Error())
+	// 	}
 
-		hadeepes.Config.TimeOut = 5 * time.Millisecond
-		hadeepes.Config.PoolSize = 100
+	// 	hadeepes.Config.TimeOut = 5 * time.Millisecond
+	// 	hadeepes.Config.PoolSize = 100
 
-		return helper.CreateResult(true, nil, "")
-	}
+	// 	return helper.CreateResult(true, nil, "")
+	// }
 
 	log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
 	sshSetting, client, err := data.Connect()
@@ -562,6 +550,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	}
 
 	data.DetectInstalledLang()
+	data.DetectService()
 
 	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
 	err = colonycore.Save(data)
@@ -593,28 +582,27 @@ func (s *ServerController) PingServer(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if payload.ServerType == "node" {
-		status, err := payload.Ping()
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
+	prefixStatus := []string{}
+	isNodeOK := true
+	isHDFSOK := true
+
+	(func() {
+		if _, err := payload.Ping("node"); err != nil {
+			isNodeOK = false
+			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on node server: %s", err.Error()))
 		}
+	}())
 
-		return helper.CreateResult(true, status, "")
-	} else {
-		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(payload.Host, payload.SSHPass))
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
+	(func() {
+		if _, err := payload.Ping("hdfs"); err != nil {
+			isNodeOK = false
+			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on node server: %s", err.Error()))
 		}
+	}())
 
-		_, err = hadeepes.List("/")
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, true, "")
-	}
-
-	return helper.CreateResult(false, nil, "")
+	isSuccess := (isNodeOK || isHDFSOK)
+	message := strings.Join(prefixStatus, ". ")
+	return helper.CreateResult(isSuccess, nil, message)
 }
 
 func (s *ServerController) ToggleSedotanService(op string, id string) (bool, error) {
@@ -717,60 +705,10 @@ func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
-
-			// delPath := filepath.Join(unzipDest, payload.ID)
-			// err = deleteDirectory(unzipDest, delPath, payload.ID)
-			// if err != nil {
-			// 	fmt.Println("Error : ", err)
-			// 	return err
-			// }
 		}
 	}
 
 	return helper.CreateResult(true, data, "")
-}
-
-func (s *ServerController) TestConnection(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	payload := new(colonycore.Server)
-	err := r.GetPayload(&payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	if payload.ServerType == "hdfs" {
-		hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(payload.Host, payload.SSHPass))
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		_, err = hadeepes.List("/")
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-
-		return helper.CreateResult(true, payload, "")
-	}
-
-	err = colonycore.Get(payload, payload.ID)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	a, b, err := payload.Connect()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer b.Close()
-
-	c, err := a.Connect()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer c.Close()
-
-	return helper.CreateResult(true, payload, "")
 }
 
 func (s *ServerController) CheckPing(r *knot.WebContext) interface{} {

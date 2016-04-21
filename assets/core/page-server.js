@@ -9,30 +9,32 @@ srv.templateConfigServer = {
 	appPath: "",
 	dataPath: "",
 	host: "",
-	serverType: "node",
-	sshtype: "Credentials",
-	sshfile: "",
-	sshuser: "",
-	sshpass:  "",	
+	serviceSSH: {
+		type: "Credentials",
+		file: "",
+		host: "",
+		user: "",
+		pass: ""
+	},
+	serviceHDFS: {
+		host: "",
+		user: "",
+		pass: "",
+		hostAlias: []
+	},
 	cmdextract: "unzip %1 -d %2",
 	cmdmkdir: "mkdir",
 	cmdcopy: "",
 	cmdnewfile : "",
     hostAlias: []
 };
-srv.templatetypeServer = ko.observableArray([
-	{ value: "node", text: "Node Server" },
-	{ value: "hdfs", text: "Hadoop Server" }
-]);
-srv.templatetypeSSH = ko.observableArray([
+srv.optionTypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
 srv.templateFilter = { 
 	search: "",
 	serverOS: "",
-	serverType: "",
-	sshType: "",
 };
 srv.WizardColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkWizardServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
@@ -65,9 +67,6 @@ srv.dataWizard = ko.observableArray([]);
 srv.validator = ko.observable('');
 srv.txtWizard = ko.observable('');
 srv.showModal = ko.observable('modal1');
-srv.filterValue = ko.observable('');
-srv.filterSrvSSHType = ko.observable('');
-srv.filterSrvOS = ko.observable('');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.filter = ko.mapping.fromJS(srv.templateFilter);
 srv.showServer = ko.observable(true);
@@ -76,7 +75,6 @@ srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
 srv.tempCheckIdServer = ko.observableArray([]);
 srv.tempCheckIdWizard = ko.observableArray([]);
-srv.filterSearch = ko.observable('');
 srv.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkDeleteServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -84,9 +82,6 @@ srv.ServerColumns = ko.observableArray([
 		].join(" ");
 	} },
 	{ field: "_id", title: "ID" },
-	{ field: "serverType", title: "Server Type", template: function (d) { 
-		return "<b style='text-transform: uppercase;'>" + d.serverType + "</b>";
-	} },
 	{ field: "os", title: "Server OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
 		if (row != undefined) {
@@ -96,16 +91,12 @@ srv.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ field: "host", title: "Host" },
-	{ field: "sshtype", title: "SSH Type"},
 	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
 		return [
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
 		].join(" ");
 	} },
-	{ title: "Status", width: 80, attributes: { class:'status on-off' }, template: "<span></span>", headerTemplate: "<center>Status</center>" },
-	// { field: "appPath", title: "App Path" },
-	// { field: "dataPath", title: "Data Path" },
-	// { field: "enable", title: "Enable" },
+	{ title: "Status", width: 80, attributes: { class:'status on-off' }, template: "<span></span>", headerTemplate: "<center>Status</center>" }
 ]);
 
 srv.appserverColumns = ko.observableArray([
@@ -113,10 +104,7 @@ srv.appserverColumns = ko.observableArray([
 	{ field: "AppsName", title: "Name" },
 	{ field: "Type", title: "Type" },
 	{ field: "Port", title: "Running Port" },
-	// { title: "", width: 70, attributes: { class: 'align-center' }, template: function (d) {
-	// 	return '<button class="btn btn-sm btn-default btn-text-success btn-start tooltipster tooltipstered" title="Run Command" onclick="srv.showRunCommand(\'' + d._id + '\')"><span class="fa fa-plane"></span></button>';
-	// } },
-	{ field: "status", width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
+	{ width: 70, headerTemplate: "<center>Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		var yo = 0;
 		for (i in apl.applicationData()){
 			var deployedTo = apl.applicationData()[i].DeployedTo;
@@ -140,10 +128,6 @@ srv.appserverColumns = ko.observableArray([
 			return "<input type='checkbox' class='statuscheck-srv srv-red' disabled />";
 	} }
 ]);
-
-srv.ServerAppData = ko.computed(function () {
-	return Lazy(srv.ServerData()).filter({ serverType: "node" }).toArray();
-}, srv);
 
 srv.showRunCommand = function (appID) {
 	apl.commandData([]);
@@ -211,10 +195,6 @@ srv.getServers = function(c) {
 		    $(this).removeClass("k-state-hover");
 		});
 
-		// $(grid.tbody).on("mouseenter", "tr", function (e) {
-		//     $(this).addClass("k-state-hover");
-		// });
-
 		if (typeof c == "function") {
 			c(res);
 		};
@@ -235,11 +215,11 @@ srv.createNewServer = function () {
     srv.addHostAlias();
 };
 srv.validateHost = function () {
-	if (srv.configServer.serverType() == "node") {
-		srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
-		return true;
-	} else {
-		if (srv.configServer.host().indexOf("http") == -1) {
+	srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
+	srv.configServer.serviceSSH.host(srv.configServer.host().split("//").reverse()[0]);
+
+	if ($.trim(srv.configServer.serviceHDFS.host()) != "") {
+		if (srv.configServer.serviceHDFS.host().indexOf("http") == -1) {
 			sweetAlert("Oops...", "Protocol on host must be defined (Example: http://127.0.0.1:50070)", "error");
 			return false;
 		}
@@ -251,15 +231,16 @@ srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
 		var errors = $(".form-server").data("kendoValidator").errors();
 		var excludeErrors = []; 
-		if (srv.configServer.serverType() == "node") {
-			if (srv.isMultiServer()) {
-				excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
-			}
-		} else {
-			excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required", "extract is required", "make-directory is required"]);
-		}
 
-		if (srv.configServer.sshtype() == "File") {
+		// if (srv.configServer.serverType() == "node") {
+		// 	if (srv.isMultiServer()) {
+		// 		excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
+		// 	}
+		// } else {
+		// 	excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required", "extract is required", "make-directory is required"]);
+		// }
+
+		if (srv.configServer.serviceSSH.type() == "File") {
 			excludeErrors = excludeErrors.concat(["user is required", "password is required"]);
 		}  else {
 			excludeErrors = excludeErrors.concat(["file is required"]);
@@ -282,7 +263,7 @@ srv.doSaveServer = function (c) {
 
 	var data = ko.mapping.toJS(srv.configServer);
 
-	if (srv.configServer.sshtype() == "File") {
+	if (srv.configServer.serviceSSH.type() == "File") {
 		var file = $("#privatekey")[0].files[0];
 		var payload = ko.mapping.toJS(srv.configServer);
 		var data = new FormData();
@@ -340,10 +321,6 @@ srv.doSaveServer = function (c) {
 
 		$.when.apply(undefined, ajaxes).then(callback, callback);
 	} else {
-        if (srv.configServer.serverType() != "hdfs") {        
-            data.hostAlias = [];
-        }
-        
 		app.ajaxPost("/server/saveservers", data, function (res) {
 			if (!app.isFine(res)) {
 				return;
@@ -360,17 +337,6 @@ srv.doSaveServer = function (c) {
 	$(document).ajaxStop(function() {
 		 app.miniloader(false);
 	});
-}
-srv.isServerTypeNode = ko.computed(function () {
-	return srv.configServer.serverType() == "node";
-}, srv);
-srv.changeServerOS = function () {
-	if (this.value() == "node") {
-		srv.configServer.os("linux");
-		srv.configServer.appPath("");
-		srv.configServer.dataPath("");
-		srv.configServer.sshtype("Credentials");
-	}
 };
 srv.saveServer = function(){
 	srv.doSaveServer(function () {
@@ -434,7 +400,7 @@ srv.doTestConnection = function (_id) {
 		payload = ko.mapping.toJS(srv.configServer);
 	}
 
-	app.ajaxPost("/server/testconnection", payload, function(res) {
+	app.ajaxPost("/server/pingserver", payload, function(res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -529,20 +495,6 @@ srv.removeServer = function(){
 		});
 	} 
 	
-}
-
-function ServerFilter(event){
-	app.ajaxPost("/server/serversfilter", {inputText : srv.filterValue()}, function(res){
-		if(!app.isFine(res)){
-			return;
-		}
-
-		if (!res.data) {
-			res.data = [];
-		}
-
-		srv.ServerData(res.data);
-	});
 }
 
 srv.backToFront = function () {
@@ -650,11 +602,11 @@ srv.templateHostAlias = {
 };
 srv.addHostAlias = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, srv.templateHostAlias));
-	srv.configServer.hostAlias.push(item); 
+	srv.configServer.serviceHDFS.hostAlias.push(item); 
 };
 srv.removeHostAlias = function (each) {
 	return function () {
-		srv.configServer.hostAlias.remove(each);
+		srv.configServer.serviceHDFS.hostAlias.remove(each);
 	};
 };
 

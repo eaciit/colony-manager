@@ -62,6 +62,18 @@ func (a *DataFlowController) Start(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "success")
 }
 
+/*func (a *DataFlowController) DecodeX(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	x := dataflow.DecodeX("abc,def,ghi,jkl")
+	y := dataflow.DecodeY("abc\tdef\tghi\tjkl")
+	// x := dataflow.DecodeX(`"abc","def","ghi","jkl"`)
+
+	fmt.Printf("x ==> %#v \n", x)
+	fmt.Printf("y ==> %#v \n", y)
+
+	return helper.CreateResult(true, nil, "success")
+}*/
+
 func (a *DataFlowController) Save(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -239,29 +251,28 @@ func constructActions(list []interface{}) (flows []colonycore.FlowAction) {
 			break
 		case dataflow.ACTION_TYPE_EMAIL:
 			email := colonycore.ActionEmail{
-			// To:,
-			//   CC:,
-			//   Subject:,
-			//   Body:,
+				To:      tk.ToString(dataAction["to"]),
+				Cc:      tk.ToString(dataAction["cc"]),
+				Subject: tk.ToString(dataAction["subject"]),
+				Body:    tk.ToString(dataAction["body"]),
 			}
 			flow.Action = email
 			break
-		// case "Fork":
-		// 	fork := colonycore.ActionFork{}
-		// 	action.Action = fork
-		// 	action.Type = dataflow.ACTION_TYPE_FORK
-		// 	break
 		case dataflow.ACTION_TYPE_DECISION:
 			conditions := []colonycore.Condition{}
 
-			/*for _, val := range dataAction["conditions"].([]interface{}) {
-				condition := val.(colonycore.Condition)
+			for _, val := range dataAction["conditions"].([]interface{}) {
+				tmp := val.(map[string]interface{})
+				condition := colonycore.Condition{
+					FlowAction: tk.ToString(tmp["flowaction"]),
+					Stat:       tk.ToString(tmp["stat"]),
+				}
 				conditions = append(conditions, condition)
-			}*/
+			}
 
 			decision := colonycore.ActionDecision{
 				Conditions: conditions,
-				// IsFork:     dataAction["isfork"].(bool),
+				IsFork:     dataAction["isfork"].(bool),
 			}
 			flow.Action = decision
 			break
@@ -333,4 +344,46 @@ func (a *DataFlowController) Delete(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, nil, "success")
+}
+
+func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	e := r.GetPayload(&payload)
+	if e != nil {
+		return helper.CreateResult(false, nil, e.Error())
+	}
+
+	status := tk.ToString(payload["status"])
+
+	var filter *dbox.Filter
+	filter = new(dbox.Filter)
+
+	if strings.ToLower(status) != "running" {
+		filter = dbox.Ne("status", "Running")
+	} else {
+		filter = dbox.Eq("status", status)
+	}
+
+	take := tk.ToInt(payload["take"], tk.RoundingAuto)
+	skip := tk.ToInt(payload["skip"], tk.RoundingAuto)
+
+	dataDs := []colonycore.DataFlowProcess{}
+	cursor, err := colonycore.Finds(new(colonycore.DataFlowProcess), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
+
+	if cursor != nil {
+		cursor.Fetch(&dataDs, 0, false)
+		defer cursor.Close()
+	}
+
+	if err != nil && cursor != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	res := tk.M{}
+	res.Set("data", dataDs)
+	res.Set("total", cursor.Count())
+
+	return helper.CreateResult(true, res, "success")
 }

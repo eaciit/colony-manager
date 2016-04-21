@@ -213,10 +213,9 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 
 	sessid, err := acl.Login(toolkit.ToString(payload["username"]), toolkit.ToString(payload["password"]))
 	if err != nil {
-		return helper.CreateResult(true, "", err.Error())
+		// return helper.CreateResult(true, "", err.Error())
 	}
 	r.SetSession("sessionid", sessid)
-	// dataAccess := GetAccess(r)
 	return helper.CreateResult(true, toolkit.M{}.Set("status", true), "Login Success")
 
 }

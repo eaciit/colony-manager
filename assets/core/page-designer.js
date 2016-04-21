@@ -305,6 +305,33 @@ pde.saveWidgetConfig = function () {
 
     pde.save();
 };
+pde.fieldMapping = function() {
+    var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage);
+    $("#formSetting").empty();
+    app.ajaxPost("/pagedesigner/widgetpreview", { widgetId: configWidgetPage.widgetId }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        var widgetBaseURL = baseURL + "res-widget" + res.data.widgetBasePath;
+        var html = res.data.container;
+        html = html.replace(/src\=\"/g, 'src="' + widgetBaseURL);
+        html = html.replace(/href\=\"/g, 'href="' + widgetBaseURL);
+
+        var iWindow = $("#formSetting")[0].contentWindow;
+
+        $("#formSetting").off("load").on("load", function(){
+
+        });
+
+        var contentDoc = iWindow.document;
+        contentDoc.open();
+        contentDoc.write(html);
+        contentDoc.close();
+    });
+}
+
+pde.AdjustIframeHeight = function(i) { document.getElementById("formSetting").style.height = parseInt(i) + "px"; }
 
 $(function () {
     pde.prepareDataSources(function () {

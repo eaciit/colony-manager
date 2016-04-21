@@ -431,6 +431,12 @@ function visualTemplate(options) {
 df.init = function () {
     df.createGrid();
     df.getServers();
+    setInterval(function(){     
+        BuildRunGrid();
+        BuildComGrid(); 
+    },5000);
+    BuildRunGrid();
+    BuildComGrid();
     var dataSource = new kendo.data.HierarchicalDataSource({
         data: [],
         schema: {
@@ -592,6 +598,12 @@ df.init = function () {
         html : true,
         placement : 'top',
         content: $("#popover-content-globalvar").html()        
+    });
+
+      $("#popRun").popover({
+        html : true,
+        placement : 'bottom',
+        content: $("#popover-content-poprun").html()        
     });
 
     $('.pTitle').blur(function(){
@@ -783,9 +795,11 @@ df.checkFlow = function(elem){
 
     if(startfinish==0){
         swal("Warning!", "Infinite Flow !", "warning");
+        $('#myModal').modal('hide');
         return  false;
     }else if(noconnshape>0){
-         swal("Warning!", "Invalid Flow !", "warning");
+        swal("Warning!", "Invalid Flow !", "warning");
+        $('#myModal').modal('hide');
         return  false;
     }
     return  true;
@@ -908,9 +922,14 @@ df.Save = function(callback){
     var title = $(".pTitle").val().length;
     var desc = $(".pDesc").val().length;    
     if (title == 0) {
-        swal("Warning", "Name or Description cannot be empty!", "warning");
+        swal("Warning", "Title or Description cannot be empty!", "warning");
+        df.closePopover("#popbtn");
+        df.closePopover("#poptitle");
+        df.closePopover("#popGlobalVar");
+        $('#myModal').modal('hide');
     }else if (desc == 0) {
-        swal("Warning", "Name or Description cannot be empty!", "warning");
+        swal("Warning", "Title or Description cannot be empty!", "warning");
+        $('#myModal').modal('hide');
     }else{
         app.ajaxPost("/dataflow/save", {
             ID : df.ID(),
@@ -938,7 +957,6 @@ df.clearDiagram = function(){
     df.closePopover("#popbtn");
     df.closePopover("#poptitle");
     df.closePopover("#popGlobalVar");
-
     $(".diagram").getKendoDiagram().clear();
 }
 
@@ -1046,10 +1064,10 @@ df.goToDesigner = function(Id){
 
     $("svg").click(function(){
         if($(".popover-title").html()=="Add Global Variables"){
-        df.closePopover("#poptitle");
-        df.closePopover("#popbtn");
-        df.closePopover("#popGlobalVar");
-    }
+            df.closePopover("#poptitle");
+            df.closePopover("#popbtn");
+            df.closePopover("#popGlobalVar");
+        }
     });
 }
 
@@ -1319,7 +1337,8 @@ df.addGlobalVar = function (key,val) {
     k = key != undefined? key:k;
     v = val != undefined?val:v;
 
-   df.globalVar.unshift({idx:idx,key:k,value:v});
+    var each = ko.mapping.fromJS({idx:idx,key:k,value:v});
+   df.globalVar.unshift(each);
 }
 
 df.deleteGlobalVar = function(e){
@@ -1506,7 +1525,218 @@ df.draggablePopover = function(e){
     });
 }
 
+df.popRun = function(){
+    df.closePopover("#popbtn");
+    df.closePopover("#poptitle");
+    df.closePopover("#popGlobalVar");
+    $('#myModal').modal('show');
+}
+
 $(function () {
     df.init();
     app.section('');    
 });
+
+
+// monitoring =============================================================================
+
+function convertMS(date1,date2) {
+    var ms = date1 - date2;
+  var d, h, m, s;
+  s = Math.floor(ms / 1000);
+  m = Math.floor(s / 60);
+  s = s % 60;
+  h = Math.floor(m / 60);
+  m = m % 60;
+  d = Math.floor(h / 24);
+  h = h % 24;
+  return ExplainTime({ d: d, h: h, m: m, s: s }); //{ d: d, h: h, m: m, s: s };
+};
+
+function ExplainTime(obj){
+var res = "";
+if(obj.d>0)
+    res+=obj.d+"d "
+if(obj.h>0)
+    res+=obj.h+"h "
+if(obj.m>0)
+    res+=obj.m+"m "
+if(obj.s>0)
+    res+=obj.s+"s"
+return res;
+}
+
+function BuildRunGrid(){
+   var stat =  $("#RunGrid").getKendoGrid();
+
+    if(stat != undefined){
+        stat.dataSource.read();
+        stat.refresh();
+        return;
+    }
+
+    $("#RunGrid").kendoGrid({
+        dataSource: {
+                transport: {
+                    read: function(yo){
+                        var callData = {};
+                        if (yo.data["sort"] == "")
+                            yo.data["sort"] = undefined;
+                        for(var i in yo.data){
+                            callData[i] = yo.data[i];
+                        }
+                        callData.status = "Running";
+
+                         app.ajaxPost("/dataflow/getdatamonitoring",callData, function(res){
+                            if(!app.isFine(res)){
+                              return;
+                            }else{
+                            var datas = res.data.data;
+                                  for (var i in datas) {
+                                            datas[i].MonthStr = moment(datas[i].startdate).format('MMMM Do YYYY, h:mm:ss a');
+                                            datas[i].Duration = (convertMS(new Date(),moment(datas[i].startdate)));
+                                            datas[i].Message = datas[i].steps[datas[i].steps.length-1].message;
+                                            datas[i].CurrentProcess = datas[i].steps[datas[i].steps.length-1].description;
+                                  }
+                                  res.data.data = datas;
+                                yo.success(res.data);
+                            }
+                        });
+                    }
+                },
+             schema: {
+                data: "data",
+                total: "total",
+            },
+            serverPaging: true, 
+            pageSize:5,
+        },
+            groupable: false,
+            sortable: false,
+            pageable: true,
+        columns: [
+            { field: "MonthStr", title: "Start time", width: "250px" },
+            { field: "status"
+                , title: "Status"
+                ,width: "130px" 
+                ,template: "#if (status == 'Running') { #   <button class='btn btn-sm btn-warning disabled'>Processing</button> # }  #"
+            },
+            {
+                field: "CurrentProcess"
+                ,title: "Current Process"
+                ,with:"150px"
+            },
+            { field: "Message", title: "Description", width: "300px"},
+            { field: "pct"
+                , title: "Progress"
+                , width: "200px"
+                , template : '<div class="loading-df"><div class="bar-df" style="width:#=pct#%;"><span>#=pct#%</span></div></div>'
+                },
+            { field: "Duration", title: "Duration", width: "130px"},
+            // { title: "Details", width: "50px", template: "<button onclick='GetDetails(\"#=_id#\")' class='btn btn-sm btn-primary'>Details</button>"       },
+        ]
+    });
+}
+
+// function GetDetails(ID){
+//     $("#PopUpDetail").modal("show");
+
+//     var item = _.find(df.Monitoring().RunningDetails(),function(x){ return x._id == ID;});
+//     if(item==undefined)
+//         item = _.find(df.Monitoring().CompleteDetails(),function(x){ return x._id == ID;});
+
+//     var details = item.details;
+//     for(var i in details){
+//           details[i].MonthStr = moment(details[i].start).format('MMMM Do YYYY, h:mm:ss a');
+         
+//           if(details[i].finish != "0001-01-01T00:00:00Z"){
+//           details[i].Duration = (convertMS(moment(details[i].finish),moment(details[i].start))); 
+//            details[i].MonthStrEnd = moment(details[i].finish).format('MMMM Do YYYY, h:mm:ss a');
+//             }
+//           else{
+//           details[i].Duration = "";
+//            details[i].MonthStrEnd = "";
+//         }
+//     };
+
+//     $("#MonitoringDetailGrid").html("");
+//     $("#MonitoringDetailGrid").kendoGrid({
+//         dataSource: {
+//             data: details,
+//             pageSize:10,
+//         },
+//             groupable: false,
+//             sortable: false,
+//             pageable: true,
+//         columns: [
+//           { field: "stage", title: "Stage", width: "130px" },
+//             { field: "MonthStr", title: "Start Time", width: "150px" },
+//             { field: "MonthStrEnd", title: "Finish Time", width: "150px" },
+//             { field: "Duration", title: "Duration", width: "80px"},
+//         ]
+//     });
+// }
+
+
+function BuildComGrid(){
+    var stat =  $("#ComGrid").getKendoGrid();
+
+    if(stat != undefined){
+        stat.dataSource.read();
+        stat.refresh();
+        return;
+    }
+
+    $("#ComGrid").kendoGrid({
+        dataSource: {
+            transport:{
+              read: function(yo){
+                    var callData = {};
+                    if (yo.data["sort"] == "")
+                        yo.data["sort"] = undefined;
+                    for(var i in yo.data){
+                        callData[i] = yo.data[i];
+                    }
+                    callData.status = "Success";
+
+                    app.ajaxPost("/dataflow/getdatamonitoring",callData, function(res){
+                        if(!app.isFine(res)){
+                          return;
+                        }else{
+                        var datas = res.data.data;
+                              for (var i in datas) {
+                                        datas[i].MonthStr = moment(datas[i].startdate).format('MMMM Do YYYY, h:mm:ss a');
+                                        datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMMM Do YYYY, h:mm:ss a');
+                                        datas[i].Duration = (convertMS(moment(datas[i].enddate),moment(datas[i].startdate)));
+                                        datas[i].Message = datas[i].steps[datas[i].steps.length-1].message;
+                                }
+                              res.data.data = datas;
+                            yo.success(res.data);
+                        }
+                    });
+                    },
+                },
+                 schema: {
+                    data: "data",
+                    total: "total",
+                },
+            serverPaging: true, 
+            pageSize:5,
+        },
+            groupable: false,
+            sortable: false,
+            pageable: true,
+        columns: [
+            { field: "MonthStr", title: "Start Time", width: "130px" },
+            { field: "MonthStrEnd", title: "Finish Time", width: "130px" },
+            { field: "status"
+                , title: "Status"
+                , width: "130px" 
+                ,template: "#if (status == 'Success') { #   <button class='btn btn-sm btn-success disabled'>Success</button> # } else {#  <button class='btn btn-sm btn-danger disabled'>Failed</button>  #}  #"
+                },
+            { field: "Message", title: "Description", width: "130px"},
+            { field: "Duration", title: "Duration", width: "130px"},
+            // { title: "Details", width: "50px", template: "<button onclick='GetDetails(\"#=_id#\")' class='btn btn-sm btn-primary'>Details</button>"       },
+        ]
+    });
+}

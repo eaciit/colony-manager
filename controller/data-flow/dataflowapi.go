@@ -8,18 +8,23 @@ import (
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	//"github.com/eaciit/dbox"
+	"github.com/eaciit/gomail"
 	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/hdc/hive"
 	//"github.com/eaciit/sshclient"
 	"encoding/csv"
 	"encoding/json"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/eaciit/toolkit"
+	"github.com/novalagung/golpal"
 )
 
 const (
+	DATA_FLOW_MAIL_ADDR = "ecdf@eaciit.com"
+
 	ACTION_TYPE_HIVE     = "HIVE"
 	ACTION_TYPE_HDFS     = "HDFS"
 	ACTION_TYPE_SPARK    = "SPARK"
@@ -45,6 +50,10 @@ const (
 	CMD_MAP_REDUCE       = "hadoop jar %v -input %v -output %v -mapper %v -reducer %v"
 	CMD_JAVA             = "java -jar %v"
 	GLOBAL_PARAM_KEYWORD = "global."
+
+	PROCESS_STATUS_RUN     = "RUN"
+	PROCESS_STATUS_SUCCESS = "SUCCESS"
+	PROCESS_STATUS_ERROR   = "ERROR"
 )
 
 //var CurrentAction colonycore.FlowAction
@@ -55,20 +64,31 @@ var globalParam toolkit.M
 
 // Start, to start the flow process
 func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
-	var steps []colonycore.FlowAction
-	// steps = append(steps, flow.Actions[0].(colonycore.FlowAction))
+	/*var steps []interface{}
+
+	var stepAction []interface{}
+
+	for _, action := range flow.Actions {
+		if action.FirstAction {
+			stepAction = append(stepAction, action)
+		}
+	}
+
+	steps = append(steps, stepAction)*/
 
 	process := colonycore.DataFlowProcess{
-		Id:          generateProcessID(flow.ID),
-		Flow:        flow,
-		StartDate:   time.Now(),
-		StartedBy:   user,
-		Steps:       steps,
+		Id:        generateProcessID(flow.ID),
+		Flow:      flow,
+		StartDate: time.Now(),
+		StartedBy: user,
+		//Steps:       steps,
 		GlobalParam: globalParam,
+		Status:      PROCESS_STATUS_RUN,
 	}
 
 	// save the DataFlowProcess
 	e = colonycore.Save(&process)
+
 	if e != nil {
 		return
 	}
@@ -76,7 +96,17 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 	processID = process.Id
 
 	// run the watcher and run the process, please update regardingly
-	go watch(flow)
+	//go watch(flow, process)
+	process, e = watch(flow)
+
+	process.EndDate = time.Now()
+	if e != nil {
+		process.Status = PROCESS_STATUS_SUCCESS
+	} else {
+		process.Status = PROCESS_STATUS_ERROR
+	}
+
+	e = colonycore.Save(&process)
 
 	return
 }
@@ -88,7 +118,7 @@ func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (proces
 }*/
 
 // runProcess, process the flow
-func runProcess(process colonycore.DataFlow, action colonycore.FlowAction, actionBefore []colonycore.FlowAction) (e error) {
+func runProcess(process colonycore.DataFlow, action colonycore.FlowAction) (e error) {
 	var res []toolkit.M
 	arguments := setCommandArgument(action)
 	switch action.Type {
@@ -142,7 +172,7 @@ func runHDFS(process colonycore.DataFlow, action colonycore.FlowAction, argument
 	result, e := setting.GetOutputCommandSsh(hdfs.Command)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -180,7 +210,7 @@ func runSpark(process colonycore.DataFlow, action colonycore.FlowAction, argumen
 	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -195,7 +225,7 @@ func runSSH(process colonycore.DataFlow, action colonycore.FlowAction, arguments
 	result, e := setting.GetOutputCommandSsh(ssh.Command)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -209,7 +239,7 @@ func runShell(process colonycore.DataFlow, action colonycore.FlowAction, argumen
 	result, e := setting.GetOutputCommandSsh(shell.Script)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -242,7 +272,7 @@ func runMapReduce(process colonycore.DataFlow, action colonycore.FlowAction, arg
 	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
@@ -257,17 +287,47 @@ func runJava(process colonycore.DataFlow, action colonycore.FlowAction, argument
 	result, e := setting.GetOutputCommandSsh(cmd)
 
 	if e != nil {
-		return res, e
+		return
 	}
 
 	res = append(res, toolkit.M{}.Set("result_stdout", result))
 	return
 }
 
+func runMail(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
+	actionEmail := action.Action.(colonycore.ActionEmail)
+	/*emailTo := []string{}
+	for _, mail := range strings.Split(actionEmail.To, ",") {
+		emailTo = append(emailTo, mail)
+	}*/
+
+	m := gomail.NewMessage()
+
+	for _, mail := range strings.Split(actionEmail.Cc, ",") {
+		m.SetAddressHeader("Cc", mail, "")
+	}
+
+	m.SetHeader("From", DATA_FLOW_MAIL_ADDR)
+	m.SetHeader("To", actionEmail.To)
+	m.SetHeader("Subject", actionEmail.Subject)
+	m.SetBody("text/html", actionEmail.Body)
+
+	d := gomail.NewPlainDialer("smtp.office365.com", 587, "admin.support@eaciit.com", "B920Support")
+	e = d.DialAndSend(m)
+
+	if e != nil {
+		return
+	}
+
+	res = append(res, toolkit.M{}.Set("result_stdout", ""))
+	return
+}
+
 // watch, watch the process and mantain the link between the action in the flow
-func watch(process colonycore.DataFlow) (e error) {
+func watch(process colonycore.DataFlow) (flowprocess colonycore.DataFlowProcess, e error) {
 	act_result_path = ACT_RESULT_PATH + toolkit.Date2String(time.Now(), "dd/MM/yyyy - hh:mm:ss") + process.ID
 	globalParam = process.GlobalParam
+	flowprocess.GlobalParam = globalParam
 
 	var ListCurrentTierAction, ListLastTierAction, ListNextTierAction []colonycore.FlowAction
 
@@ -311,6 +371,27 @@ func watch(process colonycore.DataFlow) (e error) {
 				} else {
 					isFound = true
 				}
+
+				if isFound && ActionBefore != nil {
+					for _, actx := range ActionBefore {
+						flowprocess.Steps = append(flowprocess.Steps, actx)
+					}
+				}
+			}
+
+			var v reflect.Type
+			v = reflect.TypeOf(CurrentAction.Action).Elem()
+
+			isFork := false
+			isForkAction := false
+			if v.Kind() == reflect.Struct {
+				for i := 0; i < v.NumField(); i++ {
+					if strings.ToLower(v.Field(i).Name) == "isfork" {
+						isFork = reflect.ValueOf(CurrentAction.Action).Elem().Field(i).Bool()
+						isForkAction = true
+						break
+					}
+				}
 			}
 
 			//read previous action result status to get next process ID || get last tier action for next result check || run current action
@@ -319,28 +400,88 @@ func watch(process colonycore.DataFlow) (e error) {
 					files, e := ioutil.ReadFile(fname)
 
 					if e != nil {
-						return e
+						return flowprocess, e
 					}
 
-					if strings.Contains(string(files), "OK") {
-						for _, ok := range CurrentAction.OK {
-							ListLastTierAction = append(ListLastTierAction, CurrentAction)
-							nextIdx = append(nextIdx, GetAction(process, ok).Id)
+					// if action
+					if isForkAction {
+						if isFork {
+							if strings.Contains(string(files), "OK") {
+								for _, ok := range CurrentAction.OK {
+									ListLastTierAction = append(ListLastTierAction, CurrentAction)
+									nextIdx = append(nextIdx, GetAction(process, ok).Id)
+								}
+							} else {
+								for _, nok := range CurrentAction.KO {
+									ListLastTierAction = append(ListLastTierAction, CurrentAction)
+									nextIdx = append(nextIdx, GetAction(process, nok).Id)
+								}
+							}
+						} else {
+							//decision logic :
+							ActionBefore = getActionBefore(ListLastTierAction, CurrentAction)
+							ThisAction := CurrentAction.Action.(*colonycore.ActionDecision)
+							var DecisionClause []string
+
+							for _, actionbefore := range ActionBefore {
+								//get previous action's result
+								outres, e := decodeOutputFile(actionbefore)
+								_ = e
+								//replace decision variable with result value
+								for _, condition := range ThisAction.Conditions {
+									for _, outdet := range outres {
+										for key, val := range outdet {
+											strings.Replace(condition.Stat, string(key), val.(string), -1)
+										}
+									}
+
+									DecisionClause = append(DecisionClause, "if "+condition.Stat+" {return \"true\"} else {return \"false\"} ")
+								}
+							}
+
+							//set nextID as per applied condition
+							condIdx := 0
+							for _, clause := range DecisionClause {
+								goClause := `
+									func main(){
+										` + clause + `
+									}
+								`
+								resultExec, e := golpal.New().Execute(goClause)
+								_ = e
+								if resultExec == "true" {
+									destAction := strings.Split(ThisAction.Conditions[condIdx].FlowAction, ",")
+
+									for _, dest := range destAction {
+										nextIdx = append(nextIdx, dest)
+									}
+								}
+
+								condIdx++
+							}
 						}
 					} else {
-						for _, nok := range CurrentAction.KO {
-							ListLastTierAction = append(ListLastTierAction, CurrentAction)
-							nextIdx = append(nextIdx, GetAction(process, nok).Id)
+						if strings.Contains(string(files), "OK") {
+							for _, ok := range CurrentAction.OK {
+								ListLastTierAction = append(ListLastTierAction, CurrentAction)
+								nextIdx = append(nextIdx, GetAction(process, ok).Id)
+							}
+						} else {
+							for _, nok := range CurrentAction.KO {
+								ListLastTierAction = append(ListLastTierAction, CurrentAction)
+								nextIdx = append(nextIdx, GetAction(process, nok).Id)
+							}
 						}
 					}
 
-					go runProcess(process, CurrentAction, ActionBefore)
+					go runProcess(process, CurrentAction)
 
 					//update globalParam
 					if CurrentAction.OutputParam != nil {
 						for key, val := range CurrentAction.OutputParam {
 							if strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
 								globalParam.Set(key, val)
+								flowprocess.GlobalParam = globalParam
 							}
 						}
 					}
@@ -463,11 +604,10 @@ func getActionBefore(ListActionBefore []colonycore.FlowAction, CurrentAction col
 func setCommandArgument(action colonycore.FlowAction) (arguments string) {
 	//decode action output file, convert to toolkit.M, then add into argument as its key
 	res, _ := decodeOutputFile(action)
-	resMap := res.(toolkit.M)
 
 	for key, _ := range action.InputParam {
 		if !strings.Contains(strings.ToLower(key), GLOBAL_PARAM_KEYWORD) {
-			arguments += string(key) + "=" + resMap.GetString(key)
+			arguments += string(key) + "=" + res[0].GetString(key)
 		} else {
 			arguments += string(key) + "=" + globalParam.GetString(key)
 		}
@@ -488,7 +628,7 @@ func getActionResultStatus(flow colonycore.DataFlow, action colonycore.FlowActio
 	return res, err
 }
 
-func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error) {
+func decodeOutputFile(action colonycore.FlowAction) (output []toolkit.M, e error) {
 	outputPath := action.OutputPath
 
 	file, e := ioutil.ReadFile(outputPath)
@@ -500,10 +640,10 @@ func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error
 	case "JSON":
 		e = json.Unmarshal(file, &output)
 	case "CSV":
-		output, e = decodeCSV(file)
+		output, e = decodeSV(file, "CSV")
 		break
 	case "TSV":
-		output, e = decodeTSV(file)
+		output, e = decodeSV(file, "TSV")
 		break
 	case "TEXT":
 		output, e = decodeText(file)
@@ -515,15 +655,18 @@ func decodeOutputFile(action colonycore.FlowAction) (output interface{}, e error
 	return
 }
 
-func decodeCSV(file []byte) (retVal interface{}, e error) {
+func decodeSV(file []byte, format string) (retVal []toolkit.M, e error) {
 	reader := csv.NewReader(strings.NewReader(string(file)))
+
+	if format == "TSV" {
+		reader.Comma = '\t'
+	}
+
 	records, e := reader.ReadAll()
 
 	if e != nil {
 		return
 	}
-
-	var list []interface{}
 
 	for _, row := range records {
 		line := toolkit.M{}
@@ -531,44 +674,13 @@ func decodeCSV(file []byte) (retVal interface{}, e error) {
 			line.Set(toolkit.ToString(idx), val)
 		}
 
-		list = append(list, line)
-	}
-
-	if len(list) > 0 {
-		retVal = list[0]
+		retVal = append(retVal, line)
 	}
 
 	return
 }
 
-func decodeTSV(file []byte) (retVal interface{}, e error) {
-	reader := csv.NewReader(strings.NewReader(string(file)))
-	reader.Comma = '\t'
-	records, e := reader.ReadAll()
-
-	if e != nil {
-		return
-	}
-
-	var list []interface{}
-
-	for _, row := range records {
-		line := toolkit.M{}
-		for idx, val := range row {
-			line.Set(toolkit.ToString(idx), val)
-		}
-
-		list = append(list, line)
-	}
-
-	if len(list) > 0 {
-		retVal = list[0]
-	}
-
-	return
-}
-
-func decodeText(file []byte) (retVal interface{}, e error) {
-	retVal = string(file)
+func decodeText(file []byte) (retVal []toolkit.M, e error) {
+	retVal = append(retVal, toolkit.M{}.Set("text", string(file)))
 	return
 }
