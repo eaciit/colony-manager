@@ -64,7 +64,8 @@ ses.setexpired = function (_id,username) {
 		}
 
 		$('.grid-sessions').data('kendoGrid').refresh();
-		location.reload();
+		ly.getLogout();
+		window.location = "/web/login"
 	});
 } 
 
