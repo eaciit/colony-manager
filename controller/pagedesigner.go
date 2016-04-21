@@ -244,7 +244,7 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 	// })
 	previewData := toolkit.M{}
 	previewData.Set("container", str)
-	previewData.Set("widgetBasePath", "/"+widgetBasePath+"/")
+	previewData.Set("widgetBasePath", "/"+data.Get("widgetId", "").(string)+"/")
 	return helper.CreateResult(true, previewData, "")
 }
 
