@@ -91,7 +91,7 @@ apl.ServerColumns = ko.observableArray([
 			if (baseData.DeployedTo == null) {
 				baseData.DeployedTo = [];
 			}
-			
+
 			disabled = (baseData.DeployedTo.indexOf(d._id) > -1);
 		}
 
@@ -112,12 +112,13 @@ apl.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ width: 100, headerTemplate: "<center>App Status</center>",  attributes: { class: "align-center" }, template: function (d) {
-		// return apl.isDeployed(d, function (app) {
-		// 	var target = [d.host.split(":")[0], app.Port].join(":");
-		// 	return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
-		// }, function (app) {
-		// 	return "UNDEPLOYED";
-		// });
+		return apl.isDeployed(d, function (app) {
+			var target = [d.serviceSSH.host.split(":")[0], app.Port].join(":");
+			return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
+		}, function (app) {
+			return "UNDEPLOYED";
+		});
+
 		return "UNDEPLOYED";
 	} },
 	{ headerTemplate: "<center>Run App</center>", width: 80, attributes: { "class": "align-center" }, template: function (d) {
@@ -171,7 +172,7 @@ apl.commandData = ko.observableArray([]);
 apl.commandServerID = ko.observable('');
 apl.showRunCommand = function (serverID) {
 	//app.mode('runcommand');
-	$(".modal-run-cmd").modal("show");	
+	$(".modal-run-cmd").modal("show");
 	apl.commandServerID(serverID);
 	apl.commandData([]);
 	var appMap = ko.mapping.toJS(apl.configApplication);
@@ -188,7 +189,7 @@ apl.showRunCommand = function (serverID) {
 		for (i in apl.applicationData()){
 			var appid = apl.applicationData()[i]._id;
 		}
-		
+
 
 		apl.commandData.push({
 			AppID: appid,
@@ -253,7 +254,7 @@ apl.srvapplicationColumns = ko.observableArray([
 		}
 
 		if (deployedTo.indexOf(d._id) != -1) {
-			var target = [d.host.split(":")[0], app.Port].join(":");	
+			var target = [d.serviceSSH.host.split(":")[0], app.Port].join(":");
 			return "<input type='checkbox' class='statuscheck-apl apl-green' disabled /> ";
 		}
 
@@ -268,11 +269,11 @@ apl.gridStatusColor = function () {
 
 	if ($grg) {
 		$grg.parent().css("background-color", "#5cb85c");
-		$grg.prop("checked", true);		
+		$grg.prop("checked", true);
 	}
 	if ($grr) {
 		$grr.parent().css("background-color", "#d9534f");
-		$grr.prop("checked", false);		
+		$grr.prop("checked", false);
 	}
 }
 
@@ -303,12 +304,12 @@ apl.gridStatusCheck = function () {
 
 apl.addCommand = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
-	apl.configApplication.Command.push(item); 
+	apl.configApplication.Command.push(item);
 };
 
 apl.addVariable = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigVariable));
-	apl.configApplication.Variable.push(item); 
+	apl.configApplication.Variable.push(item);
 };
 apl.removeCommand = function (each) {
 	return function () {
@@ -326,10 +327,20 @@ apl.removeVariable = function (each) {
 apl.refreshGridModalDeploy = function () {
 	$(".grid-server-deploy").replaceWith("<div class='grid-server-deploy'></div>");
 	$(".grid-server-deploy").kendoGrid({
-		dataSource: { 
+		dataSource: {
 			pageSize: 15,
-			data: Lazy(srv.ServerData()).filter({ serverType: "node" }).toArray()
-		}, 
+			data: Lazy(srv.ServerData()).filter(function (d) {
+				if ([null, undefined].indexOf(d.serviceSSH) > -1) {
+					return false;
+				}
+
+				if (d.serviceSSH.host != "" && d.serviceSSH.user != "") {
+					return true;
+				}
+
+				return false;
+			}).toArray()
+		},
 		columns: apl.ServerColumns(),
 		filterfable: false,
 		pageable: true,
@@ -351,9 +362,15 @@ apl.showModalDeploy = function (_id) {
 				$(e).find("td:eq(0) input:checkbox").hide();
 			});
 
+			console.log("====", res.data);
+
 			res.data.forEach(function (each) {
-				if (each.serverType != "node") {
-					return;
+				if ([null, undefined].indexOf(each.serviceSSH) > -1) {
+					return false;
+				}
+
+				if (!(each.serviceSSH.host != "" && each.serviceSSH.user != "")) {
+					return false;
 				}
 
 				var payload = { appID: _id, serverID: each._id };
@@ -373,7 +390,7 @@ apl.showModalDeploy = function (_id) {
 							$tdStatus.css("color", "white");
 
 							var appData = Lazy(apl.applicationData()).find({ _id: _id });
-							var target = [each.host.split(":")[0], appData.Port].join(":");
+							var target = [each.serviceSSH.host.split(":")[0], appData.Port].join(":");
 							var el = "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
 							$tdStatus.empty().append($(el));
 						} else {
@@ -428,7 +445,7 @@ apl.selectApps = function (e) {
 			swal({ title: "Internal app is read only", type: "info", closeOnConfirm: true });
 			return;
 		}
-		
+
 		apl.editApplication(d._id);
 		apl.tempCheckIdServer.push(d._id);
 	});
@@ -463,7 +480,7 @@ apl.getApplications = function(c) {
 apl.editApplication = function(_id) {
 	apl.appIDToDeploy(_id);
 	apl.refreshGridModalDeploy();
-	app.miniloader(true);	
+	app.miniloader(true);
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	app.ajaxPost("/application/selectapps", { _id: _id }, function(res) {
 		if (!app.isFine(res)) {
@@ -521,7 +538,7 @@ apl.saveApplication = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
+
 		swal({title: "Application successfully created", type: "success",closeOnConfirm: true});
 		apl.backToFront();
 	});
@@ -550,7 +567,7 @@ apl.treeView = function (id) {
         if (!res.success) {
             return;
         }
-        
+
 		$("#treeview-left").replaceWith("<div id='treeview-left'></div>");
 		apl.appRecordsDir(res.data);
 		var treeview = $("#treeview-left").kendoTreeView({
@@ -565,7 +582,7 @@ apl.treeView = function (id) {
 apl.selectDirApp = function(e){
 	var data = $('#treeview-left').data('kendoTreeView').dataItem(e.node);
 	var editor = $('#scriptarea').data('CodeMirrorInstance');
-	var arrayEx = data.text.split('.');	
+	var arrayEx = data.text.split('.');
 	var extension = apl.extension();
 	for (var i in extension){
 		if ("."+arrayEx[1] != extension[i]){
@@ -648,7 +665,7 @@ apl.removeFileDir = function(){
 				 ko.mapping.fromJS(apl.templateFile, apl.configFile);
 				 apl.appTreeMode("");
 				 apl.appTreeSelected("");
-				 swal({title: "File / Folder successfully deleted", type: "success"});				 
+				 swal({title: "File / Folder successfully deleted", type: "success"});
 				});
 		},1000);
 	});
@@ -714,7 +731,7 @@ apl.searchTreeViewSub = function(dataJson, search){
 	}else{
 		$("#treeview-left").data("kendoTreeView").setDataSource([]);
 	}
-	
+
 }
 apl.codemirror = function(){
     var editor = CodeMirror.fromTextArea(document.getElementById("scriptarea"), {
@@ -827,16 +844,16 @@ apl.backToEdit = function () {
 apl.checkDelData = function (elem,e ){
 	if ( e === 'apl') {
 		if ($(elem).prop('checked') === true){
-			apl.tempCheckIdServer.push($(elem).attr('idcheck'));		
+			apl.tempCheckIdServer.push($(elem).attr('idcheck'));
 		} else {
-			apl.tempCheckIdServer.remove(function (item) { return item === $(elem).attr('idcheck'); });		
-		}	
+			apl.tempCheckIdServer.remove(function (item) { return item === $(elem).attr('idcheck'); });
+		}
 	}
 	if ( e === 'aplAll'){
 		if ($(elem).prop('checked') === true){
 			$('.aplCheck').each(function (index) {
 				$(this).prop("checked", true);
-				apl.tempCheckIdServer.push($(this).attr('idcheck'));	
+				apl.tempCheckIdServer.push($(this).attr('idcheck'));
 			})
 		} else {
 			var idtemp = '';
@@ -884,7 +901,7 @@ apl.selectLangEnv = function (elem, e){
 			$(this).prop("checked", false);
 		});
 		}
-	} 
+	}
 }
 
 apl.prepareTreeView = function () {
@@ -904,4 +921,3 @@ $(function () {
 	app.showfilter(false);
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
-
