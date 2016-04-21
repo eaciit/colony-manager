@@ -55,28 +55,39 @@ func (l *LoginController) GetSession(r *knot.WebContext) interface{} {
 	sessionId := r.Session("sessionid", "")
 
 	return helper.CreateResult(true, toolkit.M{}.Set("sessionid", sessionId), "")
+
 }
 
 func (l *LoginController) GetUserName(r *knot.WebContext) interface{} {
-
 	r.Config.OutputType = knot.OutputJson
-	sessionId := r.Session("sessionid", "")
-	if toolkit.ToString(sessionId) == "" {
-		return helper.CreateResult(true, "", "Sessionid is not found")
-	}
+	tUser, err := GetUser(r)
 
-	userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
-	if err != nil {
-		return helper.CreateResult(false, "", "Get username failed")
-	}
-
-	tUser := new(acl.User)
-	err = acl.FindByID(tUser, userid)
 	if err != nil {
 		return helper.CreateResult(false, "", "Get username failed")
 	}
 
 	return helper.CreateResult(true, toolkit.M{}.Set("username", tUser.LoginID), "")
+}
+
+func GetUser(r *knot.WebContext) (tUser acl.User, err error) {
+	sessionId := r.Session("sessionid", "")
+
+	if toolkit.ToString(sessionId) == "" {
+		err = error(errors.New("Sessionid is not found"))
+		return
+	}
+
+	userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
+	if err != nil {
+		return
+	}
+
+	err = acl.FindByID(&tUser, userid)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 // func GetAccess(r *knot.WebContext) interface{} {
@@ -110,10 +121,6 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	sessionId := r.Session("sessionid", "")
 
-	// if sessionId == "" {
-	// 	return helper.CreateResult(false, nil, "Sessionid not found")
-	// }
-
 	cursor, err := colonycore.Find(new(colonycore.Menu), nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -133,10 +140,16 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, results, "Success")
 	}
 
-	// fmt.Println("DEBUG 121, : ", menus)
-	if cursor.Count() > 0 {
-		//userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
+	if toolkit.ToString(sessionId) == "" {
+		return helper.CreateResult(true, nil, "Session Not Found")
+	}
 
+	stat := acl.IsSessionIDActive(toolkit.ToString(sessionId))
+	if !stat {
+		return helper.CreateResult(false, nil, "Session Expired")
+	}
+
+	if cursor.Count() > 0 {
 		for _, m := range menus {
 			result := toolkit.M{}
 
@@ -145,27 +158,33 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())
 			}
+
+			// if toolkit.ToString(sessionId) != "" {
+			userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
+			if err != nil {
+				return helper.CreateResult(false, "", "Get username failed")
+			}
+			tUser := new(acl.User)
+			err = acl.FindByID(tUser, userid)
+			if err != nil {
+				return helper.CreateResult(false, "", "Get username failed")
+			}
+
 			result.Set("detail", 7)
-			if toolkit.ToString(sessionId) != "" {
-				userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
-				tUser := new(acl.User)
-				err = acl.FindByID(tUser, userid)
-				if err != nil {
-					return helper.CreateResult(false, "", "Get username failed")
-				}
-				if tUser.LoginID == "eaciit" {
-					results = append(results, result)
-				} else {
-					if acc {
-						result.Set("childrens", "")
-						if len(m.Childrens) > 0 {
-							childs := GetChildMenu(r, m.Childrens)
-							result.Set("childrens", childs)
-						}
-						results = append(results, result)
+
+			if tUser.LoginID == "eaciit" {
+				results = append(results, result)
+			} else {
+				if acc {
+					result.Set("childrens", "")
+					if len(m.Childrens) > 0 {
+						childs := GetChildMenu(r, m.Childrens)
+						result.Set("childrens", childs)
 					}
+					results = append(results, result)
 				}
 			}
+			// }
 		}
 	}
 
@@ -213,7 +232,7 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 
 	sessid, err := acl.Login(toolkit.ToString(payload["username"]), toolkit.ToString(payload["password"]))
 	if err != nil {
-		// return helper.CreateResult(true, "", err.Error())
+		return helper.CreateResult(true, "", err.Error())
 	}
 	r.SetSession("sessionid", sessid)
 	return helper.CreateResult(true, toolkit.M{}.Set("status", true), "Login Success")
