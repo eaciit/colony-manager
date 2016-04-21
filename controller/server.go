@@ -22,15 +22,16 @@ package controller
 */
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
+	"github.com/eaciit/hdc/hdfs"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/live"
 	"github.com/eaciit/toolkit"
@@ -140,429 +141,52 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 			}
 		}
 	}
-	oldData := new(colonycore.Server)
 
-	log.AddLog(fmt.Sprintf("Find server ID: %s", data.ID), "INFO")
-	cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", data.ID))
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	oldDataAll := []colonycore.Server{}
-	err = cursor.Fetch(&oldDataAll, 0, false)
-	if err == nil {
-		defer cursor.Close()
-		if len(oldDataAll) > 0 {
-			oldData = &oldDataAll[0]
+	if data.IsAccessValid("node") {
+		if data.OS == "linux" {
+			if err := data.InstallColonyOnLinux(log); err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		} else {
+			if err := data.InstallColonyOnWindows(log); err != nil {
+				return helper.CreateResult(false, nil, err.Error())
+			}
+		}
+
+		data.DetectInstalledLang()
+		data.DetectService()
+
+		log.AddLog("Restart sedotand", "INFO")
+		if _, err := data.ToggleSedotanService("start stop", data.ID); err != nil {
+			log.AddLog(err.Error(), "ERROR")
 		}
 	}
 
-	// if data.ServerType == "hdfs" {
-	// 	log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
-	// 	hadeepes, err := hdfs.NewWebHdfs(hdfs.NewHdfsConfig(data.Host, data.SSHUser))
-	// 	if err != nil {
-	// 		log.AddLog(err.Error(), "ERROR")
-	// 		return helper.CreateResult(false, nil, err.Error())
-	// 	}
+	if data.IsAccessValid("hdfs") {
+		log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
+		hdfsConfig := hdfs.NewHdfsConfig(data.ServiceHDFS.Host, data.ServiceHDFS.User)
+		hdfsConfig.Password = data.ServiceHDFS.Pass
 
-	// 	_, err = hadeepes.List("/")
-	// 	if err != nil {
-	// 		return helper.CreateResult(false, nil, err.Error())
-	// 	}
+		hadeepes, err := hdfs.NewWebHdfs(hdfsConfig)
+		if err != nil {
+			log.AddLog(err.Error(), "ERROR")
+			return helper.CreateResult(false, nil, err.Error())
+		}
 
-	// 	hadeepes.Config.TimeOut = 5 * time.Millisecond
-	// 	hadeepes.Config.PoolSize = 100
+		_, err = hadeepes.List("/")
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
 
-	// 	return helper.CreateResult(true, nil, "")
-	// }
-
-	log.AddLog(fmt.Sprintf("SSH Connect %v", data), "INFO")
-	sshSetting, client, err := data.Connect()
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
-		return helper.CreateResult(false, nil, err.Error())
+		hadeepes.Config.TimeOut = 5 * time.Millisecond
+		hadeepes.Config.PoolSize = 100
 	}
-	defer client.Close()
-
-	if data.OS == "linux" {
-		setEnvPath := func() error {
-			cmd1 := `sed -i '/export EC_APP_PATH/d' ~/.bashrc`
-			log.AddLog(cmd1, "INFO")
-			sshSetting.GetOutputCommandSsh(cmd1)
-
-			cmd2 := `sed -i '/export EC_DATA_PATH/d' ~/.bashrc`
-			log.AddLog(cmd2, "INFO")
-			sshSetting.GetOutputCommandSsh(cmd2)
-
-			cmd3 := "echo 'export EC_APP_PATH=" + data.AppPath + "' >> ~/.bashrc"
-			log.AddLog(cmd3, "INFO")
-			sshSetting.GetOutputCommandSsh(cmd3)
-
-			cmd4 := "echo 'export EC_DATA_PATH=" + data.DataPath + "' >> ~/.bashrc"
-			log.AddLog(cmd4, "INFO")
-			sshSetting.GetOutputCommandSsh(cmd4)
-
-			return nil
-		}
-
-		if oldData.AppPath == "" || oldData.DataPath == "" {
-			cmdTestUnzip := "unzip"
-			log.AddLog(cmdTestUnzip, "INFO")
-			unzipRes, err := sshSetting.GetOutputCommandSsh(cmdTestUnzip)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-			if strings.Contains(strings.ToLower(unzipRes), "not found") {
-				log.AddLog("Need to install `unzip` on the server", "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			cmdRmAppPath := fmt.Sprintf("rm -rf %s", data.AppPath)
-			log.AddLog(cmdRmAppPath, "INFO")
-			sshSetting.GetOutputCommandSsh(cmdRmAppPath)
-
-			cmdMkdirAppPath := fmt.Sprintf(`mkdir -p "%s"`, data.AppPath)
-			log.AddLog(cmdMkdirAppPath, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(cmdMkdirAppPath)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			cmdRmDataPath := fmt.Sprintf("rm -rf %s", data.DataPath)
-			log.AddLog(cmdRmDataPath, "INFO")
-			sshSetting.GetOutputCommandSsh(cmdRmDataPath)
-
-			cmdMkdirDataPath := fmt.Sprintf(`mkdir -p "%s"`, data.DataPath)
-			log.AddLog(cmdMkdirDataPath, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(cmdMkdirDataPath)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			appDistSrc := filepath.Join(EC_DATA_PATH, "dist", "app-root.zip")
-			err = sshSetting.SshCopyByPath(appDistSrc, data.AppPath)
-			log.AddLog(fmt.Sprintf("scp from %s to %s", appDistSrc, data.AppPath), "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			appDistSrcDest := filepath.Join(data.AppPath, "app-root.zip")
-			appDistSrcDest = strings.Replace(appDistSrcDest, "\\", "/", -1)
-			unzipAppCmd := strings.Replace(strings.Replace(data.CmdExtract, "%1", appDistSrcDest, -1), "%2", data.AppPath, -1)
-			log.AddLog(unzipAppCmd, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(unzipAppCmd)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			rmTempAppPath := fmt.Sprintf("rm -rf %s", appDistSrcDest)
-			_, err = sshSetting.GetOutputCommandSsh(rmTempAppPath)
-			log.AddLog(rmTempAppPath, "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			dataDistSrc := filepath.Join(EC_DATA_PATH, "dist", "data-root.zip")
-			err = sshSetting.SshCopyByPath(dataDistSrc, data.DataPath)
-			log.AddLog(fmt.Sprintf("scp from %s to %s", dataDistSrc, data.DataPath), "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			dataDistSrcDest := filepath.Join(data.DataPath, "data-root.zip")
-			dataDistSrcDest = strings.Replace(dataDistSrcDest, "\\", "/", -1)
-			unzipDataCmd := strings.Replace(strings.Replace(data.CmdExtract, "%1", dataDistSrcDest, -1), "%2", data.DataPath, -1)
-			log.AddLog(unzipDataCmd, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(unzipDataCmd)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			rmTempDataPath := fmt.Sprintf("rm -rf %s", dataDistSrcDest)
-			_, err = sshSetting.GetOutputCommandSsh(rmTempDataPath)
-			log.AddLog(rmTempDataPath, "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			osArchCmd := "uname -m"
-			log.AddLog(osArchCmd, "INFO")
-			osArchRes, err := sshSetting.GetOutputCommandSsh(osArchCmd)
-			osArchRes = strings.TrimSpace(osArchRes)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			for _, each := range []string{"sedotand", "sedotans", "sedotanw"} {
-				src := filepath.Join(EC_APP_PATH, "cli", "dist", fmt.Sprintf("linux_%s", osArchRes), each)
-				dst := filepath.Join(data.AppPath, "cli", each)
-
-				rmSedotanCmd := fmt.Sprintf("rm -rf %s", dst)
-				log.AddLog(rmSedotanCmd, "INFO")
-				_, err := sshSetting.GetOutputCommandSsh(rmSedotanCmd)
-				if err != nil {
-					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())
-				}
-
-				log.AddLog(fmt.Sprintf("scp %s to %s", src, dst), "INFO")
-				err = sshSetting.SshCopyByPath(src, dst)
-				if err != nil {
-					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())
-				}
-
-				chmodCliCmd := fmt.Sprintf("chmod 755 %s", dst)
-				log.AddLog(chmodCliCmd, "INFO")
-				_, err = sshSetting.GetOutputCommandSsh(chmodCliCmd)
-				if err != nil {
-					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())
-				}
-			}
-
-			checkPathCmd := fmt.Sprintf("ls %s", data.AppPath)
-			isPathCreated, err := sshSetting.GetOutputCommandSsh(checkPathCmd)
-			log.AddLog(checkPathCmd, "INFO")
-			if err != nil || strings.TrimSpace(isPathCreated) == "" {
-				errString := fmt.Sprintf("Invalid path. %s", err.Error())
-				log.AddLog(errString, "ERROR")
-				return helper.CreateResult(false, nil, errString)
-			}
-
-			if err := setEnvPath(); err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		} else if oldData.AppPath != data.AppPath {
-			moveDir := fmt.Sprintf(`mv %s %s`, oldData.AppPath, data.AppPath)
-			log.AddLog(moveDir, "INFO")
-			_, err := sshSetting.GetOutputCommandSsh(moveDir)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			if err := setEnvPath(); err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		} else if oldData.DataPath != data.DataPath {
-			moveDir := fmt.Sprintf(`mv %s %s`, oldData.DataPath, data.DataPath)
-			log.AddLog(moveDir, "INFO")
-			_, err := sshSetting.GetOutputCommandSsh(moveDir)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			if err := setEnvPath(); err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		}
-	} else {
-		setEnvPath := func() error {
-			cmd1 := fmt.Sprintf(`setx EC_APP_PATH "%s"`, data.AppPath)
-			log.AddLog(cmd1, "INFO")
-			sshSetting.GetOutputCommandSsh(cmd1)
-
-			cmd2 := fmt.Sprintf(`setx EC_DATA_PATH "%s"`, data.DataPath)
-			log.AddLog(cmd2, "INFO")
-			sshSetting.GetOutputCommandSsh(cmd2)
-
-			return nil
-		}
-
-		if oldData.AppPath == "" || oldData.DataPath == "" {
-			cmdTestUnzip := "unzip"
-			log.AddLog(cmdTestUnzip, "INFO")
-			unzipRes, err := sshSetting.GetOutputCommandSsh(cmdTestUnzip)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-			if strings.Contains(strings.ToLower(unzipRes), "not recognized") {
-				log.AddLog("Need to install `unzip` on the server", "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			cmdRmAppPath := fmt.Sprintf("rmdir /S /Q %s", data.AppPath)
-			log.AddLog(cmdRmAppPath, "INFO")
-			sshSetting.GetOutputCommandSsh(cmdRmAppPath)
-
-			cmdMkdirAppPath := fmt.Sprintf(`mkdir "%s"`, data.AppPath)
-			log.AddLog(cmdMkdirAppPath, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(cmdMkdirAppPath)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			cmdRmDataPath := fmt.Sprintf("rmdir /S /Q %s", data.DataPath)
-			log.AddLog(cmdRmDataPath, "INFO")
-			sshSetting.GetOutputCommandSsh(cmdRmDataPath)
-
-			cmdMkdirDataPath := fmt.Sprintf(`mkdir "%s"`, data.DataPath)
-			log.AddLog(cmdMkdirDataPath, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(cmdMkdirDataPath)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			appDistSrc := filepath.Join(EC_DATA_PATH, "dist", "app-root.zip")
-			err = sshSetting.SshCopyByPath(appDistSrc, data.AppPath)
-			log.AddLog(fmt.Sprintf("scp from %s to %s", appDistSrc, data.AppPath), "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			appDistSrcDest := filepath.Join(data.AppPath, "app-root.zip")
-			appDistSrcDest = strings.Replace(appDistSrcDest, "\\", "/", -1)
-			unzipAppCmd := strings.Replace(strings.Replace(data.CmdExtract, "%1", appDistSrcDest, -1), "%2", data.AppPath, -1)
-			log.AddLog(unzipAppCmd, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(unzipAppCmd)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			rmTempAppPath := fmt.Sprintf("rmdir /S /Q %s", appDistSrcDest)
-			_, err = sshSetting.GetOutputCommandSsh(rmTempAppPath)
-			log.AddLog(rmTempAppPath, "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			dataDistSrc := filepath.Join(EC_DATA_PATH, "dist", "data-root.zip")
-			err = sshSetting.SshCopyByPath(dataDistSrc, data.DataPath)
-			log.AddLog(fmt.Sprintf("scp from %s to %s", dataDistSrc, data.DataPath), "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			dataDistSrcDest := filepath.Join(data.DataPath, "data-root.zip")
-			dataDistSrcDest = strings.Replace(dataDistSrcDest, "\\", "/", -1)
-			unzipDataCmd := strings.Replace(strings.Replace(data.CmdExtract, "%1", dataDistSrcDest, -1), "%2", data.DataPath, -1)
-			log.AddLog(unzipDataCmd, "INFO")
-			_, err = sshSetting.GetOutputCommandSsh(unzipDataCmd)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			rmTempDataPath := fmt.Sprintf("rmdir /S /Q %s", dataDistSrcDest)
-			_, err = sshSetting.GetOutputCommandSsh(rmTempDataPath)
-			log.AddLog(rmTempDataPath, "INFO")
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			osArchCmd := "echo %PROCESSOR_ARCHITECTURE%"
-			log.AddLog(osArchCmd, "INFO")
-			osArchRes, err := sshSetting.GetOutputCommandSsh(osArchCmd)
-			osArchRes = strings.TrimSpace(osArchRes)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-			if osArchRes != "x86" {
-				osArchRes = "x86_64"
-			}
-
-			for _, each := range []string{"sedotand", "sedotans", "sedotanw"} {
-				src := filepath.Join(EC_APP_PATH, "cli", "dist", fmt.Sprintf("windows_%s", osArchRes), each)
-				dst := filepath.Join(data.AppPath, "cli", each)
-
-				rmSedotanCmd := fmt.Sprintf("rmdir /S /Q %s", dst)
-				log.AddLog(rmSedotanCmd, "INFO")
-				_, err := sshSetting.GetOutputCommandSsh(rmSedotanCmd)
-				if err != nil {
-					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())
-				}
-
-				log.AddLog(fmt.Sprintf("scp %s to %s", src, dst), "INFO")
-				err = sshSetting.SshCopyByPath(src, dst)
-				if err != nil {
-					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())
-				}
-
-				chmodCliCmd := fmt.Sprintf("cacls %s /g everyone:f 755", dst)
-				log.AddLog(chmodCliCmd, "INFO")
-				_, err = sshSetting.GetOutputCommandSsh(chmodCliCmd)
-				if err != nil {
-					log.AddLog(err.Error(), "ERROR")
-					return helper.CreateResult(false, nil, err.Error())
-				}
-			}
-
-			checkPathCmd := fmt.Sprintf("dir %s", data.AppPath)
-			isPathCreated, err := sshSetting.GetOutputCommandSsh(checkPathCmd)
-			log.AddLog(checkPathCmd, "INFO")
-			if err != nil || strings.TrimSpace(isPathCreated) == "" {
-				errString := fmt.Sprintf("Invalid path. %s", err.Error())
-				log.AddLog(errString, "ERROR")
-				return helper.CreateResult(false, nil, errString)
-			}
-
-			if err := setEnvPath(); err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		} else if oldData.AppPath != data.AppPath {
-			moveDir := fmt.Sprintf(`move %s %s`, oldData.AppPath, data.AppPath)
-			log.AddLog(moveDir, "INFO")
-			_, err := sshSetting.GetOutputCommandSsh(moveDir)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			if err := setEnvPath(); err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		} else if oldData.DataPath != data.DataPath {
-			moveDir := fmt.Sprintf(`move %s %s`, oldData.DataPath, data.DataPath)
-			log.AddLog(moveDir, "INFO")
-			_, err := sshSetting.GetOutputCommandSsh(moveDir)
-			if err != nil {
-				log.AddLog(err.Error(), "ERROR")
-				return helper.CreateResult(false, nil, err.Error())
-			}
-
-			if err := setEnvPath(); err != nil {
-				return helper.CreateResult(false, nil, err.Error())
-			}
-		}
-	}
-
-	data.DetectInstalledLang()
-	data.DetectService()
 
 	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
-	err = colonycore.Save(data)
+	err := colonycore.Save(data)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	log.AddLog("Restart sedotand", "INFO")
-	_, err = s.ToggleSedotanService("start stop", data.ID)
-	if err != nil {
-		log.AddLog(err.Error(), "ERROR")
 	}
 
 	return helper.CreateResult(true, nil, "")
@@ -603,72 +227,6 @@ func (s *ServerController) PingServer(r *knot.WebContext) interface{} {
 	isSuccess := (isNodeOK || isHDFSOK)
 	message := strings.Join(prefixStatus, ". ")
 	return helper.CreateResult(isSuccess, nil, message)
-}
-
-func (s *ServerController) ToggleSedotanService(op string, id string) (bool, error) {
-	data := new(colonycore.Server)
-	cursor, err := colonycore.Find(new(colonycore.Server), dbox.Eq("_id", id))
-	if err != nil {
-		return false, err
-	}
-	dataAll := []colonycore.Server{}
-	err = cursor.Fetch(&dataAll, 0, false)
-	if err != nil {
-		return false, err
-	}
-	defer cursor.Close()
-
-	if len(dataAll) == 0 {
-		return false, errors.New("Server not found")
-	}
-
-	data = &dataAll[0]
-
-	sshSetting, client, err := data.Connect()
-	if err != nil {
-		return false, err
-	}
-	defer client.Close()
-
-	pgrepSedotanCmd, err := sshSetting.GetOutputCommandSsh("pgrep sedotand")
-	if err != nil {
-		// do something
-	}
-	isOn := false
-	pid := strings.TrimSpace(pgrepSedotanCmd)
-	if pid != "" {
-		isOn = true
-	}
-
-	if strings.Contains(op, "stat") {
-		return isOn, nil
-	}
-
-	if strings.Contains(op, "stop") {
-		if pid != "" {
-			killProcessCmd := fmt.Sprintf("kill -9 %s", pid)
-			_, err = sshSetting.GetOutputCommandSsh(killProcessCmd)
-			if err != nil {
-				// do something
-			}
-
-			if !strings.Contains(op, "start") && err != nil {
-				return isOn, err
-			}
-		}
-	}
-
-	if strings.Contains(op, "start") {
-		sedotanConfigArg := fmt.Sprintf(`-config="%s"`, filepath.Join(data.AppPath, "config", "webgrabbers.json"))
-		sedotanLogArg := fmt.Sprintf(`-logpath="%s"`, filepath.Join(data.DataPath, "daemon"))
-		runSedotanCmd := fmt.Sprintf("cd %s && ./sedotand %s %s", filepath.Join(data.AppPath, "cli"), sedotanConfigArg, sedotanLogArg)
-		err = helper.RunCommandWithTimeout(&sshSetting, runSedotanCmd, 5)
-		if err != nil {
-			return isOn, err
-		}
-	}
-
-	return isOn, nil
 }
 
 func (s *ServerController) SelectServers(r *knot.WebContext) interface{} {

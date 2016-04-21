@@ -75,16 +75,10 @@ func (le *LangenvironmentController) GetLanguage(r *knot.WebContext) interface{}
 func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	cursorServer, err := colonycore.Find(new(colonycore.Server), dbox.Eq("serverType", "node"))
+	dataServer, err := new(colonycore.Server).GetServerSSH()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	dataServer := []colonycore.Server{}
-	err = cursorServer.Fetch(&dataServer, 0, false)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	defer cursorServer.Close()
 
 	cursorLangEnc, err := colonycore.Find(new(colonycore.LanguageEnviroment), nil)
 	if err != nil {

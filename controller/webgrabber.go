@@ -5,14 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/eaciit/cast"
-	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/dbox"
-	_ "github.com/eaciit/dbox/dbc/csv"
-	"github.com/eaciit/knot/knot.v1"
-	. "github.com/eaciit/sshclient"
-	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"net"
 	"os"
@@ -22,6 +14,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/eaciit/cast"
+	"github.com/eaciit/colony-core/v0"
+	"github.com/eaciit/colony-manager/helper"
+	"github.com/eaciit/dbox"
+	_ "github.com/eaciit/dbox/dbc/csv"
+	"github.com/eaciit/knot/knot.v1"
+	. "github.com/eaciit/sshclient"
+	"github.com/eaciit/toolkit"
 	// "reflect"
 )
 
@@ -503,10 +504,9 @@ func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 			return helper.CreateResult(false, false, "No server registered")
 		}
 
-		serverC := &ServerController{}
 		var howManyOn = 0
 		for _, server := range all {
-			isOn, _ := serverC.ToggleSedotanService("stat", server.ID)
+			isOn, _ := server.ToggleSedotanService("stat", server.ID)
 			if isOn {
 				howManyOn = howManyOn + 1
 			}
@@ -592,12 +592,10 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			return helper.CreateResult(false, false, "No server registered")
 		}
 
-		serverC := &ServerController{}
-
 		if payload.OP == "off" {
 			var howManyErrors = 0
 			for _, server := range all {
-				_, err = serverC.ToggleSedotanService("stop", server.ID)
+				_, err = server.ToggleSedotanService("stop", server.ID)
 				if err != nil {
 					howManyErrors = howManyErrors + 1
 				}
@@ -611,7 +609,7 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 		} else {
 			var howManyErrors = 0
 			for _, server := range all {
-				_, err = serverC.ToggleSedotanService("start stop", server.ID)
+				_, err = server.ToggleSedotanService("start stop", server.ID)
 				if err != nil {
 					howManyErrors = howManyErrors + 1
 				}

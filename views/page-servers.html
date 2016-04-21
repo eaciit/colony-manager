@@ -26,10 +26,10 @@
 
 <nav class="navbar" data-bind="visible: (app.mode() == '')">
 	<button class="btn btn-sm btn btn-primary mgTop15" data-bind="visible: app.showfilter(), click: function () { app.showfilter(false); }">
-		<span class="glyphicon glyphicon-search"></span>					
+		<span class="glyphicon glyphicon-search"></span>
 	</button>
 	<button class="btn btn-sm btn btn-default mgTop15" data-bind="visible: !app.showfilter(), click: function () { app.showfilter(true); }">
-		<span class="glyphicon glyphicon-search"></span>					
+		<span class="glyphicon glyphicon-search"></span>
 	</button>
 	<div class="btn-group" role="group">
 		<button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.getServers">
@@ -75,7 +75,7 @@
 
 <div class="" data-bind="visible: (app.mode() == '')">
     <div class="pdCustom position-custom">
-		{{template "_miniloader.html"}}	
+		{{template "_miniloader.html"}}
 		<div data-bind="visible: !app.miniloader()">
     		<div class="grid grid-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.ServerData, selectable: 'multiple, row', change: srv.selectGridServer, columns: srv.ServerColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-server')}"></div>
 		    <p class="bg-danger bgcustom">Please click row to edit!</p>
@@ -106,7 +106,7 @@
 </ul>
 
 <div data-bind="visible: (app.mode() == 'editor')">
-	{{template "_miniloader.html"}}	
+	{{template "_miniloader.html"}}
  	<div class="position-custom">
     	<div id="myTabContent" class="tab-content" data-bind="visible: !app.miniloader()">
 			<div class="tab-pane fade in active" id="Form-server">
@@ -122,7 +122,7 @@
 						    		<label class="col-md-3 filter-label">ID</label>
 						    		<div class="col-md-7">
 						    			<input required data-required-msg="Server ID cannot be empty" pattern="[a-zA-Z0-9_]+" data-pattern-msg="Only alphabet, number, and underscore allowed for ID" type="text" class="form-control input-sm" name="server-id" placeholder="Type the Server ID Here" data-bind="value: _id, enable: (srv.ServerMode() == '')">
-										<span class="k-invalid-msg" data-for="server-id"></span>					    			
+										<span class="k-invalid-msg" data-for="server-id"></span>
 						    		</div>
 					    		</div>
 				    			<div class="form-group">
@@ -168,27 +168,27 @@
 				    			<div class="form-group">
 							    	<label class="col-md-3 filter-label">SSH Host</label>
 						    		<div class="col-md-7" data-bind="visible: !srv.isMultiServer()">
-						    			<input required data-required-msg="SSH host cannot be empty" type="text" class="form-control input-sm" name="ssh-host" placeholder="Type Host Here" data-bind="value: serviceSSH.host">
+						    			<input data-required-msg="SSH host cannot be empty" type="text" class="form-control input-sm" name="ssh-host" placeholder="Type Host Here" data-bind="value: serviceSSH.host">
 										<span class="k-invalid-msg" data-for="ssh-host"></span>
 						    		</div>
 						    		<div class="col-md-7" data-bind="visible: srv.isMultiServer()">
 						    			<textarea class="form-control multi-server" data-bind="value: srv.ipToRegisterAsString" disabled readonly></textarea>
 						    		</div>
-					    		</div>			    		
+					    		</div>
 						    	<div class="form-group">
 						    		<label class="col-md-3 filter-label">SSH Type</label>
 						    		<div class="col-md-7">
-						    			<select required data-required-msg="SSH type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.optionTypeSSH, dataValueField: 'value', dataTextField: 'text', value: serviceSSH.type }">
+						    			<select data-required-msg="SSH type cannot be empty" name="type-ssh" data-placeholder="Select Type SSH" class="col-100" data-bind="kendoDropDownList: { data: srv.optionTypeSSH, dataValueField: 'value', dataTextField: 'text', value: serviceSSH.type }">
 								        </select>
 								        <span class="k-invalid-msg" data-for="type-ssh"></span>
 						    		</div>
 					    		</div>
 				    		</div>
-				    		<div class="col-md-6">	
+				    		<div class="col-md-6">
 					    		<div class="form-group" data-bind="visible: serviceSSH.type() == 'Credentials'">
 						    		<label class="col-md-3 filter-label">SSH User</label>
 						    		<div class="col-md-7">
-						    			<input required data-required-msg="SSH user cannot be empty" type="text" class="form-control input-sm" name="ssh-user" placeholder="Type the username Here" data-bind="value: serviceSSH.user">
+						    			<input data-required-msg="SSH user cannot be empty" type="text" class="form-control input-sm" name="ssh-user" placeholder="Type the username Here" data-bind="value: serviceSSH.user">
 										<span class="k-invalid-msg" data-for="ssh-user"></span>
 						    		</div>
 					    		</div>
@@ -197,7 +197,7 @@
 						    		<div class="col-md-7">
 						    			<div>
 						    				<span class="btn btn-sm btn-success btn-file btnsrvcustom tooltipster" title="Select ssh credential file">
-											    <span class="glyphicon glyphicon-upload"></span> Upload 
+											    <span class="glyphicon glyphicon-upload"></span> Upload
 											    <input required name="file" id="privatekey" type="file">
 											    <!-- srv.getServerFile -->
 											</span>
@@ -259,13 +259,13 @@
 				                                    <th>IP address</th>
 				                                </tr>
 				                            </thead>
-				                            <tbody data-bind="foreach: srv.configServer.serviceHDFS.hostAlias" > 
+				                            <tbody data-bind="foreach: srv.configServer.serviceHDFS.hostAlias" >
 				                                <tr>
 				                                    <td>
 				                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type host name here" data-bind="value: hostName" />
 				                                    </td>
 				                                    <td>
-				                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type ip address here" data-bind="value: ip" /> 
+				                                        <input class="form-control input-sm" type="text" class="full-width" placeholder="Type ip address here" data-bind="value: ip" />
 				                                    </td>
 				                                    <td>
 				                                        <button type="button" class="btn btn-sm btn-danger" data-bind="visible: ($index() >= 0), click: srv.removeHostAlias($data)">
@@ -297,7 +297,7 @@
 						    			<input type="text" class="form-control input-sm" name="make-directory" placeholder="Example: mkdir" data-bind="value: cmdmkdir" required>
 										<span class="k-invalid-msg" data-for="make-directory"></span>
 						    		</div>
-					    		</div> 
+					    		</div>
 					    		<!-- <div class="form-group">
 						    		<label class="col-md-2 filter-label">Copy</label>
 						    		<div class="col-md-9">
