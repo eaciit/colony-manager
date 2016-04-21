@@ -32,7 +32,7 @@ srv.optionTypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }
 ]);
-srv.templateFilter = { 
+srv.templateFilter = {
 	search: "",
 	serverOS: "",
 };
@@ -48,7 +48,7 @@ srv.WizardColumns = ko.observableArray([
 			if (comps[1] == "80") {
 				return comps[0];
 			}
-		} 
+		}
 
 		return d.host;
 	} },
@@ -96,7 +96,8 @@ srv.ServerColumns = ko.observableArray([
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
 		].join(" ");
 	} },
-	{ title: "Status", width: 80, attributes: { class:'status on-off' }, template: "<span></span>", headerTemplate: "<center>Status</center>" }
+	{ width: 100, attributes: { class:'status ssh-status on-off' }, template: "<span></span>", headerTemplate: "<center>SSH Status</center>" },
+	{ width: 100, attributes: { class:'status hdfs-status on-off' }, template: "<span></span>", headerTemplate: "<center>HDFS Status</center>" }
 ]);
 
 srv.appserverColumns = ko.observableArray([
@@ -141,7 +142,7 @@ srv.showRunCommand = function (appID) {
 		if (cmd.key == "" || cmd.value == "") {
 			return;
 		}
-		
+
 		apl.commandData.push({
 			CmdName: cmd.key,
 			CmdValue: cmd.value
@@ -158,11 +159,11 @@ srv.gridStatusColor = function () {
 
 	if ($grg) {
 		$grg.parent().css("background-color", "#5cb85c");
-		$grg.prop("checked", true);		
+		$grg.prop("checked", true);
 	}
 	if ($grr) {
 		$grr.parent().css("background-color", "#d9534f");
-		$grr.prop("checked", false);		
+		$grr.prop("checked", false);
 	}
 }
 
@@ -216,7 +217,7 @@ srv.createNewServer = function () {
 };
 srv.validateHost = function () {
 	srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
-	srv.configServer.serviceSSH.host(srv.configServer.host().split("//").reverse()[0]);
+	srv.configServer.serviceSSH.host(srv.configServer.serviceSSH.host().split("//").reverse()[0]);
 
 	if ($.trim(srv.configServer.serviceHDFS.host()) != "") {
 		if (srv.configServer.serviceHDFS.host().indexOf("http") == -1) {
@@ -230,7 +231,7 @@ srv.validateHost = function () {
 srv.doSaveServer = function (c) {
 	if (!app.isFormValid(".form-server")) {
 		var errors = $(".form-server").data("kendoValidator").errors();
-		var excludeErrors = []; 
+		var excludeErrors = [];
 
 		// if (srv.configServer.serverType() == "node") {
 		// 	if (srv.isMultiServer()) {
@@ -302,7 +303,7 @@ srv.doSaveServer = function (c) {
 
 			if (failedHosts.length > 0) {
 				swal({
-					title: ["All servers registered! except", failedHosts.join(", ")].join(" "), 
+					title: ["All servers registered! except", failedHosts.join(", ")].join(" "),
 					type: "success",
 					closeOnConfirm: true
 				});
@@ -311,7 +312,7 @@ srv.doSaveServer = function (c) {
 			}
 
 			swal({
-				title: "All servers registered!", 
+				title: "All servers registered!",
 				type: "success",
 				closeOnConfirm: true
 			});
@@ -365,7 +366,7 @@ srv.selectGridServer = function (e) {
 
 srv.editServer = function (_id) {
 	srv.gridStatusCheck();
-	app.miniloader(true);	
+	app.miniloader(true);
 	app.showfilter(false);
 	srv.breadcrumb('Edit');
 	srv.isMultiServer(false);
@@ -376,7 +377,7 @@ srv.editServer = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
+
 		app.mode('editor');
 		srv.ServerMode('edit');
         if (res.data.hostAlias == null) {
@@ -404,7 +405,7 @@ srv.doTestConnection = function (_id) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
+
 		swal({title: "Connected", type: "success"});
 	});
 };
@@ -493,8 +494,8 @@ srv.removeServer = function(){
 			},1000);
 
 		});
-	} 
-	
+	}
+
 }
 
 srv.backToFront = function () {
@@ -538,13 +539,13 @@ srv.navModalWizard = function (status) {
 	if(status == 'modal2' && srv.txtWizard() !== '' ){
 		if (!app.isFormValid("#form-wizard")) {
 			return;
-		}	
+		}
 
 		srv.dataWizard([]);
 		var allIP = [];
 		srv.txtWizard().replace( /\n/g, " " ).split( " " ).forEach(function (e) {
 			if (e.indexOf('[') == -1) {
-				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;				
+				var ip1 = (e.indexOf(":") == -1) ? (e + ":80") : e;
 				allIP.push({ ip: ip1, label: e });
 			}else{
 				var patterns = e.match(/\[(.*?)\]/g);
@@ -553,7 +554,7 @@ srv.navModalWizard = function (status) {
 				}
 				var firstPattern = pattern.replace(/\[/g, "").split('-')[0];
 				var secondPattern = pattern.replace(/\]/g, "").split('-')[1];
-				for (i = firstPattern; i <= secondPattern; i++) { 
+				for (i = firstPattern; i <= secondPattern; i++) {
 					patternIP = e.replace( pattern, i )
 					var ip2 = (patternIP.indexOf(":") == -1) ? (patternIP + ":80") : patternIP;
 					allIP.push({ ip: ip2, label: patternIP });
@@ -586,7 +587,7 @@ srv.navModalWizard = function (status) {
 		srv.showModal(status);
 	}else if(status == 'modal1'){
 		srv.showModal(status);
-		srv.dataWizard([]);		
+		srv.dataWizard([]);
 	}
 };
 
@@ -602,7 +603,7 @@ srv.templateHostAlias = {
 };
 srv.addHostAlias = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, srv.templateHostAlias));
-	srv.configServer.serviceHDFS.hostAlias.push(item); 
+	srv.configServer.serviceHDFS.hostAlias.push(item);
 };
 srv.removeHostAlias = function (each) {
 	return function () {
@@ -645,23 +646,30 @@ srv.ping = function () {
 				var $tr = $(".grid-server").find("tr[data-uid='" + row.uid + "']");
 
 				if (res.success) {
-					if (res.data) {
-						$tr.addClass("started");
-					} else {
-						$tr.removeClass("started");
+					for (var key in res.data) {
+						if (res.data.hasOwnProperty(key)) {
+							var $td = $tr.find("td." + key + "-status");
+							console.log(key, res.data[key], $td);
+
+							if (res.data[key].isUP) {
+								$td.addClass("started");
+							} else {
+								$td.removeClass("started");
+							}
+						}
 					}
 				} else {
-					$tr.removeClass("started");
+					$tr.find(".started").removeClass("started");
 				}
 			}
 		}, function () {
 			if (row != undefined) {
 				var $tr = $(".grid-server").find("tr[data-uid='" + row.uid + "']");
-				$tr.removeClass("started");
+				$tr.find(".started").removeClass("started");
 			}
-		}, { 
-			timeout: 8000, 
-			withLoader: false 
+		}, {
+			timeout: 8000,
+			withLoader: false
 		});
 
 		return ajax;

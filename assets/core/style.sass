@@ -12,7 +12,7 @@ $orange-hover: #ec971f
 
 html, body, #container, #container > .row, #sidebar, #content
 	height: 100%
-	
+
 a
 	cursor: pointer
 	color: $blue
@@ -97,7 +97,7 @@ a
 .align-left
 	text-align: left
 
-#grid-groups 
+#grid-groups
 	margin-top: 1%
 
 #grid-users
@@ -210,7 +210,7 @@ table.table
 	padding: 0px
 
 .trv-5
-	height: 300px 
+	height: 300px
 	overflow: scroll
 
 .pdTop6
@@ -344,7 +344,7 @@ table.table
 .login-form-group
 	.form-login-label
 		text-align: left
-		
+
 #add_type
 	margin-top: -1%
 
@@ -378,7 +378,7 @@ table.table
 #error-message
 	color: red
 	margin-bottom: 6%
-	
+
 .login-bg
 	background: #007dba url('/res/img/bg_city.JPG') no-repeat center top
 	background-size: cover
@@ -498,10 +498,10 @@ table.table
 	background-color: #4382C2
 
 
-.grid-data-wizard 
+.grid-data-wizard
 	td:nth-child(2)
 		color: white
-		
+
 	.ok td:nth-child(2)
 		background-color: $green-hover
 
@@ -565,7 +565,7 @@ body
 		background-color: $blue
 
 		.nav.navbar-nav
-			> li 
+			> li
 				> a
 					padding: 8px 14px
 					color: white
@@ -591,7 +591,7 @@ body
 			li
 				a
 					color: $black
-				
+
 					&.active
 						background-color: #eee
 						text-decoration: none
@@ -604,7 +604,7 @@ body
 	#content
 		padding: 0px
 
-		> .col-md-12 
+		> .col-md-12
 			> h1
 				border-bottom: 1px solid #E8E8E8
 				padding-bottom: 5px
@@ -635,7 +635,7 @@ body
 					border-bottom: none
 					padding-bottom: 0px
 
-				
+
 
 				h1
 					color: $black
@@ -644,7 +644,7 @@ body
 					border-bottom: 1px solid whitesmoke
 					font-size: 20px
 
-				.form-datasource 
+				.form-datasource
 					.title-command
 						border-bottom: 1px solid #DDDDDD
 						width: 100%
@@ -655,7 +655,7 @@ body
 					.nav-command
 						border-right: 1px solid #DDDDDD
 
-						.nav li a 
+						.nav li a
 							padding: 6px 10px
 							background-color: #FBFBFB
 							margin-bottom: 3px
@@ -666,7 +666,7 @@ body
 							&:hover
 								background-color: $blue
 								color: whitesmoke
-						
+
 					.area-command
 						textarea
 							width: 100%
@@ -698,9 +698,9 @@ body
 				#datasource-settings
 					thead tr th
 						padding-top: 15px
-					tbody tr td 
+					tbody tr td
 						padding-top: 8px
-						padding-right: 5px 
+						padding-right: 5px
 
 				#grid-metadata
 					tr.has-lookup
@@ -778,7 +778,7 @@ body
 			.nav.nav-tabs
 				li:hover
 					cursor: pointer
-					
+
 			.navbar-button
 				padding: 14px
 
@@ -860,6 +860,18 @@ body
 				&.on-off
 					span:after
 						content: "OFF"
+
+			&.started
+				&.status
+					background-color: #5CB85C
+
+					&.start-stop
+						span:after
+							content: "STARTED"
+
+					&.on-off
+						span:after
+							content: "ON"
 
 		&.started
 			td
@@ -950,10 +962,10 @@ $grid-soft-border-color: #E8E8E8
 
 	table
 		tr
-			&:first-child td 
+			&:first-child td
 				border-top: none
 
-			td 
+			td
 				border-color: #F7F7F7
 
 	.k-pager-nav
@@ -966,7 +978,7 @@ $grid-soft-border-color: #E8E8E8
 				width: 82%
 				border-left: none
 				padding-left: 0px
-			
+
 				.title
 					font-size: 18px
 					font-weight: bold
@@ -991,9 +1003,9 @@ $grid-soft-border-color: #E8E8E8
 		tr:hover
 			background-color: rgba(58, 139, 223, 0.03)
 
-body 
-	#content > .col-md-12 
-		.designer 
+body
+	#content > .col-md-12
+		.designer
 			.panel
 				border-color: #E8E8E8
 				border-radius: 0px
@@ -1054,4 +1066,3 @@ body
 
 				&:hover
 					background-color: #FFF
-

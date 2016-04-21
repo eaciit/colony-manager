@@ -24,7 +24,6 @@ package controller
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/eaciit/colony-core/v0"
@@ -195,7 +194,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 func (s *ServerController) PingServer(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := new(colonycore.Server)
+	payload := new(colonycore.ServerByType)
 	err := r.GetPayload(&payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -206,27 +205,20 @@ func (s *ServerController) PingServer(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	prefixStatus := []string{}
-	isNodeOK := true
-	isHDFSOK := true
+	res := toolkit.M{
+		"ssh":  toolkit.M{"isUP": true, "message": ""},
+		"hdfs": toolkit.M{"isUP": true, "message": ""},
+	}
 
-	(func() {
-		if _, err := payload.Ping("node"); err != nil {
-			isNodeOK = false
-			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on node server: %s", err.Error()))
-		}
-	}())
+	if _, err := payload.Ping("ssh"); err != nil {
+		res["ssh"] = toolkit.M{"isUP": false, "message": err.Error()}
+	}
 
-	(func() {
-		if _, err := payload.Ping("hdfs"); err != nil {
-			isNodeOK = false
-			prefixStatus = append(prefixStatus, fmt.Sprintf("Error on node server: %s", err.Error()))
-		}
-	}())
+	if _, err := payload.Ping("hdfs"); err != nil {
+		res["hdfs"] = toolkit.M{"isUP": false, "message": err.Error()}
+	}
 
-	isSuccess := (isNodeOK || isHDFSOK)
-	message := strings.Join(prefixStatus, ". ")
-	return helper.CreateResult(isSuccess, nil, message)
+	return helper.CreateResult(true, res, "")
 }
 
 func (s *ServerController) SelectServers(r *knot.WebContext) interface{} {
