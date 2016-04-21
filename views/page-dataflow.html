@@ -25,9 +25,7 @@
 				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
 				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
 				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-				<button class="btn btn-success mgLeft btn-tooltip" title="Save & Run" onclick="df.run();" >
-			    		<span class="glyphicon glyphicon-play"></span>
-			    </button>
+				<button class="btn btn-success mgLeft btn-tooltip" title="Save & Run" id="popRun" onclick="df.popRun()"><span class="glyphicon glyphicon-play"></span></button>
 			</div>
 		</ol>
 
@@ -54,6 +52,30 @@
 <button style="display:none" data-content="" id="popbtn"></button>
 <button style="display:none" data-content="" id="popGlobalVar"></button>
 
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Edit Global Variables</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tbody data-bind="foreach:df.globalVar">                 
+                        <tr>
+                            <td> <input class="inp-global" data-bind="value:key"> </td>
+                            <td> <input class="inp-global" data-bind="value:value"> </td>            
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="df.run()">Save & Run</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/template" id="popover-content-globalvar">
 <table>
     <tbody>
@@ -64,8 +86,8 @@
         </tr>
         <!-- ko foreach: df.globalVar -->
         <tr>
-            <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"></td> </td>
-            <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter default value"></td> </td>
+            <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"> </td>
+            <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter default value"> </td>
             <td>
                 <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteGlobalVar(event);"><span class="glyphicon glyphicon-trash"></span></a>
             </td>
@@ -685,6 +707,7 @@
           -webkit-transform: rotate(180deg);
           transform: rotate(180deg);
         }
+        
         .diagram{
             margin-bottom: 20px
         }
@@ -714,4 +737,7 @@
             background-size: 40px 40px;
         }
 
+        .modal-dialog{
+            width: 450px;
+        }
 </style>

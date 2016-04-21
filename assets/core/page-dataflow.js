@@ -600,6 +600,12 @@ df.init = function () {
         content: $("#popover-content-globalvar").html()        
     });
 
+      $("#popRun").popover({
+        html : true,
+        placement : 'bottom',
+        content: $("#popover-content-poprun").html()        
+    });
+
     $('.pTitle').blur(function(){
         if( !$(this).val() ) {
             swal("Warning!", "Name cannot be empty !", "warning");
@@ -789,9 +795,11 @@ df.checkFlow = function(elem){
 
     if(startfinish==0){
         swal("Warning!", "Infinite Flow !", "warning");
+        $('#myModal').modal('hide');
         return  false;
     }else if(noconnshape>0){
-         swal("Warning!", "Invalid Flow !", "warning");
+        swal("Warning!", "Invalid Flow !", "warning");
+        $('#myModal').modal('hide');
         return  false;
     }
     return  true;
@@ -914,9 +922,14 @@ df.Save = function(callback){
     var title = $(".pTitle").val().length;
     var desc = $(".pDesc").val().length;    
     if (title == 0) {
-        swal("Warning", "Name or Description cannot be empty!", "warning");
+        swal("Warning", "Title or Description cannot be empty!", "warning");
+        df.closePopover("#popbtn");
+        df.closePopover("#poptitle");
+        df.closePopover("#popGlobalVar");
+        $('#myModal').modal('hide');
     }else if (desc == 0) {
-        swal("Warning", "Name or Description cannot be empty!", "warning");
+        swal("Warning", "Title or Description cannot be empty!", "warning");
+        $('#myModal').modal('hide');
     }else{
         app.ajaxPost("/dataflow/save", {
             ID : df.ID(),
@@ -944,7 +957,6 @@ df.clearDiagram = function(){
     df.closePopover("#popbtn");
     df.closePopover("#poptitle");
     df.closePopover("#popGlobalVar");
-
     $(".diagram").getKendoDiagram().clear();
 }
 
@@ -1052,10 +1064,10 @@ df.goToDesigner = function(Id){
 
     $("svg").click(function(){
         if($(".popover-title").html()=="Add Global Variables"){
-        df.closePopover("#poptitle");
-        df.closePopover("#popbtn");
-        df.closePopover("#popGlobalVar");
-    }
+            df.closePopover("#poptitle");
+            df.closePopover("#popbtn");
+            df.closePopover("#popGlobalVar");
+        }
     });
 }
 
@@ -1325,7 +1337,8 @@ df.addGlobalVar = function (key,val) {
     k = key != undefined? key:k;
     v = val != undefined?val:v;
 
-   df.globalVar.unshift({idx:idx,key:k,value:v});
+    var each = ko.mapping.fromJS({idx:idx,key:k,value:v});
+   df.globalVar.unshift(each);
 }
 
 df.deleteGlobalVar = function(e){
@@ -1510,6 +1523,13 @@ df.draggablePopover = function(e){
     }).mouseup(function(e) {
         draggableDiv.draggable('disable');
     });
+}
+
+df.popRun = function(){
+    df.closePopover("#popbtn");
+    df.closePopover("#poptitle");
+    df.closePopover("#popGlobalVar");
+    $('#myModal').modal('show');
 }
 
 $(function () {
