@@ -17,10 +17,9 @@ pv.prepareGridStack = function () {
     });
 };
 
-pv.getUrlView = function(){
-	var title = $('#url').text();
+pv.mapWidgets = function(){
 	var $gridStack = $("#page-designer-grid-stack").data("gridstack");
-	app.ajaxPost("/pagedesigner/pageview", {title: title}, function(res){
+	app.ajaxPost("/pagedesigner/pageview", {title: viewModel.pageID}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
@@ -42,5 +41,5 @@ pv.getUrlView = function(){
 
 $(function(){
 	pv.prepareGridStack();
-	pv.getUrlView();
+	pv.mapWidgets();
 })

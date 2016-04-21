@@ -1,12 +1,15 @@
+<script>
+	viewModel.pageID = "{{.pageID}}";
+</script>
+
 <link href="/res/gridstack/gridstack.css" rel="stylesheet">
 <link href="/res/gridstack/gridstack-extra.css" rel="stylesheet">
 
 <script type="text/javascript" src="/res/core/page-view.js"></script>
 <script src="/res/gridstack/gridstack.js"></script>
+
 <style type="text/css">
 	.page-widget{
-		height: 98%;
-		min-height: 98%;
 		margin-top: 15px;
    		margin-bottom: 15px;
    		padding-top: 10px;
@@ -18,9 +21,6 @@
 		border: 1px dashed #337AB7;
 	}
 </style>
-
-<div id="url" hidden>{{.pageID}}</div>
-
 <div class="col-md-12">
 	<div class="page-widget">
 		<div class="grid-stack" id="page-designer-grid-stack"></div>
