@@ -66,8 +66,7 @@ var globalParam toolkit.M
 var ACT_RESULT_PATH string
 
 // Start, to start the flow process
-//func Start(flow colonycore.DataFlow, user string, globalParam toolkit.M) (processID string, e error) {
-func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
+func Start(flow colonycore.DataFlow, user string, input_globalParam toolkit.M) (processID string, e error) {
 	/*var steps []interface{}
 
 	var stepAction []interface{}
@@ -101,6 +100,7 @@ func Start(flow colonycore.DataFlow, user string) (processID string, e error) {
 
 	// run the watcher and run the process, please update regardingly
 	//go watch(flow, process)
+	globalParam = input_globalParam
 	e = watch(flow, user)
 
 	/*process.EndDate = time.Now()
@@ -336,8 +336,7 @@ func watch(process colonycore.DataFlow, user string) (e error) {
 		StartedBy: user,
 		Status:      PROCESS_STATUS_RUN,
 	}
-
-	globalParam = process.GlobalParam
+	
 	flowprocess.GlobalParam = globalParam
 	saveFlowProcess(flowprocess, e)
 
