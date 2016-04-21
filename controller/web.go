@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
@@ -28,7 +29,7 @@ func (w *WebController) PredefinedVariables(params ...toolkit.M) interface{} {
 		"LanguageEnvironment": colonycore.LanguageEnviroment{},
 		"Page":                colonycore.Page{},
 		"PageDetail":          colonycore.PageDetail{},
-		"Server":              colonycore.Server{},
+		"Server":              colonycore.NewServer(),
 		"WebGrabber":          colonycore.WebGrabber{},
 		"Widget":              colonycore.Widget{},
 		"WidgetPage":          colonycore.WidgetPage{},
