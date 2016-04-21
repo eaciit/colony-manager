@@ -1,4 +1,28 @@
-<script type="text/javascript" src="/res/core/page-view.js"></script>
+<script>
+	viewModel.pageID = "{{.pageID}}";
+</script>
 
-<div id="url" hidden>{{.pageID}}</div>
-<p id="show"></p>
+<link href="/res/gridstack/gridstack.css" rel="stylesheet">
+<link href="/res/gridstack/gridstack-extra.css" rel="stylesheet">
+
+<script type="text/javascript" src="/res/core/page-view.js"></script>
+<script src="/res/gridstack/gridstack.js"></script>
+
+<style type="text/css">
+	.page-widget{
+		margin-top: 15px;
+   		margin-bottom: 15px;
+   		padding-top: 10px;
+   		padding-bottom: 10px;
+   		border: 1px solid #E5E5E5;
+	}
+
+	.grid-stack-item-content{
+		border: 1px dashed #337AB7;
+	}
+</style>
+<div class="col-md-12">
+	<div class="page-widget">
+		<div class="grid-stack" id="page-designer-grid-stack"></div>
+	</div>
+</div>
