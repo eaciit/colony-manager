@@ -48,3 +48,7 @@ $(document).ready(function(){
         });
     }
  });
+
+$(function() {
+    app.miniloader(false);
+});

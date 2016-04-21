@@ -74,6 +74,7 @@ var methodsFB = {
 		}else{
 			methodsFB.BuildFileExplorer(this, settings);
 		}
+
 		return 
 	},
 	GetCurrentServerItem: function () {
@@ -219,8 +220,8 @@ var methodsFB = {
 		$strsearch.appendTo($strpresearch);
 
 		$($strsearch.find("button")).click(function(){
-				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
 				app.miniloader(true);
+				methodsFB.ActionRequest(elem,options,{action:"Search"},this);
 		});
 
 		$($(elem).find(".fb-server")).kendoDropDownList({
@@ -269,6 +270,7 @@ var methodsFB = {
 	                dataType: "json",
 	                type: call,
 	                complete: function(){
+	                	app.miniloader(false);
 	                	$(elem).data("ecFileBrowser").dataSource.GetDirAction = "GetDir";
 	                	$strtree.find("span").each(function(){
 							if($(this).html()!=""){
@@ -288,9 +290,7 @@ var methodsFB = {
 						});
 						if($(elem).data("ecFileBrowser").isHold){
 							methodsFB.AfterCreateNewFile(elem,$(elem).data("ecFileBrowser").Content);
-				         }else{
-				            app.miniloader(true);
-				         }
+				        }
 	                },
 	            },
 	            parameterMap:function(data,type){
@@ -846,7 +846,6 @@ var methodsFB = {
 		}else if(content.action == "GetContent"){
 			methodsFB.SendActionRequest(elem,content);
 			app.miniloader(true);
-			$($(elem).find(".modal-fb-editor")).modal("show");
 		}else{
 			content.path = (content.path !== null ? content.path : SelectedPath);
 			methodsFB.SendActionRequest(elem,content);
@@ -952,6 +951,7 @@ var methodsFB = {
 
                 	$(elem).data('ecFileBrowser').serverSource.callOK(res);
                 	if(param.action == "GetContent"){
+                		$($(elem).find(".modal-fb-editor")).modal("show");
                 		$($(elem).find(".fb-filename")).html(param.path);
 						$($(elem).find(".fb-editor")).data("kendoEditor").value(res.data);
 						$($(elem).find(".fb-editor")).data("kendoEditor").focus();
@@ -985,8 +985,8 @@ var methodsFB = {
 	               	}
 	               	
                 	if(!$(elem).data("ecFileBrowser").isHold){
-                		swal("Saved!", "Your request has been processed !", "success");
                 		$(elem).find(".modal-fb-editor").modal("hide");
+                		swal("Saved!", "Your request has been processed !", "success");
                 		app.miniloader(false);
                 	}
                 },
