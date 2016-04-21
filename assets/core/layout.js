@@ -27,11 +27,11 @@ ly.varMenu = [{"id":"dasboard", "title":"Dashboard", "childrens":[], "link":"/we
 			{"id":"login", "title":"Login", "childrens":[], "link":"/web/login"}];
 
 ly.element = function(data){
-	console.log(data.length);
+	//console.log(data.length);
 	$parent = $('#nav-ul');
 	$navbar = $('<ul class="nav navbar-nav"></ul>');
 	$navbar.appendTo($parent);
-	if(data.length == 0){
+	if(data == null ){
 		$liparent = $("<li class='dropdown' id='liparent'><a>You don't have any access</a></li>");
 		$liparent.appendTo($navbar);
 	}else{
@@ -56,55 +56,76 @@ ly.element = function(data){
 }
 
 ly.getLogout = function(){
-	//alert('masuk');
+	ly.account(false);
 	app.ajaxPost("/login/logout", {logout: true}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
-		ly.account(false);
+		
+		alert('logout');
 		window.location = "/web/login"
 	});
 }
 
 ly.getLoadMenu = function(){ 
-	app.ajaxPost("/login/getsession",{}, function(res){
-		if(!app.isFine(res)){
-			return;
-		}
-		
-		ly.session(res.data.sessionid);
-		if(ly.session() !== '' ){
-			app.ajaxPost("/login/getusername", {}, function(res){
-				if (!res.success) {
-					if (res.message.indexOf("expired") > -1) {
-						if (document.URL.indexOf("/web/login") == -1) {
-							ly.getLogout();
-							ly.session("");
-						}
-					} else {
-						app.isFine(res);
-					}
+	
+	// app.ajaxPost("/login/getusername", {}, function(res){
+	// 	if (!res.success || res.message.indexOf("found") > -1) {
+	// 		ly.element([]);
+	// 		ly.account(false);
+	// 		if (res.message.indexOf("expired") > -1 || res.message.indexOf("failed") > -1 ) {
+	// 			if (document.URL.indexOf("/web/login") == -1) {
+	// 				ly.getLogout();
+	// 			}
+	// 		} else {
+	// 			app.isFine(res);
+	// 		}
+	// 		return;
+	// 	}else{
+	// 		ly.username(" Hi' "+res.data.username);
+	// 		app.ajaxPost("/login/getaccessmenu", {}, function(res){
+	// 			if (!res.success) {
+	// 				ly.element([]);
+	// 				ly.account(false);
+	// 			}
+	// 			app.isFine(res);
+	// 			ly.element(res.data);
 
-					return;
-				}
-
-				ly.username(" Hi' "+res.data.username);
-
-			});
-		}
-	});
+	// 		}, function () {
+	// 			ly.element([]);
+	// 		});
+	// 	}
+	// });
 	
 	app.ajaxPost("/login/getaccessmenu", {}, function(res){
-		if(!app.isFine(res)){
-			return;
+		if (!res.success || res.message.indexOf("Found") > -1) {
+			ly.element([]);
+			ly.account(false);
+		}else{
+			app.ajaxPost("/login/getusername", {}, function(res){
+				if (!res.success || res.message.indexOf("Found") > -1) {
+					ly.element([]);
+					ly.account(false);
+					if (res.message.indexOf("expired") > -1 || res.message.indexOf("failed") > -1 ) {
+						if (document.URL.indexOf("/web/login") == -1) {
+							ly.getLogout();
+						}
+					} else {
+						app.isFine(res);	
+					}
+					return;
+				}
+				ly.username(" Hi' "+res.data.username);
+				ly.account(true);
+			});
 		}
-
+		app.isFine(res);
 		ly.element(res.data);
 
 	}, function () {
 		ly.element([]);
 	});
-	//setTimeout(function(){ ly.getLogout(); }, 3000);
+			
 }
 
 
