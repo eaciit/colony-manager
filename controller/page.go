@@ -39,6 +39,7 @@ func (p *PageController) PageView(r *knot.WebContext) interface{} {
 }
 
 func (p *PageController) ReadingPage(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
 	data, err := ioutil.ReadFile("D:/GoW/src/github.com/eaciit/colony-app/data-root/widget/widget1/index.html")
 	if err != nil {
 		fmt.Println(err)
@@ -46,5 +47,5 @@ func (p *PageController) ReadingPage(r *knot.WebContext) interface{} {
 
 	fmt.Println(string(data))
 	u := string(data)
-	return u
+	return helper.CreateResult(true, nil, u)
 }
