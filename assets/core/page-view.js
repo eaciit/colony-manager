@@ -27,35 +27,50 @@ pv.mapWidgets = function(){
 			return;
 		}
 		var widgets = res.data.widgets;
-		(widgets == null ? [] : widgets).forEach(function (d){
+		(widgets == null ? [] : widgets).forEach(function (d) {
 	        var $item = $(pv.templateWidgetItem);
 	        $item.attr("data-id", d._id);
 	        $item.data("id", d._id);
-	        $item.data("widgetid", d.widgetId);
+	        $item.data("widget-id", d.widgetId);
 	        $item.find("h5").text(d.title);
 	        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
-	        $item.find("iframe").attr("id", d.widgetId);
-	        app.ajaxPost("/page/loadwidgetindex", {ID: d._id, PageID: viewModel.pageID, WidgetID: d.widgetId}, function(res){
-	        	if(!app.isFine(res)){
+
+            var param = {
+                _id: d._id,
+                pageID: viewModel.pageID,
+                widgetID: d.widgetId
+            };
+
+	        app.ajaxPost("/page/loadwidgetpagecontent", param, function (res) {
+	        	if (!app.isFine(res)) {
 					return;
 				}
+
 				var widgetBaseURL = baseURL + "res-widget/" +d.widgetId+"/" ;
-		        var page = res.data.IndexFile;
+		        var page = res.data.Content;
 		        page = page.replace(/src\=\"/g, 'src="' + widgetBaseURL);
 		        page = page.replace(/href\=\"/g, 'href="' + widgetBaseURL);
 
-		        // $("#"+d.widgetId).off("load").on("load", function(){
-		        //     window.frames[0].frameElement.contentWindow;
-		        // });
+                var $iFrame = $("[data-id='" + d._id + "'] iframe");
+                var iWindow = $iFrame[0].contentWindow;
 
-				var container =  $("#"+d.widgetId)[0].contentWindow.document;
+		        $iFrame.off("load").on("load", function () {
+                    console.log("widget " + d._id + " loaded");
+
+                    iWindow.window.Render(
+                        { dsChart: [] },
+                        res.data.WidgetPageData.config,
+                        res.data.WidgetData
+                    );
+		        });
+
+				var container =  iWindow.document;
 		        container.open();
        	 		container.write(page);
         		container.close();
 
 	        });
 	    });
-
 	});
 }
 

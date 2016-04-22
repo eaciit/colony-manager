@@ -53,7 +53,7 @@ func (p *PageController) ReadingPage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, u)
 }
 
-func (p *PageController) LoadWidgetIndex(r *knot.WebContext) interface{} {
+func (p *PageController) LoadWidgetPageContent(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := struct {
@@ -68,14 +68,13 @@ func (p *PageController) LoadWidgetIndex(r *knot.WebContext) interface{} {
 
 	pageData := new(colonycore.PageDetail)
 	pageData.ID = payload.PageID
-	pageInfo, err := pageData.Get()
+	pageData, err := pageData.Get()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	indexPath := ""
 	widgetpath := filepath.Join(EC_DATA_PATH, "widget", payload.WidgetID)
-	fmt.Println("---------- url", widgetpath)
 	err = filepath.Walk(widgetpath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -104,21 +103,31 @@ func (p *PageController) LoadWidgetIndex(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	widgetData := new(colonycore.WidgetPage)
+	widgetData := new(colonycore.Widget)
+	widgetData.ID = payload.WidgetID
+	if err := colonycore.Get(widgetData, widgetData.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
-	for _, widget := range pageInfo.Widgets {
+	widgetPageData := new(colonycore.WidgetPage)
+	for _, widget := range pageData.Widgets {
 		if widget.ID == payload.ID {
-			widgetData = widget
+			widgetPageData = widget
 			break
 		}
 	}
 
 	data := struct {
-		PageData   *colonycore.PageDetail
-		WidgetData *colonycore.WidgetPage
-		IndexFile  string
-		widgetpath string
-	}{pageInfo, widgetData, string(byts), string(byts)}
+		PageData       *colonycore.PageDetail
+		WidgetData     *colonycore.Widget
+		WidgetPageData *colonycore.WidgetPage
+		Content        string
+	}{
+		pageData,
+		widgetData,
+		widgetPageData,
+		string(byts),
+	}
 
 	return helper.CreateResult(true, data, "")
 }
