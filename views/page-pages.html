@@ -17,7 +17,7 @@
 		        <span class="glyphicon glyphicon-search"></span>                    
 		    </button>
 		    <div class="btn-group" role="group">
-		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: getPages">
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: function(){ getPages('refresh')}">
 		            <span class="glyphicon glyphicon-refresh"></span> Refresh
 		        </button>
 		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: addPage">
@@ -45,7 +45,6 @@
 			    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: p.pageData, change: p.selectPage, selectable: 'row', columns: p.pageColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div><br>
 			    	<p class="bg-danger bgcustom">Please click row to edit!</p>
 			    </div>
-			   
 		    </div>
 
 		</div>
@@ -61,7 +60,7 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 			<div class="panel-heading">
 		        <h1 class="panel-title">
-		        	<span data-bind="text: (scrapperMode() == '') ? 'Create new' : 'Edit'"></span>
+		        	<span data-bind="text: (scrapEdit() == '') ? 'Create new' : 'Edit'"></span>
 		        	page
 	        	</h1>
 		    </div>
