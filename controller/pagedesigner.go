@@ -191,7 +191,7 @@ func (p *PageDesignerController) RemovePage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
-func (p *PageDesignerController) GetWidgetConfig(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) GetWidgetPageConfig(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := struct {
