@@ -4,7 +4,28 @@
 		</ol>
 </div>
 <div id="content">
-	<div class="col-md-12 mgTop15">
+<div class="col-md-12 mgTop15">
+<table data-bind="with:df.logSearchData">
+	<tbody>
+		<tr>
+			<td>
+			<input data-bind="value:search" class="form pull-left search-txt" placeholder="Search by name, description ..."></input>
+			</td>
+			<td class="pdLeft30">Start date</td>
+			<td class="pdLeft7"><input id="logstart" data-bind="kendoDatePicker:{value:startdate,format:'dd MMM yyyy'}"></input></td>
+
+			<td class="pdLeft30">End date</td>
+			<td class="pdLeft7"><input id="logend" data-bind="kendoDatePicker:{value:enddate,format:'dd MMM yyyy'}"></input></td>
+
+			<td class="pdLeft30"> <button onclick="df.logSearch();" class="btn btn-sm">Refresh</button> </td>
+		</tr>
+	</tbody>
+</table>
+       
+</div>
+
+
+<div class="col-md-12 mgTop15">
 
 <div class="modal fade modal-request-leave modal-wide" id="PopUpDetail" tabindex="-1" role="dialog"
         aria-labelledby="myLargeModalLabel" aria-hidden="true"
@@ -31,7 +52,6 @@
             </div>
         </div>
 </div>
-
 
 <div class="panel panel-default itemactive">
 	<div class="panel-heading">

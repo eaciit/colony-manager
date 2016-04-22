@@ -432,8 +432,8 @@ df.init = function () {
     df.createGrid();
     df.getServers();
     setInterval(function(){     
-        BuildRunGrid();
-        BuildComGrid(); 
+        // BuildRunGrid();
+        // BuildComGrid(); 
     },5000);
     BuildRunGrid();
     BuildComGrid();
@@ -1567,6 +1567,21 @@ if(obj.s>0)
 return res;
 }
 
+function toUTC(d){
+    var year = d.getFullYear();
+    var month = d.getMonth();
+    var date = d.getDate();
+    var hours = d.getHours();
+    var minutes = d.getMinutes();
+    var seconds = d.getSeconds();
+    return moment(Date.UTC(year, month, date, hours, minutes, seconds)).toISOString();
+}
+
+function getUTCDate(strdate){
+            var d = moment.utc(strdate);
+            return new Date(d.year(), d.month(), d.date(), 0, 0, 0)
+        }
+
 function BuildRunGrid(){
    var stat =  $("#RunGrid").getKendoGrid();
 
@@ -1587,6 +1602,9 @@ function BuildRunGrid(){
                             callData[i] = yo.data[i];
                         }
                         callData.status = "Running";
+                        callData.search = df.logSearchData.search();
+                        callData.startdate = df.logSearchData.startdate() == null?"": toUTC(df.logSearchData.startdate());
+                        callData.enddate = df.logSearchData.enddate()==null?"": toUTC(df.logSearchData.enddate());
 
                          app.ajaxPost("/dataflow/getdatamonitoring",callData, function(res){
                             if(!app.isFine(res)){
@@ -1594,10 +1612,27 @@ function BuildRunGrid(){
                             }else{
                             var datas = res.data.data;
                                   for (var i in datas) {
-                                            datas[i].MonthStr = moment(datas[i].startdate).format('MMMM Do YYYY, h:mm:ss a');
+                                            datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
                                             datas[i].Duration = (convertMS(new Date(),moment(datas[i].startdate)));
-                                            datas[i].Message = datas[i].steps[datas[i].steps.length-1].message;
-                                            datas[i].CurrentProcess = datas[i].steps[datas[i].steps.length-1].description;
+                                            datas[i].FlowName = datas[i].flow.name;
+                                            datas[i].FlowDescription = datas[i].flow.description;
+                                    if (datas[i].steps != null && datas[i].steps.length > 0) {
+                                            var stp = datas[i].steps[datas[i].steps.length-1];
+                                            var cp = "";
+                                            if(stp instanceof Array){
+                                                for(var ci in stp){
+                                                    if(ci>0){
+                                                        cp+=" & ";
+                                                    }
+                                                    cp+= stp[ci].description;
+                                                }
+                                            }else{
+                                                cp = datas[i].steps[datas[i].steps.length-1].description;
+                                            }
+                                            datas[i].CurrentProcess = cp;
+                                        }else{
+                                            datas[i].CurrentProcess = "";
+                                    }
                                   }
                                   res.data.data = datas;
                                 yo.success(res.data);
@@ -1616,23 +1651,33 @@ function BuildRunGrid(){
             sortable: false,
             pageable: true,
         columns: [
-            { field: "MonthStr", title: "Start time", width: "250px" },
-            { field: "status"
-                , title: "Status"
-                ,width: "130px" 
-                ,template: "#if (status == 'Running') { #   <button class='btn btn-sm btn-warning disabled'>Processing</button> # }  #"
+            { field: "MonthStr", title: "Start time", width: "200px" },
+            {
+                field: "FlowName"
+                ,title: "Name"
+                ,width:"280px"
+            },
+            {
+                field: "FlowDescription"
+                ,title: "Description"
+                ,width:"280px"
             },
             {
                 field: "CurrentProcess"
                 ,title: "Current Process"
-                ,with:"150px"
+                ,width:"280px"
             },
-            { field: "Message", title: "Description", width: "300px"},
-            { field: "pct"
-                , title: "Progress"
-                , width: "200px"
-                , template : '<div class="loading-df"><div class="bar-df" style="width:#=pct#%;"><span>#=pct#%</span></div></div>'
-                },
+              { field: "status"
+                , title: "Status"
+                ,width: "130px" 
+                ,template: "#if (status == 'RUN') { #   <button class='btn btn-sm btn-warning disabled status-grid'>Processing</button> # }  #"
+            },
+            // { field: "Message", title: "Description", width: "300px"},
+            // { field: "pct"
+            //     , title: "Progress"
+            //     , width: "200px"
+            //     , template : '<div class="loading-df"><div class="bar-df" style="width:#=pct#%;"><span>#=pct#%</span></div></div>'
+            //     },
             { field: "Duration", title: "Duration", width: "130px"},
             // { title: "Details", width: "50px", template: "<button onclick='GetDetails(\"#=_id#\")' class='btn btn-sm btn-primary'>Details</button>"       },
         ]
@@ -1700,16 +1745,38 @@ function BuildComGrid(){
                     }
                     callData.status = "Success";
 
+                    callData.search = df.logSearchData.search();
+                    callData.startdate = df.logSearchData.startdate() == null?"": toUTC(df.logSearchData.startdate());
+                    callData.enddate = df.logSearchData.enddate()==null?"": toUTC(df.logSearchData.enddate());
+                    
                     app.ajaxPost("/dataflow/getdatamonitoring",callData, function(res){
                         if(!app.isFine(res)){
                           return;
                         }else{
                         var datas = res.data.data;
                               for (var i in datas) {
-                                        datas[i].MonthStr = moment(datas[i].startdate).format('MMMM Do YYYY, h:mm:ss a');
-                                        datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMMM Do YYYY, h:mm:ss a');
+                                        datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
+                                        datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMM DD YYYY, h:mm:ss a');
                                         datas[i].Duration = (convertMS(moment(datas[i].enddate),moment(datas[i].startdate)));
-                                        datas[i].Message = datas[i].steps[datas[i].steps.length-1].message;
+                                        datas[i].FlowName = datas[i].flow.name;
+                                        datas[i].FlowDescription = datas[i].flow.description;
+                                    if (datas[i].steps != null && datas[i].steps.length > 0) {
+                                        var stp = datas[i].steps[datas[i].steps.length-1];
+                                            var cp = "";
+                                            if(stp instanceof Array){
+                                                for(var ci in stp){
+                                                    if(ci>0){
+                                                        cp+=" & ";
+                                                    }
+                                                    cp+= stp[ci].description;
+                                                }
+                                            }else{
+                                                cp = datas[i].steps[datas[i].steps.length-1].description;
+                                            }
+                                        datas[i].LastProcess = cp;
+                                    }else{
+                                        datas[i].LastProcess = "";
+                                    }
                                 }
                               res.data.data = datas;
                             yo.success(res.data);
@@ -1728,16 +1795,51 @@ function BuildComGrid(){
             sortable: false,
             pageable: true,
         columns: [
-            { field: "MonthStr", title: "Start Time", width: "130px" },
-            { field: "MonthStrEnd", title: "Finish Time", width: "130px" },
+            { field: "MonthStr", title: "Start Time", width: "110px" },
+            { field: "MonthStrEnd", title: "Finish Time", width: "110px" },
+            {
+                field: "FlowName"
+                ,title: "Name"
+                ,width:"170px"
+            },
+            {
+                field: "FlowDescription"
+                ,title: "Description"
+                ,width:"170px"
+            },
+            {
+                field: "LastProcess"
+                ,title: "Last Process"
+                ,width:"170px"
+            },
             { field: "status"
                 , title: "Status"
-                , width: "100px" 
-                ,template: "#if (status == 'Success') { #   <button class='btn btn-sm btn-success disabled'>Success</button> # } else {#  <button class='btn btn-sm btn-danger disabled'>Failed</button>  #}  #"
+                , width: "80px" 
+                ,template: "#if (status == 'SUCCESS') { #   <button class='btn btn-sm btn-success disabled status-grid'>Success</button> # } else {#  <button class='btn btn-sm btn-danger disabled status-grid'>Failed</button>  #}  #"
                 },
-            { field: "Message", title: "Description", width: "260px"},
-            { field: "Duration", title: "Duration", width: "130px"},
+            // { field: "Message", title: "Description", width: "260px"},
+            { field: "Duration", title: "Duration", width: "100px"},
             // { title: "Details", width: "50px", template: "<button onclick='GetDetails(\"#=_id#\")' class='btn btn-sm btn-primary'>Details</button>"       },
         ]
     });
 }
+
+
+df.logSearch = function(){
+    BuildComGrid();
+    BuildRunGrid();
+}
+
+df.logSearchData = {
+    search : ko.observable(""),
+    startdate : ko.observable(null),
+    enddate : ko.observable(null)
+}
+
+df.logSearchData.enddate.subscribe(function(val){
+    $("#logstart").getKendoDatePicker().max(val); 
+});
+
+df.logSearchData.startdate.subscribe(function(val){
+    $("#logend").getKendoDatePicker().min(val); 
+});

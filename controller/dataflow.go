@@ -357,18 +357,53 @@ func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
 
 	status := tk.ToString(payload["status"])
 
+	filters := []*dbox.Filter{}
 	var filter *dbox.Filter
 	filter = new(dbox.Filter)
 
-	if strings.ToLower(status) != "running" {
-		filter = dbox.Ne("status", "Running")
+	if strings.Contains(strings.ToLower(status), "run") {
+		filters = append(filters, dbox.Eq("status", "RUN"))
 	} else {
-		filter = dbox.Eq("status", status)
+		filters = append(filters, dbox.Ne("status", "RUN"))
 	}
 
 	take := tk.ToInt(payload["take"], tk.RoundingAuto)
 	skip := tk.ToInt(payload["skip"], tk.RoundingAuto)
 
+	start := tk.ToString(payload["startdate"])
+	end := tk.ToString(payload["enddate"])
+
+	search := tk.ToString(payload["search"])
+
+	startdate := time.Now()
+	enddate := time.Now()
+
+	if start != "" {
+		startdate, _ = time.Parse(time.RFC3339, start)
+		filters = append(filters, dbox.Gte("startdate", startdate))
+		fmt.Println(startdate)
+		startdate = startdate.AddDate(0, 0, 1)
+		startdate = startdate.Add(time.Duration(-1) * time.Second)
+		filters = append(filters, dbox.Lte("startdate", startdate))
+		fmt.Println(startdate)
+	}
+
+	if end != "" {
+		enddate, _ = time.Parse(time.RFC3339, end)
+		filters = append(filters, dbox.Gte("enddate", enddate))
+		fmt.Println(enddate)
+		enddate = enddate.AddDate(0, 0, 1)
+		enddate = enddate.Add(time.Duration(-1) * time.Second)
+		filters = append(filters, dbox.Lte("enddate", enddate))
+		fmt.Println(enddate)
+	}
+
+	if search != "" {
+		filters = append(filters, dbox.Or(dbox.Contains("flow.name", search), dbox.Contains("flow.description", search)))
+		fmt.Println(search)
+	}
+	fmt.Println(filters)
+	filter = dbox.And(filters...)
 	dataDs := []colonycore.DataFlowProcess{}
 	cursor, err := colonycore.Finds(new(colonycore.DataFlowProcess), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
 	res := tk.M{}

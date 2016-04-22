@@ -443,7 +443,7 @@
 		<li>Data Flow</li>
 	</ol>
     <div class="col-md-12 mgTop15">
-        <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search name, description, create by ..."></input>
+        <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search by name, description, create by ..."></input>
         <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
     </div>
 	<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
@@ -523,6 +523,14 @@
 
         .divTitleDF div:first-child{
            height: 28px!important;
+        }
+
+        .pdLeft30{
+            padding-left:30px;
+        }
+
+        .pdLeft7{
+            padding-left:7px;
         }
 
         .divTitleDF div:nth-child(2){
@@ -739,5 +747,10 @@
 
         .modal-dialog{
             width: 450px;
+        }
+
+        .status-grid{
+            left: 14%;
+            position: relative;
         }
 </style>
