@@ -69,7 +69,17 @@ pv.mapWidgets = function(){
        	 		container.write(page);
         		container.close();
 
+
 	        });
+
+	        // $.each(d, function(i, w){
+	        // 	console.log(i.dataSources)
+	        // 	for(var key in w.dataSource){
+	        // 		if(w.dataSources.hasOwnProperty(key)){
+	        // 			console.log(w.dataSources(key));
+	        // 		}
+	        // 	}
+	        // });
 	    });
 	});
 }
