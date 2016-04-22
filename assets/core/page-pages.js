@@ -8,14 +8,14 @@ p.configPage = ko.mapping.fromJS(p.templateConfigPage);
 p.dataSources = ko.observableArray([]);
 
 p.pageColumns = ko.observableArray([
-	{title: "<center><input type='checkbox' onchange='p.selectAll(this);'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
+	{title: "<center><input type='checkbox' class='select-all' onchange='p.selectAll(this);'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
-			"<input type='checkbox' class='select-row' value=" + d._id + ">"
+			"<input type='checkbox' class='select-row' value=" + d._id + " name='select[]'> "
 		].join(" ");
 	}},
 	{ field: "title", title: "Title" },
 	{ field: "url", title: "Url" },
-	{title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
+	{title: "", width: 300, attributes:{class:"align-center", }, template: function(d){
 		return[
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Page Designer' onclick='location.href=\"/web/pagedesigner?id=" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-eye'></span></button>",
 		].join(" ");
@@ -54,37 +54,47 @@ p.selectPage = function () {
 		ko.mapping.fromJS(res.data.pageDetail, p.configPage);
 	});
 }
+
 p.removePage = function () {
-	var rows = $(".grid-page .select-row:checked").get().map(function (d) {
-		var uid = $(d).closest("tr").attr("data-uid");
-		var id = $(".grid-page").data("kendoGrid").dataSource.getByUid(uid)._id;
-		return id;
-	});
-
-	if (rows.length == 0) {
-		swal({ title: "Opsss", text: "Select row to remove", type: "warning" });
-		return;
-	}
-
-	swal({
-		title: "Are you sure?",
-		text: 'Data grabber with id '+dg.tempCheckIdDataGrabber().toString()+' will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: true
-	}, function() {
-		app.ajaxPost("/pagedesigner/removepage", { ids: rows }, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
-
-			p.getPages();
+	var vals = [];
+	if ($('input:checkbox[name="select[]"]').is(':checked') == false){
+		swal({
+			title:"Opsss",
+			text:"You havent choose any page to delete",
+			type:"warning",
+			confirmButtonText:"OK",
+			closeOnConfirm:true,
+			confirmButtonColor: "#DD6B55"
 		});
-	});
+		}else {
+			vals = $('input:checkbox[name="select[]"]').filter(':checked').map(function(){
+				return this.value;
+			}).get();
+			swal({
+			title: "Are you sure?",
+			text: 'Page(s) with id "' + vals + '" will be deleted',	
+			type: "warning",
+			showCancelButton: true,
+			closeOnConfirm: true,
+			confirmButtonText: "Delete",
+			confirmButtonColor: "#DD6B55"
+			}, 
+			function(){
+				setTimeout(function() {
+					app.ajaxPost("/pagedesigner/removepage", { ids: vals }, function (res) {
+						if (!app.isFine(res)) {
+							return;
+						}
+						swal({title: "Page successfully deleted", type: "success"});
+						p.backToFront();
+					});	
+				}, 1000);
+			})
+		}
 };
+
 p.backToFront = function () {
+	$('.select-all').prop('checked',false).trigger("change");
 	app.mode("");
 	p.getPages();
 };
