@@ -292,7 +292,6 @@ pde.saveWidgetConfig = function () {
         if (d.dataSource == null || d.dataSource == "") {
             return;
         }
-
         configWidget.dataSources[d.namespace] = d.dataSource;
     });
 
@@ -302,11 +301,22 @@ pde.saveWidgetConfig = function () {
     }());
 
     config.widgets[configWidgetIndex] = configWidget;
-    ko.mapping.fromJS(config, p.configPage);
+    
 
+    saveWidgetSetting = $("#formSetting")[0].contentWindow.Save();
+  
+    arrWidgets = {}
+    arrWidgets["config"] = saveWidgetSetting
+    $.extend(config.widgets[configWidgetIndex].config , arrWidgets["config"])
+   
+    ko.mapping.fromJS(config, p.configPage);
+    
     pde.save();
+    
+
 };
 pde.openWidgetSetting = function() {
+   var config = ko.mapping.toJS(p.configPage);
     var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage);
     var widgetDataSourcesMap = ko.mapping.toJS(pde.configWidgetPageDataSources);
     var dsMap = (function () {
@@ -322,12 +332,12 @@ pde.openWidgetSetting = function() {
         widgetId: configWidgetPage.widgetId,
         dataSource: dsMap
     };
-
+    var configWidgetIdentical = Lazy(config.widgets).find({ _id: configWidgetPage._id });
     app.ajaxPost("/pagedesigner/getwidgetconfig", param, function (res) {
         if (!app.isFine(res)) {
             return;
         }
-
+       
         var dsMap = res.data.dataSourceFieldsMap;
         var widgetBaseURL = baseURL + "res-widget" + res.data.widgetBasePath;
         var html = res.data.container;
@@ -337,10 +347,11 @@ pde.openWidgetSetting = function() {
         var iWindow = $("#formSetting")[0].contentWindow;
 
         $("#formSetting").off("load").on("load", function(){
-            iWindow.window.Load(dsMap, null);
+            iWindow.window.Load(dsMap, configWidgetIdentical.config);
 
             var shouldHeight = iWindow.document.getElementById("page-container").scrollHeight;
             iWindow.document.getElementById("widgetSettingForm").style.height = parseInt(shouldHeight) + "px";
+         
         });
 
         var contentDoc = iWindow.document;
