@@ -1,13 +1,14 @@
 package controller
 
 import (
+	"io/ioutil"
+	"path/filepath"
+	"strings"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
 )
 
 type WidgetController struct {
@@ -79,14 +80,14 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	widget := new(colonycore.Widget)
 	widget.ID = r.Request.FormValue("_id")
 	widget.Title = r.Request.FormValue("title")
-	datasource := r.Request.FormValue("dataSourceId")
+	// datasource := r.Request.FormValue("dataSourceId")
 	widget.Description = r.Request.FormValue("description")
 
-	widget.DataSourceId = strings.Split(datasource, ",")
+	// widget.DataSourceId = strings.Split(datasource, ",")
 
 	widgetConfig := toolkit.Ms{}
 	if fileName != "" {
-		widget.URL = w.Server.Address
+		// widget.URL = w.Server.Address
 		widgetConfig, err = widget.ExtractFile(compressedSource, fileName)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
@@ -99,7 +100,7 @@ func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 		data.ID = widget.ID
 		data.GetById()
 		widget.Config = data.Config
-		widget.URL = data.URL
+		// widget.URL = data.URL
 	}
 
 	if err := widget.Save(); err != nil {
@@ -194,7 +195,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 		if err := dataWidget.GetById(); err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
-		dataWidget.DataSourceId = datasource
+		// dataWidget.DataSourceId = datasource
 
 		configs := toolkit.Ms{}
 		for _, val := range data.Get("config", "").([]interface{}) {
@@ -209,4 +210,20 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, previewData, "")
+}
+
+func (p *WidgetController) GetWidgetSetting(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.Widget)
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	config, err := payload.GetConfigWidget()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, config, "")
 }
