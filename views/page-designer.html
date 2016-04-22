@@ -37,7 +37,7 @@
 	.content-widget:after {
 		background-image: url("/res/img/icon_grid.png");
 	    background-color: #E8EFF7!important;
-	    background-position: 10% 50%; 
+	    background-position: 10% 50%;
 	    background-repeat: no-repeat;
 	    content: '';
 	    display: block;
@@ -100,7 +100,7 @@
 		              </div>
 		        </div>
 			</div>
-			
+
 			<div class="col-md-10 row designer">
 				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
 					<div class="grid-stack" id="page-designer-grid-stack"></div>
@@ -175,7 +175,7 @@
 				<div class="modal-body">
 					<ul class="nav nav-tabs" id="myTab">
         				<li class="active"><a data-target="#DataSource" data-toggle="tab">General</a></li>
-       					<li data-bind="css: { 'disabled': pde.isDataSourcesInvalid }"><a data-target="#WidgetSetting" data-toggle="tab" data-bind="click: pde.fieldMapping">Widget Setting</a></li>
+       					<li data-bind="css: { 'disabled': pde.isDataSourcesInvalid }"><a data-target="#WidgetSetting" data-toggle="tab" data-bind="click: pde.openWidgetSetting">Widget Setting</a></li>
    					</ul>
 					<!--<div data-bind="visible: (app.mode() == 'datasourceMapping')">-->
 					<div class="tab-content">
@@ -228,16 +228,16 @@
 									    </div>
 									</div>
 								</div>
-							</div>   	
+							</div>
 			        	</div>
-			        	
+
 			        	<!--</div>-->
 			        	<div class="tab-pane" id="WidgetSetting">
 							<div class="col-md-12">
 					    		<iframe class="full-width" id="formSetting" scrolling="no"  frameborder="0" onload="pde.adjustIframe()"></iframe>
 					        </div>
 				       		<div class="clearfix"></div>
-						
+
 						</div>
 					</div>
 				</div>
@@ -255,4 +255,3 @@
 
 	</div>
 </div>
-

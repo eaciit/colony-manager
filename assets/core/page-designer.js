@@ -76,7 +76,7 @@ pde.deleteWidget = function (o) {
 
             var grid = $("#page-designer-grid-stack").data("gridstack");
             grid.removeWidget($item[0]);
-        } 
+        }
     });
 
     return false;
@@ -97,18 +97,18 @@ pde.settingWidget = function(o) {
     ko.mapping.fromJS(widget, pde.configWidgetPage);
 
     pde.configWidgetPageDataSources([]);
-    app.ajaxPost("/pagedesigner/getwidgetsetting", { _id: widgetID }, function (res) {
+    app.ajaxPost("/widget/getwidgetsetting", { _id: widgetID }, function (res) {
         if (!app.isFine(res)) {
             return;
         }
 
         res.data.dataSources.forEach(function (d) {
             var each = $.extend(true, {}, pde.templateWidgetPageDataSource);
-            each.namespace = ko.observable(d.dataSource);
+            each.namespace = ko.observable(d);
             each.dataSource = ko.observable("");
 
-            if (widget.dataSources.hasOwnProperty(d.dataSource)) {
-                each.dataSource(widget.dataSources[d.dataSource]);
+            if (widget.dataSources.hasOwnProperty(d)) {
+                each.dataSource(widget.dataSources[d]);
             }
 
             pde.configWidgetPageDataSources.push(each);
@@ -200,7 +200,7 @@ pde.addThisWidget = function (o) {
     var config = ko.mapping.toJS(p.configPage);
     config.widgets = (config.widgets == null) ? [] : config.widgets;
     config.widgets.push(widget);
-    
+
     ko.mapping.fromJS(config, p.configPage);
 };
 pde.adjustIframe = function () {
@@ -306,27 +306,29 @@ pde.saveWidgetConfig = function () {
 
     pde.save();
 };
-pde.fieldMapping = function() {
-    var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage)
-    // var dataSource = [];
-    var dataSource = ko.mapping.toJS(pde.configWidgetPageDataSources)
-    var data = [];
-    for(var x in dataSource){
-        data.push(JSON.stringify(dataSource[x]))
-    }
-    // // dataSource.push(dataSource2)
-    // console.log(dataSource)
-    // // var dataSource = ko.mapping.toJS(pde.configWidgetPageDataSources)   
-    // // pde.dataSourceArray([])
-    // for(x in data)
+pde.openWidgetSetting = function() {
+    var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage);
+    var widgetDataSourcesMap = ko.mapping.toJS(pde.configWidgetPageDataSources);
+    var dsMap = (function () {
+        var res = {};
 
-    $("#formSetting").empty();
-    app.ajaxPost("/pagedesigner/widgetpreview", { widgetId: configWidgetPage.widgetId, dataSource: data}, function (res) {
-        
+        widgetDataSourcesMap.forEach(function (d) {
+            res[d.namespace] = d.dataSource;
+        });
+
+        return res;
+    }());
+    var param = {
+        widgetId: configWidgetPage.widgetId,
+        dataSource: dsMap
+    };
+
+    app.ajaxPost("/pagedesigner/getwidgetconfig", param, function (res) {
         if (!app.isFine(res)) {
             return;
         }
 
+        var dsMap = res.data.dataSourceFieldsMap;
         var widgetBaseURL = baseURL + "res-widget" + res.data.widgetBasePath;
         var html = res.data.container;
         html = html.replace(/src\=\"/g, 'src="' + widgetBaseURL);
@@ -335,7 +337,10 @@ pde.fieldMapping = function() {
         var iWindow = $("#formSetting")[0].contentWindow;
 
         $("#formSetting").off("load").on("load", function(){
-            window.frames[0].frameElement.contentWindow.DsFields(res.data.fieldDs, res.data.pageId);
+            iWindow.window.Load(dsMap, null);
+
+            var shouldHeight = iWindow.document.getElementById("page-container").scrollHeight;
+            iWindow.document.getElementById("widgetSettingForm").style.height = parseInt(shouldHeight) + "px";
         });
 
         var contentDoc = iWindow.document;
@@ -344,8 +349,6 @@ pde.fieldMapping = function() {
         contentDoc.close();
     });
 }
-
-pde.AdjustIframeHeight = function(i) { document.getElementById("formSetting").style.height = parseInt(i) + "px"; }
 
 $(function () {
     pde.prepareDataSources(function () {

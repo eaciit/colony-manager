@@ -1,15 +1,17 @@
 package controller
 
 import (
-	"encoding/json"
+
 	// "fmt"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	// "strings"
 	// "regexp"
 	// "io/ioutil"
@@ -189,79 +191,59 @@ func (p *PageDesignerController) RemovePage(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, nil, "")
 }
 
-func (p *PageDesignerController) GetWidgetSetting(r *knot.WebContext) interface{} {
+func (p *PageDesignerController) GetWidgetConfig(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := new(colonycore.Widget)
+	payload := struct {
+		WidgetID    string    `json:"widgetId"`
+		DataSources toolkit.M `json:"dataSource"`
+	}{}
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	config, err := payload.GetConfigWidget()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, config, "")
-}
-
-func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	// type DSMap struct {
-	// 	Fields []string `json:"fields"`
-	// }
-
-	data := toolkit.M{}
-	if err := r.GetPayload(&data); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	var str string
-	widgetBasePath := filepath.Join(os.Getenv("EC_DATA_PATH"), "widget", data.Get("widgetId", "").(string))
+	var windgetContent string
+	widgetBasePath := filepath.Join(EC_DATA_PATH, "widget", payload.WidgetID)
 	err := filepath.Walk(widgetBasePath, func(path string, info os.FileInfo, err error) error {
-
 		if err != nil {
 			return err
 		}
+
+		if info.IsDir() {
+			return nil
+		}
+
 		if info.Name() == "config-widget.html" {
 			bytes, err := ioutil.ReadFile(path)
 			if err != nil {
 				return err
 			}
-			str = string(bytes)
+
+			windgetContent = string(bytes)
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var dataSource map[string]interface{}
-
-	resultFields := make([]toolkit.M, 0, 0)
-	for _, ds := range data.Get("dataSource").([]interface{}) {
-		dat := []byte(ds.(string))
-		if err = json.Unmarshal(dat, &dataSource); err != nil {
-			return helper.CreateResult(true, nil, err.Error())
+	dataSourceFieldsMap := toolkit.M{}
+	for key, val := range payload.DataSources {
+		dataSource := val.(string)
+		fields, _ := helper.GetFieldsFromDS(dataSource)
+		dataSourceFieldsMap[key] = toolkit.M{
+			"dataSource": dataSource,
+			"fields":     fields,
 		}
-
-		fields := toolkit.M{}
-		dsField, err := helper.GetFieldsFromDS(toolkit.ToString(dataSource["dataSource"]))
-		if err != nil {
-			return helper.CreateResult(false, nil, err.Error())
-		}
-		fields.Set(toolkit.ToString(dataSource["namespace"]), dsField)
-		resultFields = append(resultFields, fields)
 	}
 
-	previewData := toolkit.M{}
-	previewData.Set("container", str)
-	previewData.Set("widgetBasePath", "/"+data.Get("widgetId", "").(string)+"/")
-	previewData.Set("fieldDs", resultFields)
+	result := toolkit.M{}
+	result.Set("container", windgetContent)
+	result.Set("widgetBasePath", fmt.Sprintf("/%s/", payload.WidgetID))
+	result.Set("dataSourceFieldsMap", dataSourceFieldsMap)
 
-	return helper.CreateResult(true, previewData, "")
+	return helper.CreateResult(true, result, "")
 }
 
 // func (p *PageDesignerController) SaveConfigPage(r *knot.WebContext) interface{} {
