@@ -60,6 +60,7 @@ func main() {
 	server.Register(controller.CreateWidgetController(server), "")
 	server.Register(controller.CreatePageDesignerController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
+	server.Register(controller.CreatePageController(server), "")
 
 	if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil || isSetupACL {
 		if colonycore.GetConfig(colonycore.CONF_DB_ACL) == nil {
