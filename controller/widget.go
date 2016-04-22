@@ -212,7 +212,7 @@ func (w *WidgetController) PreviewExample(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, previewData, "")
 }
 
-func (p *WidgetController) GetWidgetSetting(r *knot.WebContext) interface{} {
+func (p *WidgetController) GetConfigWidgetJSON(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := new(colonycore.Widget)

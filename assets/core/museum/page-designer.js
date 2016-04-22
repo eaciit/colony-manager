@@ -52,9 +52,9 @@ pg.getDataSource = function() {
 		if (!res.data) {
 			res.data = [];
 		}
-		
+
 		$.each(res.data, function(key,val) {
-			pg.allDataSources.push(val._id)	
+			pg.allDataSources.push(val._id)
 		});
 	});
 }
@@ -78,7 +78,7 @@ pg.getAvailableWidget = function() {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
+
 		$.each(res.data, function(key, val) {
 			var property = $.extend(true, {}, ko.mapping.toJS(pg.availableWidget));
 			var mapping = pg.widgetAvailableConfig;
@@ -101,11 +101,11 @@ pg.getConfigurationPage = function(_id, mode, widgetId, widgetPageId) {
 		if (!app.isFine(res)) {
 			return;
 		}
-		
+
 		setTimeout(function () {
 			ko.mapping.fromJS(res.data, pg.configPageDesigner)
 		},100);
-		
+
 		if (mode == "settingwidget") {
 			var datavalue = [];
 			if (res.data.dataSources != null) {
@@ -171,7 +171,7 @@ pg.widgetSetting = function(_id, mode) {
 			widgetID: _id
 		};
 
-		app.ajaxPost("/pagedesigner/getwidgetsetting", param, function (res) {
+		app.ajaxPost("/pagedesigner/getconfigwidgetjson", param, function (res) {
 			console.log(res);
 		});
 	}
@@ -262,7 +262,7 @@ window.closeModal = function(){
 // 		console.log(JSON.stringify(data));
 // 		$parent = $(".list-widget");
 // 		$.each(data, function(i, items){
-// 			
+//
 // 			$stackItem = $('<div class="list-left grid-stack-item" boolRemove="false"></div>');
 // 			$stackItem.appendTo($parent);
 // 			$itemContent = $('<div class="grid-stack-item-content"></div>');
@@ -279,5 +279,5 @@ $(function (){
 	pg.getConfigurationPage(pg.pageID, "", "", "");
 	pg.getAvailableWidget();
 	app.prepareTooltipster();
-	//pg.setWidgetContainer(); 
+	//pg.setWidgetContainer();
 });

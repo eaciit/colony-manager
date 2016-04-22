@@ -97,7 +97,7 @@ pde.settingWidget = function(o) {
     ko.mapping.fromJS(widget, pde.configWidgetPage);
 
     pde.configWidgetPageDataSources([]);
-    app.ajaxPost("/widget/getwidgetsetting", { _id: widgetID }, function (res) {
+    app.ajaxPost("/widget/getconfigwidgetjson", { _id: widgetID }, function (res) {
         if (!app.isFine(res)) {
             return;
         }
@@ -286,7 +286,17 @@ pde.saveWidgetConfig = function () {
     var widgetDataSources = ko.mapping.toJS(pde.configWidgetPageDataSources);
     var config = ko.mapping.toJS(p.configPage);
     var configWidget = ko.mapping.toJS(pde.configWidgetPage);
-    configWidget.dataSources = (configWidget.dataSources == null) ? {} : configWidget.dataSources;
+    configWidget.dataSources = (function () {
+        var res = {};
+        widgetDataSources.forEach(function (d) {
+            res[d.namespace] = d.dataSource;
+        });
+        return res;
+    }());
+    configWidget.config = (function () {
+        var iWindow = $("#formSetting")[0].contentWindow;
+        return iWindow.window.GetFormData();
+    }());
 
     widgetDataSources.forEach(function (d) {
         if (d.dataSource == null || d.dataSource == "") {
@@ -322,8 +332,26 @@ pde.openWidgetSetting = function() {
         widgetId: configWidgetPage.widgetId,
         dataSource: dsMap
     };
+    var hasConfigWidget = (function () {
+        if ([null, undefined].indexOf(configWidgetPage.config) > -1) {
+            return false;
+        }
 
-    app.ajaxPost("/pagedesigner/getwidgetconfig", param, function (res) {
+        var i = 0;
+        for (var key in configWidgetPage.config) {
+            if (configWidgetPage.config.hasOwnProperty(key)) {
+                i++;
+            }
+        }
+
+        if (i == 0) {
+            return false;
+        }
+
+        return true;
+    }());
+
+    app.ajaxPost("/pagedesigner/getwidgetpageconfig", param, function (res) {
         if (!app.isFine(res)) {
             return;
         }
@@ -336,8 +364,9 @@ pde.openWidgetSetting = function() {
 
         var iWindow = $("#formSetting")[0].contentWindow;
 
-        $("#formSetting").off("load").on("load", function(){
-            iWindow.window.Load(dsMap, null);
+        $("#formSetting").off("load").on("load", function () {
+            var widgetData = hasConfigWidget ? configWidgetPage.config : null;
+            iWindow.window.SetFormData(dsMap, widgetData);
 
             var shouldHeight = iWindow.document.getElementById("page-container").scrollHeight;
             iWindow.document.getElementById("widgetSettingForm").style.height = parseInt(shouldHeight) + "px";
