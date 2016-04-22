@@ -17,7 +17,7 @@
 		        <span class="glyphicon glyphicon-search"></span>                    
 		    </button>
 		    <div class="btn-group" role="group">
-		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: getPages">
+		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: function(){ getPages('refresh')}">
 		            <span class="glyphicon glyphicon-refresh"></span> Refresh
 		        </button>
 		        <button class="btn btn-sm btn-primary mgTop15" data-bind="click: addPage">
@@ -34,15 +34,19 @@
 		            Search
 		        </label>
 		        <div class="col-md-8">
-		            <input class="form-control full-width input-sm searchbr" name="search" type="text" data-bind="value: searchField" placeholder="Type keyword here" />
+		            <input class="form-control full-width input-sm search" name="search" type="text" data-bind="value: searchField" placeholder="Type keyword here" />
 		        </div>
 		    </div>
 		</nav>
-		<div class="panel" data-bind="visible: (app.mode() == '')">
-		    <div class="panel-body">
-		    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: p.pageData, change: p.selectPage, selectable: 'row', columns: p.pageColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div>
+		<div class="" data-bind="visible: (app.mode() == '')">
+		    {{template "_miniloader.html"}}
+		    <div data-bind="visible: !app.miniloader()">
+			    <div class="panel-body">
+			    	<div class="grid grid-page" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: p.pageData, change: p.selectPage, selectable: 'row', columns: p.pageColumns, filterfable: false, pageable: true, dataBound: app.gridBoundTooltipster('.grid-page') }"></div><br>
+			    	<p class="bg-danger bgcustom">Please click row to edit!</p>
+			    </div>
 		    </div>
-		    <p class="bg-danger bgcustom">Please click row to edit!</p>
+
 		</div>
 
 		<nav class="navbar" data-bind="visible: (app.mode() == 'editor')">
@@ -56,7 +60,8 @@
 		<div class="panel" data-bind="visible: (app.mode() == 'editor')">
 			<div class="panel-heading">
 		        <h1 class="panel-title">
-		        	Create Page
+		        	<span data-bind="text: (scrapEdit() == '') ? 'Create new' : 'Edit'"></span>
+		        	page
 	        	</h1>
 		    </div>
 		    <div class="clearfix">&nbsp;</div>
