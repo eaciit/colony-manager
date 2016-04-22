@@ -9,6 +9,7 @@ pde.templateWidgetPageDataSource = {
     namespace: "",
     dataSource: "",
 };
+pde.isDataSourceChanged = ko.observable(false);
 pde.dataSourceArray = ko.observableArray([])
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
@@ -114,7 +115,13 @@ pde.settingWidget = function(o) {
             pde.configWidgetPageDataSources.push(each);
         });
 
-
+        if (!pde.isDataSourcesInvalid()) {
+            pde.isDataSourceChanged(false);
+        }
+    }, function () {
+        if (!pde.isDataSourcesInvalid()) {
+            pde.isDataSourceChanged(false);
+        }
     });
 
     $(".modal-widgetsetting").modal("show");
@@ -296,7 +303,17 @@ pde.isDataSourcesInvalid = ko.computed(function () {
         return d.dataSource() != "";
     }).toArray().length != pde.configWidgetPageDataSources().length;
 }, pde);
+pde.changeDataSource = function (namespace) {
+    return function () {
+        pde.isDataSourceChanged(true);
+    };
+};
 pde.saveWidgetConfig = function () {
+    if (pde.isDataSourceChanged()) {
+        sweetAlert("Oops...", "You just change the datasource! Please update config on widget setting tab also", "error");
+        return;
+    }
+
     var widgetDataSources = ko.mapping.toJS(pde.configWidgetPageDataSources);
     var config = ko.mapping.toJS(p.configPage);
     var configWidget = ko.mapping.toJS(pde.configWidgetPage);
@@ -308,8 +325,12 @@ pde.saveWidgetConfig = function () {
         return res;
     }());
     configWidget.config = (function () {
-        var iWindow = $("#formSetting")[0].contentWindow;
-        return iWindow.window.GetFormData();
+        try {
+            var iWindow = $("#formSetting")[0].contentWindow;
+            return iWindow.window.GetFormData();
+        } catch (err) {
+            return configWidget.config;
+        }
     }());
 
     widgetDataSources.forEach(function (d) {
@@ -331,6 +352,8 @@ pde.saveWidgetConfig = function () {
     pde.save();
 };
 pde.openWidgetSetting = function() {
+    pde.isDataSourceChanged(false);
+
     var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage);
     var widgetDataSourcesMap = ko.mapping.toJS(pde.configWidgetPageDataSources);
     var dsMap = (function () {
@@ -375,6 +398,12 @@ pde.openWidgetSetting = function() {
         var html = res.data.container;
         html = html.replace(/src\=\"/g, 'src="' + widgetBaseURL);
         html = html.replace(/href\=\"/g, 'href="' + widgetBaseURL);
+
+        for (var key in dsMap) {
+            if (dsMap.hasOwnProperty(key)) {
+                dsMap[key].fields = ([null, undefined].indexOf(dsMap[key].fields) > -1) ? [] : dsMap[key].fields;
+            }
+        }
 
         var iWindow = $("#formSetting")[0].contentWindow;
 

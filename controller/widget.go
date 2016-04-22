@@ -67,6 +67,21 @@ func (w *WidgetController) FetchDataSources(ids string) (toolkit.Ms, error) {
 	return widgetData, nil
 }
 
+func (w *WidgetController) SaveWidgetConfig(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(colonycore.Widget)
+	if err := r.GetPayload(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if err := payload.Save(); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
 func (w *WidgetController) SaveWidget(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
