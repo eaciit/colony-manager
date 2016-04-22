@@ -9,6 +9,7 @@ pde.templateWidgetPageDataSource = {
     namespace: "",
     dataSource: "",
 };
+pde.dataSourceArray = ko.observableArray([])
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
 pde.configWidgetPageDataSources = ko.observableArray([]);
@@ -306,9 +307,22 @@ pde.saveWidgetConfig = function () {
     pde.save();
 };
 pde.fieldMapping = function() {
-    var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage);
+    var configWidgetPage = ko.mapping.toJS(pde.configWidgetPage)
+    // var dataSource = [];
+    var dataSource = ko.mapping.toJS(pde.configWidgetPageDataSources)
+    var data = [];
+    for(var x in dataSource){
+        data.push(JSON.stringify(dataSource[x]))
+    }
+    // // dataSource.push(dataSource2)
+    // console.log(dataSource)
+    // // var dataSource = ko.mapping.toJS(pde.configWidgetPageDataSources)   
+    // // pde.dataSourceArray([])
+    // for(x in data)
+
     $("#formSetting").empty();
-    app.ajaxPost("/pagedesigner/widgetpreview", { widgetId: configWidgetPage.widgetId }, function (res) {
+    app.ajaxPost("/pagedesigner/widgetpreview", { widgetId: configWidgetPage.widgetId, dataSource: data}, function (res) {
+        
         if (!app.isFine(res)) {
             return;
         }
@@ -321,7 +335,7 @@ pde.fieldMapping = function() {
         var iWindow = $("#formSetting")[0].contentWindow;
 
         $("#formSetting").off("load").on("load", function(){
-
+            window.frames[0].frameElement.contentWindow.DsFields(res.data.fieldDs, res.data.pageId);
         });
 
         var contentDoc = iWindow.document;

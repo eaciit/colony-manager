@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	// "fmt"
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
@@ -9,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	// "strings"
 	// "regexp"
 	// "io/ioutil"
 	// "path/filepath"
@@ -202,8 +204,13 @@ func (p *PageDesignerController) GetWidgetSetting(r *knot.WebContext) interface{
 
 	return helper.CreateResult(true, config, "")
 }
+
 func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+
+	// type DSMap struct {
+	// 	Fields []string `json:"fields"`
+	// }
 
 	data := toolkit.M{}
 	if err := r.GetPayload(&data); err != nil {
@@ -211,7 +218,6 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 	}
 
 	var str string
-
 	widgetBasePath := filepath.Join(os.Getenv("EC_DATA_PATH"), "widget", data.Get("widgetId", "").(string))
 	err := filepath.Walk(widgetBasePath, func(path string, info os.FileInfo, err error) error {
 
@@ -232,19 +238,29 @@ func (p *PageDesignerController) WidgetPreview(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// regex, err := regexp.Compile(`assets/`)
-	// if err != nil {
-	// 	return helper.CreateResult(false, nil, err.Error())
-	// }
-	// var result = regex.ReplaceAllStringFunc(str, func(each string) string {
-	// 	if each == "assets/" {
-	// 		return fmt.Sprintf("localhost:3000/res-widget/%s/assets/", data.Get("widgetId", "").(string))
-	// 	}
-	// 	return each
-	// })
+	var dataSource map[string]interface{}
+
+	resultFields := make([]toolkit.M, 0, 0)
+	for _, ds := range data.Get("dataSource").([]interface{}) {
+		dat := []byte(ds.(string))
+		if err = json.Unmarshal(dat, &dataSource); err != nil {
+			return helper.CreateResult(true, nil, err.Error())
+		}
+
+		fields := toolkit.M{}
+		dsField, err := helper.GetFieldsFromDS(toolkit.ToString(dataSource["dataSource"]))
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+		fields.Set(toolkit.ToString(dataSource["namespace"]), dsField)
+		resultFields = append(resultFields, fields)
+	}
+
 	previewData := toolkit.M{}
 	previewData.Set("container", str)
 	previewData.Set("widgetBasePath", "/"+data.Get("widgetId", "").(string)+"/")
+	previewData.Set("fieldDs", resultFields)
+
 	return helper.CreateResult(true, previewData, "")
 }
 
