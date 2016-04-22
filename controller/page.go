@@ -3,14 +3,14 @@ package controller
 import (
 	//"bufio"
 	"fmt"
+	"github.com/eaciit/colony-core/v0"
+	"github.com/eaciit/colony-manager/helper"
+	//"github.com/eaciit/dbox"
+	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/toolkit"
 )
 
 type PageController struct {
@@ -131,3 +131,46 @@ func (p *PageController) LoadWidgetPageContent(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, data, "")
 }
+
+// func (p *PageController) RunWidget(r *knot.WebContext) interface{} {
+// 	r.Config.OutputType = knot.OutputJson
+
+// 	payload := map[string]interface{}{}
+// 	err := r.GetPayload(&payload)
+
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+// 	_id := payload["_id"].(string)
+
+//dataDS, _, _conn, query, _metaSave, err := new(DataSourceController).ConnectToDataSource(_id)
+// 	fmt.Println("-------- ", metaSave)
+// 	fmt.Println("-------- ", conn)
+// 	if len(dataDS.QueryInfo) == 0 {
+// 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
+// 		return helper.CreateResult(true, result, "")
+// 	}
+
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+
+// 	cursor, err := query.Cursor(nil)
+// 	if err != nil {
+// 		return helper.CreateResult(false, nil, err.Error())
+// 	}
+// 	defer cursor.Close()
+
+// 	data := []toolkit.M{}
+// 	err = cursor.Fetch(&data, 0, false)
+// 	if err != nil {
+// 		cursor.ResetFetch()
+// 		err = cursor.Fetch(&data, 0, false)
+// 		if err != nil {
+// 			return helper.CreateResult(false, nil, err.Error())
+// 		}
+// 	}
+
+// 	result := toolkit.M{"metadata": dataDS.MetaData, "data": data}
+// 	return helper.CreateResult(true, result, "")
+// }
