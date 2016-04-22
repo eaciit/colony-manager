@@ -6,7 +6,7 @@ p.searchField = ko.observable('');
 p.templateConfigPage = viewModel.templateModels.PageDetail;
 p.configPage = ko.mapping.fromJS(p.templateConfigPage);
 p.dataSources = ko.observableArray([]);
-
+p.scrapperMode = ko.observable("");
 p.pageColumns = ko.observableArray([
 	{title: "<center><input type='checkbox' class='select-all' onchange='p.selectAll(this);'></center>", width: 50, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -21,15 +21,19 @@ p.pageColumns = ko.observableArray([
 		].join(" ");
 	}}
 ]);
+
 p.getPages = function () {
 	app.ajaxPost("/pagedesigner/getpages", { search: p.searchField() }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
+		if (!res.data){
+			res.data = [];
+		}
 		p.pageData(res.data);
 	});
 };
+
 p.getDataSources = function () {
 	app.ajaxPost("/datasource/getdatasources", { search: "" }, function (res) {
 		if (!app.isFine(res)) {
@@ -43,8 +47,10 @@ p.addPage = function () {
 	app.mode("editor");
 	app.showfilter(false);
 };
+
 p.selectPage = function () {
 	var dataItem = this.dataItem(this.select());
+	p.scrapperMode("test");
 	app.ajaxPost("/pagedesigner/selectpage", { _id: dataItem._id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -52,7 +58,7 @@ p.selectPage = function () {
 
 		p.addPage();
 		ko.mapping.fromJS(res.data.pageDetail, p.configPage);
-	});
+	});		
 }
 
 p.removePage = function () {
@@ -97,6 +103,7 @@ p.backToFront = function () {
 	$('.select-all').prop('checked',false).trigger("change");
 	app.mode("");
 	p.getPages();
+	p.scrapperMode("");
 };
 p.savePage = function () {
 	if (!app.isFormValid(".form-add-page")) {
@@ -125,4 +132,5 @@ $(function () {
 		p.getPages();
 		p.getDataSources();
 	}
+	app.registerSearchKeyup($('.search'), p.getPages);
 });
