@@ -4,10 +4,8 @@ viewModel.Widget = {}; var wl = viewModel.Widget;
 wl.widgetListConfig = {
 	_id: "",
 	title: "",
-	dataSourceId: [],
 	description:  "",
 	config: [],
-	url: "",
 };
 
 wl.widgetListdata = ko.observableArray([]);
@@ -24,14 +22,14 @@ wl.WidgetColumns = ko.observableArray([
 
 wl.setGridwl = function (){
 	$('.grid-widget').kendoGrid({
-		dataSource:{ pageSize :15, data : wl.widgetListdata()}, 
+		dataSource:{ pageSize :15, data : wl.widgetListdata()},
 		selectable : 'row',
 		columns : wl.WidgetColumns(),
 		pageable : true,
 		dataBound: app.gridBoundTooltipster('.grid-widget'),
 		rowTemplate : kendo.template($("#rowTemplate").html()),
 	}).addClass("grid-soft grid-list grid-unselectable");
-	$('.grid-widget').find('tr:eq(0) td').css("border-top","none");	
+	$('.grid-widget').find('tr:eq(0) td').css("border-top","none");
 }
 
 wl.selectCount = function(e) {
@@ -66,12 +64,12 @@ wl.getDataSource = function() {
 			res.data = [];
 		}
 		$.each(res.data, function(key,val) {
-			wl.widgetDataSource.push(val._id)	
+			wl.widgetDataSource.push(val._id)
 		});
 	});
 }
 
-wl.openWidget = function(_id, mode) {
+wl.configureWidget = function(_id, mode) {
 	wl.previewMode("");
 	var getId //= (mode == "grid") ? _id : _id();
 
@@ -83,7 +81,7 @@ wl.openWidget = function(_id, mode) {
 	}
 
 	// $(".modal-widget-preview").modal("hide");
-	
+
 	$(".modal-widget-config").modal({
 		backdrop: 'static',
 		keyboard: true
@@ -138,19 +136,20 @@ wl.closeModal = function() {
 	wl.backToFront();
 };
 
-wl.saveAndCloseModal = function(_id, datasource) {
-	app.ajaxPost("/widget/previewexample", {_id: _id, dataSource: datasource(), config: $('#settingform').ecForm("getData"), mode: "save"}, function(res){
-		if(!app.isFine(res)){
-			return;
-		}
-		if (!res.data) {
-			res.data = [];
-		}
-		
-		$(".modal-widget-preview").modal("hide");
-		$(".modal-widget-config").modal("hide");
-		wl.configWidgetList.dataSourceId([]);
-	});
+wl.saveWidgetConfig = function (_id) {
+	return function () {
+		var data = ko.mapping.toJS(wl.configWidgetList);
+		data.config = $('#settingform').ecForm("getData");
+
+		app.ajaxPost("/widget/savewidgetconfig", data, function (res) {
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			// $(".modal-widget-preview").modal("hide");
+			$(".modal-widget-config").modal("hide");
+		});
+	};
 }
 
 wl.addWidget = function() {
@@ -170,15 +169,14 @@ wl.saveWidget = function() {
 	formData.append("_id", data._id);
 	formData.append("title", data.title);
 	formData.append("description", data.description);
-	formData.append("dataSourceId",data.dataSourceId.join(","));
 	formData.append("mode", wl.scrapperMode());
-	
+
 	var file = $('#files').val();
 	if (file == "" && wl.scrapperMode() == "") {
 		sweetAlert("Oops...", 'Please choose file', "error");
 		return;
 	} else {
-		formData.append("userfile", $('input[type=file]#files')[0].files[0]);	
+		formData.append("userfile", $('input[type=file]#files')[0].files[0]);
 	}
 
 	app.ajaxPost("/widget/savewidget", formData, function (res) {
@@ -194,25 +192,18 @@ wl.editWidget = function(_id, mode) {
 	wl.getFile();
 	ko.mapping.fromJS(wl.widgetListConfig, wl.configWidgetList);
 	app.ajaxPost("/widget/editwidget", {_id: _id}, function(res){
-		if(!app.isFine(res)){
+		if (!app.isFine(res)) {
 			return;
 		}
-		if (!res.data) {
-			res.data = [];
-		}
-		
+
 		var current = {};
 		var newData = [];
-		$.each(res.data.dataSourceId, function(key, val) {
-			newData.push(val)
-		});
+
 		current._id = res.data._id;
 		current.title = res.data.title;
 		current.description = res.data.description;
 		current.config = res.data.config;
-		current.dataSourceId = newData;
-		current.url = res.data.url;
-		
+
 		ko.mapping.fromJS(current, wl.configWidgetList);
 		if (mode == "editor") {
 			app.mode("editor");
