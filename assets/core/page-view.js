@@ -60,7 +60,7 @@ pv.mapWidgets = function(){
                     iWindow.window.Render(
                         { dsChart: [] },
                         res.data.WidgetPageData.config,
-                        res.data.WidgetData
+                        res.data.WidgetData.config
                     );
 		        });
 
