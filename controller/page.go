@@ -116,7 +116,8 @@ func (p *PageController) LoadWidgetIndex(r *knot.WebContext) interface{} {
 		PageData   *colonycore.PageDetail
 		WidgetData *colonycore.WidgetPage
 		IndexFile  string
-	}{pageInfo, widgetData, string(byts)}
+		widgetpath string
+	}{pageInfo, widgetData, string(byts), string(byts)}
 
-	return helper.CreateResult(false, data, "")
+	return helper.CreateResult(true, data, "")
 }
