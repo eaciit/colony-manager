@@ -29,10 +29,10 @@ func (w *WebController) PredefinedVariables(params ...toolkit.M) interface{} {
 		"LanguageEnvironment": colonycore.LanguageEnviroment{},
 		"Page":                colonycore.Page{},
 		"PageDetail":          colonycore.PageDetail{},
-		"Server":              colonycore.NewServer(),
-		"WebGrabber":          colonycore.WebGrabber{},
-		"Widget":              colonycore.Widget{},
-		"WidgetPage":          colonycore.WidgetPage{},
+		// "Server":              colonycore.NewServer(),
+		"WebGrabber": colonycore.WebGrabber{},
+		"Widget":     colonycore.Widget{},
+		"WidgetPage": colonycore.WidgetPage{},
 	})
 
 	vars := toolkit.M{"templateModels": string(templateModels)}

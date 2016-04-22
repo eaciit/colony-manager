@@ -92,6 +92,7 @@ var df = viewModel.dataflow;
 var dfl = viewModel.dataFlowList;
 df.arrayconn = ko.observableArray([]);
 df.globalVar = ko.observableArray([]);
+df.newGlobalVar = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
 df.isFork = ko.observable(true);
@@ -664,22 +665,26 @@ df.init = function () {
         });
 };
 df.dataRow = ko.observableArray([]);
-df.run = function () {
+df.run = function (bap) {    
     var call = function(ID){
         app.ajaxPost("/dataflow/start", {
             globalParam:df.globalVar(),
             dataFlowId:ID
         }, function(res){
+            var bap = df.newGlobalVar().map(function (d) {
+                return ko.mapping.fromJS(d);
+            });
+            df.globalVar(bap);
             if(!app.isFine(res)){
               return;
             }else{
                 $('#myModal').modal('hide');
-               swal("Data Flow Started", "Check monitoring tab for details", "success");
+                swal("Data Flow Started", "Check monitoring tab for details", "success");
             }
         });
      }
 
-     df.Save(call);
+    df.Save(call);    
 }
 
 df.counts = {};
@@ -1526,7 +1531,11 @@ df.draggablePopover = function(e){
     });
 }
 
-df.popRun = function(){
+df.popRun = function(){    
+    var bap = df.globalVar().slice().map(function (d) {
+        return $.extend(true, {}, ko.mapping.toJS(d));
+    });
+    df.newGlobalVar(bap);
     df.closePopover("#popbtn");
     df.closePopover("#poptitle");
     df.closePopover("#popGlobalVar");
