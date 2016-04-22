@@ -75,6 +75,7 @@ func (p *PageController) LoadWidgetIndex(r *knot.WebContext) interface{} {
 
 	indexPath := ""
 	widgetpath := filepath.Join(EC_DATA_PATH, "widget", payload.WidgetID)
+	fmt.Println("---------- url", widgetpath)
 	err = filepath.Walk(widgetpath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
