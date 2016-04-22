@@ -986,6 +986,7 @@ df.createGrid = function(search){
         if(!app.isFine(res)){
             return;
         }else{
+            res.data = res.data == null?[]:res.data;
             dfl(res.data);
             $("#dataFlowGrid").html();
             $("#dataFlowGrid").kendoGrid({
@@ -1619,7 +1620,7 @@ function BuildRunGrid(){
                             if(!app.isFine(res)){
                               return;
                             }else{
-                            var datas = res.data.data;
+                        var datas = res.data.data==null?[]:res.data.data;
                                   for (var i in datas) {
                                             datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
                                             datas[i].Duration = (convertMS(new Date(),moment(datas[i].startdate)));
@@ -1762,7 +1763,7 @@ function BuildComGrid(){
                         if(!app.isFine(res)){
                           return;
                         }else{
-                        var datas = res.data.data;
+                        var datas = res.data.data==null?[]:res.data.data;
                               for (var i in datas) {
                                         datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
                                         datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMM DD YYYY, h:mm:ss a');
@@ -1852,3 +1853,9 @@ df.logSearchData.enddate.subscribe(function(val){
 df.logSearchData.startdate.subscribe(function(val){
     $("#logend").getKendoDatePicker().min(val); 
 });
+
+df.logReset = function(){
+        df.logSearchData.search("");
+        df.logSearchData.startdate(null);
+        df.logSearchData.enddate(null);
+}
