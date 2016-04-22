@@ -6,7 +6,6 @@ pv.indexWidget = ko.observable("");
 pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
-         '<h5></h5>',
          '<iframe class="itemsFrame" scrolling="no"  frameborder="0"></iframe>',
         '</div>',
     '</div>'
@@ -27,12 +26,12 @@ pv.mapWidgets = function(){
 			return;
 		}
 		var widgets = res.data.widgets;
+
 		(widgets == null ? [] : widgets).forEach(function (d) {
 	        var $item = $(pv.templateWidgetItem);
 	        $item.attr("data-id", d._id);
 	        $item.data("id", d._id);
 	        $item.data("widget-id", d.widgetId);
-	        $item.find("h5").text(d.title);
 	        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
 
             var param = {
