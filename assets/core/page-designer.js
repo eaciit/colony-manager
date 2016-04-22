@@ -164,16 +164,30 @@ pde.prepareWidget = function (callback) {
         callback();
     });
 };
+pde.randomString =  function(){
+    var length = 10
+    var result = '';
+    var chars  = "abcdefghijklmnopqrstuvwxyz123456789"
+    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
+
 pde.addThisWidget = function (o) {
     var id = moment().format("YYYYMMDDHHmmssSSS");
     var widgetID = $(o).data("id");
-    var title = "Widget " + pde.widgetCounter();
-
+    var titleID = "ID : WP " + pde.randomString();  
+    var title = widgetID 
+   
     var $item = $(pde.templateWidgetItem);
+    $item.find(".pull-left").append("<h6>"+titleID+"</h6>");
     $item.attr("data-id", id);
     $item.data("id", id);
     $item.data("widgetid", widgetID);
+    // $item.find("h6").text(title);
     $item.find("h5").text(title);
+    
+
+    
 
     var node = $(o).data('_gridstack_node');
     var nan = function (x, y) { return (typeof node === "undefined") ? y : (isNaN(node[x]) ? y : node[x]); };
