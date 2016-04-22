@@ -15,7 +15,7 @@ p.pageColumns = ko.observableArray([
 	}},
 	{ field: "title", title: "Title" },
 	{ field: "url", title: "Url" },
-	{title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
+	{ title: "", width: 300, attributes:{class:"align-center"}, template: function(d){
 		return[
 			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Page Designer' onclick='location.href=\"/web/pagedesigner?id=" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-eye'></span></button>",
 		].join(" ");
@@ -45,15 +45,17 @@ p.addPage = function () {
 };
 p.selectPage = function () {
 	var dataItem = this.dataItem(this.select());
-	app.ajaxPost("/pagedesigner/selectpage", { _id: dataItem._id }, function (res) {
+	app.wrapGridSelect(".grid-page", ".btn", function (d) {
+		app.ajaxPost("/pagedesigner/selectpage", { _id: dataItem._id }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
-
 		p.addPage();
 		ko.mapping.fromJS(res.data.pageDetail, p.configPage);
+		});
 	});
 }
+
 p.removePage = function () {
 	var rows = $(".grid-page .select-row:checked").get().map(function (d) {
 		var uid = $(d).closest("tr").attr("data-uid");
