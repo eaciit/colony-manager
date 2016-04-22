@@ -143,7 +143,7 @@ func (p *PageController) LoadWidgetPageContent(r *knot.WebContext) interface{} {
 // 	}
 // 	_id := payload["_id"].(string)
 
-// 	dataDS, _, conn, query, metaSave, err := new(DataSourceController).ConnectToDataSource(_id)
+//dataDS, _, _conn, query, _metaSave, err := new(DataSourceController).ConnectToDataSource(_id)
 // 	fmt.Println("-------- ", metaSave)
 // 	fmt.Println("-------- ", conn)
 // 	if len(dataDS.QueryInfo) == 0 {
