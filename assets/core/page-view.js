@@ -62,6 +62,22 @@ pv.mapWidgets = function(){
                         res.data.WidgetPageData.config,
                         res.data.WidgetData.config
                     );
+
+                    app.ajaxPost("/page/loadwidgetpagedata", res.data.WidgetPageData.dataSources, function (res2) {
+                        // if (!app.isFine(res)) {
+                        //     return;
+                        // }
+
+                        if (res2.data == null) {
+                            res2.data = {};
+                        }
+
+                        iWindow.window.Render(
+                            res2.data,
+                            res.data.WidgetPageData.config,
+                            res.data.WidgetData.config
+                        );
+                    });
 		        });
 
 				var container =  iWindow.document;
