@@ -3,14 +3,16 @@ package controller
 import (
 	//"bufio"
 	"fmt"
+
 	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/colony-manager/helper"
 	//"github.com/eaciit/dbox"
-	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/toolkit"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 )
 
 type PageController struct {
@@ -130,6 +132,29 @@ func (p *PageController) LoadWidgetPageContent(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, data, "")
+}
+
+func (p *PageController) LoadWidgetPageData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	result := toolkit.M{}
+
+	for namespace, dsID := range payload {
+		data, err := helper.FetchDataFromDS(dsID.(string), 0)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+
+		result.Set(namespace, data)
+	}
+
+	return helper.CreateResult(true, result, "")
 }
 
 // func (p *PageController) RunWidget(r *knot.WebContext) interface{} {
