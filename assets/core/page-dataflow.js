@@ -621,6 +621,10 @@ df.init = function () {
         }
     });
 
+    $('#myModal').on('hidden.bs.modal', function (e) {
+        df.bap();
+    })
+
     var xmouse = 0;
     var ymouse = 0;
 
@@ -671,10 +675,7 @@ df.run = function (bap) {
             globalParam:df.globalVar(),
             dataFlowId:ID
         }, function(res){
-            var bap = df.newGlobalVar().map(function (d) {
-                return ko.mapping.fromJS(d);
-            });
-            df.globalVar(bap);
+            // df.bap();
             if(!app.isFine(res)){
               return;
             }else{
@@ -685,6 +686,12 @@ df.run = function (bap) {
      }
 
     df.Save(call);    
+}
+df.bap = function(){
+    var bap = df.newGlobalVar().map(function (d) {
+        return ko.mapping.fromJS(d);
+    });
+    df.globalVar(bap);
 }
 
 df.counts = {};
