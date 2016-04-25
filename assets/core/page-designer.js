@@ -286,9 +286,12 @@ pde.save = function () {
 pde.mapWidgets = function () {
     var $gridStack = $("#page-designer-grid-stack").data("gridstack");
     var config = ko.mapping.toJS(p.configPage);
-
+     
+    
     (config.widgets == null ? [] : config.widgets).forEach(function (d) {
         var $item = $(pde.templateWidgetItem);
+        var titleID = "ID : WP " + pde.randomString(); 
+        $item.find(".pull-left").append("<h6>"+titleID+"</h6>");
         $item.attr("data-id", d._id);
         $item.data("id", d._id);
         $item.data("widgetid", d.widgetId);
