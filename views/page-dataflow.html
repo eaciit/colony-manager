@@ -367,7 +367,14 @@
                             <tr>
                                 <td>Type</td>
                                 <td colspan='2'>
-                                    <input type="text" class="inp-decision mgLeft-17" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                    <input type="text" class="inp-decision mgLeft-25" data-bind="kendoDropDownList: { data: df.outputType, value:output.type}">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Output Path</td>
+                                <td colspan='2'>
+                                    <input type="text" class="inp-custom mgLeft-25" data-bind="value:output.path" placeholder="Fill output file path">
+                                    <button class="btn pd-custom fileChooserBtn">..</button>
                                 </td>
                             </tr>
                             <tr>
@@ -687,8 +694,8 @@
             margin: 5px 5px 2px 0;
             width: 150px;
         }
-        .mgLeft-17{
-            margin-left: -17px;
+        .mgLeft-25{
+            margin-left: -25px;
         }
         input.inline-edit{
             border: none;

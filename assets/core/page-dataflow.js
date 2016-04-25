@@ -108,6 +108,7 @@ df.actionDetails = ko.observable({
     input : ko.observableArray([]),
     output:{
         type:ko.observable(""),
+        path:ko.observable(""),
         param:ko.observableArray([])
     }
 });
@@ -117,6 +118,7 @@ df.newActionDetails = function(){
         input : ko.observableArray([]),
         output:{
             type:ko.observable(""),
+            path:ko.observable(""),
             param:ko.observableArray([])
         }
     }
@@ -1179,6 +1181,8 @@ df.renderActionData = function(){
     df.actionDetails().whenFailed(whenfailed);
     var outputType = df.actionDetails().output.type() ==""?"json": df.actionDetails().output.type() ;
     df.actionDetails().output.type(outputType);
+    var outputPath = df.actionDetails().output.path() == undefined? df.newActionDetails(): df.actionDetails().output.path() ;
+    df.actionDetails().output.path(outputPath);
     //end set default
     
     switch(action){
@@ -1505,6 +1509,7 @@ res.firstaction = true;
 res.inputparam = det.input;
 res.outputparam = det.output.param;
 res.outputtype = det.output.type;
+res.outputpath = det.output.path;
 
 
 return res;
