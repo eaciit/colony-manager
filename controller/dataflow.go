@@ -386,7 +386,7 @@ func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
 		filters = append(filters, dbox.Lte("startdate", startdate))
 	}
 
-	if end != "" {
+	if end != "" && !strings.Contains(strings.ToLower(status), "run") {
 		enddate, _ = time.Parse(time.RFC3339, end)
 		filters = append(filters, dbox.Gte("enddate", enddate))
 		enddate = enddate.AddDate(0, 0, 1)
