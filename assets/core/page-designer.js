@@ -19,19 +19,16 @@ pde.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
             '<div class="panel panel-default">',
-                '<div class="panel-heading wg-panel">',
-                    '<div class="pull-left">',
-                        '<h5></h5>',
-                    '</div>',
-                    '<div class="pull-right">',
-                        '<div class="nav">',
-                            '<button class="btn btn-primary btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></button>',
-                            '&nbsp;',
-                            '<button class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></button>',
-                        '</div>',
-                    '</div>',
+                '<div class="widget-info">',
+                    '<img src="/res/img/icon_grid.png" />',
+                    '<div class="widget-info-id"></div>',
+                    '<div class="widget-info-widgetid"></div>',
                 '</div>',
-                '<div class="clearfix"></div>',
+                '<div class="nav">',
+                    '<button class="btn btn-primary btn-xs tooltipster" onclick="pde.settingWidget(this);" title="Setting"><span class="glyphicon glyphicon-cog"></span></button>',
+                    '&nbsp;',
+                    '<button class="btn btn-danger btn-xs tooltipster" title="Remove" onclick="pde.deleteWidget(this)"><span class="glyphicon glyphicon-trash"></span></button>',
+                '</div>',
             '</div>',
         '</div>',
     '</div>'
@@ -146,7 +143,7 @@ pde.prepareSidebarDraggable = function () {
 };
 pde.prepareWidget = function (callback) {
     var $sidebar = $("#sidebar");
-    $sidebar.empty();
+    $sidebar.find(":not(h1)").remove();
     pde.baseWidgets([]);
 
     app.ajaxPost("/widget/getwidget", { search: "" }, function (res) {
@@ -158,7 +155,7 @@ pde.prepareWidget = function (callback) {
         res.data.forEach(function (d) {
             var els = [
                 '<div class="list-left grid-stack-item" onclick="pde.addThisWidget(this);">',
-                    '<a href="#" class="not-active"></a>',
+                    '<a href="#"></a>',
                 '</div>'
             ].join("");
 
@@ -180,21 +177,20 @@ pde.randomString =  function(){
 }
 
 pde.addThisWidget = function (o) {
-    var id = moment().format("YYYYMMDDHHmmssSSS");
+    var id = "wp-" + pde.randomString();
     var widgetID = $(o).data("id");
-    var titleID = "ID : WP " + pde.randomString();  
-    var title = widgetID 
-   
+    var title = widgetID
+    var widgetTitle = (function () {
+        var widgetRow = Lazy(pde.baseWidgets()).find({ _id: widgetID });
+        return (widgetRow == undefined) ? widgetID : widgetRow.title;
+    }());
+
     var $item = $(pde.templateWidgetItem);
-    $item.find(".pull-left").append("<h6>"+titleID+"</h6>");
     $item.attr("data-id", id);
     $item.data("id", id);
     $item.data("widgetid", widgetID);
-    // $item.find("h6").text(title);
-    $item.find("h5").text(title);
-    
-
-    
+    $item.find(".widget-info-id").text(id);
+    $item.find(".widget-info-widgetid").text(widgetTitle);
 
     var node = $(o).data('_gridstack_node');
     var nan = function (x, y) { return (typeof node === "undefined") ? y : (isNaN(node[x]) ? y : node[x]); };
@@ -255,6 +251,9 @@ pde.savePage = function () {
         $(".modal-config").modal("hide");
     });
 };
+pde.preview = function () {
+    location.href = "/page/" + p.configPage._id();
+};
 pde.setWidgetPosition = function () {
     var config = ko.mapping.toJS(p.configPage);
     config.widgets = config.widgets.map(function (d) {
@@ -286,16 +285,19 @@ pde.save = function () {
 pde.mapWidgets = function () {
     var $gridStack = $("#page-designer-grid-stack").data("gridstack");
     var config = ko.mapping.toJS(p.configPage);
-     
-    
+
     (config.widgets == null ? [] : config.widgets).forEach(function (d) {
+        var widget = (function () {
+            var widgetRow = Lazy(pde.baseWidgets()).find({ _id: d.widgetId });
+            return (widgetRow == undefined) ? d.widgetId : widgetRow.title;
+        }());
+
         var $item = $(pde.templateWidgetItem);
-        var titleID = "ID : WP " + pde.randomString(); 
-        $item.find(".pull-left").append("<h6>"+titleID+"</h6>");
         $item.attr("data-id", d._id);
         $item.data("id", d._id);
         $item.data("widgetid", d.widgetId);
-        $item.find("h5").text(d.title);
+        $item.find(".widget-info-id").text(d._id);
+        $item.find(".widget-info-widgetid").text(widget);
 
         $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
         pde.widgetCounter(pde.widgetCounter() + 1);
