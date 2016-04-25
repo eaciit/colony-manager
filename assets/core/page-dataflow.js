@@ -434,8 +434,8 @@ df.init = function () {
     df.createGrid();
     df.getServers();
     setInterval(function(){     
-        // BuildRunGrid();
-        // BuildComGrid(); 
+        BuildRunGrid();
+        BuildComGrid(); 
     },5000);
     BuildRunGrid();
     BuildComGrid();
