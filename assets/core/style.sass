@@ -1025,22 +1025,35 @@ body
 								margin-bottom: 0px
 								height: 100%
 								border-color: #E8E8E8
+								background-color: #F9F9F9
 
-								.panel-heading
-									padding: 0px
-									margin: 0px
-									text-align: center
-									padding-left: 5px
-									padding-right: 5px
-									min-height: 36px
-									border-bottom: 1px solid #E8E8E8
-
-									h1, h2, h3, h4, h5
-										margin: 0px
-										padding-top: 10px
-
+								&:hover
 									.nav
-										padding-top: 7px
+										opacity: 1
+
+								.nav
+									position: absolute
+									right: 10px
+									top: 10px
+									opacity: 0
+									transition: opacity 100ms ease-in-out
+
+								.widget-info
+									position: absolute
+									left: 0
+									right: 0
+									height: 84px
+									text-align: center
+									top: 50%
+									margin-top: -42px
+
+									.widget-info-id
+										font-weight: bold
+										font-size: 14px
+
+									.widget-info-widgetid
+										color: rgba(0,0,0,0.6)
+										font-style: italic
 
 	#sidebar.list-widget
 		margin-top: 15px
