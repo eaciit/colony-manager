@@ -143,7 +143,7 @@ pde.prepareSidebarDraggable = function () {
 };
 pde.prepareWidget = function (callback) {
     var $sidebar = $("#sidebar");
-    $sidebar.empty();
+    $sidebar.find(":not(h1)").remove();
     pde.baseWidgets([]);
 
     app.ajaxPost("/widget/getwidget", { search: "" }, function (res) {
@@ -155,7 +155,7 @@ pde.prepareWidget = function (callback) {
         res.data.forEach(function (d) {
             var els = [
                 '<div class="list-left grid-stack-item" onclick="pde.addThisWidget(this);">',
-                    '<a href="#" class="not-active"></a>',
+                    '<a href="#"></a>',
                 '</div>'
             ].join("");
 
@@ -250,6 +250,9 @@ pde.savePage = function () {
 
         $(".modal-config").modal("hide");
     });
+};
+pde.preview = function () {
+    location.href = "/page/" + p.configPage._id();
 };
 pde.setWidgetPosition = function () {
     var config = ko.mapping.toJS(p.configPage);

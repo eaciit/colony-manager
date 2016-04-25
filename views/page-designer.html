@@ -19,10 +19,14 @@
 		pointer-events: none;
 	}
 
-	.not-active {
-       pointer-events: none;
-       cursor: move;
-    }
+	#sidebar h1, .content-designer h1 {
+		color: #5F5F5F;
+		font-weight: 600;
+		padding-bottom: 4px;
+		border-bottom: 1px solid whitesmoke;
+		font-size: 16px !important;
+		margin: 10px;
+	}
 </style>
 
 <div class="col-xs-12 col-sm-12" id="content" data-bind="with: PageDesignerEditor">
@@ -32,7 +36,7 @@
 			<div class="pull-right">
 				<button class="btn mgRight tooltipster" title="Back" onclick="location.href='/web/pages'"><span class="glyphicon glyphicon-arrow-left"></span></button>
 				<button class="btn btn-primary tooltipster" title="Save" onclick="pde.save()"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-				<button class="btn btn-primary tooltipster" title="Preview" onclick=""><span class="glyphicon glyphicon-eye-open"></span></button>
+				<button class="btn btn-primary tooltipster" title="Preview" onclick="pde.preview()"><span class="glyphicon glyphicon-eye-open"></span></button>
 				<button class="btn mgLeft tooltipster" title="Configuration" data-bind="click: showConfigPage">
 			    		<span class="glyphicon glyphicon-cog"></span>
 			    </button>
@@ -42,6 +46,7 @@
 		<div class="row dataflow-content">
 			<div class="col-md-2 sidebar">
 				<div class="list-widget" id="sidebar">
+					<h1>List available widgets</h1>
 		              <div class="list-left grid-stack-item">
 		              		<div class="grid-stack-item-content">
 		              			<a href="#" class="not-active">Widget 1</a>
@@ -62,6 +67,7 @@
 
 			<div class="col-md-10 row designer">
 				<div class="panel content-designer" data-bind="visible: (app.mode() == '')">
+					<h1>Designer</h1>
 					<div class="grid-stack" id="page-designer-grid-stack"></div>
 				</div>
 			</div>
