@@ -28,6 +28,7 @@ pv.mapWidgets = function(){
 		}
 		var widgets = res.data.widgets;
 
+		$(".title-widget").text(res.data.title);
 		(widgets == null ? [] : widgets).forEach(function (d) {
 	        var $item = $(pv.templateWidgetItem);
 	        $item.attr("data-id", d._id);
