@@ -1081,3 +1081,37 @@ body
 				&:hover
 					background-color: #3A8BDF
 					color: white
+
+.page-view
+	min-height: 500px
+	margin-top: 15px
+	margin-bottom: 15px
+	padding-top: 10px
+	padding-bottom: 10px
+	border: 1px solid #E5E5E5
+
+body 
+	.page-view
+		.grid-stack
+			.grid-stack-item
+				.grid-stack-item-content 
+					&:hover
+						.title
+							opacity: 1
+
+					.title
+						position: absolute
+						right: 15px
+						top: 0
+						opacity: 0
+						transition: opacity 100ms ease-in-out
+		.grid-stack
+			.grid-stack-item
+				.grid-stack-item-content
+					border: 1px solid #EBEBEB
+					padding: 10px
+				.title
+					position: absolute
+					top: 0
+
+
