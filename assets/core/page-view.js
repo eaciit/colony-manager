@@ -7,7 +7,7 @@ pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
         	'<h5 class="title"></h5>',
-            '<iframe width="100%" height="99%" id="iframe1" marginheight="0" frameborder="0" scrolling="no" style="overflow: hidden;"></iframe>',
+            '<iframe width="100%" height="99%" marginheight="0" frameborder="0" scrolling="no" style="overflow: hidden;"></iframe>',
         '</div>',
     '</div>'
 ].join("");
@@ -37,7 +37,6 @@ pv.mapWidgets = function(){
 	        $item.find("h5").text(d.title);
 	        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
 
-
             var param = {
                 _id: d._id,
                 pageID: viewModel.pageID,
@@ -65,7 +64,7 @@ pv.mapWidgets = function(){
                         res.data.WidgetData.config
                     );
 
-                    $(this).height( $(this).contents().find("body").height());
+                    // $(this).height( $(this).contents().find("body").height());
 
                     app.ajaxPost("/page/loadwidgetpagedata", res.data.WidgetPageData.dataSources, function (res2) {
                         // if (!app.isFine(res)) {

@@ -895,6 +895,8 @@ body #content > .col-md-12 .designer .content-designer {
         body #content > .col-md-12 .designer .content-designer .grid-stack .grid-stack-item .grid-stack-item-content .panel .widget-info .widget-info-widgetid {
           color: rgba(0, 0, 0, 0.6);
           font-style: italic; }
+body .title-widget {
+  margin-top: 10px; }
 body #sidebar.list-widget {
   margin-top: 15px;
   border: 1px solid #E8E8E8; }
