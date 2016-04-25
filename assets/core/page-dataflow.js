@@ -987,61 +987,107 @@ df.popDescSave = function(val){
     df.Desciption = val  
 }
 
-df.createGrid = function(search){
-    var searchtxt = search == undefined?"":search;
-    app.ajaxPost("/dataflow/getlistdata", {
-        search : searchtxt
-    }, function(res){
-        if(!app.isFine(res)){
-            return;
-        }else{
-            res.data = res.data == null?[]:res.data;
-            dfl(res.data);
-            $("#dataFlowGrid").html();
-            $("#dataFlowGrid").kendoGrid({
-                dataSource:{
-                    data:res.data,
-                    pageSize:10,
+df.createGrid = function(){
+    var stat =  $("#dataFlowGrid").getKendoGrid();
+
+    if(stat != undefined){
+        stat.dataSource.read();
+        stat.refresh();
+        return;
+    }
+
+    $("#dataFlowGrid").kendoGrid({
+        dataSource: {
+            transport:{
+                read: function(yo){
+                    var callData = {};
+                    if (yo.data["sort"] == "")
+                        yo.data["sort"] = undefined;
+                    for(var i in yo.data){
+                        callData[i] = yo.data[i];
+                    }
+                    callData.status = "Success";
+
+                    callData.search = df.flowSearchData.search();
+                    callData.startdate = df.flowSearchData.startdate() == null?"": toUTC(df.flowSearchData.startdate());
+                    callData.enddate = df.flowSearchData.enddate()==null?"": toUTC(df.flowSearchData.enddate());
+                    
+                    app.ajaxPost("/dataflow/getlistdata",callData, function(res){
+                        if(!app.isFine(res)){
+                          return;
+                        }else{
+                        var datas = res.data.data==null?[]:res.data.data;
+                            for (var i in datas) {
+                                datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
+                                datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMM DD YYYY, h:mm:ss a');
+                                datas[i].Duration = (convertMS(moment(datas[i].enddate),moment(datas[i].startdate)));
+                                datas[i].FlowName = datas[i].flow.name;
+                                datas[i].FlowDescription = datas[i].flow.description;
+                                if (datas[i].steps != null && datas[i].steps.length > 0) {
+                                    var stp = datas[i].steps[datas[i].steps.length-1];
+                                        var cp = "";
+                                        if(stp instanceof Array){
+                                            for(var ci in stp){
+                                                if(ci>0){
+                                                    cp+=" & ";
+                                                }
+                                                cp+= stp[ci].description;
+                                            }
+                                        }else{
+                                            cp = datas[i].steps[datas[i].steps.length-1].description;
+                                        }
+                                    datas[i].LastProcess = cp;
+                                }else{
+                                    datas[i].LastProcess = "";
+                                }
+                            }
+                          res.data.data = datas;
+                        yo.success(res.data);
+                    }
+                });
                 },
-                pageable: {
-                    input: true,
-                    numeric: false
+            },
+        },
+        pageSize:10,
+        groupable: false,
+        sortable: false,
+        pageable: {
+            input: true,
+            numeric: false
+        },
+        columns: [
+            {field:"name",title:"Name",width:200},
+            {field:"description", title:"Description"},
+            {field:"createddate",align:"center" , width:150, title:"Created Date" ,template:"#:moment(Date.parse(createddate)).format('DD-MMM-YYYY HH:mm')#"
+                ,attributes: {
+                    style: "text-align: center;",
                 },
-                columns:[
-                    {field:"name",title:"Name",width:200},
-                    {field:"description", title:"Description"},
-                    {field:"createddate",align:"center" , width:150, title:"Created Date" ,template:"#:moment(Date.parse(createddate)).format('DD-MMM-YYYY HH:mm')#"
-                        ,attributes: {
-                            style: "text-align: center;",
-                        },
-                        headerAttributes: {
-                            style: "text-align: center;",
-                        },
-                    },
-                   {field:"lastmodified",align:"center" , width:150, title:"Last Modified" ,template:"#:moment(Date.parse(lastmodified)).format('DD-MMM-YYYY HH:mm')#"
-                        ,attributes: {
-                            style: "text-align: center;",
-                        },
-                            headerAttributes: {
-                            style: "text-align: center;",
-                        },
-                    },
-                    {field:"createdby",width:200,title:"Created By"},
-                    {width:100, title:"Actions",
-                        template:"<button class='btn btn-sm tooltipster-grid mgRight10' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-cog'></span></button>"+
-                    "<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"},
-                ],
-                dataBound:function(){
-                    $(".tooltipster-grid").tooltipster({
-                        theme: 'tooltipster-val',
-                        animation: 'grow',
-                        delay: 0,
-                        offsetY: -5,
-                        touchDevices: false,
-                        trigger: 'hover',
-                        position: "top"
-                    });
-                }
+                headerAttributes: {
+                    style: "text-align: center;",
+                },
+            },
+           {field:"lastmodified",align:"center" , width:150, title:"Last Modified" ,template:"#:moment(Date.parse(lastmodified)).format('DD-MMM-YYYY HH:mm')#"
+                ,attributes: {
+                    style: "text-align: center;",
+                },
+                    headerAttributes: {
+                    style: "text-align: center;",
+                },
+            },
+            {field:"createdby",width:200,title:"Created By"},
+            {width:100, title:"Actions",
+                template:"<button class='btn btn-sm tooltipster-grid mgRight10' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-cog'></span></button>"+
+            "<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"},
+        ],
+        dataBound:function(){
+            $(".tooltipster-grid").tooltipster({
+                theme: 'tooltipster-val',
+                animation: 'grow',
+                delay: 0,
+                offsetY: -5,
+                touchDevices: false,
+                trigger: 'hover',
+                position: "top"
             });
         }
     });
@@ -1553,6 +1599,30 @@ df.popRun = function(){
     df.closePopover("#poptitle");
     df.closePopover("#popGlobalVar");
     $('#myModal').modal('show');
+}
+
+df.flowSearch = function(){
+    df.createGrid();
+}
+
+df.flowSearchData = {
+    search : ko.observable(""),
+    startdate : ko.observable(null),
+    enddate : ko.observable(null)
+}
+
+df.flowSearchData.enddate.subscribe(function(val){
+    $("#flowstart").getKendoDatePicker().max(val); 
+});
+
+df.flowSearchData.startdate.subscribe(function(val){
+    $("#flowend").getKendoDatePicker().min(val); 
+});
+
+df.flowReset = function(){
+        df.flowSearchData.search("");
+        df.flowSearchData.startdate(null);
+        df.flowSearchData.enddate(null);
 }
 
 $(function () {
