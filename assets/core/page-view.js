@@ -6,8 +6,8 @@ pv.indexWidget = ko.observable("");
 pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
-         '<h5></h5>',
-         '<iframe class="itemsFrame" scrolling="no"  frameborder="0"></iframe>',
+        	'<h5 class="title"></h5>',
+            '<iframe width="100%" height="99%" id="iframe1" marginheight="0" frameborder="0" scrolling="no" style="overflow: hidden;"></iframe>',
         '</div>',
     '</div>'
 ].join("");
@@ -27,6 +27,8 @@ pv.mapWidgets = function(){
 			return;
 		}
 		var widgets = res.data.widgets;
+
+		$(".title-widget").text(res.data.title);
 		(widgets == null ? [] : widgets).forEach(function (d) {
 	        var $item = $(pv.templateWidgetItem);
 	        $item.attr("data-id", d._id);
@@ -34,6 +36,7 @@ pv.mapWidgets = function(){
 	        $item.data("widget-id", d.widgetId);
 	        $item.find("h5").text(d.title);
 	        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
+
 
             var param = {
                 _id: d._id,
@@ -55,13 +58,14 @@ pv.mapWidgets = function(){
                 var iWindow = $iFrame[0].contentWindow;
 
 		        $iFrame.off("load").on("load", function () {
-                    console.log("widget " + d._id + " loaded");
 
                     iWindow.window.Render(
                         { dsChart: [] },
                         res.data.WidgetPageData.config,
                         res.data.WidgetData.config
                     );
+
+                    $(this).height( $(this).contents().find("body").height());
 
                     app.ajaxPost("/page/loadwidgetpagedata", res.data.WidgetPageData.dataSources, function (res2) {
                         // if (!app.isFine(res)) {
@@ -87,15 +91,6 @@ pv.mapWidgets = function(){
 
 
 	        });
-
-	        // $.each(d, function(i, w){
-	        // 	console.log(i.dataSources)
-	        // 	for(var key in w.dataSource){
-	        // 		if(w.dataSources.hasOwnProperty(key)){
-	        // 			console.log(w.dataSources(key));
-	        // 		}
-	        // 	}
-	        // });
 	    });
 	});
 }

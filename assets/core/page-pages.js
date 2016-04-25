@@ -17,8 +17,8 @@ p.pageColumns = ko.observableArray([
 	{ field: "url", title: "Url" },
 	{ title: "", width: 130, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Go To Designer' onclick='location.href=\"/web/pagedesigner?id=" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-gear'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Go To Preview' onclick='location.href=\"/page/" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-eye'></span></button>",
+			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Go To Designer' onclick='location.href=\"/web/pagedesigner?id=" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-gear'></span></button>",
+			"<button class='btn btn-sm btn-default btn-primary tooltipster' title='Go To Preview' onclick='location.href=\"/page/" + d._id.replace(/\|/g, "-") + "\"'><span class='fa fa-eye'></span></button></div>",
 		].join(" ");
 	}}
 ]);
