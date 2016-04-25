@@ -6,7 +6,7 @@ pv.indexWidget = ko.observable("");
 pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
-         '<iframe class="itemsFrame" scrolling="no"  frameborder="0"></iframe>',
+         	'<iframe class="itemsFrame" scrolling="no"  frameborder="0"></iframe>',
         '</div>',
     '</div>'
 ].join("");
