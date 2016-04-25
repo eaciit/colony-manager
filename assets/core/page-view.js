@@ -4,10 +4,10 @@ viewModel.pageView ={}; var pv = viewModel.pageView;
 
 pv.indexWidget = ko.observable("");
 pv.templateWidgetItem =  [
-    '<div class="grid-stack-item">',
-        '<div class="grid-stack-item-content">',
-         	'<iframe width="100%" height="99%" id="iframe1" marginheight="0" frameborder="0" scrolling="no" style="overflow: hidden;"></iframe>',
-        '</div>',
+    	'<div class="grid-stack-item">',
+       		'<div class="grid-stack-item-content">',
+         		'<iframe width="100%" height="99%" id="iframe1" marginheight="0" frameborder="0" scrolling="no" style="overflow: hidden;"></iframe>',
+        	'</div>',  
     '</div>'
 ].join("");
 
@@ -25,8 +25,10 @@ pv.mapWidgets = function(){
 		if(!app.isFine(res)){
 			return;
 		}
+		console.log(res.data.title);
 		var widgets = res.data.widgets;
 
+		$(".title-widget").text(res.data.title);
 		(widgets == null ? [] : widgets).forEach(function (d) {
 	        var $item = $(pv.templateWidgetItem);
 	        $item.attr("data-id", d._id);
