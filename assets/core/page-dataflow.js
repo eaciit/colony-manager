@@ -1025,13 +1025,14 @@ df.createGrid = function(){
                         if(!app.isFine(res)){
                           return;
                         }else{
-                        var datas = res.data.data==null?[]:res.data.data;
+                        var datas = res.data==null?[]:res.data;
+                        console.log(datas);
                             for (var i in datas) {
                                 datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
                                 datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMM DD YYYY, h:mm:ss a');
                                 datas[i].Duration = (convertMS(moment(datas[i].enddate),moment(datas[i].startdate)));
-                                datas[i].FlowName = datas[i].flow.name;
-                                datas[i].FlowDescription = datas[i].flow.description;
+                                datas[i].FlowName = datas[i].name;
+                                datas[i].FlowDescription = datas[i].description;
                                 if (datas[i].steps != null && datas[i].steps.length > 0) {
                                     var stp = datas[i].steps[datas[i].steps.length-1];
                                         var cp = "";
@@ -1050,10 +1051,10 @@ df.createGrid = function(){
                                     datas[i].LastProcess = "";
                                 }
                             }
-                          res.data.data = datas;
-                        yo.success(res.data);
-                    }
-                });
+                            res.data = datas;
+                            yo.success(res.data);
+                        }
+                    });
                 },
             },
         },
