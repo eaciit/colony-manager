@@ -10,7 +10,8 @@ pde.templateWidgetPageDataSource = {
     dataSource: "",
 };
 pde.isDataSourceChanged = ko.observable(false);
-pde.dataSourceArray = ko.observableArray([])
+pde.check = ko.observable(false);
+pde.dataSourceArray = ko.observableArray([]);
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
 pde.configWidgetPageDataSources = ko.observableArray([]);
@@ -123,7 +124,9 @@ pde.settingWidget = function(o) {
 
     $(".modal-widgetsetting").modal("show");
     $('a[data-target="#DataSource"]').tab('show');
+    pde.check(true);
 };
+
 pde.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
         float: true,
@@ -265,10 +268,24 @@ pde.setWidgetPosition = function () {
 
         return d;
     });
-
-    ko.mapping.fromJS(config, p.configPage);
+    ko.mapping.fromJS(config,p.configPage);
 };
+
+pde.changeAttr = function (){
+    ko.mapping.toJS(p.configPage.widgets).forEach(function(d){
+        var $el = $(".grid-stack-item[data-id='" + d._id + "']");
+            $el.attr("data-gs-x",d.x);
+            $el.attr("data-gs-y",d.y);
+            $el.attr("data-gs-width",d.width);
+            $el.attr("data-gs-height",d.height);
+    })
+}
+
 pde.save = function () {
+    if (pde.check() == true ){
+        pde.changeAttr();
+        pde.check(false);    
+    }
     pde.setWidgetPosition();
     app.ajaxPost("/pagedesigner/savepage", p.configPage, function (res) {
         if (!app.isFine(res)) {
@@ -281,7 +298,9 @@ pde.save = function () {
             swal({ title: "Saved", type: "success" });
         }
     });
+    location.reload();
 };
+
 pde.mapWidgets = function () {
     var $gridStack = $("#page-designer-grid-stack").data("gridstack");
     var config = ko.mapping.toJS(p.configPage);
@@ -352,6 +371,7 @@ pde.saveWidgetConfig = function () {
     }());
 
     config.widgets[configWidgetIndex] = configWidget;
+
     ko.mapping.fromJS(config, p.configPage);
 
     pde.save();
