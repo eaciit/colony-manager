@@ -1026,7 +1026,6 @@ df.createGrid = function(){
                           return;
                         }else{
                         var datas = res.data==null?[]:res.data;
-                        console.log(datas);
                             for (var i in datas) {
                                 datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
                                 datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMM DD YYYY, h:mm:ss a');
