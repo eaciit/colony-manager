@@ -1018,8 +1018,8 @@ df.createGrid = function(){
                     callData.status = "Success";
 
                     callData.search = df.flowSearchData.search();
-                    callData.startdate = df.flowSearchData.startdate() == null?"": toUTC(df.flowSearchData.startdate());
-                    callData.enddate = df.flowSearchData.enddate()==null?"": toUTC(df.flowSearchData.enddate());
+                    callData.createddate = df.flowSearchData.createddate() == null?"": toUTC(df.flowSearchData.createddate());
+                    callData.lastmodified = df.flowSearchData.lastmodified()==null?"": toUTC(df.flowSearchData.lastmodified());
                     
                     app.ajaxPost("/dataflow/getlistdata",callData, function(res){
                         if(!app.isFine(res)){
@@ -1027,28 +1027,10 @@ df.createGrid = function(){
                         }else{
                         var datas = res.data==null?[]:res.data;
                             for (var i in datas) {
-                                datas[i].MonthStr = moment(datas[i].startdate).format('MMM DD YYYY, h:mm:ss a');
-                                datas[i].MonthStrEnd = moment(datas[i].enddate).format('MMM DD YYYY, h:mm:ss a');
-                                datas[i].Duration = (convertMS(moment(datas[i].enddate),moment(datas[i].startdate)));
-                                datas[i].FlowName = datas[i].name;
-                                datas[i].FlowDescription = datas[i].description;
-                                if (datas[i].steps != null && datas[i].steps.length > 0) {
-                                    var stp = datas[i].steps[datas[i].steps.length-1];
-                                        var cp = "";
-                                        if(stp instanceof Array){
-                                            for(var ci in stp){
-                                                if(ci>0){
-                                                    cp+=" & ";
-                                                }
-                                                cp+= stp[ci].description;
-                                            }
-                                        }else{
-                                            cp = datas[i].steps[datas[i].steps.length-1].description;
-                                        }
-                                    datas[i].LastProcess = cp;
-                                }else{
-                                    datas[i].LastProcess = "";
-                                }
+                                datas[i].createddate = moment(datas[i].createddate).format('MMM DD YYYY, h:mm:ss a');
+                                datas[i].lastmodified = moment(datas[i].lastmodified).format('MMM DD YYYY, h:mm:ss a');
+                                datas[i].dfname = datas[i].name;
+                                datas[i].dfdescription = datas[i].description;
                             }
                             res.data = datas;
                             yo.success(res.data);
@@ -1065,8 +1047,8 @@ df.createGrid = function(){
             numeric: false
         },
         columns: [
-            {field:"name",title:"Name",width:200},
-            {field:"description", title:"Description"},
+            {field:"dfname",title:"Name",width:200},
+            {field:"dfdescription", title:"Description"},
             {field:"createddate",align:"center" , width:150, title:"Created Date" ,template:"#:moment(Date.parse(createddate)).format('DD-MMM-YYYY HH:mm')#"
                 ,attributes: {
                     style: "text-align: center;",
@@ -1618,22 +1600,22 @@ df.flowSearch = function(){
 
 df.flowSearchData = {
     search : ko.observable(""),
-    startdate : ko.observable(null),
-    enddate : ko.observable(null)
+    createddate : ko.observable(null),
+    lastmodified : ko.observable(null)
 }
 
-df.flowSearchData.enddate.subscribe(function(val){
+df.flowSearchData.lastmodified.subscribe(function(val){
     $("#flowstart").getKendoDatePicker().max(val); 
 });
 
-df.flowSearchData.startdate.subscribe(function(val){
+df.flowSearchData.createddate.subscribe(function(val){
     $("#flowend").getKendoDatePicker().min(val); 
 });
 
 df.flowReset = function(){
         df.flowSearchData.search("");
-        df.flowSearchData.startdate(null);
-        df.flowSearchData.enddate(null);
+        df.flowSearchData.createddate(null);
+        df.flowSearchData.lastmodified(null);
 }
 
 $(function () {

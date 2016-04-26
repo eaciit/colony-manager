@@ -460,18 +460,18 @@
                     <td>
                     <input data-bind="value:search" class="form pull-left search-txt" placeholder="Search by name, description ..."></input>
                     </td>
-                    <td class="pdLeft30">Start date</td>
-                    <td class="pdLeft7"><input id="flowstart" data-bind="kendoDatePicker:{value:startdate,format:'dd MMM yyyy'}"></input></td>
+                    <td class="pdLeft30">Created date</td>
+                    <td class="pdLeft7"><input id="flowstart" data-bind="kendoDatePicker:{value:createddate,format:'dd MMM yyyy'}"></input></td>
 
-                    <td class="pdLeft30">End date</td>
-                    <td class="pdLeft7"><input id="flowend" data-bind="kendoDatePicker:{value:enddate,format:'dd MMM yyyy'}"></input></td>
+                    <td class="pdLeft30">Last modified</td>
+                    <td class="pdLeft7"><input id="flowend" data-bind="kendoDatePicker:{value:lastmodified,format:'dd MMM yyyy'}"></input></td>
 
                     <td class="pdLeft30"> <button onclick="df.flowReset();" class="btn btn-sm btn-warning">Reset</button> </td>
                     <td class="pdLeft7"> <button onclick="df.flowSearch();" class="btn btn-sm">Refresh</button> </td>
+                    <td class="pdLeft30 btn-new"> <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
                 </tr>
             </tbody>
         </table>
-        <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
     </div>
 	<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
 </div>
@@ -748,6 +748,10 @@
             margin: 10px 0 5px;
             text-align: inherit;
             vertical-align: top;
+        }
+        .btn-new{
+            width: 567px;
+            text-align: right;
         }
 
         input.inline-edit:hover,
