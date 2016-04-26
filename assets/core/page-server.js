@@ -3,31 +3,15 @@ srv.templateOS = ko.observableArray([
 	{ value: "windows", text: "Windows" },
 	{ value: "linux", text: "Linux/Darwin" }
 ]);
-srv.templateConfigServer = {
-	_id: "",
+srv.templateConfigServer = $.extend(true, viewModel.templateModels.Server, {
 	os: "linux",
-	appPath: "",
-	dataPath: "",
-	host: "",
 	serviceSSH: {
-		type: "Credentials",
-		file: "",
-		host: "",
-		user: "",
-		pass: ""
+		type: "Credentials"
 	},
-	serviceHDFS: {
-		host: "",
-		user: "",
-		pass: "",
-		hostAlias: []
-	},
+	serverServices: [],
 	cmdextract: "unzip %1 -d %2",
-	cmdmkdir: "mkdir",
-	cmdcopy: "",
-	cmdnewfile : "",
-    hostAlias: []
-};
+	cmdmkdir: "mkdir"
+});
 srv.optionTypeSSH = ko.observableArray([
 	{ value: "Credentials", text: "Credentials" },
 	{ value: "File", text: "File" }

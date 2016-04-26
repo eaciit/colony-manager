@@ -141,7 +141,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	}
 
-	if data.IsAccessValid("node") {
+	if data.IsAccessValid("node") && data.IsColonyServer {
 		if data.OS == "linux" {
 			if err := data.InstallColonyOnLinux(log); err != nil {
 				return helper.CreateResult(false, nil, err.Error())
