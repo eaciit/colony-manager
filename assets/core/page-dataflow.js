@@ -946,13 +946,13 @@ df.Save = function(callback){
     var title = $(".pTitle").val().length;
     var desc = $(".pDesc").val().length;    
     if (title == 0) {
-        swal("Warning", "Title or Description cannot be empty!", "warning");
+        swal("Warning", "Name or Description cannot be empty!", "warning");
         df.closePopover("#popbtn");
         df.closePopover("#poptitle");
         df.closePopover("#popGlobalVar");
         $('#myModal').modal('hide');
     }else if (desc == 0) {
-        swal("Warning", "Title or Description cannot be empty!", "warning");
+        swal("Warning", "Name or Description cannot be empty!", "warning");
         $('#myModal').modal('hide');
     }else{
         app.ajaxPost("/dataflow/save", {
