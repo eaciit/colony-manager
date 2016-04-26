@@ -1025,19 +1025,25 @@ df.createGrid = function(){
                         if(!app.isFine(res)){
                           return;
                         }else{
-                        var datas = res.data==null?[]:res.data;
+                        var datas = res.data.data==null?[]:res.data.data;
                             for (var i in datas) {
                                 datas[i].createddate = moment(datas[i].createddate).format('MMM DD YYYY, h:mm:ss a');
                                 datas[i].lastmodified = moment(datas[i].lastmodified).format('MMM DD YYYY, h:mm:ss a');
                                 datas[i].dfname = datas[i].name;
                                 datas[i].dfdescription = datas[i].description;
                             }
-                            res.data = datas;
+                            res.data.data = datas;
                             yo.success(res.data);
                         }
                     });
                 },
             },
+             schema: {
+                data: "data",
+                total: "total",
+            },
+            serverPaging: true, 
+            pageSize:5,
         },
         pageSize:10,
         groupable: false,
