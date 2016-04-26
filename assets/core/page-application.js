@@ -78,10 +78,11 @@ apl.applicationColumns = ko.observableArray([
 	{ title: "Internal App", width: 90, template: function (d) {
 		return (d.IsInternalApp ? "<center>YES</center>" : "<center>NO</center>");
 	} },
-	{ title: "", width: 70, attributes: { style: "text-align: center;" }, template: function (d) {
-		// var isDisabled = (d.IsInternalApp ? "disabled style='pointer-events: none;'" : "");
-		return "<button class='btn btn-sm btn-default btn-text-success btn-start tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' ><span class='fa fa-plane'></span></button>";
-	} },
+	{ title: "", width: 70, attributes:{class:"align-center"}, template: function(d){
+		return[
+			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' ><span class='fa fa-plane'></span></button></div>",
+		].join(" ");
+	}},
 ]);
 apl.ServerColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='selectall' id='selectall' onclick=\"apl.selectServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {

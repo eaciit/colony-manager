@@ -1084,9 +1084,15 @@ df.createGrid = function(){
                 },
             },
             {field:"createdby",width:200,title:"Created By"},
-            {width:100, title:"Actions",
-                template:"<button class='btn btn-sm tooltipster-grid mgRight10' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-cog'></span></button>"+
-            "<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"},
+            {title: "Actions", width: 130, attributes:{class:"align-center"}, headerAttributes: {style: "text-align: center;"},template: function(d){
+                return[
+                    "<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster-grid' title='Design' onclick='df.goToDesigner(\"#:_id#\")'><span class='glyphicon glyphicon-cog'></span></button>",
+                    "<button class='btn btn-sm btn-default btn-primary tooltipster-grid' title='Delete' onclick='df.delete(\"#:_id#\")'><span class='glyphicon glyphicon-trash'></span</button></div>",
+                ].join(" ");
+            }}
+            // {width:100, title:"Actions",
+            //     template:"<button class='btn btn-sm tooltipster-grid mgRight10' title='design' onclick='df.goToDesigner(\"#:_id#\")' ><span class='glyphicon glyphicon-cog'></span></button>"+
+            // "<button class='btn btn-sm tooltipster-grid' title='delete' onclick='df.delete(\"#:_id#\")' ><span class='glyphicon glyphicon-trash'></span></button>"},
         ],
         dataBound:function(){
             $(".tooltipster-grid").tooltipster({
