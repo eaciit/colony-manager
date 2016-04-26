@@ -159,6 +159,7 @@
                     <td>HDFS Script</td>
                     <td>
                         <input type="text" class="inp-custom" data-bind="value:script" placeholder="Fill HDFS executable/script">
+                         <button class="btn pd-custom fileChooserBtn">..</button>
                     </td>
                 </tr>
             </tbody>
@@ -475,6 +476,32 @@
 	<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
 </div>
 
+
+<div class="modal fade" id="fb-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="fb-modal-lable">File Browser</h4>
+            </div>
+            <div class="modal-body">
+
+            <div class="col-md-12">
+
+            {{template "_miniloader.html"}} 
+            <div data-bind="visible: !app.miniloader()">
+                <div id="fb-dataflow"></div>
+            </div>
+            </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="df.fbAccept();">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
         .forktr td:first-child{
             width:50px!important;
@@ -515,6 +542,7 @@
             min-height: 250px!important;
             max-height: 350px!important;
             overflow-y:scroll;
+            z-index: 1040!important;
 		}
 
         .popover-content .ct-custom{

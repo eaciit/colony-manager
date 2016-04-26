@@ -96,6 +96,7 @@ df.newGlobalVar = ko.observableArray([]);
 df.popoverMode = ko.observable('');
 df.detailMode = ko.observable("");
 df.isFork = ko.observable(true);
+df.currentInput = ko.observableArray([]);
 
 df.outputType = ko.observableArray([
 "json",
@@ -435,8 +436,8 @@ df.init = function () {
     df.createGrid();
     df.getServers();
     setInterval(function(){     
-        // BuildRunGrid();
-        // BuildComGrid(); 
+        BuildRunGrid();
+        BuildComGrid(); 
     },5000);
     BuildRunGrid();
     BuildComGrid();
@@ -558,6 +559,14 @@ df.init = function () {
                         $(".popover").attr("style","display: block; top: " +(ymouse-320)+"px; left: "+(xmouse-30)+"px;");
                       df.renderActionData();
                       df.draggablePopover();
+
+                      setTimeout(function(){
+                          $(".fileChooserBtn").click(function(event){
+                            $("#fb-modal").modal('show');
+                            df.currentInput($(event.currentTarget).prev());
+                        });
+                      },1000);
+                      
                       }
                       clickonshape = 0;
                     }, 300);
@@ -1331,6 +1340,8 @@ df.selectedServer.subscribe(function(val){
     var diagram = $(".diagram").getKendoDiagram().select()[0];
     var dataItem = diagram.dataItem;
     dataItem.DataAction.server(val);
+    $(".fb-server:input").getKendoDropDownList().value(val);
+    $(".fb-server:input").getKendoDropDownList().trigger("change")
 });
 
 df.isFork.subscribe(function(val){
@@ -1941,3 +1952,45 @@ df.logReset = function(){
         df.logSearchData.startdate(null);
         df.logSearchData.enddate(null);
 }
+
+
+// file browser ==============================================================================
+
+$(document).ready(function(){
+    $("#fb-dataflow").ecFileBrowser({
+        dataSource:{
+            url: '/filebrowser',
+            call: 'POST',
+            pathField: "path",
+            hasChildrenField:"isdir",
+            nameField:"name"
+        }, 
+        serverSource:{
+             url: '/filebrowser/getservers',
+             call: 'POST',
+             dataTextField:"serverAlias",
+             dataValueField:"_id"
+        }
+    });
+
+
+setTimeout(function(){
+    $(".fb-pre").hide();
+    $(".scroller").hide();
+},3000);
+
+});
+
+$(function() {
+    app.miniloader(false);
+});
+
+df.fbAccept = function(){
+    var selected  = $(".thumb-selected").attr("path");
+    if(selected == undefined){
+        selected = $(".k-state-selected").find("a").attr("path");
+    } 
+    $(df.currentInput()).val(selected);
+    $(df.currentInput()).trigger("change");
+    $("#fb-modal").modal("hide");
+};
