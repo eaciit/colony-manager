@@ -98,6 +98,7 @@ srv.showModal = ko.observable('modal1');
 srv.configServer = ko.mapping.fromJS(srv.templateConfigServer);
 srv.filter = ko.mapping.fromJS(srv.templateFilter);
 srv.showServer = ko.observable(true);
+srv.miniloader = ko.observable(false);
 srv.breadcrumb = ko.observable('');
 srv.ServerMode = ko.observable('');
 srv.ServerData = ko.observableArray([]);
@@ -591,6 +592,7 @@ srv.navModalWizard = function (status) {
 		});
 
 		allIP.forEach(function (ip) {
+			srv.miniloader(true);
 			app.ajaxPost("/server/checkping", { ip: ip.ip }, function (res) {
 				app.miniloader(true);
 				var o = { host: ip.label, status: res.data };
@@ -600,7 +602,7 @@ srv.navModalWizard = function (status) {
 				}
 
 				srv.dataWizard.push(o);
-			}, function () {
+			},{"withLoader":false}, function () {
 				var o = { host: ip.label, status: "request timeout" };
 				srv.dataWizard.push(o);
 			}, {
@@ -610,6 +612,7 @@ srv.navModalWizard = function (status) {
 
 		$(document).ajaxStop(function() {
 		  app.miniloader(false);
+		  srv.miniloader(false);
 		});
 
 		srv.showModal(status);

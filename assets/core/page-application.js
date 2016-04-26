@@ -52,6 +52,7 @@ apl.applicationData = ko.observableArray([]);
 apl.appTreeMode = ko.observable('');
 apl.renameFileMode = ko.observable(false);
 apl.boolEx = ko.observable(false);
+apl.miniloader = ko.observable(false);
 apl.appTreeSelected = ko.observable('');
 apl.appRecordsDir = ko.observableArray([]);
 apl.extension = ko.observableArray(['','.jpeg','.jpg','.png','.doc','.docx','.exe','.rar','.zip','.eot','.svg','.pdf','.PDF']);
@@ -352,6 +353,7 @@ apl.showModalDeploy = function (_id) {
 	return function () {
 		srv.getServers(function (res) {
 			$(".modal-deploy").modal("show");
+			apl.miniloader(true);
 			apl.appIDToDeploy(_id);
 			apl.refreshGridModalDeploy();
 			$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
@@ -379,7 +381,7 @@ apl.showModalDeploy = function (_id) {
 					var $grid = $(".grid-server-deploy");
 					var dataSource = $grid.data("kendoGrid").dataSource;
 					var row = Lazy(dataSource.data()).find({ _id: each._id });
-
+					apl.miniloader(false);
 					if (row != undefined) {
 						var $row = $(".grid-server-deploy .k-grid-content tr[data-uid='" + row.uid + "']");
 						var $checkbox = $row.find("td:eq(0) input:checkbox");
@@ -401,7 +403,7 @@ apl.showModalDeploy = function (_id) {
 							$tdStatus.html("UNDEPLOYED");
 						}
 					}
-				});
+				},{"withLoader":false});
 			});
 		});
 	};
