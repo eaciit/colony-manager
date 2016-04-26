@@ -103,11 +103,11 @@ srv.ServerColumns = ko.observableArray([
 		return d.os;
 	} },
 	{ field: "host", title: "Host" },
-	{ title: "", width: 80, attributes: { class: "align-center" }, template: function (d) {
-		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' onclick='srv.doTestConnection(\"" + d._id + "\")' title='Test Connection'><span class='fa fa-info-circle'></span></button>"
+	{ title: "", width: 80, attributes:{class:"align-center"}, template: function(d){
+		return[
+			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Test Connection' onclick='srv.doTestConnection(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button></div>",
 		].join(" ");
-	} },
+	}},
 	{ width: 100, attributes: { class:'status ssh-status on-off' }, template: "<span></span>", headerTemplate: "<center>SSH Status</center>" },
 	{ width: 100, attributes: { class:'status hdfs-status on-off' }, template: "<span></span>", headerTemplate: "<center>HDFS Status</center>" }
 ]);

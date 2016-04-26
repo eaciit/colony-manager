@@ -33,10 +33,10 @@ br.browserColumns = ko.observableArray([
 			"<div onclick= 'br.ViewBrowserName(\"" + d._id + "\")' style= 'cursor: pointer;'>"+d.BrowserName+"</div>"
 		]
 	}},
-	{title: "", width: 120, attributes:{class:"align-center"}, template: function(d){
+	{ title: "", width: 130, attributes:{class:"align-center"}, template: function(d){
 		return[
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Preview' onclick='br.ViewBrowserName(\"" + d._id + "\")'><span class='fa fa-eye'></span></button>",
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Open Designer' onclick='db.designDataBrowser(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>",
+			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Open Preview' onclick='br.ViewBrowserName(\"" + d._id + "\")'><span class='fa fa-eye'></span></button>",
+			"<button class='btn btn-sm btn-default btn-primary tooltipster' title='Open Designer' onclick='db.designDataBrowser(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button></div>",
 		].join(" ");
 	}}
 ]);

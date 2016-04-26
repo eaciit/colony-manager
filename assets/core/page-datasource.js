@@ -111,11 +111,11 @@ ds.connectionListColumns = ko.observableArray([
 	{ field: "Database", title: "Database" },
 	// { field: "UserName", title: "User Name" },
 	// { field: "settings", title: "Settings" },
-	{ title: "", width: 130, attributes: { style: "text-align: center;"}, template: function (d) {
-		return [
-			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button>",
+	{ title: "", width: 130, attributes:{class:"align-center"}, template: function(d){
+		return[
+			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Test Connection' onclick='ds.testConnectionFromGrid(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button></div>",
 		].join(" ");
-	} },
+	}},
 ]);
 ds.filterDriver = ko.observable('');
 ds.searchfield = ko.observable('');
