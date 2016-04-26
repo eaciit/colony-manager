@@ -282,3 +282,14 @@ func (s *ServerController) CheckPing(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, p.LastStatus, "")
 }
+
+func (s *ServerController) GetServerServices(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := new(colonycore.ServerService).GetAll()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}

@@ -36,6 +36,34 @@ srv.templateFilter = {
 	search: "",
 	serverOS: "",
 };
+srv.serverServiceBase = ko.observableArray([]);
+srv.serverService = ko.computed(function () {
+	var serverServices = [];
+	try {
+		serverServices = srv.configServer.serverServices();
+		serverServices = ([null, undefined].indexOf(serverServices) > -1) ? [] : serverServices;
+	} catch (err) {
+		serverServices = [];
+	}
+
+	return srv.serverServiceBase().map(function (e) {
+		serverServices.forEach(function (d) {
+			if (e._id == d._id) {
+				e.isInstalled = d.isInstalled;
+			}
+		});
+
+		return e;
+	});
+}, srv);
+srv.serverServiceColumns = [
+	{ field: "name", title: "Service Name", template: function (d) {
+		return d.name + "<button class='btn btn-sm' style='visibility: hidden;'>&nbsp;</btn>";
+	} },
+	{ title: "Is Installed?", width: 100, attributes: { class: "status ssh-status yes-no" }, template: function (d) {
+		return "<span></span>";
+	} },
+];
 srv.WizardColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' id='selectall' onclick=\"srv.checkWizardServer(this, 'serverall', 'all')\"/></center>", width: 40, attributes: { style: "text-align: center;" }, template: function (d) {
 		return [
@@ -685,8 +713,18 @@ srv.ping = function () {
 		setTimeout(srv.ping, 100 * 1000);
 	});
 };
+srv.getServerServiceBase = function () {
+	app.ajaxPost("/server/getserverservices", {}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		srv.serverServiceBase(res.data);
+	});
+};
 
 $(function () {
+	srv.getServerServiceBase();
     srv.getServers(function () {
 		setTimeout(function () {
 			srv.ping();
@@ -694,5 +732,8 @@ $(function () {
     });
 	srv.breadcrumb('All');
 	app.showfilter(false);
-	app.registerSearchKeyup($(".searchsrv"), srv.getServers);
+	app.registerSearchKeyup($(".searchsrv"), function () {
+		srv.getServers();
+		srv.getServerServiceBase();
+	});
 });

@@ -101,8 +101,9 @@
 </nav>
 
 <ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
-	<li class="active"><a href="#Form-server" data-toggle="tab">Form</a></li>
-	<li data-bind="visible: (srv.ServerMode() != '')"><a href="#Applications-server"  data-toggle="tab">Applications</a></li>
+	<li class="active"><a href="#Form-server" data-toggle="tab">General</a></li>
+	<!-- <li data-bind="visible: (srv.ServerMode() != '')"><a href="#Applications-server"  data-toggle="tab">Applications</a></li> -->
+	<li><a href="#Service-server" data-toggle="tab">Other services</a></li>
 </ul>
 
 <div data-bind="visible: (app.mode() == 'editor')">
@@ -322,6 +323,11 @@
 		    		<div class="grid grid-aplserver" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: apl.applicationData, columns: srv.appserverColumns, filterfable: false, pageable: true, dataBound: function(e) {srv.gridStatusCheck();srv.gridStatusColor();app.gridBoundTooltipster('.grid-aplserver')();} }"></div>
 		        </div>
 		    </div>
+			<div class="tab-pane fade" id="Service-server">
+				<div class="col-md-12">
+					<div class="grid grid-service-server" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: srv.serverService, columns: srv.serverServiceColumns, filterfable: false, pageable: true }"></div>
+				</div>
+			</div>
     	</div>
     </div>
 </div>

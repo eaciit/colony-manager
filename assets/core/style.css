@@ -756,12 +756,16 @@ body {
     content: "STOPPED"; }
   .k-grid tr td.status.on-off span:after {
     content: "OFF"; }
+  .k-grid tr td.status.yes-no span:after {
+    content: "NO"; }
 .k-grid tr td.started.status {
   background-color: #5CB85C; }
   .k-grid tr td.started.status.start-stop span:after {
     content: "STARTED"; }
   .k-grid tr td.started.status.on-off span:after {
     content: "ON"; }
+  .k-grid tr td.started.status.yes-no span:after {
+    content: "YES"; }
 .k-grid tr.started td.status {
   background-color: #5CB85C; }
   .k-grid tr.started td.status.start-stop span:after {
