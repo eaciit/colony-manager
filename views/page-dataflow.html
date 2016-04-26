@@ -27,7 +27,7 @@
 				<button class="btn btn-danger btn-tooltip" title="Clear Editor" onclick="df.clearDiagram();"><span class="glyphicon glyphicon-remove"></span></button>
 				<button class="btn btn-tooltip" title="Reload" onclick="df.Reload();"><span class="glyphicon glyphicon-repeat"></span></button>
 				<button class="btn btn-primary btn-tooltip" title="Save" onclick="df.Save();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-				<button class="btn btn-success mgLeft btn-tooltip" title="Save & Run" id="popRun" onclick="df.popRun()"><span class="glyphicon glyphicon-play"></span></button>
+				<button class="btn btn-success mgLeft btn-tooltip" title="Run" id="popRun" onclick="df.popRun()"><span class="glyphicon glyphicon-play"></span></button>
 			</div>
 		</ol>
 
@@ -72,7 +72,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="df.run()">Save & Run</button>
+                <button type="button" class="btn btn-primary" onclick="df.run()">Run</button>
             </div>
         </div>
     </div>
@@ -452,7 +452,24 @@
 		<li>Data Flow</li>
 	</ol>
     <div class="col-md-12 mgTop15">
-        <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search by name, description, create by ..."></input>
+        <!-- <input class="form pull-left search-txt" onkeyup="df.Search();" placeholder="Search by name, description, create by ..."></input> -->
+        <table data-bind="with:df.flowSearchData">
+            <tbody>
+                <tr>
+                    <td>
+                    <input data-bind="value:search" class="form pull-left search-txt" placeholder="Search by name, description ..."></input>
+                    </td>
+                    <td class="pdLeft30">Start date</td>
+                    <td class="pdLeft7"><input id="flowstart" data-bind="kendoDatePicker:{value:startdate,format:'dd MMM yyyy'}"></input></td>
+
+                    <td class="pdLeft30">End date</td>
+                    <td class="pdLeft7"><input id="flowend" data-bind="kendoDatePicker:{value:enddate,format:'dd MMM yyyy'}"></input></td>
+
+                    <td class="pdLeft30"> <button onclick="df.flowReset();" class="btn btn-sm btn-warning">Reset</button> </td>
+                    <td class="pdLeft7"> <button onclick="df.flowSearch();" class="btn btn-sm">Refresh</button> </td>
+                </tr>
+            </tbody>
+        </table>
         <button class="btn btn-success pull-right" onclick="df.newDF();"><span class="glyphicon glyphicon-plus"></span> New</button>
     </div>
 	<div class="col-md-12 mgTop15"><div id="dataFlowGrid"></div></div>
