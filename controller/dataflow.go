@@ -299,24 +299,60 @@ func (a *DataFlowController) GetListData(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	filters := []*dbox.Filter{}
+	var filter *dbox.Filter
+	filter = new(dbox.Filter)
+
 	search := tk.ToString(payload["search"])
-	var query *dbox.Filter
+
+	take := tk.ToInt(payload["take"], tk.RoundingAuto)
+	skip := tk.ToInt(payload["skip"], tk.RoundingAuto)
+
+	start := tk.ToString(payload["createddate"])
+	end := tk.ToString(payload["lastmodified"])
+
+	startdate := time.Now()
+	enddate := time.Now()
+
+	if start != "" {
+		startdate, _ = time.Parse(time.RFC3339, start)
+		filters = append(filters, dbox.Gte("createddate", startdate))
+		startdate = startdate.AddDate(0, 0, 1)
+		startdate = startdate.Add(time.Duration(-1) * time.Second)
+		filters = append(filters, dbox.Lte("createddate", startdate))
+	}
+
+	if end != "" {
+		enddate, _ = time.Parse(time.RFC3339, end)
+		filters = append(filters, dbox.Gte("lastmodified", enddate))
+		enddate = enddate.AddDate(0, 0, 1)
+		enddate = enddate.Add(time.Duration(-1) * time.Second)
+		filters = append(filters, dbox.Lte("lastmodified", enddate))
+	}
+
 	if search != "" {
-		query = dbox.Or(dbox.Contains("name", search), dbox.Contains("description", search), dbox.Contains("createdby", search))
+		filters = append(filters, dbox.Or(dbox.Contains("name", search), dbox.Contains("description", search), dbox.Contains("createdby", search)))
 	}
 
-	cursor, err := colonycore.Find(new(colonycore.DataFlow), query)
-
-	dataDs := []colonycore.DataFlow{}
-
-	if cursor != nil {
-		cursor.Fetch(&dataDs, 0, false)
-		defer cursor.Close()
-	}
+	filter = dbox.And(filters...)
+	cursor, err := colonycore.Finds(new(colonycore.DataFlow), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
 
 	if err != nil && cursor != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+
+	dataDs := []colonycore.DataFlow{}
+
+	res := tk.M{}
+	if cursor != nil {
+		cursor.Fetch(&dataDs, 0, false)
+		defer cursor.Close()
+		res.Set("total", cursor.Count())
+	} else {
+		res.Set("total", 0)
+	}
+
+	res.Set("data", dataDs)
 
 	return helper.CreateResult(true, dataDs, "success")
 }
