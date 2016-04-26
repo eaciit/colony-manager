@@ -334,8 +334,12 @@ func (a *DataFlowController) GetListData(r *knot.WebContext) interface{} {
 		filters = append(filters, dbox.Or(dbox.Contains("name", search), dbox.Contains("description", search), dbox.Contains("createdby", search)))
 	}
 
-	filter = dbox.And(filters...)
-	cursor, err := colonycore.Finds(new(colonycore.DataFlow), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
+	if len(filters) > 0 {
+		filter = dbox.And(filters...)
+	} else {
+		filter = dbox.Ne("createddate", "")
+	}
+	cursor, err := colonycore.Finds(new(colonycore.DataFlow), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-createddate"}))
 
 	if err != nil && cursor != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -354,7 +358,7 @@ func (a *DataFlowController) GetListData(r *knot.WebContext) interface{} {
 
 	res.Set("data", dataDs)
 
-	return helper.CreateResult(true, dataDs, "success")
+	return helper.CreateResult(true, res, "success")
 }
 
 func (a *DataFlowController) Delete(r *knot.WebContext) interface{} {
