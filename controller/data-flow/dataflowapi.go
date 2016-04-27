@@ -161,8 +161,7 @@ func runProcess(process colonycore.DataFlow, action colonycore.FlowAction) (e er
 
 func runHive(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	action_hive := action.Action.(colonycore.ActionHive)
-	// hivex = hive.HiveConfig(action.Server.Host, "", "Username", "Password", "Path")
-	hivex = hive.HiveConfig(action.Server.ID, "", "Username", "Password", "Path")
+	hivex = hive.HiveConfig(action.Server.ServiceSSH.Host, "", "Username", "Password", "Path")
 
 	e = hivex.Populate(action_hive.ScriptPath, &res)
 
