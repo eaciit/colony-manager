@@ -407,14 +407,14 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		installerBasePath, _ := func(path string) (string, string) {
-			comps := strings.Split(path, serverPathSeparator)
-			ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
-			ilf := comps[len(comps)-1]
+		// installerBasePath, _ := func(path string) (string, string) {
+		// 	comps := strings.Split(path, serverPathSeparator)
+		// 	ibp := strings.Join(comps[:len(comps)-1], serverPathSeparator)
+		// 	ilf := comps[len(comps)-1]
+		//
+		// 	return ibp, ilf
+		// }(installerPath)
 
-			return ibp, ilf
-		}(installerPath)
-		fmt.Println(installerBasePath)
 		cRunCommand := make(chan string, 1)
 		go func() {
 			runCommand := fmt.Sprintf("cmd /C %s%sinstall.bat", destinationZipPathOutput, serverPathSeparator)
@@ -584,31 +584,20 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		return ibp, ilf
 	}(installerPath)
 
-	cRunCommand := make(chan string, 1)
-	go func() {
-		runCommand := fmt.Sprintf("cd %s && ./%s &", installerBasePath, installerFile)
-		log.AddLog(runCommand, "INFO")
-		_, err = sshSetting.RunCommandSsh(runCommand)
-		if err != nil {
-			log.AddLog(err.Error(), "ERROR")
-			cRunCommand <- err.Error()
-		} else {
-			cRunCommand <- ""
-		}
-	}()
-
-	errorMessage := ""
-	select {
-	case receiveRunCommandOutput := <-cRunCommand:
-		errorMessage = receiveRunCommandOutput
-	case <-time.After(time.Second * 3):
-		errorMessage = ""
+	runCommand := fmt.Sprintf(`cd %s && ./%s "%s"`, installerBasePath, installerFile, app.ID)
+	log.AddLog(runCommand, "INFO")
+	err = helper.RunCommandWithTimeout(&sshSetting, runCommand, 10)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		// changeDeploymentStatus(false)
+		// return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if errorMessage != "" {
-		log.AddLog(errorMessage, "ERROR")
+	isRunning, err := app.RunApp(server)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
-		return helper.CreateResult(false, nil, errorMessage)
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
 	if app.DeployedTo == nil {
@@ -616,7 +605,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	}
 
 	changeDeploymentStatus(true)
-	return helper.CreateResult(true, nil, "")
+	return helper.CreateResult(true, isRunning, "")
 }
 
 func (a *ApplicationController) SaveApps(r *knot.WebContext) interface{} {
@@ -1126,6 +1115,51 @@ func (a *ApplicationController) IsAppDeployed(r *knot.WebContext) interface{} {
 	if app.IsInternalApp {
 		_, cmdDeployStatus = app.GetCommand(colonycore.App_Command_DeployStatus)
 	} else {
+		cmdDeployStatus = fmt.Sprintf(`if [ -e "$EC_APP_PATH/web/%s" ]; then echo "OK"; else echo "NOPE"; fi`, app.ID)
+	}
+
+	res, err := setting.RunCommandSshAsMap(cmdDeployStatus)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	status := (strings.TrimSpace(res[0].Output) == "OK")
+	return helper.CreateResult(true, status, "")
+}
+
+func (a *ApplicationController) IsAppRunning(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := struct {
+		AppID    string
+		ServerID string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	app := new(colonycore.Application)
+	err = colonycore.Get(app, payload.AppID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	server := new(colonycore.Server)
+	err = colonycore.Get(server, payload.ServerID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	setting, _, err := server.Connect()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	cmdDeployStatus := ""
+
+	if app.IsInternalApp {
+		_, cmdDeployStatus = app.GetCommand(colonycore.App_Command_RunningStatus)
+	} else {
 		cmdDeployStatus = fmt.Sprintf(`if [ -d "$EC_APP_PATH/src/%s" ]; then echo "OK"; else echo "NOPE"; fi`, app.ID)
 	}
 
@@ -1134,6 +1168,6 @@ func (a *ApplicationController) IsAppDeployed(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	status := strings.TrimSpace(res[0].Output) == "OK"
+	status := (strings.TrimSpace(res[0].Output) == "OK")
 	return helper.CreateResult(true, status, "")
 }
