@@ -1151,5 +1151,12 @@ func (a *ApplicationController) GetLanguageData(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, data, "")
+	results := make([]toolkit.M, 0, 0)
+	for _, v := range data {
+		result := toolkit.M{}
+		result.Set("language", v.Language)
+		results = append(results, result)
+	}
+
+	return helper.CreateResult(true, results, "")
 }
