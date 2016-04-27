@@ -61,7 +61,6 @@ srv.WizardColumns = ko.observableArray([
 				return comps[0];
 			}
 		}
-
 		return d.host;
 	} },
 	{ field: "status", title: "Status" }
@@ -103,7 +102,7 @@ srv.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
-	{ field: "host", title: "Host" },
+	// { field: "host", title: "Host" },
 	{ title: "", width: 80, attributes:{class:"align-center"}, template: function(d){
 		return[
 			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Test Connection' onclick='srv.doTestConnection(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button></div>",
@@ -229,7 +228,7 @@ srv.createNewServer = function () {
     srv.addHostAlias();
 };
 srv.validateHost = function () {
-	srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
+	srv.configServer._id(srv.configServer._id().split("//").reverse()[0]);
 	srv.configServer.serviceSSH.host(srv.configServer.serviceSSH.host().split("//").reverse()[0]);
 
 	if ($.trim(srv.configServer.serviceHDFS.host()) != "") {
@@ -296,6 +295,8 @@ srv.doSaveServer = function (c) {
 		srv.ipToRegister().forEach(function (d) {
 			var eachData = $.extend(true, data, { });
 			eachData.host = d;
+			console.log(d)
+			console.log(eachData.host)
 			eachData._id = ["server", d, moment(new Date()).format("x")].join("-");
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
 				if (!res.success) {
@@ -383,6 +384,7 @@ srv.editServer = function (_id) {
 	app.showfilter(false);
 	srv.breadcrumb('Edit');
 	srv.isMultiServer(false);
+
 	$("#privatekey").replaceWith($("#privatekey").clone());
 
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
