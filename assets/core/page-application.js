@@ -353,7 +353,6 @@ apl.showModalDeploy = function (_id) {
 	return function () {
 		srv.getServers(function (res) {
 			$(".modal-deploy").modal("show");
-			apl.miniloader(true);
 			apl.appIDToDeploy(_id);
 			apl.refreshGridModalDeploy();
 			$(".grid-server-deploy .k-grid-content tr input[type=checkbox]:checked").each(function (i, e) {
@@ -364,8 +363,6 @@ apl.showModalDeploy = function (_id) {
 				$(e).find("td:eq(4)").html();
 				$(e).find("td:eq(0) input:checkbox").hide();
 			});
-
-			console.log("====", res.data);
 
 			res.data.forEach(function (each) {
 				if ([null, undefined].indexOf(each.serviceSSH) > -1) {
