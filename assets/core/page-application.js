@@ -11,12 +11,15 @@ apl.templateConfigApplication = {
 	DeployedTo: [],
 	Command: [],
 	Variable: [],
+	Language:"",
 };
+
 apl.appTypes = ko.observableArray([
 	{ value: "web", title: "Web" },
 	{ value: "cli", title: "CLI" },
 	{ value: "daemon", title: "Daemon/Service" },
 ]);
+
 apl.templateFile = {
 	ID: "",
 	Path: "",
@@ -37,6 +40,7 @@ apl.templateConfigVariable = {
 	value: ""
 };
 
+apl.appLanguageData = ko.observable('');
 apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
 apl.selectable = ko.observableArray([]);
@@ -516,6 +520,7 @@ apl.createNewApplication = function () {
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	apl.addVariable();
 	apl.addCommand();
+	apl.getDataLanguage();
 };
 
 apl.saveApplication = function() {
@@ -911,6 +916,18 @@ apl.prepareTreeView = function () {
 		select: apl.selectDirApp,
 		dataSource: new kendo.data.DataSource({ data: [] }),
     }).data("kendoTreeView");
+}
+
+apl.getDataLanguage = function (){
+	app.ajaxPost("/application/getlanguagedata", "", function (res) { 
+		if (!app.isFine(res)){
+			return;
+		}
+		if (res.data == null){
+			res.data = [];
+		}
+		apl.appLanguageData(res.data);
+	});
 }
 
 $(function () {
