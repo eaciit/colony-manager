@@ -228,7 +228,6 @@ srv.createNewServer = function () {
     srv.addHostAlias();
 };
 srv.validateHost = function () {
-	srv.configServer._id(srv.configServer._id().split("//").reverse()[0]);
 	srv.configServer.serviceSSH.host(srv.configServer.serviceSSH.host().split("//").reverse()[0]);
 
 	if ($.trim(srv.configServer.serviceHDFS.host()) != "") {
