@@ -340,6 +340,7 @@ func (a *DataFlowController) GetListData(r *knot.WebContext) interface{} {
 		filter = dbox.Ne("createddate", "")
 	}
 	cursor, err := colonycore.Finds(new(colonycore.DataFlow), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-createddate"}))
+	cursorCount, _ := colonycore.Finds(new(colonycore.DataFlow), tk.M{}.Set("where", filter))
 
 	if err != nil && cursor != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -351,7 +352,8 @@ func (a *DataFlowController) GetListData(r *knot.WebContext) interface{} {
 	if cursor != nil {
 		cursor.Fetch(&dataDs, 0, false)
 		defer cursor.Close()
-		res.Set("total", cursor.Count())
+		defer cursorCount.Close()
+		res.Set("total", cursorCount.Count())
 	} else {
 		res.Set("total", 0)
 	}
@@ -441,11 +443,13 @@ func (a *DataFlowController) GetDataMonitoring(r *knot.WebContext) interface{} {
 	filter = dbox.And(filters...)
 	dataDs := []colonycore.DataFlowProcess{}
 	cursor, err := colonycore.Finds(new(colonycore.DataFlowProcess), tk.M{}.Set("where", filter).Set("take", take).Set("skip", skip).Set("order", []string{"-startdate"}))
+	cursorCount, _ := colonycore.Finds(new(colonycore.DataFlowProcess), tk.M{}.Set("where", filter))
 	res := tk.M{}
 	if cursor != nil {
 		cursor.Fetch(&dataDs, 0, false)
 		defer cursor.Close()
-		res.Set("total", cursor.Count())
+		defer cursorCount.Close()
+		res.Set("total", cursorCount.Count())
 	} else {
 		res.Set("total", 0)
 	}

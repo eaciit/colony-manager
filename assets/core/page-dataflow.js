@@ -1044,7 +1044,7 @@ df.createGrid = function(){
                 total: "total",
             },
             serverPaging: true, 
-            pageSize:5,
+            pageSize:10,
         },
         pageSize:10,
         groupable: false,
@@ -1602,6 +1602,7 @@ df.popRun = function(){
 }
 
 df.flowSearch = function(){
+    $("#dataFlowGrid").getKendoGrid().dataSource.query({page:1,pageSize:10});
     df.createGrid();
 }
 
@@ -1918,6 +1919,8 @@ function BuildComGrid(){
 
 
 df.logSearch = function(){
+    $("#ComGrid").getKendoGrid().dataSource.query({page:1,pageSize:5});
+    $("#RunGrid").getKendoGrid().dataSource.query({page:1,pageSize:5});
     BuildComGrid();
     BuildRunGrid();
 }
