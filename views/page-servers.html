@@ -103,7 +103,7 @@
 <ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
 	<li class="active"><a href="#Form-server" data-toggle="tab">General</a></li>
 	<!-- <li data-bind="visible: (srv.ServerMode() != '')"><a href="#Applications-server"  data-toggle="tab">Applications</a></li> -->
-	<li><a href="#Service-server" data-toggle="tab">Other services</a></li>
+	<li data-bind="visible:(!srv.isNew())"><a href="#Service-server" data-toggle="tab">Other services</a></li>
 </ul>
 
 <div data-bind="visible: (app.mode() == 'editor')">
@@ -174,7 +174,7 @@
 				    			<div class="form-group">
 							    	<label class="col-md-3 filter-label">SSH Host</label>
 						    		<div class="col-md-7" data-bind="visible: !srv.isMultiServer()">
-						    			<input data-required-msg="SSH host cannot be empty" type="text" class="form-control input-sm" name="ssh-host" placeholder="Type Host Here" data-bind="value: serviceSSH.host">
+						    			<input required data-required-msg="SSH host cannot be empty" type="text" class="form-control input-sm" name="ssh-host" placeholder="Type Host Here" data-bind="value: serviceSSH.host">
 										<span class="k-invalid-msg" data-for="ssh-host"></span>
 						    		</div>
 						    		<div class="col-md-7" data-bind="visible: srv.isMultiServer()">
@@ -194,7 +194,7 @@
 					    		<div class="form-group" data-bind="visible: serviceSSH.type() == 'Credentials'">
 						    		<label class="col-md-3 filter-label">SSH User</label>
 						    		<div class="col-md-7">
-						    			<input data-required-msg="SSH user cannot be empty" type="text" class="form-control input-sm" name="ssh-user" placeholder="Type the username Here" data-bind="value: serviceSSH.user">
+						    			<input required data-required-msg="SSH user cannot be empty" type="text" class="form-control input-sm" name="ssh-user" placeholder="Type the username Here" data-bind="value: serviceSSH.user">
 										<span class="k-invalid-msg" data-for="ssh-user"></span>
 						    		</div>
 					    		</div>
@@ -214,7 +214,8 @@
 					    		<div class="form-group" data-bind="visible: serviceSSH.type() == 'Credentials'">
 						    		<label class="col-md-3 filter-label">SSH Pass</label>
 						    		<div class="col-md-7">
-						    			<input type="password" class="form-control input-sm" name="ssh-password" placeholder="Type the password Here" data-bind="value: serviceSSH.pass">
+						    			<input required data-required-msg="SSH password cannot be empty" type="password" class="form-control input-sm" name="ssh-password" placeholder="Type the password Here" data-bind="value: serviceSSH.pass">
+						    			<span class="k-invalid-msg" data-for="ssh-password"></span>
 						    		</div>
 						    	</div>
 				    		</div>
