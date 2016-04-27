@@ -1137,3 +1137,19 @@ func (a *ApplicationController) IsAppDeployed(r *knot.WebContext) interface{} {
 	status := strings.TrimSpace(res[0].Output) == "OK"
 	return helper.CreateResult(true, status, "")
 }
+func (a *ApplicationController) GetLanguageData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	cursor, err := colonycore.Find(new(colonycore.LanguageEnviroment), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data := []colonycore.LanguageEnviroment{}
+	err = cursor.Fetch(&data, 0, false)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
