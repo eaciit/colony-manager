@@ -63,7 +63,7 @@ func (s *ServerController) GetServers(r *knot.WebContext) interface{} {
 		filters = append(filters, dbox.Or(
 			dbox.Contains("_id", payload.Search),
 			dbox.Contains("os", payload.Search),
-			dbox.Contains("host", payload.Search),
+			// dbox.Contains("host", payload.Search),
 		))
 	}
 	if payload.ServerOS != "" {

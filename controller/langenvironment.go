@@ -98,7 +98,8 @@ func (le *LangenvironmentController) GetServerLanguage(r *knot.WebContext) inter
 		serverLang := new(colonycore.ServerLanguage)
 		serverLang.ServerID = each.ID
 		serverLang.ServerOS = each.OS
-		serverLang.ServerHost = each.Host
+		serverLang.ServerHost = each.ServiceSSH.Host
+
 		serverLang.Languages = []*colonycore.InstalledLang{}
 
 		if each.InstalledLang == nil {
