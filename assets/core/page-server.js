@@ -103,7 +103,7 @@ srv.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
-	{ field: "host", title: "Host" },
+	{ field: "serviceSSH.host", title: "Host" },
 	{ title: "", width: 80, attributes:{class:"align-center"}, template: function(d){
 		return[
 			"<div class='btn-group btn-sm'><button class='btn btn-sm btn-default btn-primary tooltipster' title='Test Connection' onclick='srv.doTestConnection(\"" + d._id + "\")'><span class='fa fa-info-circle'></span></button></div>",
@@ -229,7 +229,6 @@ srv.createNewServer = function () {
     srv.addHostAlias();
 };
 srv.validateHost = function () {
-	srv.configServer.host(srv.configServer.host().split("//").reverse()[0]);
 	srv.configServer.serviceSSH.host(srv.configServer.serviceSSH.host().split("//").reverse()[0]);
 
 	if ($.trim(srv.configServer.serviceHDFS.host()) != "") {

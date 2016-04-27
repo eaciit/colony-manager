@@ -14,11 +14,11 @@ import (
 	//"github.com/eaciit/sshclient"
 	"encoding/csv"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
-	"os"
-	"path/filepath"
 
 	"github.com/eaciit/toolkit"
 	"github.com/novalagung/golpal"
@@ -111,7 +111,7 @@ func Start(flow colonycore.DataFlow, user string, input_globalParam toolkit.M) (
 	}
 
 	e = colonycore.Save(&process)
-*/
+	*/
 	return
 }
 
@@ -161,7 +161,7 @@ func runProcess(process colonycore.DataFlow, action colonycore.FlowAction) (e er
 
 func runHive(process colonycore.DataFlow, action colonycore.FlowAction, arguments string) (res []toolkit.M, e error) {
 	action_hive := action.Action.(colonycore.ActionHive)
-	hivex = hive.HiveConfig(action.Server.Host, "", "Username", "Password", "Path")
+	hivex = hive.HiveConfig(action.Server.ServiceSSH.Host, "", "Username", "Password", "Path")
 
 	e = hivex.Populate(action_hive.ScriptPath, &res)
 
@@ -334,9 +334,9 @@ func watch(process colonycore.DataFlow, user string) (e error) {
 		Flow:      process,
 		StartDate: time.Now(),
 		StartedBy: user,
-		Status:      PROCESS_STATUS_RUN,
+		Status:    PROCESS_STATUS_RUN,
 	}
-	
+
 	flowprocess.GlobalParam = globalParam
 	saveFlowProcess(flowprocess, e)
 
@@ -470,7 +470,7 @@ func watch(process colonycore.DataFlow, user string) (e error) {
 								`
 								resultExec, e := golpal.New().Execute(goClause)
 
-								if e!= nil {
+								if e != nil {
 									saveFlowProcess(flowprocess, e)
 								}
 
@@ -538,7 +538,7 @@ func watch(process colonycore.DataFlow, user string) (e error) {
 	return
 }
 
-func saveFlowProcess(flowprocess colonycore.DataFlowProcess, e error){
+func saveFlowProcess(flowprocess colonycore.DataFlowProcess, e error) {
 	flowprocess.EndDate = time.Now()
 	if e != nil {
 		flowprocess.Status = PROCESS_STATUS_SUCCESS
