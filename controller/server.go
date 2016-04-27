@@ -154,6 +154,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 		data.DetectInstalledLang()
 		data.DetectService()
+		data.UpdateInternalAppDeploymentStatus("add")
 
 		log.AddLog("Restart sedotand", "INFO")
 		if _, err := data.ToggleSedotanService("start stop", data.ID); err != nil {
@@ -251,6 +252,8 @@ func (s *ServerController) DeleteServers(r *knot.WebContext) interface{} {
 	for _, val := range data {
 		if val != "" {
 			payload.ID = val
+			payload.UpdateInternalAppDeploymentStatus("remove")
+
 			err = colonycore.Delete(payload)
 			if err != nil {
 				return helper.CreateResult(false, nil, err.Error())

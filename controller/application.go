@@ -1134,6 +1134,51 @@ func (a *ApplicationController) IsAppDeployed(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	status := strings.TrimSpace(res[0].Output) == "OK"
+	status := (strings.TrimSpace(res[0].Output) == "OK")
+	return helper.CreateResult(true, status, "")
+}
+
+func (a *ApplicationController) IsAppRunning(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	payload := struct {
+		AppID    string
+		ServerID string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	app := new(colonycore.Application)
+	err = colonycore.Get(app, payload.AppID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	server := new(colonycore.Server)
+	err = colonycore.Get(server, payload.ServerID)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	setting, _, err := server.Connect()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	cmdDeployStatus := ""
+
+	if app.IsInternalApp {
+		_, cmdDeployStatus = app.GetCommand(colonycore.App_Command_RunningStatus)
+	} else {
+		cmdDeployStatus = fmt.Sprintf(`if [ -d "$EC_APP_PATH/src/%s" ]; then echo "OK"; else echo "NOPE"; fi`, app.ID)
+	}
+
+	res, err := setting.RunCommandSshAsMap(cmdDeployStatus)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	status := (strings.TrimSpace(res[0].Output) == "OK")
 	return helper.CreateResult(true, status, "")
 }

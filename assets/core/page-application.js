@@ -104,7 +104,7 @@ apl.ServerColumns = ko.observableArray([
 		return "";
 	} },
 	{ field: "_id", title: "ID" },
-	{ field: "host", title: "Host" },
+	{ field: "serviceSSH.host", title: "Host" },
 	{ field: "os", title: "OS", template: function (d) {
 		var row = Lazy(srv.templateOS()).find({ value: d.os });
 		if (row != undefined) {
