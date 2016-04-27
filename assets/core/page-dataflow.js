@@ -942,7 +942,7 @@ df.Save = function(callback){
         swal("Warning", "Data not completed!", "warning");
         return;
     }
-    
+
     var title = $(".pTitle").val().length;
     var desc = $(".pDesc").val().length;    
     if (title == 0) {
@@ -1406,9 +1406,9 @@ df.addGlobalVar = function (key,val) {
 }
 
 df.deleteGlobalVar = function(e){
-    var idx = $(e.target).attr("index");
-    idx = idx == undefined? $(e.target).parent().attr("index"):idx;
-    var dt = Lazy(df.globalVar()).find(function ( d ) { return d.idx == idx });
+    var idx = $(e).attr("index");
+    idx = idx == undefined? $(e).parent().attr("index"):idx;
+    var dt = Lazy(df.globalVar()).find(function ( d ) { return d.idx() == idx });
     df.globalVar.remove(dt);
 }
 
@@ -1487,7 +1487,7 @@ df.getServers = function (){
     });
 }
 
-df.buildShapeData = function(id){
+df.buildShapeData = function(id){    
     var shapes = $(id).getKendoDiagram().shapes
     var res = [];
     for(var i in shapes){
@@ -1498,6 +1498,19 @@ df.buildShapeData = function(id){
             res.push(re);
         }
     }
+
+    var ywf = $(".diagram").getKendoDiagram().shapes.length - 1;
+    for (i = 0; i <= ywf; i++){
+        var dataaction = $(".diagram").getKendoDiagram().shapes[i].dataItem.DataAction;
+        var dajson = ko.toJSON(dataaction);
+        var dafixed = JSON.parse(dajson);
+        for (var x in dafixed){
+            if (dafixed[x] == ""){
+                return undefined;
+            }
+        }
+    }
+
     return res;
 }
 

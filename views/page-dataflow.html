@@ -89,7 +89,7 @@
             <td> <input class="inp-global" data-bind="value:key" placeholder="Fill parameter name"> </td>
             <td> <input class="inp-global" data-bind="value:value" placeholder="Fill parameter default value"> </td>
             <td>
-                <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteGlobalVar(event);"><span class="glyphicon glyphicon-trash"></span></a>
+                <a class="btn btn-danger btn-xs" data-bind="attr:{index:idx}" onclick="df.deleteGlobalVar(this);"><span class="glyphicon glyphicon-trash"></span></a>
             </td>
         </tr>
          <!-- /ko -->
@@ -731,7 +731,7 @@
         }
         .inp-global{
             margin: 5px 5px 5px 0;
-            width: 180px;
+            width: 180px!important;
         }
         .inp-fork{
             margin: 5px 5px 2px 0;
