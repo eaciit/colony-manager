@@ -40,6 +40,7 @@ apl.templateConfigVariable = {
 	value: ""
 };
 
+apl.checktype = ko.observable(true);
 apl.appLanguageData = ko.observable('');
 apl.config = ko.mapping.fromJS(apl.templateFile);
 apl.appIDToDeploy = ko.observable('');
@@ -138,6 +139,17 @@ apl.ServerColumns = ko.observableArray([
 		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' " + attr + "><span class='fa fa-play'></span></button>";
 	} }
 ]);
+
+apl.changeTypeApp = function(){
+	var type = $('.appType').find("select").val();
+	if (type == "web"){
+		apl.checktype(true);
+		document.getElementById("appLanguage").required = true;
+	}else {
+		apl.checktype(false);
+		document.getElementById("appLanguage").required = false;
+	}
+}
 
 apl.changeActiveSection = function (section) {
 	if (section == "servers") {
