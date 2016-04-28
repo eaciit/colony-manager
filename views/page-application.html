@@ -156,10 +156,10 @@
 						    	</div>
 					    		</div>
 					    		<div class="col-md-6">
-						    		<div class="form-group">
+						    		<div class="form-group appType">
 							    		<label class="col-md-3 filter-label">Type</label>
 							    		<div class="col-md-6">
-							    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type}"></select>
+							    			<select style="width: 100%;" required data-required-msg="Type cannot be empty" data-bind="kendoDropDownList: { data: apl.appTypes, dataValueField: 'value', dataTextField: 'title', value: Type, change: apl.changeTypeApp }"></select>
 							    			<span class="k-invalid-msg" data-for="AppType"></span>
 							    		</div>
 						    		</div>
@@ -170,10 +170,10 @@
 							    			<span class="k-invalid-msg" data-for="Port"></span>
 							    		</div>
 						    		</div>
-						    		<div class="form-group">
+						    		<div class="form-group appLanguage" data-bind="visible:(apl.checktype())">
 						    			<label class="col-md-3 filter-label">Language</label>
 						    			<div class="col-md-6">
-						    				<select name="Language" style="width: 100%;" required data-bind="kendoDropDownList : { data: apl.appLanguageData, dataTextField: 'language', optionLabel: 'Select one'}"></select>
+						    				<select name="Language" style="width: 100%;" required data-bind="kendoDropDownList : { data: apl.appLanguageData, dataTextField: 'language', optionLabel: 'Select one'}" id="appLanguage"></select>
 						    				<span class="k-invalid-msg" data-for="Language"></span>
 						    			</div>
 						    		</div>
