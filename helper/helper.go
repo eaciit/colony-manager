@@ -16,7 +16,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -368,7 +367,5 @@ func RunCommandWithTimeout(sshSetting *sshclient.SshSetting, cmd string, timeout
 }
 
 func FixPath(location *string) {
-	if runtime.GOOS == "windows" {
-		*location = strings.Replace(*location, `\`, `\\`, -1)
-	}
+	*location = strings.Replace(*location, `\`, `\\`, -1)
 }

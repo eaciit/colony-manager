@@ -162,6 +162,14 @@ br.ViewBrowserName = function(id){
 	// 	//br.dataBrowserDescColumns(datacol);
 	// 	br.dataBrowserDesc(ondataval);
 	// 	br.dataBrowserDescColumns(datacol);
+	}, function (a) {
+		swal({
+			title: "Oops...",
+			text: 'Timeout accessing the data source',
+			type: "warning",
+			confirmButtonText: "OK",
+			closeOnConfirm: true
+		});
 	}, {
 		timeout: 10 * 1000
 	});

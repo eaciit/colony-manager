@@ -1112,20 +1112,32 @@ func (a *ApplicationController) IsAppDeployed(r *knot.WebContext) interface{} {
 	}
 
 	cmdDeployStatus := ""
-
 	if app.IsInternalApp {
 		_, cmdDeployStatus = app.GetCommand(colonycore.App_Command_DeployStatus)
 	} else {
 		cmdDeployStatus = fmt.Sprintf(`if [ -e "$EC_APP_PATH/web/%s" ]; then echo "OK"; else echo "NOPE"; fi`, app.ID)
 	}
-
-	res, err := setting.RunCommandSshAsMap(cmdDeployStatus)
+	res1, err := setting.RunCommandSshAsMap(cmdDeployStatus)
+	fmt.Println("isappdeployed", cmdDeployStatus)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	status := (strings.TrimSpace(res[0].Output) == "OK")
-	return helper.CreateResult(true, status, "")
+	cmdIsAppRunning := ""
+	if app.IsInternalApp {
+		_, cmdIsAppRunning = app.GetCommand(colonycore.App_Command_RunningStatus)
+	} else {
+		cmdIsAppRunning = fmt.Sprintf(`if [[ $(pidof %s) ]]; then echo \"OK\"; else echo \"NOPE\"; fi`, app.ID)
+	}
+	res2, _ := setting.RunCommandSshAsMap(cmdIsAppRunning)
+	fmt.Println("isappdeployed", cmdIsAppRunning)
+
+	statues := toolkit.M{
+		"isDeployed": (strings.TrimSpace(res1[0].Output) == "OK"),
+		"isRunning":  (strings.TrimSpace(res2[0].Output) == "OK"),
+	}
+
+	return helper.CreateResult(true, statues, "")
 }
 
 func (a *ApplicationController) IsAppRunning(r *knot.WebContext) interface{} {
@@ -1194,4 +1206,48 @@ func (a *ApplicationController) GetLanguageData(r *knot.WebContext) interface{} 
 	}
 
 	return helper.CreateResult(true, results, "")
+}
+
+func (a *ApplicationController) RunApp(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := struct {
+		ServerID string `json:"serverID"`
+		AppID    string `json:"appID"`
+		Mode     string `json:"mode"`
+	}{}
+
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	app := new(colonycore.Application)
+	app.ID = payload.AppID
+	if err := colonycore.Get(app, app.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	server := new(colonycore.Server)
+	server.ID = payload.ServerID
+	if err := colonycore.Get(server, server.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	var isRunning bool
+
+	if payload.Mode == "start" {
+		var err error
+		isRunning, err = app.RunApp(server)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	} else {
+		var err error
+		isRunning, err = app.StopApp(server)
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	return helper.CreateResult(true, isRunning, "")
 }

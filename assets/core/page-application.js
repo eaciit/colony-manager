@@ -118,7 +118,7 @@ apl.ServerColumns = ko.observableArray([
 
 		return d.os;
 	} },
-	{ width: 100, headerTemplate: "<center>App Status</center>",  attributes: { class: "align-center" }, template: function (d) {
+	{ width: 100, headerTemplate: "<center>Deploy Status</center>",  attributes: { class: "align-center" }, template: function (d) {
 		return apl.isDeployed(d, function (app) {
 			var target = [d.serviceSSH.host.split(":")[0], app.Port].join(":");
 			return "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
@@ -128,7 +128,7 @@ apl.ServerColumns = ko.observableArray([
 
 		return "UNDEPLOYED";
 	} },
-	{ headerTemplate: "<center>Run App</center>", width: 80, attributes: { "class": "align-center" }, template: function (d) {
+	{ width: 100, headerTemplate: "<center>Running Status</center>", attributes: { "class": "align-center" }, template: function (d) {
 		var isDeployed = apl.isDeployed(d, function (app) {
 			return true;
 		}, function (app) {
@@ -136,9 +136,28 @@ apl.ServerColumns = ko.observableArray([
 		});
 
 		var attr = (isDeployed ? "" : "disabled style='pointer-events: none; opacity: 0.7;'");
-		return "<button class='btn btn-sm btn-default btn-text-success tooltipster' title='Deploy info' onclick='apl.showModalDeploy(\"" + d._id + "\")()' " + attr + "><span class='fa fa-play'></span></button>";
+		return [
+			"<button class='btn btn-sm btn-default btn-text-success tooltipster' title='App is stopped. Start now?' onclick='apl.toggleRunningAppStatus(\"" + d._id + "\", \"start\")' " + attr + "><span class='fa fa-play'></span></button>",
+			"<button class='btn btn-sm btn-default btn-text-danger tooltipster hide' title='App is running. Stop now?' onclick='apl.toggleRunningAppStatus(\"" + d._id + "\", \"stop\")' " + attr + "><span class='fa fa-stop'></span></button>"
+		].join("");
 	} }
 ]);
+
+apl.toggleRunningAppStatus = function (_id, mode) {
+	var param = { 
+		serverID: _id, 
+		appID: apl.appIDToDeploy(),
+		mode: mode
+	};
+
+	app.ajaxPost("/application/runapp", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		apl.refreshGridServerDeployStatus(srv.ServerData());
+	})
+};
 
 apl.changeTypeApp = function(){
 	var type = $('.appType').find("select").val();
@@ -307,19 +326,6 @@ apl.gridStatusCheck = function () {
 	})
 }
 
-// apl.gridServerDeployDataBound = function () {
-// 	$(".grid-server-deploy .k-grid-content tr").each(function (i, e) {
-// 		var $td = $(e).find("td:eq(4)");
-// 		if ($td.text() == "DEPLOYED") {
-// 			$td.css("background-color", "#5cb85c");
-// 			$td.css("color", "white");
-// 		} else {
-// 			$td.css("background-color", "#d9534f");
-// 			$td.css("color", "white");
-// 		}
-// 	});
-// };
-
 apl.addCommand = function () {
 	var item = ko.mapping.fromJS($.extend(true, {}, apl.templateConfigCommand));
 	apl.configApplication.Command.push(item);
@@ -362,7 +368,58 @@ apl.refreshGridModalDeploy = function () {
 		columns: apl.ServerColumns(),
 		filterfable: false,
 		pageable: true,
-		// dataBound: apl.gridServerDeployDataBound
+		dataBound: app.gridBoundTooltipster('.grid-server-deploy')
+	});
+};
+apl.refreshGridServerDeployStatus = function (data) {
+	var _id = apl.appIDToDeploy();
+	
+	data.forEach(function (each) {
+		if ([null, undefined].indexOf(each.serviceSSH) > -1) {
+			return false;
+		}
+
+		if (!(each.serviceSSH.host != "" && each.serviceSSH.user != "")) {
+			return false;
+		}
+
+		var payload = { appID: _id, serverID: each._id };
+		app.ajaxPost("/application/isappdeployed", payload, function (resStatus) {
+			var $grid = $(".grid-server-deploy");
+			var dataSource = $grid.data("kendoGrid").dataSource;
+			var row = Lazy(dataSource.data()).find({ _id: each._id });
+			apl.miniloader(false);
+			if (row != undefined) {
+				var $row = $(".grid-server-deploy .k-grid-content tr[data-uid='" + row.uid + "']");
+				var $checkbox = $row.find("td:eq(0) input:checkbox");
+				var $tdDeploymentStatus = $row.find("td:eq(4)");
+				var $tdRunningStatus = $row.find("td:eq(5)");
+
+				if (resStatus.data.isDeployed) {
+					$checkbox.hide();
+					$tdDeploymentStatus.css("background-color", "#5cb85c");
+					$tdDeploymentStatus.css("color", "white");
+
+					var appData = Lazy(apl.applicationData()).find({ _id: _id });
+					var target = [each.serviceSSH.host.split(":")[0], appData.Port].join(":");
+					var el = "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
+					$tdDeploymentStatus.empty().append($(el));
+				} else {
+					$checkbox.show();
+					$tdDeploymentStatus.css("background-color", "#d9534f");
+					$tdDeploymentStatus.css("color", "white");
+					$tdDeploymentStatus.html("UNDEPLOYED");
+				}
+
+				if (resStatus.data.isRunning) {
+					$tdRunningStatus.find(".hide").removeClass("hide");
+					$tdRunningStatus.find("button:eq(0)").addClass("hide");
+				} else {
+					$tdRunningStatus.find(".hide").removeClass("hide");
+					$tdRunningStatus.find("button:eq(1)").addClass("hide");
+				}
+			}
+		},{ "withLoader": false });
 	});
 };
 apl.showModalDeploy = function (_id) {
@@ -380,44 +437,7 @@ apl.showModalDeploy = function (_id) {
 				$(e).find("td:eq(0) input:checkbox").hide();
 			});
 
-			res.data.forEach(function (each) {
-				if ([null, undefined].indexOf(each.serviceSSH) > -1) {
-					return false;
-				}
-
-				if (!(each.serviceSSH.host != "" && each.serviceSSH.user != "")) {
-					return false;
-				}
-
-				var payload = { appID: _id, serverID: each._id };
-				app.ajaxPost("/application/isappdeployed", payload, function (resStatus) {
-					var $grid = $(".grid-server-deploy");
-					var dataSource = $grid.data("kendoGrid").dataSource;
-					var row = Lazy(dataSource.data()).find({ _id: each._id });
-					apl.miniloader(false);
-					if (row != undefined) {
-						var $row = $(".grid-server-deploy .k-grid-content tr[data-uid='" + row.uid + "']");
-						var $checkbox = $row.find("td:eq(0) input:checkbox");
-						var $tdStatus = $row.find("td:eq(4)");
-
-						if (resStatus.data) {
-							$checkbox.hide();
-							$tdStatus.css("background-color", "#5cb85c");
-							$tdStatus.css("color", "white");
-
-							var appData = Lazy(apl.applicationData()).find({ _id: _id });
-							var target = [each.serviceSSH.host.split(":")[0], appData.Port].join(":");
-							var el = "<a href='http://" + target + "' target='_blank' class='link-deploy'>DEPLOYED</a>";
-							$tdStatus.empty().append($(el));
-						} else {
-							$checkbox.show();
-							$tdStatus.css("background-color", "#d9534f");
-							$tdStatus.css("color", "white");
-							$tdStatus.html("UNDEPLOYED");
-						}
-					}
-				},{"withLoader":false});
-			});
+			apl.refreshGridServerDeployStatus(res.data);
 		});
 	};
 };
