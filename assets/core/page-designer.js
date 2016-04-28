@@ -246,6 +246,7 @@ pde.savePage = function () {
     }
 
     var param = ko.mapping.toJS(p.configPage);
+    console.log(param.styleSheet);
     app.ajaxPost("/pagedesigner/savepage", param, function (res) {
         if (!app.isFine(res)) {
             return;
@@ -447,6 +448,19 @@ pde.openWidgetSetting = function() {
     });
 }
 
+pde.codemirror = function (){
+    var editor = CodeMirror.fromTextArea(document.getElementById("stylesheetScript"), {
+        mode: "text/html",
+        styleActiveLine: true,
+        lineWrapping: true,
+        lineNumbers: true,
+    });
+    editor.setValue('');
+    $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
+    $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
+    var data = $('#stylesheetScript').data('CodeMirrorInstance', editor);
+}
+
 $(function () {
     pde.prepareDataSources(function () {
         pde.prepareWidget(function () {
@@ -456,4 +470,5 @@ $(function () {
             });
         });
     });
+    pde.codemirror();
 });
