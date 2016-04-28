@@ -466,7 +466,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		unzipCmd = strings.Replace(server.CmdExtract, `%1`, destinationZipPath, -1)
 		unzipCmd = strings.Replace(unzipCmd, `%2`, destinationZipPathOutput, -1)
 
-		log.AddLog(unzipCmd, "INFO")
+		log.AddLog(fmt.Sprintf("tar compress %s -> %s", sourcePath, sourceZipPath), "INFO")
 		err = toolkit.TarCompress(sourcePath, sourceZipPath)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
@@ -481,7 +481,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 		unzipCmd = strings.Replace(server.CmdExtract, `%1`, destinationZipPath, -1)
 		unzipCmd = strings.Replace(unzipCmd, `%2`, destinationZipPathOutput, -1)
 
-		log.AddLog(unzipCmd, "INFO")
+		log.AddLog(fmt.Sprintf("zip compress %s -> %s", sourcePath, sourceZipPath), "INFO")
 		err = toolkit.ZipCompress(sourcePath, sourceZipPath)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
@@ -554,6 +554,7 @@ func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	log.AddLog(findCommand, "INFO")
 	installerPath, err := sshSetting.GetOutputCommandSsh(findCommand)
 	installerPath = strings.TrimSpace(installerPath)
+	helper.FixPath(&installerPath)
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		changeDeploymentStatus(false)
