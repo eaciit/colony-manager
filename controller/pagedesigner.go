@@ -137,6 +137,7 @@ func (p *PageDesignerController) SelectPage(r *knot.WebContext) interface{} {
 	}
 
 	data := toolkit.M{"page": page, "pageDetail": pageDetailRes}
+	fmt.Println(pageDetailRes)
 	return helper.CreateResult(true, data, "")
 }
 
@@ -373,4 +374,20 @@ func (p *PageDesignerController) PageView(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, data, "success")
+}
+func (p *PageDesignerController) ReadFileStyle(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	file, _, err := r.Request.FormFile("file")
+	if err != nil {
+		return helper.CreateResult(false, nil, "success")
+	}
+
+	var result string
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	result = string(bytes)
+
+	return helper.CreateResult(true, result, "success")
 }

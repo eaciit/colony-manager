@@ -446,7 +446,39 @@ pde.openWidgetSetting = function() {
         contentDoc.close();
     });
 }
+pde.prepareDragfile = function(){
+    var selector = $("#dragandrophandler");
+    selector.on('drop', function (e) 
+    {
+        e.preventDefault();
+        var files = e.originalEvent.dataTransfer.files;
+        pde.uploadStyleFile("onDrag",files)
+    });
+}
 
+pde.uploadStyleFile = function(mode,files){
+    var config = ko.mapping.toJS(p.configPage)
+    var formData = new FormData();
+    var file;
+
+    if (mode == "onChange"){
+        if ($('#file').val() == ""){
+            return;
+        }
+        file = $('input[type=file]')[0].files[0]
+    }else{
+        file = files[0]   
+    }
+    
+    formData.append("file", file)
+    app.ajaxPost("/pagedesigner/readfilestyle", formData,  function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        config.styleSheet = res.data      
+        ko.mapping.fromJS(config, p.configPage);
+    });
+}
 $(function () {
     pde.prepareDataSources(function () {
         pde.prepareWidget(function () {
@@ -457,3 +489,5 @@ $(function () {
         });
     });
 });
+
+
