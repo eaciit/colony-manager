@@ -84,33 +84,48 @@
 	            <div class="modal-body">
 	               <form class="form-horizontal form-widget-designer" data-bind="with: p.configPage" novalidate>
 	               		<!-- <div class="col-md-12"> -->
-	               			<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">ID</label>
-					    		<div class="col-md-7">
-						    		<input required type="text" class="form-control input-sm" name="_id" placeholder="Type the page id Here" data-bind="value: _id" readonly>
-									<span class="k-invalid-msg" data-for="_id"></span>
+	               		<ul class="nav nav-tabs" id="myTab">
+		        			<li class="active"><a data-target="#General" data-toggle="tab">General</a></li>
+		       				<li><a data-target="#Stylesheet" data-toggle="tab">Stylesheet</a></li>
+		   				</ul>
+		   				<div class="tab-content">
+		   					<div class="tab-pane active" id="General">
+			   					<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">ID</label>
+						    		<div class="col-md-7">
+							    		<input required type="text" class="form-control input-sm" name="_id" placeholder="Type the page id Here" data-bind="value: _id" readonly>
+										<span class="k-invalid-msg" data-for="_id"></span>
+						    		</div>
 					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Title</label>
-					    		<div class="col-md-7">
-						    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: title">
-									<span class="k-invalid-msg" data-for="title"></span>
+					    		<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">Title</label>
+						    		<div class="col-md-7">
+							    		<input required type="text" class="form-control input-sm" name="title" placeholder="Type the page name Here" data-bind="value: title">
+										<span class="k-invalid-msg" data-for="title"></span>
+						    		</div>
 					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">URL</label>
-					    		<div class="col-md-7">
-						    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+					    		<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">URL</label>
+						    		<div class="col-md-7">
+							    		<input type="text" class="form-control input-sm" name="url" placeholder="Type the page url Here" data-bind="value: url">
+						    		</div>
 					    		</div>
-				    		</div>
-				    		<div class="form-group">
-					    		<label class="col-md-3 databrowser-label">Page Data Source</label>
-					    		<div class="col-md-7">
-						    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: dataSources, dataValueField: '_id', dataTextField: '_id' }" name="datasource" id="datasource"></select>
-						 			<span class="k-invalid-msg" data-for="datasource"></span>
+					    		<div class="form-group">
+						    		<label class="col-md-3 databrowser-label">Page Data Source</label>
+						    		<div class="col-md-7">
+							    		<select required data-bind="kendoMultiSelect:{ autoClose: false, data: pde.allDataSources, value: dataSources, dataValueField: '_id', dataTextField: '_id' }" name="datasource" id="datasource"></select>
+							 			<span class="k-invalid-msg" data-for="datasource"></span>
+						    		</div>
 					    		</div>
-				    		</div>
+		   					</div>
+		   					<div class="tab-pane" id="Stylesheet">
+								<div class="form-group">
+						    		<div class="col-md-12">
+							    		<textarea class="form-control" placeholder="Type stylesheet..." rows="10" name="stylesheet"></textarea>
+						    		</div>
+						        </div>
+							</div>
+		   				</div>
 	               		<!-- </div> -->
 				   </form>
 	            </div>
