@@ -24,6 +24,7 @@ package controller
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/eaciit/colony-core/v0"
@@ -180,6 +181,32 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 
 		hadeepes.Config.TimeOut = 5 * time.Millisecond
 		hadeepes.Config.PoolSize = 100
+	}
+
+	runsrv, e := new(colonycore.ServerService).GetAll()
+	if e != nil {
+		return helper.CreateResult(false, nil, e.Error())
+	}
+
+	svr, _, a := data.Connect()
+	if a != nil {
+		return helper.CreateResult(false, nil, a.Error())
+	}
+	for _, sr := range runsrv {
+		b, e := svr.RunCommandSshAsMap(fmt.Sprintf("which %s", sr.ID))
+		if e != nil {
+
+			return helper.CreateResult(false, nil, e.Error())
+		}
+
+		res := strings.TrimSpace(b[0].Output)
+		i := strings.Index(res, "/")
+		if i > -1 {
+			sr.IsInstalled = true
+
+		}
+		hh := colonycore.ServerService{ID: sr.ID, Name: sr.Name, IsInstalled: sr.IsInstalled}
+		data.OtherServices = append(data.OtherServices, &hh)
 	}
 
 	log.AddLog(fmt.Sprintf("Saving data ID: %s", data.ID), "INFO")
