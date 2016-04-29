@@ -285,6 +285,7 @@ ds.openConnectionForm = function () {
 	ko.mapping.fromJS(ds.templateConfig, ds.config);
 	ds.addSettings();
 	ds.showConnection(false);
+	app.showfilter(false);
 };
 ds.addSettings = function () {
 	var setting = $.extend(true, {}, ds.templateConfigSetting);
@@ -602,6 +603,7 @@ ds.openDataSourceForm = function(){
 	ko.mapping.fromJS(ds.templateLookup, ds.confLookup);
 	ds.idThereAnyDataSourceResult(false);
 	ds.showDataSource(false);
+	app.showfilter(false);
 };
 ds.forceFetchDataSourceMetaData = function () {
 	ds.saveDataSource(function (res) {
