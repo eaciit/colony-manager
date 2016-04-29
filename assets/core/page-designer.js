@@ -244,9 +244,8 @@ pde.savePage = function () {
     if (!app.isFormValid(".form-widget-designer")) {
         return;
     }
-
     var param = ko.mapping.toJS(p.configPage);
-    console.log(param.styleSheet);
+    param.styleSheet = $("#dragandrophandler").data('CodeMirrorInstance').getValue();
     app.ajaxPost("/pagedesigner/savepage", param, function (res) {
         if (!app.isFine(res)) {
             return;
@@ -254,6 +253,7 @@ pde.savePage = function () {
 
         $(".modal-config").modal("hide");
     });
+    ko.mapping.fromJS(param,p.configPage)
 };
 pde.preview = function () {
     location.href = "/page/" + p.configPage._id();
@@ -458,13 +458,16 @@ pde.prepareDragfile = function(){
 }
 
 pde.codemirror = function (){
+    $('#dragandrophandler').focus(function(){
+        alert("12")
+    })
     var editor = CodeMirror.fromTextArea(document.getElementById("dragandrophandler"), {
         mode: "text/html",
         styleActiveLine: true,
         lineWrapping: true,
         lineNumbers: true,
     });
-    editor.setValue('');
+    editor.setValue(ko.mapping.toJS(p.configPage.styleSheet));
     $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
     var data = $('#dragandrophandler').data('CodeMirrorInstance', editor);
@@ -479,11 +482,12 @@ pde.uploadStyleFile = function(mode,files){
         if ($('#file').val() == ""){
             return;
         }
-        file = $('input[type=file]')[0].files[0]
+        file = $('input[type=file]')[0].files[0];
+        $('input[type=file]')[0].value = "";
     }else{
         file = files[0]   
     }
-    
+
     formData.append("file", file)
     app.ajaxPost("/pagedesigner/readfilestyle", formData,  function (res) {
         if (!app.isFine(res)) {
@@ -492,6 +496,7 @@ pde.uploadStyleFile = function(mode,files){
         config.styleSheet = res.data      
         ko.mapping.fromJS(config, p.configPage);
     });
+    $("#dragandrophandler").data('CodeMirrorInstance').setValue("")
 }
 
 $(function () {
@@ -500,10 +505,11 @@ $(function () {
             pde.preparePage(function () {
                 pde.prepareGridStack();
                 pde.mapWidgets();
+                pde.codemirror();
             });
         });
     });
-    pde.codemirror();
+    
 });
 
 
