@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/eaciit/colony-core/v0"
-	"github.com/eaciit/colony-manager/helper"
-	"github.com/eaciit/dbox"
-	_ "github.com/eaciit/dbox/dbc/jsons"
-	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/toolkit"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/eaciit/colony-core/v0"
+	"github.com/eaciit/colony-manager/helper"
+	"github.com/eaciit/dbox"
+	_ "github.com/eaciit/dbox/dbc/jsons"
+	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 )
 
 type DataSourceController struct {
@@ -543,12 +544,12 @@ func (d *DataSourceController) GetConnections(r *knot.WebContext) interface{} {
 	}
 
 	search := ""
-	if payload["search"] != nil{
+	if payload["search"] != nil {
 		search = payload["search"].(string)
 	}
 
 	driver := ""
-	if payload["driver"] != nil{
+	if payload["driver"] != nil {
 		search = payload["driver"].(string)
 	}
 
@@ -863,6 +864,8 @@ func (d *DataSourceController) RunDataSourceQuery(r *knot.WebContext) interface{
 	_id := payload["_id"].(string)
 
 	dataDS, _, conn, query, metaSave, err := d.ConnectToDataSource(_id)
+	fmt.Printf("----- %#v\n", dataDS)
+	fmt.Printf("----- %#v\n", dataDS.QueryInfo)
 	if len(dataDS.QueryInfo) == 0 {
 		result := toolkit.M{"metadata": dataDS.MetaData, "data": []toolkit.M{}}
 		return helper.CreateResult(true, result, "")

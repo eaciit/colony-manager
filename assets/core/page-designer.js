@@ -447,9 +447,18 @@ pde.openWidgetSetting = function() {
         contentDoc.close();
     });
 }
+pde.prepareDragfile = function(){
+    var selector = $("#dragandrophandler");
+    selector.on('drop', function (e) 
+    {
+        e.preventDefault();
+        var files = e.originalEvent.dataTransfer.files;
+        pde.uploadStyleFile("onDrag",files)
+    });
+}
 
 pde.codemirror = function (){
-    var editor = CodeMirror.fromTextArea(document.getElementById("stylesheetScript"), {
+    var editor = CodeMirror.fromTextArea(document.getElementById("dragandrophandler"), {
         mode: "text/html",
         styleActiveLine: true,
         lineWrapping: true,
@@ -458,7 +467,31 @@ pde.codemirror = function (){
     editor.setValue('');
     $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
-    var data = $('#stylesheetScript').data('CodeMirrorInstance', editor);
+    var data = $('#dragandrophandler').data('CodeMirrorInstance', editor);
+}
+
+pde.uploadStyleFile = function(mode,files){
+    var config = ko.mapping.toJS(p.configPage)
+    var formData = new FormData();
+    var file;
+
+    if (mode == "onChange"){
+        if ($('#file').val() == ""){
+            return;
+        }
+        file = $('input[type=file]')[0].files[0]
+    }else{
+        file = files[0]   
+    }
+    
+    formData.append("file", file)
+    app.ajaxPost("/pagedesigner/readfilestyle", formData,  function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        config.styleSheet = res.data      
+        ko.mapping.fromJS(config, p.configPage);
+    });
 }
 
 $(function () {
@@ -472,3 +505,5 @@ $(function () {
     });
     pde.codemirror();
 });
+
+

@@ -91,7 +91,7 @@
 	               		<!-- <div class="col-md-12"> -->
 	               		<ul class="nav nav-tabs" id="myTab">
 		        			<li class="active"><a data-target="#General" data-toggle="tab">General</a></li>
-		       				<li><a data-target="#Stylesheet" data-toggle="tab">Stylesheet</a></li>
+		       				<li><a data-target="#Stylesheet" onclick="pde.prepareDragfile()" data-toggle="tab">Stylesheet</a></li>
 		   				</ul>
 		   				<div class="tab-content">
 		   					<div class="tab-pane active" id="General">
@@ -126,7 +126,13 @@
 		   					<div class="tab-pane" id="Stylesheet">
 								<div class="form-group">
 						    		<div class="col-md-12">
-							    		<textarea class="form-control" placeholder="Type stylesheet..." rows="13" name="stylesheet" id="stylesheetScript"></textarea>
+										<span class="btn btn-sm btn-success btn-file tooltipster" title="Select .zip file" style="margin-bottom: 10px">
+										    <span class="fa fa-file"></span> Upload .css / .txt file
+										    <input id="file" name="file" type="file" accept=".css,.txt" onchange="pde.uploadStyleFile('onChange','')">
+										</span>
+
+							    		<textarea class="form-control" placeholder="Type stylesheet..." rows="10" name="stylesheet" id="dragandrophandler" data-bind="value: styleSheet"></textarea>
+							    		<!-- <textarea class="form-control" placeholder="Type stylesheet..." rows="13" name="stylesheet" id="stylesheetScript"></textarea> -->
 						    		</div>
 						        </div>
 							</div>

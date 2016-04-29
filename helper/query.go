@@ -12,6 +12,10 @@ import (
 	_ "github.com/eaciit/dbox/dbc/csvs"
 	_ "github.com/eaciit/dbox/dbc/hive"
 	_ "github.com/eaciit/dbox/dbc/mysql"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
 	// _ "github.com/eaciit/dbox/dbc/oracle"
 	// _ "github.com/eaciit/dbox/dbc/postgres"
 	"encoding/json"
@@ -199,6 +203,34 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 
 func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
 	if toolkit.HasMember([]string{"json", "jsons", "csv", "csvs"}, dataConn.Driver) && strings.HasPrefix(dataConn.Host, "http") {
+
+		if toolkit.IsFileExist(dataConn.FileLocation) || dataConn.FileLocation == "" {
+			fileTempID := RandomIDWithPrefix("f")
+			fileType := GetFileExtension(dataConn.Host)
+			dataConn.FileLocation = fmt.Sprintf("%s.%s", filepath.Join(os.Getenv("EC_DATA_PATH"), "datasource", "upload", fileTempID), fileType)
+
+			file, err := os.Create(dataConn.FileLocation)
+			if err != nil {
+				os.Remove(dataConn.FileLocation)
+			} else {
+				defer file.Close()
+			}
+
+			resp, err := http.Get(dataConn.Host)
+			if err != nil {
+				os.Remove(dataConn.FileLocation)
+			} else {
+				defer resp.Body.Close()
+			}
+
+			_, err = io.Copy(file, resp.Body)
+			if err != nil {
+				os.Remove(dataConn.FileLocation)
+			}
+
+			colonycore.Save(dataConn)
+		}
+
 		return Query(dataConn.Driver, dataConn.FileLocation, "", "", "", dataConn.Settings)
 	}
 
