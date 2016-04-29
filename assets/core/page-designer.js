@@ -458,9 +458,7 @@ pde.prepareDragfile = function(){
 }
 
 pde.codemirror = function (){
-    $('#dragandrophandler').focus(function(){
-        alert("12")
-    })
+
     var editor = CodeMirror.fromTextArea(document.getElementById("dragandrophandler"), {
         mode: "text/html",
         styleActiveLine: true,
@@ -487,16 +485,15 @@ pde.uploadStyleFile = function(mode,files){
     }else{
         file = files[0]   
     }
-
     formData.append("file", file)
     app.ajaxPost("/pagedesigner/readfilestyle", formData,  function (res) {
         if (!app.isFine(res)) {
             return;
-        }
-        config.styleSheet = res.data      
-        ko.mapping.fromJS(config, p.configPage);
+        }     
+        $("#dragandrophandler").data('CodeMirrorInstance').setValue(res.data)
+        
     });
-    $("#dragandrophandler").data('CodeMirrorInstance').setValue("")
+    
 }
 
 $(function () {
