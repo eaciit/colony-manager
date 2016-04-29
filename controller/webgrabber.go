@@ -488,7 +488,7 @@ func (w *WebGrabberController) DaemonStat(r *knot.WebContext) interface{} {
 		return helper.CreateResult(true, true, "")
 
 	} else {
-		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+		filters := dbox.And(dbox.Eq("os", "linux"))
 		cursor, err := colonycore.Find(new(colonycore.Server), filters)
 		if err != nil {
 			return helper.CreateResult(false, false, err.Error())
@@ -576,20 +576,9 @@ func (w *WebGrabberController) DaemonToggle(r *knot.WebContext) interface{} {
 			return helper.CreateResult(false, nil, err.Error())
 		}
 
-		filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
-		cursor, err := colonycore.Find(new(colonycore.Server), filters)
+		all, err := new(colonycore.Server).GetServerSSH()
 		if err != nil {
 			return helper.CreateResult(false, false, err.Error())
-		}
-
-		all := []colonycore.Server{}
-		err = cursor.Fetch(&all, 0, true)
-		if err != nil {
-			return helper.CreateResult(false, false, err.Error())
-		}
-
-		if len(all) == 0 {
-			return helper.CreateResult(false, false, "No server registered")
 		}
 
 		if payload.OP == "off" {
