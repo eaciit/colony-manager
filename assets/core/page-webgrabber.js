@@ -882,6 +882,9 @@ wg.showSelectorSetting = function(index,nameSelector){
 	}
 
 	var selector = ko.mapping.toJS(wg.selectorRowSetting()[index]);
+	selector.columnsettings.forEach(function (d) {
+		d.valuetype = "string";
+	});
 	if (selector.columnsettings.length == 0) {
 		selector.columnsettings.push({alias: "", valuetype: "", selector: "", index: 0});
 	}
