@@ -1019,7 +1019,7 @@ func (d *WebGrabberController) SyncConfig() error {
 		return err
 	}
 
-	filters := dbox.And(dbox.Eq("serverType", "node"), dbox.Eq("os", "linux"))
+	filters := dbox.Eq("os", "linux")
 	cursor, err := colonycore.Find(new(colonycore.Server), filters)
 	if err != nil {
 		return err
@@ -1059,7 +1059,7 @@ func (d *WebGrabberController) SyncConfig() error {
 }
 
 func (w *WebGrabberController) ConnectToSedotanServer() (*SshSetting, *colonycore.Server, error) {
-	filter := dbox.And(dbox.Eq("os", "linux"), dbox.Eq("serverType", "node"))
+	filter := dbox.Eq("os", "linux")
 	cursor, err := colonycore.Find(new(colonycore.Server), filter)
 	if err != nil {
 		return nil, nil, err
