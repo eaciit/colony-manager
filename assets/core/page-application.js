@@ -395,6 +395,17 @@ apl.refreshGridServerDeployStatus = function (data) {
 				var $tdDeploymentStatus = $row.find("td:eq(4)");
 				var $tdRunningStatus = $row.find("td:eq(5)");
 
+				if (!resStatus.status) {
+					$checkbox.show();
+					$tdDeploymentStatus.css("background-color", "#d9534f");
+					$tdDeploymentStatus.css("color", "white");
+					$tdDeploymentStatus.html("UNDEPLOYED");
+
+					$tdRunningStatus.find(".hide").removeClass("hide");
+					$tdRunningStatus.find("button:eq(1)").addClass("hide");
+					return;
+				}
+
 				if (resStatus.data.isDeployed) {
 					$checkbox.hide();
 					$tdDeploymentStatus.css("background-color", "#5cb85c");
