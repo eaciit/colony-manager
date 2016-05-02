@@ -384,6 +384,7 @@ apl.refreshGridServerDeployStatus = function (data) {
 		}
 
 		var payload = { appID: _id, serverID: each._id };
+		console.log(payload);
 		app.ajaxPost("/application/isappdeployed", payload, function (resStatus) {
 			var $grid = $(".grid-server-deploy");
 			var dataSource = $grid.data("kendoGrid").dataSource;
@@ -396,7 +397,8 @@ apl.refreshGridServerDeployStatus = function (data) {
 				var $tdRunningStatus = $row.find("td:eq(5)");
 
 				if (resStatus.data.isDeployed) {
-					$checkbox.hide();
+					// $checkbox.hide();
+					$checkbox.show();
 					$tdDeploymentStatus.css("background-color", "#5cb85c");
 					$tdDeploymentStatus.css("color", "white");
 
