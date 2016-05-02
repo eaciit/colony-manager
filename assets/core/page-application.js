@@ -452,37 +452,39 @@ apl.showModalDeploy = function (_id) {
 		});
 	};
 };
-apl.deploy = function () {
-	var $sel = $(".grid-server-deploy");
-	var $allData = $sel.find(".k-grid-content tr input[type=checkbox]:checked");
+apl.deploy = function (what) {
+	return function () {
+		var $sel = $(".grid-server-deploy");
+		var $allData = $sel.find(".k-grid-content tr input[type=checkbox]:checked");
 
-	if ($allData.size() == 0) {
-		swal({title: "No server selected", type: "error"});
-		return;
-	}
+		if ($allData.size() == 0) {
+			swal({title: "No server selected", type: "error"});
+			return;
+		}
 
-	$allData.each(function (i, e) {
-		var $tr = $(e).closest("tr");
-		var uid = $tr.attr("data-uid");
+		$allData.each(function (i, e) {
+			var $tr = $(e).closest("tr");
+			var uid = $tr.attr("data-uid");
 
-		var rowData = $sel.data("kendoGrid").dataSource.getByUid(uid);
-		var param = { _id: apl.appIDToDeploy(), Server: rowData._id };
+			var rowData = $sel.data("kendoGrid").dataSource.getByUid(uid);
+			var param = { _id: apl.appIDToDeploy(), Server: rowData._id };
 
-		app.ajaxPost("/application/deploy", param, function (res) {
-			if (!app.isFine(res)) {
-				return;
-			}
+			app.ajaxPost("/application/" + what, param, function (res) {
+				if (!app.isFine(res)) {
+					return;
+				}
 
-			apl.getApplications(function () {
-				apl.appIDToDeploy(param._id);
-				apl.refreshGridModalDeploy();
+				apl.getApplications(function () {
+					apl.appIDToDeploy(param._id);
+					apl.refreshGridModalDeploy();
 
-				setTimeout(function () {
-					$(".modal-deploy").modal("hide");
-				}, 1000);
+					setTimeout(function () {
+						$(".modal-deploy").modal("hide");
+					}, 1000);
+				});
 			});
 		});
-	})
+	};
 };
 
 apl.selectApps = function (e) {

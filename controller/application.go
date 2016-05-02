@@ -241,6 +241,75 @@ func (a *ApplicationController) GetServerPathSeparator(server *colonycore.Server
 	return `/`
 }
 
+func (a *ApplicationController) Undeploy(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	path := filepath.Join(EC_DATA_PATH, "application", "log")
+	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-1504")
+
+	payload := struct {
+		ID     string `json:"_id",bson:"_id"`
+		Server string
+	}{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	log.AddLog("Get application with ID: "+payload.ID, "INFO")
+	app := new(colonycore.Application)
+	err = colonycore.Get(app, payload.ID)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	log.AddLog("Get server with ID: "+payload.Server, "INFO")
+	server := new(colonycore.Server)
+	err = colonycore.Get(server, payload.Server)
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	sshSetting, _, err := server.Connect()
+	if err != nil {
+		log.AddLog(err.Error(), "ERROR")
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if server.OS == "windows" {
+		cmds := []string{
+			fmt.Sprintf("rmdir /s /q $EC_APP_PATH/src/%s", app.ID),
+			fmt.Sprintf("rmdir /s /q $EC_APP_PATH/src/%s.*", app.ID),
+			fmt.Sprintf("rmdir /s /q $EC_APP_PATH/web/%s", app.ID),
+		}
+
+		for _, each := range cmds {
+			result, err := sshSetting.RunCommandSshAsMap(each)
+			if err != nil {
+				log.AddLog(err.Error()+result[0].Output, "ERROR")
+			}
+		}
+	} else {
+		cmds := []string{
+			fmt.Sprintf("rm -rf $EC_APP_PATH/src/%s", app.ID),
+			fmt.Sprintf("rm -rf $EC_APP_PATH/src/%s.*", app.ID),
+			fmt.Sprintf("rm -rf $EC_APP_PATH/web/%s", app.ID),
+		}
+
+		for _, each := range cmds {
+			result, err := sshSetting.RunCommandSshAsMap(each)
+			if err != nil {
+				log.AddLog(err.Error()+result[0].Output, "ERROR")
+			}
+		}
+	}
+
+	return helper.CreateResult(true, nil, "")
+}
+
 func (a *ApplicationController) Deploy(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
