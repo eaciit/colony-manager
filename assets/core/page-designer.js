@@ -474,7 +474,6 @@ pde.codemirror = function (){
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
     $('#dragandrophandler').data('CodeMirrorInstance', editor);
 }
-
 pde.uploadStyleFile = function(mode,files){
     var config = ko.mapping.toJS(p.configPage)
     var formData = new FormData();
