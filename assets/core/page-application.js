@@ -552,7 +552,7 @@ apl.createNewApplication = function () {
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	apl.addVariable();
 	apl.addCommand();
-	apl.getDataLanguage();
+	
 };
 
 apl.saveApplication = function() {
@@ -968,5 +968,6 @@ $(function () {
 	apl.codemirror();
 	apl.prepareTreeView();
 	app.showfilter(false);
+	apl.getDataLanguage();
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
