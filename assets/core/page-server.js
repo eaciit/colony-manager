@@ -227,6 +227,7 @@ srv.createNewServer = function () {
 	ko.mapping.fromJS(srv.templateConfigServer, srv.configServer);
 	srv.showServer(false);
     srv.addHostAlias();
+    app.showfilter(false);
 };
 srv.validateHost = function () {
 	srv.configServer.serviceSSH.host(srv.configServer.serviceSSH.host().split("//").reverse()[0]);

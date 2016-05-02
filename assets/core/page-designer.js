@@ -228,7 +228,9 @@ pde.adjustIframe = function () {
 };
 pde.showConfigPage = function () {
     $(".modal-config").modal("show");
+    
 };
+
 pde.prepareDataSources = function (callback) {
     app.ajaxPost("/datasource/getdatasources", { search: "" }, function (res) {
         if (!app.isFine(res)) {
@@ -455,19 +457,22 @@ pde.prepareDragfile = function(){
         var files = e.originalEvent.dataTransfer.files;
         pde.uploadStyleFile("onDrag",files)
     });
+    setTimeout(function() {
+        $('#dragandrophandler').data('CodeMirrorInstance').setValue(ko.mapping.toJS(p.configPage.styleSheet));
+    }, 10);     
 }
 
 pde.codemirror = function (){
     var editor = CodeMirror.fromTextArea(document.getElementById("dragandrophandler"), {
-        mode: "text/html",
+        mode: "text/css",
         styleActiveLine: true,
         lineWrapping: true,
         lineNumbers: true,
     });
-    editor.setValue('');
+    editor.setValue('');    
     $('.CodeMirror-gutter-wrapper').css({'left':'-40px'});
     $('.CodeMirror-sizer').css({'margin-left': '30px', 'margin-bottom': '-15px', 'border-right-width': '10px', 'min-height': '863px', 'padding-right': '10px', 'padding-bottom': '0px'});
-    var data = $('#dragandrophandler').data('CodeMirrorInstance', editor);
+    $('#dragandrophandler').data('CodeMirrorInstance', editor);
 }
 
 pde.uploadStyleFile = function(mode,files){
@@ -500,10 +505,11 @@ $(function () {
             pde.preparePage(function () {
                 pde.prepareGridStack();
                 pde.mapWidgets();
+                pde.codemirror();
             });
         });
     });
-    pde.codemirror();
+
 });
 
 

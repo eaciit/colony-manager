@@ -213,6 +213,7 @@ dg.createNewScrapper = function () {
 	$(".table-tree-map").replaceWith('<table class="table tree table-tree-map"></table>');
 	dg.addMap();
 	dg.showDataGrabber(false);
+	app.showfilter(false);
 };
 
 dg.addWizard = function (){
@@ -222,6 +223,7 @@ dg.addWizard = function (){
 	$(".table-wizard").replaceWith('<table class="table table-wizard"></table>');
 	dg.visibleSync1('');
 	dg.visibleSync2('');
+	app.showfilter(false);
 };
 
 dg.doSaveDataGrabber = function (c) {
