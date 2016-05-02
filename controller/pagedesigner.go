@@ -137,7 +137,7 @@ func (p *PageDesignerController) SelectPage(r *knot.WebContext) interface{} {
 	}
 
 	data := toolkit.M{"page": page, "pageDetail": pageDetailRes}
-	fmt.Println(pageDetailRes)
+
 	return helper.CreateResult(true, data, "")
 }
 
