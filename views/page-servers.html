@@ -101,9 +101,9 @@
 </nav>
 
 <ul id="myTab" class="nav nav-tabs" data-bind="visible: (app.mode() == 'editor')">
-	<li class="active"><a href="#Form-server" data-toggle="tab">General</a></li>
+	<li class="active" id="general"><a href="#Form-server" data-toggle="tab">General</a></li>
 	<!-- <li data-bind="visible: (srv.ServerMode() != '')"><a href="#Applications-server"  data-toggle="tab">Applications</a></li> -->
-	<li data-bind="visible:(!srv.isNew())"><a href="#Service-server" data-toggle="tab">Other services</a></li>
+	<li data-bind="visible:(!srv.isNew())" id="other-services"><a href="#Service-server" data-toggle="tab">Other services</a></li>
 </ul>
 
 <div data-bind="visible: (app.mode() == 'editor')">
