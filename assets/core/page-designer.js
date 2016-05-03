@@ -228,7 +228,12 @@ pde.adjustIframe = function () {
 };
 pde.showConfigPage = function () {
     $(".modal-config").modal("show");
-    
+    if($("#myTab li:eq(0)").hasClass('active') == false){
+        $("#myTab li:eq(0)").toggleClass('active')
+        $("#myTab li:eq(1)").removeClass('active')
+        $(".tab-content #General").addClass('active')
+        $(".tab-content #Stylesheet").removeClass('active')
+    }  
 };
 
 pde.prepareDataSources = function (callback) {
