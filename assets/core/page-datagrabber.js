@@ -245,6 +245,11 @@ dg.doSaveDataGrabber = function (c) {
 dg.saveDataGrabber = function () {
 	dg.doSaveDataGrabber(function () {
 		dg.getScrapperData();
+		swal({ title: "Data successfully saved", type: "success" }, function(isconfirm){
+			if(isconfirm){
+				dg.backToFrontPage();
+			}
+		});
 	});
 };
 dg.backToFront = function () {
