@@ -10,7 +10,6 @@ pde.templateWidgetPageDataSource = {
     dataSource: "",
 };
 pde.isDataSourceChanged = ko.observable(false);
-pde.check = ko.observable(false);
 pde.dataSourceArray = ko.observableArray([]);
 pde.dsMapping = ko.mapping.fromJS(pde.dsMappingConfig);
 pde.configWidgetPage = ko.mapping.fromJS(viewModel.templateModels.WidgetPage);
@@ -93,6 +92,16 @@ pde.settingWidget = function(o) {
         return;
     }
 
+    var $el = $(".grid-stack-item[data-id='"+id+"']");
+    var value;
+    setTimeout(function() {
+        ["width","height","x","y"].forEach(function(e,i){
+            value = parseInt($el.attr("data-gs-"+e),10);
+            $('.col-sm-4').eq(i).find("input").val(value.toFixed(2));
+            widget[e] = value;
+        });    
+    }, 100);
+
     ko.mapping.fromJS(widget, pde.configWidgetPage);
 
     pde.configWidgetPageDataSources([]);
@@ -124,7 +133,6 @@ pde.settingWidget = function(o) {
 
     $(".modal-widgetsetting").modal("show");
     $('a[data-target="#DataSource"]').tab('show');
-    pde.check(true);
 };
 
 pde.prepareGridStack = function () {
@@ -267,28 +275,14 @@ pde.setWidgetPosition = function () {
 
         ["x", "y", "width", "height"].forEach(function (p) {
             d[p] = parseInt($el.attr("data-gs-" + p), 10);
-        });
+        }); 
 
         return d;
     });
-    ko.mapping.fromJS(config,p.configPage);
+    ko.mapping.fromJS(config, p.configPage);
 };
 
-pde.changeAttr = function (){
-    ko.mapping.toJS(p.configPage.widgets).forEach(function(d){
-        var $el = $(".grid-stack-item[data-id='" + d._id + "']");
-            $el.attr("data-gs-x",d.x);
-            $el.attr("data-gs-y",d.y);
-            $el.attr("data-gs-width",d.width);
-            $el.attr("data-gs-height",d.height);
-    })
-}
-
 pde.save = function () {
-    if (pde.check() == true ){
-        pde.changeAttr();
-        pde.check(false);    
-    }
     pde.setWidgetPosition();
     app.ajaxPost("/pagedesigner/savepage", p.configPage, function (res) {
         if (!app.isFine(res)) {
@@ -307,7 +301,6 @@ pde.save = function () {
 pde.mapWidgets = function () {
     var $gridStack = $("#page-designer-grid-stack").data("gridstack");
     var config = ko.mapping.toJS(p.configPage);
-
     (config.widgets == null ? [] : config.widgets).forEach(function (d) {
         var widget = (function () {
             var widgetRow = Lazy(pde.baseWidgets()).find({ _id: d.widgetId });
