@@ -93,6 +93,14 @@ pde.settingWidget = function(o) {
         return;
     }
 
+    var $el = $(".grid-stack-item[data-id='"+id+"']");
+    var value;
+
+    ["width","height","x","y"].forEach(function(e,i){
+        value = parseInt($el.attr("data-gs-"+e),10);
+        $('.col-sm-4').eq(i).find("input").val(value.toFixed(2));  
+    });
+
     ko.mapping.fromJS(widget, pde.configWidgetPage);
 
     pde.configWidgetPageDataSources([]);
@@ -269,14 +277,15 @@ pde.setWidgetPosition = function () {
     var config = ko.mapping.toJS(p.configPage);
     config.widgets = config.widgets.map(function (d) {
         var $el = $(".grid-stack-item[data-id='" + d._id + "']");
-
+      
         ["x", "y", "width", "height"].forEach(function (p) {
             d[p] = parseInt($el.attr("data-gs-" + p), 10);
+            console.log(p,"===>",d[p])
         });
 
         return d;
     });
-    ko.mapping.fromJS(config,p.configPage);
+    ko.mapping.fromJS(config,p.configPage)
 };
 
 pde.changeAttr = function (){
@@ -290,23 +299,25 @@ pde.changeAttr = function (){
 }
 
 pde.save = function () {
-    if (pde.check() == true ){
-        pde.changeAttr();
-        pde.check(false);    
-    }
-    pde.setWidgetPosition();
-    app.ajaxPost("/pagedesigner/savepage", p.configPage, function (res) {
-        if (!app.isFine(res)) {
-            return;
-        }
+   setTimeout(location.reload(), 10);
 
-        if ($(".modal-widgetsetting").is(":visible")) {
-            $(".modal-widgetsetting").modal("hide");
-        } else {
-            swal({ title: "Saved", type: "success" });
-        }
-    });
-    location.reload();
+    // if (pde.check() == true ){
+    //     pde.changeAttr();
+    //     pde.check(false);    
+    // }
+    pde.setWidgetPosition();
+    // app.ajaxPost("/pagedesigner/savepage", p.configPage, function (res) {
+    //     if (!app.isFine(res)) {
+    //         return;
+    //     }
+
+    //     if ($(".modal-widgetsetting").is(":visible")) {
+    //         $(".modal-widgetsetting").modal("hide");
+    //     } else {
+    //         swal({ title: "Saved", type: "success" });
+    //     }
+    // });
+   
 };
 
 pde.mapWidgets = function () {
@@ -377,7 +388,8 @@ pde.saveWidgetConfig = function () {
         var configWidgetIdentical = Lazy(config.widgets).find({ _id: configWidget._id });
         return config.widgets.indexOf(configWidgetIdentical);
     }());
-
+    index = Lazy(config.widgets).find({width:!3})
+    console.log(index)
     config.widgets[configWidgetIndex] = configWidget;
 
     ko.mapping.fromJS(config, p.configPage);
