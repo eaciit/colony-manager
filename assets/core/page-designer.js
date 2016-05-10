@@ -45,6 +45,7 @@ pde.preparePage = function (callback) {
         }
 
         ko.mapping.fromJS(res.data.pageDetail, p.configPage);
+        $('head').append("<style>"+res.data.pageDetail.styleSheet+"</style>");
         callback();
     });
 };
@@ -236,7 +237,10 @@ pde.adjustIframe = function () {
 };
 pde.showConfigPage = function () {
     $(".modal-config").modal("show");
-    
+    if($("#myTab li").eq(0).hasClass("active") == false){
+        $("#myTab").find("li").toggleClass("active")
+        $(".tab-content").find(".tab-pane").toggleClass("active")
+    }
 };
 
 pde.prepareDataSources = function (callback) {
@@ -251,12 +255,14 @@ pde.prepareDataSources = function (callback) {
     });
 };
 pde.savePage = function () {
+
     if (!app.isFormValid(".form-widget-designer")) {
         return;
     }
 
-    var param = ko.mapping.toJS(p.configPage);
-    console.log(param.styleSheet);
+    var config = ko.mapping.toJS(p.configPage);
+    config.styleSheet = $('#dragandrophandler').data('CodeMirrorInstance').getValue() 
+    param = ko.mapping.fromJS(config, p.configPage);
     app.ajaxPost("/pagedesigner/savepage", param, function (res) {
         if (!app.isFine(res)) {
             return;
@@ -265,6 +271,7 @@ pde.savePage = function () {
         $(".modal-config").modal("hide");
     });
 };
+
 pde.preview = function () {
     location.href = "/page/" + p.configPage._id();
 };
@@ -487,8 +494,8 @@ pde.uploadStyleFile = function(mode,files){
         if (!app.isFine(res)) {
             return;
         }
-        config.styleSheet = res.data      
-        ko.mapping.fromJS(config, p.configPage);
+        $('#dragandrophandler').data('CodeMirrorInstance').setValue(res.data);     
+        
     });
 }
 
