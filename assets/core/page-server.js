@@ -518,7 +518,11 @@ srv.backToFront = function () {
 	app.mode('');
 	srv.getServers();
 	$("#selectall").attr("checked",false)
+	$('#myTabContent #Form-server').closest("div").addClass("active in");
+	$('#myTab #general').closest("li").addClass("active");
+	$('#myTab #other-services').closest("li").removeClass("active");
 };
+
 srv.popupWizard = function () {
 	$(".modal-wizard").modal("show");
 	srv.showModal('modal1');
