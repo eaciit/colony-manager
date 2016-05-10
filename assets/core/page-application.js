@@ -384,6 +384,7 @@ apl.refreshGridServerDeployStatus = function (data) {
 		}
 
 		var payload = { appID: _id, serverID: each._id };
+		console.log(payload);
 		app.ajaxPost("/application/isappdeployed", payload, function (resStatus) {
 			var $grid = $(".grid-server-deploy");
 			var dataSource = $grid.data("kendoGrid").dataSource;
@@ -407,7 +408,8 @@ apl.refreshGridServerDeployStatus = function (data) {
 				}
 
 				if (resStatus.data.isDeployed) {
-					$checkbox.hide();
+					// $checkbox.hide();
+					$checkbox.show();
 					$tdDeploymentStatus.css("background-color", "#5cb85c");
 					$tdDeploymentStatus.css("color", "white");
 
@@ -565,7 +567,7 @@ apl.createNewApplication = function () {
 	ko.mapping.fromJS(apl.templateConfigApplication, apl.configApplication);
 	apl.addVariable();
 	apl.addCommand();
-	apl.getDataLanguage();
+	
 };
 
 apl.saveApplication = function() {
@@ -981,5 +983,6 @@ $(function () {
 	apl.codemirror();
 	apl.prepareTreeView();
 	app.showfilter(false);
+	apl.getDataLanguage();
 	app.registerSearchKeyup($(".search"), apl.getApplications);
 });
