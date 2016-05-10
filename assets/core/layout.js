@@ -56,14 +56,36 @@ ly.element = function(data){
 }
 
 ly.getLogout = function(){
-	
 	app.ajaxPost("/login/logout", {logout: true}, function(res){
 		if(!app.isFine(res)){
 			return;
 		}
 		ly.account(false);	
-		alert('logout');
 		window.location = "/web/login"
+	});
+}
+
+ly.logout = function(){
+	swal({
+		title:"Are you sure go to logout",
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonClass: "btn-success",
+		confirmButtonText: "Yes",
+	},
+	function(isconfirm){
+		if(isconfirm){
+			app.ajaxPost("/login/logout", {logout: true}, function(res){
+				if(!app.isFine(res)){
+					return;
+				}
+				ly.account(false);	
+			});
+			setTimeout(function(){
+				window.location = "/web/login";
+			}, 200);
+			
+		}
 	});
 }
 
