@@ -89,75 +89,46 @@ ly.logout = function(){
 	});
 }
 
-ly.getLoadMenu = function(){ 
-	
-	// app.ajaxPost("/login/getusername", {}, function(res){
-	// 	if (!res.success || res.message.indexOf("found") > -1) {
-	// 		ly.element([]);
-	// 		ly.account(false);
-	// 		if (res.message.indexOf("expired") > -1 || res.message.indexOf("failed") > -1 ) {
-	// 			if (document.URL.indexOf("/web/login") == -1) {
-	// 				ly.getLogout();
-	// 			}
-	// 		} else {
-	// 			app.isFine(res);
-	// 		}
-	// 		return;
-	// 	}else{
-	// 		ly.username(" Hi' "+res.data.username);
-	// 		app.ajaxPost("/login/getaccessmenu", {}, function(res){
-	// 			if (!res.success) {
-	// 				ly.element([]);
-	// 				ly.account(false);
-	// 			}
-	// 			app.isFine(res);
-	// 			ly.element(res.data);
+ly.getLoadMenu = function () { 
+	ly.account(false);
+	ly.element(null);
 
-	// 		}, function () {
-	// 			ly.element([]);
-	// 		});
-	// 	}
-	// });
-	var a ;
-	app.ajaxPost("/login/getaccessmenu", {}, function(res){
-		
-		if (!res.success || res.message.indexOf("Found") > -1) {
-			ly.element([]);
-			ly.account(false);
-		}else{
-			//ly.account(true);
-			app.ajaxPost("/login/getusername", {}, function(res){
-				if (!res.success || res.message.indexOf("Found") > -1) {
-					ly.element([]);
-					ly.account(false);
-					if (res.message.indexOf("expired") > -1 || res.message.indexOf("failed") > -1 ) {
-						if (document.URL.indexOf("/web/login") == -1) {
-							ly.account(false);
-							a = false;
-						}
-					} else {
-						app.isFine(res);
-							
+	var isFine = function (res) {
+		if (!res.success || res.message.toLowerCase().indexOf("found") > -1 
+						 || res.message.toLowerCase().indexOf("expired") > -1 
+						 || res.message.toLowerCase().indexOf("failed") > -1) {
+			if (document.URL.indexOf("/web/login") == -1) {
+				swal({
+					title: "Oops...",
+					type: "warning",
+					text: res.message,
+				}, function () {
+					app.isFine(res);
+					setTimeout(function () { window.location = "/web/login"; }, 200);
+				});
+			}
 
-					}
-					return;
-				}
-				if(res.data != "" ){
-					ly.username(" Hi' "+res.data.username);
-					ly.account(true);
-				}
-				
-				
-			});
+			return false;
 		}
-		app.isFine(res);
-		ly.element(res.data);
-		//ly.account(true);
 
-	}, function () {
-		ly.element([]);
-	});
-			
+		return true;
+	};
+	
+	app.ajaxPost("/login/getaccessmenu", {}, function (res) {
+		if (!isFine(res)) {
+			return;
+		}
+
+		app.ajaxPost("/login/getusername", {}, function (res2) {
+			if (!isFine(res2)) {
+				return;
+			}
+
+			ly.element(res.data);
+			ly.username(" Hi' " + res2.data.username);
+			ly.account(true);
+		});
+	});	
 }
 
 
