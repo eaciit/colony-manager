@@ -396,7 +396,7 @@ apl.refreshGridServerDeployStatus = function (data) {
 				var $tdDeploymentStatus = $row.find("td:eq(4)");
 				var $tdRunningStatus = $row.find("td:eq(5)");
 
-				if (!resStatus.status) {
+				if (!resStatus.success) {
 					$checkbox.show();
 					$tdDeploymentStatus.css("background-color", "#d9534f");
 					$tdDeploymentStatus.css("color", "white");
