@@ -90,9 +90,6 @@ ly.logout = function(){
 }
 
 ly.getLoadMenu = function () { 
-	ly.account(false);
-	ly.element(null);
-
 	var isFine = function (res) {
 		if (!res.success || res.message.toLowerCase().indexOf("found") > -1 
 						 || res.message.toLowerCase().indexOf("expired") > -1 
@@ -116,18 +113,28 @@ ly.getLoadMenu = function () {
 	
 	app.ajaxPost("/login/getaccessmenu", {}, function (res) {
 		if (!isFine(res)) {
+			ly.element(null);
+			ly.account(false);
 			return;
 		}
 
 		app.ajaxPost("/login/getusername", {}, function (res2) {
 			if (!isFine(res2)) {
+				ly.element(null);
+				ly.account(false);
 				return;
 			}
 
-			ly.element(res.data);
 			ly.username(" Hi' " + res2.data.username);
+			ly.element(res.data);
 			ly.account(true);
+		}, function () {
+			ly.element(null);
+			ly.account(false);
 		});
+	}, function () {
+		ly.element(null);
+		ly.account(false);
 	});	
 }
 
