@@ -31,7 +31,7 @@ type MetaSave struct {
 var (
 	sorter       string
 	querypattern = []string{"*", "!", ".."}
-	ds_rdbms     = []string{"mysql", "mssql", "oracle", "postgres"}
+	ds_rdbms     = []string{"mysql", "mssql", "oracle", "postgres", "odbc", "jdbc"}
 	ds_flatfile  = []string{"csv", "csvs", "json", "jsons", "xlsx"}
 )
 
@@ -83,7 +83,7 @@ func (d *DataSourceController) parseSettings(payloadSettings interface{}, defaul
 }
 
 func (d *DataSourceController) checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql json csv jsons csvs hive"
+	supportedDrivers := "mongo mysql json csv jsons csvs hive odbc jdbc"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
@@ -737,7 +737,14 @@ func (d *DataSourceController) DoFetchDataSourceMetaData(dataConn *colonycore.Co
 
 	data := toolkit.M{}
 
-	if !toolkit.HasMember([]string{"json", "mysql"}, dataConn.Driver) {
+	var connDriver string
+	if dataConn.Driver == "jdbc" {
+		connDriver = strings.Split(dataConn.Settings.GetString("connector"), ":")[1]
+	} else {
+		connDriver = dataConn.Driver
+	}
+
+	if !toolkit.HasMember([]string{"json", "mysql"}, connDriver) {
 		err = cursor.Fetch(&data, 1, false)
 	} else {
 		dataAll := []toolkit.M{}
@@ -1259,6 +1266,7 @@ func (d *DataSourceController) GetDataSourceCollections(r *knot.WebContext) inte
 	}
 	defer conn.Close()
 
-	collections := conn.ObjectNames(dbox.ObjTypeAll)
+	collections := conn.ObjectNames(dbox.ObjTypeTable)
+
 	return helper.CreateResult(true, collections, "")
 }
