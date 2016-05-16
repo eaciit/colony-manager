@@ -13,7 +13,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/hive"
 	_ "github.com/eaciit/dbox/dbc/jdbc"
 	_ "github.com/eaciit/dbox/dbc/mysql"
-	_ "github.com/eaciit/dbox/dbc/odbc"
+	// _ "github.com/eaciit/dbox/dbc/odbc"
 	"io"
 	"net/http"
 	"os"
@@ -341,7 +341,7 @@ func GetFieldsFromDS(_id string) ([]string, error) {
 		if i > 0 {
 			break
 		}
-		for field, _ := range val {
+		for field := range val {
 			fields = append(fields, field)
 		}
 	}
