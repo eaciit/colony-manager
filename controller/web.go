@@ -33,6 +33,7 @@ func (w *WebController) PredefinedVariables(params ...toolkit.M) interface{} {
 		"WebGrabber":          colonycore.WebGrabber{},
 		"Widget":              colonycore.Widget{},
 		"WidgetPage":          colonycore.WidgetPage{},
+		"IsDevMode":           IsDevMode,
 	})
 
 	vars := toolkit.M{"templateModels": string(templateModels)}

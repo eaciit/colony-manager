@@ -112,6 +112,12 @@ ly.getLoadMenu = function () {
 	};
 	
 	app.ajaxPost("/login/getaccessmenu", {}, function (res) {
+		if (res.success && res.message == "devmode") {
+			ly.element(res.data);
+			ly.account(false);
+			return;
+		}
+
 		if (!isFine(res)) {
 			ly.element(null);
 			ly.account(false);
