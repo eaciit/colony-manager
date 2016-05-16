@@ -119,6 +119,7 @@ func GetUser(r *knot.WebContext) (tUser acl.User, err error) {
 
 func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+
 	sessionId := r.Session("sessionid", "")
 
 	cursor, err := colonycore.Find(new(colonycore.Menu), nil)
@@ -137,7 +138,7 @@ func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
 			result, _ := toolkit.ToM(m)
 			results = append(results, result)
 		}
-		return helper.CreateResult(true, results, "Success")
+		return helper.CreateResult(true, results, "devmode")
 	}
 
 	if toolkit.ToString(sessionId) == "" {
