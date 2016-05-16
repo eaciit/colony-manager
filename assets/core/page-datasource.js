@@ -12,6 +12,8 @@ ds.templateDrivers = ko.observableArray([
 	{ value: "oracle", text: "Oracle*" },
 	{ value: "sqlserver", text: "SQL Servrer*" },
 	{ value: "postresql", text: "PostreSQL*" },
+	{ value: "odbc", text: "ODBC" },
+	{ value: "jdbc", text: "JDBC" },
 ]);
 ds.templateConfigSetting = {
 	id: "",

@@ -11,7 +11,9 @@ import (
 	_ "github.com/eaciit/dbox/dbc/csv"
 	_ "github.com/eaciit/dbox/dbc/csvs"
 	_ "github.com/eaciit/dbox/dbc/hive"
+	_ "github.com/eaciit/dbox/dbc/jdbc"
 	_ "github.com/eaciit/dbox/dbc/mysql"
+	_ "github.com/eaciit/dbox/dbc/odbc"
 	"io"
 	"net/http"
 	"os"
@@ -37,6 +39,7 @@ type MetaSave struct {
 }
 
 func Query(driver string, host string, other ...interface{}) *queryWrapper {
+	var driverSett string
 	if driver == "mysql" && !strings.Contains(host, ":") {
 		host = fmt.Sprintf("%s:3306", host)
 	}
@@ -57,7 +60,15 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 		wrapper.ci.Settings = other[3].(toolkit.M)
 	}
 
-	wrapper.connection, wrapper.err = dbox.NewConnection(driver, wrapper.ci)
+	if driver == "odbc" {
+		driverSett = wrapper.ci.Settings.GetString("connector")
+	} else if driver == "jdbc" {
+		driverSett = strings.Split(wrapper.ci.Settings.GetString("connector"), ":")[0]
+	} else {
+		driverSett = driver
+	}
+
+	wrapper.connection, wrapper.err = dbox.NewConnection(driverSett, wrapper.ci)
 	if wrapper.err != nil {
 		return &wrapper
 	}
@@ -261,7 +272,7 @@ func GetDataSourceQuery() ([]colonycore.DataSource, error) {
 }
 
 func checkIfDriverIsSupported(driver string) error {
-	supportedDrivers := "mongo mysql json csv jsons csvs hive"
+	supportedDrivers := "mongo mysql json csv jsons csvs hive odbc jdbc"
 
 	if !strings.Contains(supportedDrivers, driver) {
 		drivers := strings.Replace(supportedDrivers, " ", ", ", -1)
