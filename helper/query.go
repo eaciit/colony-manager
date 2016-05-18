@@ -309,12 +309,51 @@ func ConnectToDataSource(_id string) (*colonycore.DataSource, *colonycore.Connec
 }
 
 func FetchDataFromDS(_id string, fetch int) (toolkit.Ms, error) {
+	return FetchDataFromDSWithFilter(_id, fetch, nil)
+}
+
+func FetchDataFromDSWithFilter(_id string, fetch int, filter toolkit.M) (toolkit.Ms, error) {
 	dataDS, _, _, query, _, err := ConnectToDataSource(_id)
 	if err != nil {
 		return nil, err
 	}
 	if len(dataDS.QueryInfo) == 0 {
 		return nil, errors.New("data source has no query info")
+	}
+
+	if filter != nil {
+		whereQuery := []toolkit.M{}
+
+		if dataDS.QueryInfo.GetString("where") != "" {
+			where := []toolkit.M{}
+			err = json.Unmarshal([]byte(dataDS.QueryInfo.GetString("where")), &where)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, eachWhere := range where {
+				isFound := false
+				for _, each := range filter.Get("fields").([]string) {
+					if each == eachWhere.GetString("field") && !isFound {
+						isFound = true
+					}
+				}
+				if !isFound {
+					whereQuery = append(whereQuery, eachWhere)
+				}
+			}
+		}
+
+		for _, each := range filter.Get("fields").([]string) {
+			whereQuery = append(whereQuery, toolkit.M{
+				"key":   "Contains",
+				"field": each,
+				"value": filter.Get("value"),
+			})
+		}
+
+		dataDS.QueryInfo.Set("where", whereQuery)
+		query, _ = ParseQuery(query, dataDS.QueryInfo)
 	}
 
 	cursor, err := query.Cursor(nil)
