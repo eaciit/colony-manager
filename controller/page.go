@@ -137,7 +137,7 @@ func (p *PageController) LoadWidgetPageContent(r *knot.WebContext) interface{} {
 func (p *PageController) LoadWidgetPageData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := toolkit.M{}
+	payload := []toolkit.M{}
 
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -145,8 +145,14 @@ func (p *PageController) LoadWidgetPageData(r *knot.WebContext) interface{} {
 
 	result := toolkit.M{}
 
-	for namespace, dsID := range payload {
-		data, err := helper.FetchDataFromDS(dsID.(string), 0)
+	for _, each := range payload {
+		filter := each.GetString("filter")
+		namespace := each.GetString("namespace")
+		fields := each.Get("fields").([]string)
+		dsID := each.GetString("value")
+
+		opt := toolkit.M{"fields": fields, "value": filter}
+		data, err := helper.FetchDataFromDSWithFilter(dsID, 0, opt)
 		if err != nil {
 			return helper.CreateResult(false, nil, err.Error())
 		}
