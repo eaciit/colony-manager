@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
@@ -148,7 +149,7 @@ func (p *PageController) LoadWidgetPageData(r *knot.WebContext) interface{} {
 	for _, each := range payload {
 		filter := each.GetString("filter")
 		namespace := each.GetString("namespace")
-		fields := each.Get("fields").([]string)
+		fields := strings.Split(each.Get("fields").(string), ",")
 		dsID := each.GetString("value")
 
 		opt := toolkit.M{"fields": fields, "value": filter}
