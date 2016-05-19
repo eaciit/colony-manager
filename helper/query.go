@@ -352,7 +352,13 @@ func FetchDataFromDSWithFilter(_id string, fetch int, filter toolkit.M) (toolkit
 			})
 		}
 
-		dataDS.QueryInfo.Set("where", whereQuery)
+		bts, err := json.Marshal(whereQuery)
+		if err != nil {
+			return nil, err
+		}
+		whereString := string(bts)
+
+		dataDS.QueryInfo.Set("where", whereString)
 		query, _ = ParseQuery(query, dataDS.QueryInfo)
 	}
 

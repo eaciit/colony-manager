@@ -3,6 +3,14 @@ app.section('pageView');
 viewModel.pageView ={}; var pv = viewModel.pageView;
 
 pv.indexWidget = ko.observable("");
+pv.configParam = {
+    namespace: "",
+    value: "",
+    filter: "",
+    fields: "",
+};
+
+
 pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
@@ -19,8 +27,15 @@ pv.prepareGridStack = function () {
     });
 };
 
-pv.mapWidgets = function(){
+pv.doFilter = function(){
+  var data  = {};
+   pv.mapWidgets(data);
+};
+
+pv.mapWidgets = function(data){
+    app.miniloader(true);
 	var $gridStack = $("#page-designer-grid-stack").data("gridstack");
+    $gridStack.removeAll();
 	$div = $('#frame');
 	app.ajaxPost("/pagedesigner/pageview", {title: viewModel.pageID}, function(res){
 		if(!app.isFine(res)){
@@ -30,6 +45,7 @@ pv.mapWidgets = function(){
 
 		$(".title-widget").text(res.data.title);
 		(widgets == null ? [] : widgets).forEach(function (d) {
+
 	        var $item = $(pv.templateWidgetItem);
 	        $item.attr("data-id", d._id);
 	        $item.data("id", d._id);
@@ -64,37 +80,48 @@ pv.mapWidgets = function(){
                         res.data.WidgetData.config
                     );
 
-                    // $(this).height( $(this).contents().find("body").height());
+                    
+                    var confDatasource = res.data.WidgetPageData.dataSources;
+                    $.each(confDatasource, function(namespace, value) {
+                        pv.configParam.namespace = namespace;
+                        pv.configParam.value = value;
+                    });
 
-                    app.ajaxPost("/page/loadwidgetpagedata", res.data.WidgetPageData.dataSources, function (res2) {
-                        // if (!app.isFine(res)) {
-                        //     return;
-                        // }
+                    if(data !== null){
+                        if(pv.configParam.value == data.dataSources){
+                            pv.configParam.filter = data.filter;
+                            pv.configParam.fields = data.fields;
+                        }
+                    }
 
+                    var param2 = [];
+                    param2.push(pv.configParam);
+
+                    app.ajaxPost("/page/loadwidgetpagedata", param2, function (res2) {
                         if (res2.data == null) {
                             res2.data = {};
                         }
-
+                        res2.data.dataSources = d.dataSources;
                         iWindow.window.Render(
                             res2.data,
                             res.data.WidgetPageData.config,
                             res.data.WidgetData.config
                         );
                     });
+                    
 		        });
 
 				var container =  iWindow.document;
 		        container.open();
        	 		container.write(page);
         		container.close();
-
-
 	        });
 	    });
+        app.miniloader(false);
 	});
 }
 
 $(function(){
 	pv.prepareGridStack();
-	pv.mapWidgets();
+	pv.doFilter();
 });
