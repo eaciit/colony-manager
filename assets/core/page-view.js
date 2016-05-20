@@ -3,18 +3,20 @@ app.section('pageView');
 viewModel.pageView ={}; var pv = viewModel.pageView;
 
 pv.indexWidget = ko.observable("");
-pv.configParam = {
+
+pv.templateConfigParam = {
     namespace: "",
     value: "",
     filter: "",
     fields: "",
 };
 
+pv.configParam = ko.mapping.toJS(pv.templateConfigParam);
 
 pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
         '<div class="grid-stack-item-content">',
-        	'<h5 class="title"></h5>',
+            '<h5 class="title"></h5>',
             '<iframe width="100%" height="99%" marginheight="0" frameborder="0" scrolling="no" style="overflow: hidden;"></iframe>',
         '</div>',
     '</div>'
@@ -22,36 +24,38 @@ pv.templateWidgetItem =  [
 
 pv.prepareGridStack = function () {
     $("#page-designer-grid-stack").gridstack({
-    	disableDrag: true,
+        disableDrag: true,
         disableResize: true,
     });
 };
 
-pv.doFilter = function(){
+pv.doRefresh = function(){
+  ko.mapping.fromJS(pv.templateConfigParam);
   var data  = {};
    pv.mapWidgets(data);
 };
 
 pv.mapWidgets = function(data){
+
     app.miniloader(true);
-	var $gridStack = $("#page-designer-grid-stack").data("gridstack");
+    var $gridStack = $("#page-designer-grid-stack").data("gridstack");
     $gridStack.removeAll();
-	$div = $('#frame');
-	app.ajaxPost("/pagedesigner/pageview", {title: viewModel.pageID}, function(res){
-		if(!app.isFine(res)){
-			return;
-		}
-		var widgets = res.data.widgets;
+    $div = $('#frame');
+    app.ajaxPost("/pagedesigner/pageview", {title: viewModel.pageID}, function(res){
+        if(!app.isFine(res)){
+            return;
+        }
+        var widgets = res.data.widgets;
 
-		$(".title-widget").text(res.data.title);
-		(widgets == null ? [] : widgets).forEach(function (d) {
+        $(".title-widget").text(res.data.title);
+        (widgets == null ? [] : widgets).forEach(function (d) {
 
-	        var $item = $(pv.templateWidgetItem);
-	        $item.attr("data-id", d._id);
-	        $item.data("id", d._id);
-	        $item.data("widget-id", d.widgetId);
-	        $item.find("h5").text(d.title);
-	        $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
+            var $item = $(pv.templateWidgetItem);
+            $item.attr("data-id", d._id);
+            $item.data("id", d._id);
+            $item.data("widget-id", d.widgetId);
+            $item.find("h5").text(d.title);
+            $gridStack.addWidget($item, d.x, d.y, d.width, d.height);
 
             var param = {
                 _id: d._id,
@@ -59,20 +63,20 @@ pv.mapWidgets = function(data){
                 widgetID: d.widgetId
             };
 
-	        app.ajaxPost("/page/loadwidgetpagecontent", param, function (res) {
-	        	if (!app.isFine(res)) {
-					return;
-				}
+            app.ajaxPost("/page/loadwidgetpagecontent", param, function (res) {
+                if (!app.isFine(res)) {
+                    return;
+                }
 
-				var widgetBaseURL = baseURL + "res-widget/" +d.widgetId+"/" ;
-		        var page = res.data.Content;
-		        page = page.replace(/src\=\"/g, 'src="' + widgetBaseURL);
-		        page = page.replace(/href\=\"/g, 'href="' + widgetBaseURL);
+                var widgetBaseURL = baseURL + "res-widget/" +d.widgetId+"/" ;
+                var page = res.data.Content;
+                page = page.replace(/src\=\"/g, 'src="' + widgetBaseURL);
+                page = page.replace(/href\=\"/g, 'href="' + widgetBaseURL);
 
                 var $iFrame = $("[data-id='" + d._id + "'] iframe");
                 var iWindow = $iFrame[0].contentWindow;
 
-		        $iFrame.off("load").on("load", function () {
+                $iFrame.off("load").on("load", function () {
 
                     iWindow.window.Render(
                         { dsChart: [] },
@@ -82,6 +86,8 @@ pv.mapWidgets = function(data){
 
                     
                     var confDatasource = res.data.WidgetPageData.dataSources;
+                    var param2 = [];
+
                     $.each(confDatasource, function(namespace, value) {
                         pv.configParam.namespace = namespace;
                         pv.configParam.value = value;
@@ -92,15 +98,25 @@ pv.mapWidgets = function(data){
                             pv.configParam.filter = data.filter;
                             pv.configParam.fields = data.fields;
                         }
+                    }else{
+                        if ([undefined, null].indexOf(res.data.WidgetPageData.config.fields) == -1) {
+                            var confFields = res.data.WidgetPageData.config.fields;
+                            var fields = "";
+                            $.each(confFields, function(i, result){
+                                fields += result + ", ";
+                            });
+                            fields = fields.substr(0, fields.length-2);
+                            pv.configParam.fields = fields;
+                        }
                     }
-
-                    var param2 = [];
+                    
                     param2.push(pv.configParam);
 
                     app.ajaxPost("/page/loadwidgetpagedata", param2, function (res2) {
                         if (res2.data == null) {
                             res2.data = {};
                         }
+                        ko.mapping.fromJS(pv.templateConfigParam);
                         res2.data.dataSources = d.dataSources;
                         iWindow.window.Render(
                             res2.data,
@@ -109,19 +125,19 @@ pv.mapWidgets = function(data){
                         );
                     });
                     
-		        });
+                });
 
-				var container =  iWindow.document;
-		        container.open();
-       	 		container.write(page);
-        		container.close();
-	        });
-	    });
+                var container =  iWindow.document;
+                container.open();
+                container.write(page);
+                container.close();
+            });
+        });
         app.miniloader(false);
-	});
+    });
 }
 
 $(function(){
-	pv.prepareGridStack();
-	pv.doFilter();
+    pv.prepareGridStack();
+    pv.doRefresh();
 });

@@ -500,6 +500,7 @@ pde.uploadStyleFile = function(mode,files){
 }
 
 $(function () {
+    app.prepareTooltipster();
     pde.prepareDataSources(function () {
         pde.prepareWidget(function () {
             pde.preparePage(function () {
