@@ -234,6 +234,7 @@ pde.addThisWidget = function (o) {
 };
 pde.adjustIframe = function () {
     $("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);
+    $("#formSetting").contents().find("body").on('click', function(event) {$("#formSetting").height($("#formSetting")[0].contentWindow.document.body.scrollHeight);});
 };
 pde.showConfigPage = function () {
     $(".modal-config").modal("show");
@@ -441,6 +442,7 @@ pde.openWidgetSetting = function() {
 
             var shouldHeight = iWindow.document.getElementById("page-container").scrollHeight;
             iWindow.document.getElementById("widgetSettingForm").style.height = parseInt(shouldHeight) + "px";
+
         });
 
         var contentDoc = iWindow.document;
@@ -449,6 +451,7 @@ pde.openWidgetSetting = function() {
         contentDoc.close();
     });
 }
+
 pde.prepareDragfile = function(){
     var selector = $("#dragandrophandler");
     selector.on('drop', function (e) 
@@ -510,7 +513,6 @@ $(function () {
             });
         });
     });
-
 });
 
 
