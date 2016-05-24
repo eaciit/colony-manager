@@ -12,6 +12,9 @@
 	<h2 class="heading-tittle title-widget" style="text-align: center;"></h2>
 	<div class="page-view">
 		{{template "_miniloader.html"}}	
-		<div class="grid-stack" id="page-designer-grid-stack" data-bind="visible: !app.miniloader()"></div>
+		<div data-bind="visible: !app.miniloader()">
+			<div id="information" style="padding-left:20px;padding-right:20px;padding-bottop:0px"></div>
+			<div class="grid-stack" id="page-designer-grid-stack"></div>
+		</div>
 	</div>
 </div>

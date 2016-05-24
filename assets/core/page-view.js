@@ -11,7 +11,7 @@ pv.templateConfigParam = {
     fields: "",
 };
 
-pv.configParam = ko.mapping.toJS(pv.templateConfigParam);
+pv.configParam = ko.mapping.fromJS(pv.templateConfigParam);
 
 pv.templateWidgetItem =  [
     '<div class="grid-stack-item">',
@@ -30,17 +30,28 @@ pv.prepareGridStack = function () {
 };
 
 pv.doRefresh = function(){
-  ko.mapping.fromJS(pv.templateConfigParam);
-  var data  = {};
-   pv.mapWidgets(data);
+    ko.mapping.fromJS(pv.templateConfigParam, pv.configParam);
+    var data  = {};
+    pv.mapWidgets(data);
 };
 
 pv.mapWidgets = function(data){
-
     app.miniloader(true);
     var $gridStack = $("#page-designer-grid-stack").data("gridstack");
     $gridStack.removeAll();
     $div = $('#frame');
+    $information = $('#information');
+
+    $('#information').empty()
+        $templateInfo = $('<div class="alert alert-info information alert-dismissible" role="alert">'+
+                            'Result for <strong>&quot;'+data.filter+'&quot;</strong> in data source '+
+                            '<strong>'+data.dataSources+'</strong> and field(s) : <strong>'+data.fields+'</strong>'+
+                            '<button class="btn btn-xs btn-primary pull-right" onClick="pv.doRefresh()"><i class="glyphicon glyphicon-refresh"></i> Refresh All</button>'+
+                            '</div>');
+    if(!$.isEmptyObject(data)){
+        $templateInfo.appendTo($information);
+    }
+
     app.ajaxPost("/pagedesigner/pageview", {title: viewModel.pageID}, function(res){
         if(!app.isFine(res)){
             return;
@@ -87,18 +98,17 @@ pv.mapWidgets = function(data){
                     
                     var confDatasource = res.data.WidgetPageData.dataSources;
                     var param2 = [];
-
+                    var configParam = ko.mapping.toJS(pv.configParam);
                     $.each(confDatasource, function(namespace, value) {
-                        pv.configParam.namespace = namespace;
-                        pv.configParam.value = value;
+                        configParam.namespace = namespace;
+                        configParam.value = value;
                     });
 
-                    if(data !== null){
-                        if(pv.configParam.value == data.dataSources){
-                            pv.configParam.filter = data.filter;
-                            pv.configParam.fields = data.fields;
+                    if(!$.isEmptyObject(data)){
+                        if(configParam.value == data.dataSources){
+                            configParam.filter = data.filter;
+                            configParam.fields = data.fields;
                         }
-                    }else{
                         if ([undefined, null].indexOf(res.data.WidgetPageData.config.fields) == -1) {
                             var confFields = res.data.WidgetPageData.config.fields;
                             var fields = "";
@@ -106,23 +116,25 @@ pv.mapWidgets = function(data){
                                 fields += result + ", ";
                             });
                             fields = fields.substr(0, fields.length-2);
-                            pv.configParam.fields = fields;
+                            configParam.fields = fields;
                         }
                     }
                     
-                    param2.push(pv.configParam);
+                    param2.push(configParam);
 
                     app.ajaxPost("/page/loadwidgetpagedata", param2, function (res2) {
+                        ko.mapping.fromJS(pv.templateConfigParam, pv.configParam);
                         if (res2.data == null) {
                             res2.data = {};
                         }
-                        ko.mapping.fromJS(pv.templateConfigParam);
+
                         res2.data.dataSources = d.dataSources;
                         iWindow.window.Render(
                             res2.data,
                             res.data.WidgetPageData.config,
                             res.data.WidgetData.config
                         );
+
                     });
                     
                 });
