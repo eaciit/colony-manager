@@ -255,7 +255,7 @@ srv.doSaveServer = function (c) {
 		// }
 
 		if (srv.configServer.serviceSSH.type() == "File") {
-			excludeErrors = excludeErrors.concat(["user is required", "password is required"]);
+			excludeErrors = excludeErrors.concat(["SSH user cannot be empty", "SSH password cannot be empty"]);
 		}  else {
 			excludeErrors = excludeErrors.concat(["file is required"]);
 		}
