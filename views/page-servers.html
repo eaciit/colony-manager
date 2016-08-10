@@ -94,9 +94,9 @@
 	    <button class="btn btn-sm btn-primary mgTop15" data-bind="click: srv.testConnection, visible: !srv.isMultiServer()">
 			<span class="fa fa-info-circle"></span> Test Connection
 		</button>
-		<button class="btn btn-sm btn-danger mgTop15" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
+		<!-- <button class="btn btn-sm btn-danger mgTop15" id="removeOnEditServer" data-bind="srv.removeServer(), visible: showServer">
 			<span class="glyphicon glyphicon-remove"></span> Delete
-		</button>
+		</button> -->
 	</div>
 </nav>
 
@@ -185,7 +185,7 @@
 					    		</div>
 				    		</div>
 				    		<div class="col-md-6">
-					    		<div class="form-group" data-bind="visible: serviceSSH.type() == 'Credentials'">
+					    		<div class="form-group">
 						    		<label class="col-md-3 filter-label">SSH User</label>
 						    		<div class="col-md-7">
 						    			<input required data-required-msg="SSH user cannot be empty" type="text" class="form-control input-sm" name="ssh-user" placeholder="Type the username Here" data-bind="value: serviceSSH.user">

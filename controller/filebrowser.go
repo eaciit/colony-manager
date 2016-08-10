@@ -61,7 +61,7 @@ func (s *FileBrowserController) GetServers(r *knot.WebContext) interface{} {
 func (s *FileBrowserController) GetDir(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	server, payload, err := getServer(r, "FORM")
-	fmt.Println(server)
+	fmt.Printf("server %#v\n", server)
 
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
@@ -560,7 +560,7 @@ func getMultipart(r *knot.WebContext, fileName string) (server colonycore.Server
 	m := r.Request.MultipartForm
 	files := m.File[fileName]
 
-	for key, _ := range files {
+	for key := range files {
 		var file multipart.File
 		file, err = files[key].Open()
 		defer file.Close()
@@ -615,7 +615,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 					return helper.CreateResult(false, nil, err.Error())
 				}
 
-				for key, _ := range payload.File {
+				for key := range payload.File {
 					err = setting.SshCopyByFile(payload.File[key], payload.FileSizes[key], 0666, payload.FileName[key], payload.Path)
 
 					if err != nil {
@@ -625,7 +625,7 @@ func (s *FileBrowserController) Upload(r *knot.WebContext) interface{} {
 
 				return helper.CreateResult(true, nil, "")
 			} else if server.ServerType == SERVER_HDFS {
-				for key, _ := range payload.File {
+				for key := range payload.File {
 					DestPath := strings.Replace(payload.Path+"/", "//", "/", -1) + payload.FileName[key]
 					SourcePath := strings.Replace(GetHomeDir()+"/", "//", "/", -1) + payload.FileName[key]
 

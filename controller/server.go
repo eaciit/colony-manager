@@ -98,7 +98,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	log, _ := toolkit.NewLog(false, true, path, "log-%s", "20060102-1504")
 
 	data := new(colonycore.Server)
-	if r.Request.FormValue("serviceSSH[type]") == "File" {
+	if r.Request.FormValue("type") == "File" {
 		log.AddLog("Get forms", "INFO")
 		dataRaw := map[string]interface{}{}
 		err := r.GetForms(&dataRaw)
@@ -108,7 +108,7 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 
 		log.AddLog("Serding data", "INFO")
-		err = toolkit.Serde(dataRaw, &data, "json")
+		err = toolkit.Unjson([]byte(dataRaw["info"].(string)), &data)
 		if err != nil {
 			log.AddLog(err.Error(), "ERROR")
 			return helper.CreateResult(false, nil, err.Error())

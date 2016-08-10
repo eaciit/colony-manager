@@ -246,16 +246,8 @@ srv.doSaveServer = function (c) {
 		var errors = $(".form-server").data("kendoValidator").errors();
 		var excludeErrors = [];
 
-		// if (srv.configServer.serverType() == "node") {
-		// 	if (srv.isMultiServer()) {
-		// 		excludeErrors = excludeErrors.concat(["ID is required", "host is required"]);
-		// 	}
-		// } else {
-		// 	excludeErrors = excludeErrors.concat(["apppath is required", "datapath is required", "extract is required", "make-directory is required"]);
-		// }
-
 		if (srv.configServer.serviceSSH.type() == "File") {
-			excludeErrors = excludeErrors.concat(["SSH user cannot be empty", "SSH password cannot be empty"]);
+			excludeErrors = excludeErrors.concat(["SSH password cannot be empty"]);
 		}  else {
 			excludeErrors = excludeErrors.concat(["file is required"]);
 		}
@@ -280,12 +272,13 @@ srv.doSaveServer = function (c) {
 	if (srv.configServer.serviceSSH.type() == "File") {
 		var file = $("#privatekey")[0].files[0];
 		var payload = ko.mapping.toJS(srv.configServer);
-		var data = new FormData();
-		for (var key in payload) {
-			if (payload.hasOwnProperty(key)) {
-				data.append(key, payload[key])
-			}
+		if (payload.serviceSSH.host.indexOf(':') == -1) {
+			payload.serviceSSH.host = [payload.serviceSSH.host, '22'].join(':');
 		}
+
+		var data = new FormData();
+		data.append("info", ko.mapping.toJSON(payload))
+		data.append("type", payload.serviceSSH.type)
 		data.append("privatekey", file);
 	}
 
@@ -295,7 +288,12 @@ srv.doSaveServer = function (c) {
 
 		srv.ipToRegister().forEach(function (d) {
 			var eachData = $.extend(true, data, { });
-			eachData.host = d;
+
+			eachData.serviceSSH.host = d;
+			if (eachData.serviceSSH.host.indexOf(':') == -1) {
+				eachData.serviceSSH.host = [eachData.serviceSSH.host, '22'].join(':');
+			}
+			
 			eachData._id = ["server", d, moment(new Date()).format("x")].join("-");
 			var ajax = app.ajaxPost("/server/saveservers", eachData, function (res) {
 				if (!res.success) {
