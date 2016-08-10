@@ -345,6 +345,10 @@ func FetchDataFromDSWithFilter(_id string, fetch int, filter toolkit.M) (toolkit
 		}
 
 		for _, each := range filter.Get("fields").([]string) {
+			if strings.TrimSpace(each) == "" {
+				continue
+			}
+
 			whereQuery = append(whereQuery, toolkit.M{
 				"key":   "Contains",
 				"field": each,
@@ -352,14 +356,17 @@ func FetchDataFromDSWithFilter(_id string, fetch int, filter toolkit.M) (toolkit
 			})
 		}
 
-		bts, err := json.Marshal(whereQuery)
-		if err != nil {
-			return nil, err
-		}
-		whereString := string(bts)
+		if len(whereQuery) > 0 {
+			bts, err := json.Marshal(whereQuery)
+			if err != nil {
+				return nil, err
+			}
+			whereString := string(bts)
 
-		dataDS.QueryInfo.Set("where", whereString)
-		query, _ = ParseQuery(query, dataDS.QueryInfo)
+			dataDS.QueryInfo.Set("where", whereString)
+			query, _ = ParseQuery(query, dataDS.QueryInfo)
+		}
+
 	}
 
 	cursor, err := query.Cursor(nil)
@@ -372,10 +379,20 @@ func FetchDataFromDSWithFilter(_id string, fetch int, filter toolkit.M) (toolkit
 	if err := cursor.Fetch(&data, fetch, false); err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("----ds %#v\n", dataDS)
+	// fmt.Printf("----data %#v\n", data)
 	return data, nil
 }
 
-func GetFieldsFromDS(_id string) ([]string, error) {
+func GetFieldsFromDS(_id string, opt ...string) ([]string, error) {
+	withSubFields := false
+	if len(opt) > 0 {
+		if opt[0] == "with sub fields" {
+			withSubFields = true
+		}
+	}
+
 	dataFetch, err := FetchDataFromDS(_id, 1)
 	if err != nil {
 		return nil, err
@@ -386,7 +403,13 @@ func GetFieldsFromDS(_id string) ([]string, error) {
 		if i > 0 {
 			break
 		}
-		for field := range val {
+		for field, fieldValue := range val {
+			if withSubFields && (toolkit.TypeName(fieldValue) == "map[string]interface {}") {
+				for subField := range fieldValue.(map[string]interface{}) {
+					fields = append(fields, fmt.Sprintf("%s.%s", field, subField))
+				}
+				continue
+			}
 			fields = append(fields, field)
 		}
 	}

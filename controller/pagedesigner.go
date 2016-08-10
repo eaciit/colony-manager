@@ -232,7 +232,7 @@ func (p *PageDesignerController) GetWidgetPageConfig(r *knot.WebContext) interfa
 	dataSourceFieldsMap := toolkit.M{}
 	for key, val := range payload.DataSources {
 		dataSource := val.(string)
-		fields, _ := helper.GetFieldsFromDS(dataSource)
+		fields, _ := helper.GetFieldsFromDS(dataSource, "with sub fields")
 		dataSourceFieldsMap[key] = toolkit.M{
 			"dataSource": dataSource,
 			"fields":     fields,
