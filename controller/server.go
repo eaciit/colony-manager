@@ -122,6 +122,10 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		}
 	}
 
+	if strings.HasPrefix(data.ServiceSSH.Host, "go.eaciit.com") || strings.HasPrefix(data.ServiceSSH.Host, "cloud.eaciit.com") {
+		return helper.CreateResult(false, nil, "This host is listed as production server, so it cannot be registered as ssh server")
+	}
+
 	if data.ServiceSSH.Type == "File" {
 		log.AddLog("Fetching public key", "INFO")
 		reqFileName := "privatekey"
