@@ -156,11 +156,6 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 		data.DetectInstalledLang()
 		data.DetectService()
 		data.UpdateInternalAppDeploymentStatus("add")
-
-		log.AddLog("Restart sedotand", "INFO")
-		if _, err := data.ToggleSedotanService("start stop", data.ID); err != nil {
-			log.AddLog(err.Error(), "ERROR")
-		}
 	}
 
 	if data.IsAccessValid("hdfs") {
@@ -214,6 +209,13 @@ func (s *ServerController) SaveServers(r *knot.WebContext) interface{} {
 	if err != nil {
 		log.AddLog(err.Error(), "ERROR")
 		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if data.IsAccessValid("node") && data.IsColonyServer {
+		log.AddLog("Restart sedotand", "INFO")
+		if _, err := data.ToggleSedotanService("start stop", data.ID); err != nil {
+			log.AddLog(err.Error(), "ERROR")
+		}
 	}
 
 	return helper.CreateResult(true, nil, "")
