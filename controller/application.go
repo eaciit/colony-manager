@@ -1196,10 +1196,10 @@ func (a *ApplicationController) IsAppDeployed(r *knot.WebContext) interface{} {
 	if app.IsInternalApp {
 		_, cmdIsAppRunning = app.GetCommand(colonycore.App_Command_RunningStatus)
 	} else {
-		cmdIsAppRunning = fmt.Sprintf(`if [[ $(pidof %s) ]]; then echo \"OK\"; else echo \"NOPE\"; fi`, app.ID)
+		cmdIsAppRunning = fmt.Sprintf(`if [[ $(pidof %s) ]]; then echo "OK"; else echo "NOPE"; fi`, app.ID)
 	}
 	res2, _ := setting.RunCommandSshAsMap(cmdIsAppRunning)
-	fmt.Println("isappdeployed", cmdIsAppRunning)
+	fmt.Println("isapprunning", cmdIsAppRunning)
 
 	statues := toolkit.M{
 		"isDeployed": (strings.TrimSpace(res1[0].Output) == "OK"),
