@@ -781,7 +781,7 @@ ds.fetchAllCollections = function () {
 		ds.backToFrontPage();
     	sweetAlert("Oops...", a.statusText, "error");
 	}, {
-		timeout: 10000
+		timeout: 30000
 	});
 };
 ds.changeDataSourceConnection = function () {

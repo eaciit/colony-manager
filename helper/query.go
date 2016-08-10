@@ -385,7 +385,14 @@ func FetchDataFromDSWithFilter(_id string, fetch int, filter toolkit.M) (toolkit
 	return data, nil
 }
 
-func GetFieldsFromDS(_id string) ([]string, error) {
+func GetFieldsFromDS(_id string, opt ...string) ([]string, error) {
+	withSubFields := false
+	if len(opt) > 0 {
+		if opt[0] == "with sub fields" {
+			withSubFields = true
+		}
+	}
+
 	dataFetch, err := FetchDataFromDS(_id, 1)
 	if err != nil {
 		return nil, err
@@ -396,7 +403,13 @@ func GetFieldsFromDS(_id string) ([]string, error) {
 		if i > 0 {
 			break
 		}
-		for field := range val {
+		for field, fieldValue := range val {
+			if withSubFields && (toolkit.TypeName(fieldValue) == "map[string]interface {}") {
+				for subField := range fieldValue.(map[string]interface{}) {
+					fields = append(fields, fmt.Sprintf("%s.%s", field, subField))
+				}
+				continue
+			}
 			fields = append(fields, field)
 		}
 	}
